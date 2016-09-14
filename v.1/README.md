@@ -1,1 +1,1 @@
-# CS 1371 Autograder
+# Autograder v.1
