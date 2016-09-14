@@ -1,0 +1,25 @@
+{
+    "folders":
+    [
+        {
+            "path": ".",
+            "name": "autograder",
+            "file_include_patterns": [],
+            "file_exclude_patterns": [],
+            "folder_include_patterns": [],
+            "folder_exclude_patterns": [],
+        }
+    ],
+    "settings":
+    {
+        "tab_size": 4,
+        "translate_tabs_to_spaces": true
+    },
+    "build_systems":
+    [
+        {
+            "name": "List",
+            "shell_cmd": "ls -l"
+        }
+    ]
+}
