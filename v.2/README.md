@@ -1,4 +1,4 @@
-# Autograder
+# Autograder v.2
 
 ## Workflow
 1. Grade student submissions
