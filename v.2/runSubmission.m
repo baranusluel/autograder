@@ -22,6 +22,16 @@ function student = runSubmission(rubric, student)
     currentDirectory = pwd;
     cd(student.folderPaths.submissionAttachments);
 
+    % remove _soln.p files in case students try to cheat by calling the _soln.p files
+    p_files = dir('*_soln.p');
+    for ndx = 1:length(p_files)
+        p_file = p_files(ndx);
+        delete(p_file.name);
+    end
+
+    % copy files from the supporting files folder to the student folder
+    % TODO
+
     problems = struct([]);
     for ndxProblem = 1:length(rubric.problems)
         problem = rubric.problems(ndxProblem);
