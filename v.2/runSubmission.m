@@ -30,7 +30,7 @@ function student = runSubmission(rubric, student)
     end
 
     % copy files from the supporting files folder to the student folder
-    % TODO
+    % - I don't think we actually need to do this since we added the supporting files folder to the MATLAB path, but leaving this comment here just so we know to confirm or deny this statement the next time a hw is graded
 
     problems = struct([]);
     for ndxProblem = 1:length(rubric.problems)
