@@ -12,7 +12,8 @@
 %   Description:
 %       Returns a struct containing the settings for the autograder
 function settings = getSettings()
-    settings.fileNames.RUBRIC_JSON = 'rubric.json';
+    settings.fileNames.RUBRIC_JSON_SUBMISSION = 'rubrica.json';
+    settings.fileNames.RUBRIC_JSON_RESUBMISSION = 'rubricb.json';
     settings.fileNames.FEEDBACK = 'feedback.html';
     settings.fileNames.GRADES_CSV = 'grades.csv';
 

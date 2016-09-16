@@ -12,7 +12,7 @@
 %       Runs the CS 1371 autograder
 %
 %   How to run:
-%       
+%
 function [] = runAutograder(varargin)
 
     clc;
@@ -102,25 +102,25 @@ function [] = runAutograder(varargin)
             autograderFolderPath = fileparts(mfilename('fullpath'));
             addpath(autograderFolderPath);
 
-            % get rubric
-            disp('Getting rubric...');
-            rubric = getRubric(rubricZipFilePath, destinationFolderPath);
-
             % get gradebook
             disp('Getting gradebook...');
             gradebook = getGradebook(homeworkZipFilePath, destinationFolderPath);
 
+            % get rubric
+            disp('Getting rubric...');
+            rubric = getRubric(rubricZipFilePath, destinationFolderPath, gradebook.isResubmission);
+
             % add overridenFunctions to the MATLAB path before grading
             overridenFunctionsFolderPath = fullfile(pwd, 'overridenFunctions');
             addpath(overridenFunctionsFolderPath);
-    
+
             % grade student submissions
             disp('Grading student submissions...');
             gradebook = gradeStudentSubmissions(gradebook, rubric);
 
             % remove overridenFunctions from the MATLAB path
             rmpath(overridenFunctionsFolderPath);
-    
+
             % write grades.csv
             disp('Writing grades to grades.csv...');
             writeGradesCsv(gradebook);
@@ -149,10 +149,10 @@ function [] = runAutograder(varargin)
 
             % go back to the starting directory
             cd(currentDirectory);
-            
+
             % close parallel pool if open (opened when running student submissions)
             delete(gcp('nocreate'));
-            
+
             % stop timer
             toc
 
@@ -176,7 +176,7 @@ function [] = runAutograder(varargin)
             try
                 % remove overridenFunctions from the MATLAB path
                 rmpath(overridenFunctionsFolderPath);
-    
+
                 pathsToRemove = fieldnames(rubric.addpath);
                 for ndx = 1:length(pathsToRemove)
                     rmpath(rubric.addpath.(pathsToRemove{ndx}));
