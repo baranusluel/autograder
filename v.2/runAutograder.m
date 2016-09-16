@@ -95,6 +95,9 @@ function [] = runAutograder(varargin)
             % start timer
             tic
 
+            % start profiling
+            profile on;
+
             % get the current directory (to go back to after running)
             currentDirectory = pwd;
 
@@ -138,6 +141,9 @@ function [] = runAutograder(varargin)
             end
             zip(outputZipFilePath, gradebook.folderPaths.homework);
 
+            % upload homework generator files to server
+            uploadHomeworkGeneratorFilesToServer(rubric, gradebook.homeworkNumber, gradebook.isResubmission);
+
             % remove the autograder folder from the MATLAB path
             rmpath(autograderFolderPath);
 
@@ -155,6 +161,10 @@ function [] = runAutograder(varargin)
 
             % stop timer
             toc
+
+            % stop profiling
+            profile viewer;
+            profsave;
 
         catch ME
 

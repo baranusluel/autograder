@@ -17,6 +17,8 @@ function settings = getSettings()
     settings.fileNames.FEEDBACK = 'feedback.html';
     settings.fileNames.GRADES_CSV = 'grades.csv';
 
+    settings.folderNames.RUBRIC_GRADER = 'grader';
+    settings.folderNames.RUBRIC_STUDENT = 'student';
     settings.folderNames.SOLUTIONS = 'Solutions';
     settings.folderNames.SUPPORTING_FILES = 'SupportingFiles';
     settings.folderNames.SUBMISSION_ATTACHMENTS = 'Submission attachment(s)';

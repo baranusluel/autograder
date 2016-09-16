@@ -33,6 +33,9 @@ function rubric = getRubric(rubricZipFilePath, destinationFolderPath, isResubmis
     % unzip zip file
     rubricFolderPath = unzipFile(rubricZipFilePath, destinationFolderPath);
 
+    rubric.folderPaths.rubricStudent = fullfile(rubricFolderPath, settings.folderNames.RUBRIC_STUDENT);
+    rubricFolderPath = fullfile(rubricFolderPath, settings.folderNames.RUBRIC_GRADER);
+
     % load rubric
     if isResubmission
         rubricFileName = settings.fileNames.RUBRIC_JSON_RESUBMISSION;

@@ -40,10 +40,9 @@ function uploadStudentFilesToServer(student, homeworkNumber, isResubmission)
             [~, student_folder_name] = fileparts(student_folder_path);
 
             % get homework folder name
+            homeworkNumber = num2str(homeworkNumber);
             if length(homeworkNumber) <= 1
-                homeworkNumber = sprintf('0%d', homeworkNumber);
-            else
-                homeworkNumber = num2str(homeworkNumber);
+                homeworkNumber = sprintf('0%s', homeworkNumber);
             end
             homework_folder_name = sprintf('homework%s', homeworkNumber);
             if isResubmission
