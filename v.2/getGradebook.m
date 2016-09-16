@@ -18,7 +18,12 @@
 function gradebook = getGradebook(homeworkZipFilePath, destinationFolderPath)
     % unzip zip file
     gradebook.folderPaths.homework = unzipFile(homeworkZipFilePath, destinationFolderPath);
-    
+
+    % get relevant homework information
+    homeworkNumber = strtok(gradebook.folderPaths.homework, '-');
+    gradebook.homeworkNumber = str2double(homeworkNumber(homeworkNumber >= '0' && homeworkNumber <= '9'));
+    gradebook.isResubmission = ~isempty(strfind(lower(gradebook.folderPaths.homework), 'resubmission'));
+
     settings = getSettings();
     gradebook.filePaths.gradesCsv = fullfile(gradebook.folderPaths.homework, settings.fileNames.GRADES_CSV);
 
@@ -41,11 +46,11 @@ function gradebook = getGradebook(homeworkZipFilePath, destinationFolderPath)
     lastNameColumn  = columnIndices(3);
     firstNameColumn = columnIndices(4);
     gradeColumn     = columnIndices(5);
-    
+
     % get student ids from folders
     [studentIdsFromFolders,studentFolders] = getStudentIds(gradebook.folderPaths.homework);
     [sortedStudentIdsFromFolders,~] = sort(studentIdsFromFolders);
-    
+
     % initialize gradebook struct
     gradebook.students = struct(...
         'displayID'  , gradebookTemplate(:,displayIdColumn),...
@@ -55,7 +60,7 @@ function gradebook = getGradebook(homeworkZipFilePath, destinationFolderPath)
         'grade'      , gradebookTemplate(:,gradeColumn),...
         'folderPaths', cellfun(@(folderName) struct('submissionAttachments', fullfile(gradebook.folderPaths.homework, folderName, settings.folderNames.SUBMISSION_ATTACHMENTS), 'feedbackAttachments', fullfile(gradebook.folderPaths.homework, folderName, settings.folderNames.FEEDBACK_ATTACHMENTS)), {studentFolders.name}, 'UniformOutput', false)'...
     );
-    
+
     % get student ids from grades.csv
     studentIdsFromGradesCsv = gradebookTemplate(:, idColumn);
     [sortedStudentIdsFromGradesCsv,~] = sort(studentIdsFromGradesCsv);

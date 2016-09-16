@@ -37,7 +37,7 @@ function formattedValue = visualizeValue(value)
         else
             formattedValue = 'cat(3';
             for ndx = 1:dimensions{3}
-                formattedValue = [formattedValue, ',', mat2str(value(:, :, ndx))];
+                formattedValue = [formattedValue, ',', mat2str(value(:, :, ndx))]; %#ok
             end
             formattedValue = [formattedValue, ')'];
         end
@@ -57,7 +57,7 @@ function formattedValue = visualizeValue(value)
         else
             formattedValue = 'cat(3';
             for ndx = 1:dimensions{3}
-                formattedValue = [formattedValue, ',', format2DCharArray(value(:, :, ndx), r)];
+                formattedValue = [formattedValue, ',', format2DCharArray(value(:, :, ndx), r)]; %#ok
             end
             formattedValue = [formattedValue, ')'];
         end
@@ -75,7 +75,7 @@ function formattedValue = visualizeValue(value)
         else
             formattedValue = 'cat(3';
             for ndx = 1:dimensions{3}
-                formattedValue = [formattedValue, ',', format2DLogicalArray(value(:, :, ndx), r, c)];
+                formattedValue = [formattedValue, ',', format2DLogicalArray(value(:, :, ndx), r, c)]; %#ok
             end
             formattedValue = [formattedValue, ')'];
         end
@@ -88,7 +88,7 @@ function formattedValue = visualizeValue(value)
             formattedValue = '{';
             for row_ndx = 1:r
                 for col_ndx = 1:c
-                    formattedValue = [formattedValue, visualizeValue(value{row_ndx, col_ndx}), ','];
+                    formattedValue = [formattedValue, visualizeValue(value{row_ndx, col_ndx}), ',']; %#ok
                 end
                 formattedValue(end) = ';';
             end
@@ -121,7 +121,7 @@ function formattedValue = format2DLogicalArray(value, r, c)
     formattedValue = '[';
     for row_ndx = 1:r
         for col_ndx = 1:c
-            formattedValue = [formattedValue, log2str(value(row_ndx, col_ndx)), ','];
+            formattedValue = [formattedValue, log2str(value(row_ndx, col_ndx)), ',']; %#ok
         end
         formattedValue(end) = ';';
     end

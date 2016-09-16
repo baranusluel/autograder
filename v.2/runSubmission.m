@@ -22,11 +22,13 @@ function student = runSubmission(rubric, student)
     currentDirectory = pwd;
     cd(student.folderPaths.submissionAttachments);
 
-    % remove _soln.p files in case students try to cheat by calling the _soln.p files
-    p_files = dir('*_soln.p');
+    % move _soln.p files to temp folder in case students try to cheat by calling the _soln.p files
+    temp_folder_path = tempname;
+    mkdir(temp_folder_path);
+    p_files = getDirectoryContents('*_soln.p', false, true);
     for ndx = 1:length(p_files)
         p_file = p_files(ndx);
-        delete(p_file.name);
+        movefile(p_file.name, temp_folder_path);
     end
 
     % copy files from the supporting files folder to the student folder
@@ -63,6 +65,9 @@ function student = runSubmission(rubric, student)
             rmpath(problem.bannedFunctionsFolderPath);
         end
     end
+
+    % move _soln.p files from temp folder back to the student folder
+    movefile(fullfile(temp_folder_path, '*'), pwd);
 
     student.problems = problems;
     cd(currentDirectory);

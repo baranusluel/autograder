@@ -25,7 +25,7 @@ function rubric = runSolutions(rubric)
     RandStream.setGlobalStream(RandStream('twister'));
     setRandStream = @() RandStream.setGlobalStream(RandStream('twister'));
     f = parfeval(setRandStream, 0);
-    ndx = fetchNext(f);
+    fetchNext(f);
 
     for ndxProblem = 1:length(rubric.problems)
         problem = rubric.problems(ndxProblem);

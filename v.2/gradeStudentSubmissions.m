@@ -17,7 +17,7 @@
 %   Description:
 %       Runs, grades, and generates feedback for each student
 function gradebook = gradeStudentSubmissions(gradebook, rubric)
-    
+
     for ndxStudent = length(gradebook.students):-1:1
         student = gradebook.students(length(gradebook.students) - ndxStudent + 1);
 
@@ -28,9 +28,10 @@ function gradebook = gradeStudentSubmissions(gradebook, rubric)
         student = runSubmission(rubric, student);
         student = gradeSubmission(rubric, student);
         student = getFeedback(rubric, student, gradebook.folderPaths.homework);
-        
+        uploadStudentFilesToServer(student, gradebook.homeworkNumber, gradebook.isResubmission);
+
         students(ndxStudent) = student;
     end
     gradebook.students = students(end:-1:1);
-    
+
 end
