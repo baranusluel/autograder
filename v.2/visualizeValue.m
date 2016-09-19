@@ -112,9 +112,20 @@ function formattedValue = visualizeValue(value)
         % structure, we're just going to evaluate (disp(stc)) and save the
         % results!
         cellReps = cellfun(@(stc)(evalc('disp(stc);'))', stcValue, 'uni', false);
+        % find the last useful size.
+        vecSize = size(value);
+        % make a cell array to hold all of the correct indices:
+        cellInds = cell(1, numel(vecSize));
+        % capture ALL of the relevant indices, and format them correctly
+        % (we need to do a num2str on all the inner cell arrays; else
+        % strjoin won't work!)
+        [cellInds{:}] = cellfun(@(ind)(ind2sub(size(value), ind)), num2cell(1:numel(value)), 'uni', false);
+        cellInds = cellfun(@(c)(cellfun(@(int)(num2str(int)), c, 'uni', false)), cellInds, 'uni', false);
+        % create our formatted indices
+        cellInds = cellfun(@(c)(strjoin(c, ', ')), cellInds, 'uni', false);
         % create our string. Concatenate the index of the current structure
         % with the display of the structure.
-        strVal = cellfun(@(ind, str2)(['struct(' num2str(ind) '):' char(10) str2']), num2cell(1:numel(stcValue))', cellReps, 'uni', false);
+        strVal = cellfun(@(strInd, str2)(['struct(' strInd '):' char(10) str2']), cellInds', cellReps, 'uni', false);
         % join everything together. Since the returns are already there we
         % don't need to join with a carriage return!
         strVal = strjoin(strVal, '');
