@@ -95,7 +95,33 @@ function formattedValue = visualizeValue(value)
             formattedValue(end) = '}';
         end
     elseif isstruct(value)
-        % TODO: implement
+        % basically, for each of the structures in the possible array, get
+        % the MATLAB display of it (Because it is already displayed by
+        % MATLAB quite nicely I believe!)
+        % get the size and summarize our structure:
+        if numel(value) == 1
+            strTemp = 'element';
+        else
+            strTemp = 'elements';
+        end
+        strStart = sprintf('Structure of size [%s] (%d %s):', num2str(size(value)), numel(value), strTemp);
+        % prep for a cellfun:
+        stcValue = value(:);
+        stcValue = num2cell(stcValue);
+        % since MATLAB actually does a great job of visualizing a
+        % structure, we're just going to evaluate (disp(stc)) and save the
+        % results!
+        cellReps = cellfun(@(stc)(evalc('disp(stc);'))', stcValue, 'uni', false);
+        % create our string. Concatenate the index of the current structure
+        % with the display of the structure.
+        strVal = cellfun(@(ind, str2)(['struct(' num2str(ind) '):' char(10) str2']), num2cell(1:numel(stcValue))', cellReps, 'uni', false);
+        % join everything together. Since the returns are already there we
+        % don't need to join with a carriage return!
+        strVal = strjoin(strVal, '');
+        % get rid of the last extra returns:
+        strVal = strVal(1:end-1);
+        % add our beginning string and return the output:
+        formattedValue = [strStart char(10) strVal];
     end
 end
 
