@@ -120,9 +120,20 @@ function formattedValue = visualizeValue(value)
         % (we need to do a num2str on all the inner cell arrays; else
         % strjoin won't work!)
         [cellInds{:}] = cellfun(@(ind)(ind2sub(size(value), ind)), num2cell(1:numel(value)), 'uni', false);
-        cellInds = cellfun(@(c)(cellfun(@(int)(num2str(int)), c, 'uni', false)), cellInds, 'uni', false);
         % create our formatted indices
-        cellInds = cellfun(@(c)(strjoin(c, ', ')), cellInds, 'uni', false);
+        %   first, we reorganize our cell array of indices such that we
+        %   numel(value) on the OUTSIDE, and numel(vecSize) on the INSIDE!
+        cellInds = cellfun(@(r)(cellfun(@(ind)(cellInds{ind}(r)), num2cell(1:numel(vecSize)), 'uni', false)), num2cell(1:numel(value)), 'uni', false);
+        %   Now, we need to get each element of cellInds (which is now of
+        %   size 1 row, numel(value) columns) to hold all of its
+        %   corresponding elements. Each inner cell array only holds a cell
+        %   array of 1 (and EXACTLY 1) integer, which is the index for that
+        %   dimension - that's why each cell array inside of cellInds is of
+        %   size numel(vecSize).
+        cellInds = cellfun(@(c1)(cellfun(@(int)(num2str(int{1})), c1, 'uni', false)), cellInds, 'uni', false);
+        %   finally, concatenate all of the indices back together and place
+        %   the result into each of the corresponding indices!
+        cellInds = cellfun(@(d1)(strjoin(d1, ', ')), cellInds, 'uni', false);
         % create our string. Concatenate the index of the current structure
         % with the display of the structure.
         strVal = cellfun(@(strInd, str2)(['struct(' strInd '):' char(10) str2']), cellInds', cellReps, 'uni', false);
