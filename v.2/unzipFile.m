@@ -35,7 +35,7 @@ function folderPath = unzipFile(zipFilePath, destinationFolderPath)
     folderPath = fullfile(destinationFolderPath, folder);
 
     % move unzipped folder from the temporary path to the destination folder
-    movefile(fullfile(temporaryFilePath,folder), destinationFolderPath);
+    movefile(fullfile(temporaryFilePath, folder), destinationFolderPath);
 
     % clean up
     rmdir(temporaryFilePath,'s');

@@ -20,8 +20,9 @@ function gradebook = getGradebook(homeworkZipFilePath, destinationFolderPath)
     gradebook.folderPaths.homework = unzipFile(homeworkZipFilePath, destinationFolderPath);
 
     % get relevant homework information
-    homeworkNumber = strtok(gradebook.folderPaths.homework, '-');
-    gradebook.homeworkNumber = str2double(homeworkNumber(homeworkNumber >= '0' && homeworkNumber <= '9'));
+    [~, homeworkFolderName] = fileparts(gradebook.folderPaths.homework);
+    homeworkNumber = strtok(homeworkFolderName, '-');
+    gradebook.homeworkNumber = str2double(homeworkNumber(homeworkNumber >= '0' & homeworkNumber <= '9'));
     gradebook.isResubmission = ~isempty(strfind(lower(gradebook.folderPaths.homework), 'resubmission'));
 
     settings = getSettings();

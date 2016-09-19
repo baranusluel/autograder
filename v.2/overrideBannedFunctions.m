@@ -47,8 +47,14 @@ function bannedFunctionsFolderPath = overrideBannedFunctions(parentFolderPath, b
             filePath = fullfile(folderPath, fileName);
             fh = fopen(filePath,'w');
 
-            fprintf(fh,'function [varargout] = %s(varargin)\n\t',functionName);
-            fprintf(fh,'error(''The function "%s" is banned for the problem "%s"'');\n',functionName,problemName);
+            fprintf(fh,'function [varargout] = %s(varargin)\n',functionName);
+            fprintf(fh,'\tstack = dbstack;\n');
+            fprintf(fh,'\tfileName = ''%s.m'';\n', functionName);
+            fprintf(fh,'\tif ~isempty(stack) && length(stack) > 1 && length(stack(2).file) == length(fileName) && all(stack(2).file == fileName)\n');
+            fprintf(fh,'\t\terror(''The function "%s" is banned for the problem "%s"'');\n',functionName,problemName);
+            fprintf(fh,'\telse\n');
+            fprintf(fh,'\t\t[varargout{1:nargout}] = builtin(''%s'', varargin{1:nargin});\n', functionName);
+            fprintf(fh,'\tend\n');
             fprintf(fh,'end');
 
             fclose(fh);

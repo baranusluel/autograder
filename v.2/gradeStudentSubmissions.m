@@ -28,7 +28,6 @@ function gradebook = gradeStudentSubmissions(gradebook, rubric)
         student = runSubmission(rubric, student);
         student = gradeSubmission(rubric, student);
         student = getFeedback(rubric, student, gradebook.folderPaths.homework);
-        uploadStudentFilesToServer(student, gradebook.homeworkNumber, gradebook.isResubmission);
 
         students(ndxStudent) = student;
     end

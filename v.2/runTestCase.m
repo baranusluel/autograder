@@ -31,7 +31,7 @@ function output = runTestCase(functionHandle, testCase, inputs, varargin)
     if ~isempty(varargin)
         isSolution = varargin{1};
     end
-    
+
     if nargin > 4
         timeout = varargin{2};
     end
@@ -48,7 +48,7 @@ function output = runTestCase(functionHandle, testCase, inputs, varargin)
 
     close all;
     figure('Visible', 'Off');
-    
+
     if isSolution
         % start timer
         tic
@@ -71,6 +71,7 @@ function output = runTestCase(functionHandle, testCase, inputs, varargin)
             % if timeout was exceeded, f_ndx will be empty
             if isempty(f_ndx)
                 % TODO: account for students whose test cases timeout
+                disp('TIMEOUT');
                 messages = getMessages();
                 error(messages.errors.timeout);
             end
@@ -78,7 +79,7 @@ function output = runTestCase(functionHandle, testCase, inputs, varargin)
             output.errors = ME;
         end
     end
-    
+
     figureHandle = gcf;
 
     newDirectoryContents = getDirectoryContents(pwd, false, true);

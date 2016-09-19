@@ -1,14 +1,10 @@
 %% uploadStudentFilesToServer Uploads student files to cs1371.gatech.edu server
 %
-%   uploadStudentFilesToRegradeWebsite(student, homeworkNumber, isResubmission)
+%   uploadStudentFilesToRegradeWebsite(gradebook)
 %
 %   Inputs:
-%       student (struct)
-%           - structure representing the student
-%       homeworkNumber (double)
-%           - homework number
-%       isResubmission (logical)
-%           - whether or not the homework being graded is the original or the resub
+%       gradebook (struct)
+%           - structure representing the gradebook
 %
 %   Outputs:
 %       NONE
@@ -16,27 +12,74 @@
 %   Description:
 %       Uploads student submission attachments and feedback attachment files to
 %       cs1371.gatech.edu server
-function uploadStudentFilesToServer(student, homeworkNumber, isResubmission)
+function uploadStudentFilesToServer(gradebook)
     % get struct of remote root paths
     paths = uploadFile('p');
 
-    %% upload submission attachment files
+    homeworkNumber = gradebook.homeworkNumber;
+    isResubmission = gradebook.isResubmission;
+    channel = [];
+    sftp_client = [];
 
-    % get student submission files
-    directoryContents = getDirectoryContents(student.folderPaths.submissionAttachments, false, true);
+    for ndxStudent = 1:length(gradebook.students)
+        student = gradebook.students(ndxStudent);
 
-    % for each file, upload
-    remote_file_path = '';
-    for ndxFile = 1:length(directoryContents)
-        file = directoryContents(ndxFile);
+        if isVerbose()
+            fprintf('\t%s, %s\n', student.lastName, student.firstName);
+        end
 
-        % get local file path
-        file_path = fullfile(student.folderPaths.submissionAttachments, file.name);
+        %% upload submission attachment files
 
-        % only need to compute the remote file path once
+        % get student submission files
+        directoryContents = getDirectoryContents(student.folderPaths.submissionAttachments, false, true);
+
+        % for each file, upload
+        remote_file_path = '';
+        for ndxFile = 1:length(directoryContents)
+            file = directoryContents(ndxFile);
+
+            % get local file path
+            file_path = fullfile(student.folderPaths.submissionAttachments, file.name);
+
+            % only need to compute the remote file path once
+            if isempty(remote_file_path)
+                % get student folder name
+                [student_folder_path, submission_attachments_folder_name] = fileparts(student.folderPaths.submissionAttachments);
+                [~, student_folder_name] = fileparts(student_folder_path);
+
+                % get homework folder name
+                homeworkNumber = num2str(homeworkNumber);
+                if length(homeworkNumber) <= 1
+                    homeworkNumber = sprintf('0%s', homeworkNumber);
+                end
+                homework_folder_name = sprintf('homework%s', homeworkNumber);
+                if isResubmission
+                    homework_folder_name = sprintf('%s_resub', homework_folder_name);
+                end
+
+                % get remote file path
+                remote_file_path = fullfile(paths.HOMEWORKS, homework_folder_name, student_folder_name, submission_attachments_folder_name);
+            end
+
+            % upload file to server via sftp
+            try
+                [channel, sftp_client] = uploadFile(file_path, remote_file_path, channel, sftp_client);
+            catch ME
+                % if an error occurs, ignore for now (probably should write to some error file or something...)
+                disp(ME.message);
+            end
+        end
+
+        %% upload feedback attachment files
+
+        % get student feedback file(s)
+        directoryContents = getDirectoryContents(student.folderPaths.feedbackAttachments, false, true);
+        
+        % get feedback attachments folder name
+        [student_folder_path, feedback_attachments_folder_name] = fileparts(student.folderPaths.feedbackAttachments);
+
+        % if the the student did not submit any files
         if isempty(remote_file_path)
-            % get student folder name
-            [student_folder_path, submission_attachments_folder_name] = fileparts(student.folderPaths.submissionAttachments);
             [~, student_folder_name] = fileparts(student_folder_path);
 
             % get homework folder name
@@ -50,43 +93,32 @@ function uploadStudentFilesToServer(student, homeworkNumber, isResubmission)
             end
 
             % get remote file path
-            remote_file_path = fullfile(paths.HOMEWORKS, homework_folder_name, student_folder_name, submission_attachments_folder_name);
+            remote_file_path = fullfile(paths.HOMEWORKS, homework_folder_name, student_folder_name, feedback_attachments_folder_name);
+        else
+            % remove the submission attachments folder name from the remote file path
+            remote_file_path = fileparts(remote_file_path);
+
+            % get remote file path
+            remote_file_path = fullfile(remote_file_path, feedback_attachments_folder_name);
         end
 
-        % upload file to server via sftp
-        try
-            uploadFile(file_path, remote_file_path);
-        catch
-            % if an error occurs, ignore for now (probably should write to some error file or something...)
-        end
-    end
+        % for each file, upload
+        for ndxFile = 1:length(directoryContents)
+            file = directoryContents(ndxFile);
 
-    %% upload feedback attachment files
+            % get local file path
+            file_path = fullfile(student.folderPaths.feedbackAttachments, file.name);
 
-    % get student feedback file(s)
-    directoryContents = getDirectoryContents(student.folderPaths.feedbackAttachments, false, true);
-
-    % get feedback attachments folder name
-    [~, feedback_attachments_folder_name] = fileparts(student.folderPaths.feedbackAttachments);
-
-    % remove the submission attachments folder name from the remote file path
-    remote_file_path = fileparts(remote_file_path);
-
-    % get remote file path
-    remote_file_path = fullfile(remote_file_path, feedback_attachments_folder_name);
-
-    % for each file, upload
-    for ndxFile = 1:length(directoryContents)
-        file = directoryContents(ndxFile);
-
-        % get local file path
-        file_path = fullfile(student.folderPaths.feedbackAttachments, file.name);
-
-        % upload file to server via sftp
-        try
-            uploadFile(file_path, remote_file_path);
-        catch
-            % if an error occurs, ignore for now (probably should write to some error file or something...)
+            % upload file to server via sftp
+            try
+                [channel, sftp_client] = uploadFile(file_path, remote_file_path, channel, sftp_client);
+            catch ME
+                % if an error occurs, ignore for now (probably should write to some error file or something...)
+                disp(ME.message);
+            end
         end
     end
+    
+    sftp_client.close();
+    channel.close();
 end

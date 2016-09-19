@@ -41,3 +41,4 @@ Thumbs.db
 **/testing
 *.sublime-workspace
 *.m~
+testScript*.m

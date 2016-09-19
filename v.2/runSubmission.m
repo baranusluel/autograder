@@ -26,8 +26,8 @@ function student = runSubmission(rubric, student)
     temp_folder_path = tempname;
     mkdir(temp_folder_path);
     p_files = getDirectoryContents('*_soln.p', false, true);
-    for ndx = 1:length(p_files)
-        p_file = p_files(ndx);
+    for ndx_p_file = 1:length(p_files)
+        p_file = p_files(ndx_p_file);
         movefile(p_file.name, temp_folder_path);
     end
 
@@ -67,7 +67,11 @@ function student = runSubmission(rubric, student)
     end
 
     % move _soln.p files from temp folder back to the student folder
-    movefile(fullfile(temp_folder_path, '*'), pwd);
+    p_files = getDirectoryContents(fullfile(temp_folder_path, '*_soln.p'), false, true);
+    for ndx_p_file = 1:length(p_files)
+        p_file = p_files(ndx_p_file);
+        movefile(fullfile(temp_folder_path, p_file.name), pwd);
+    end
 
     student.problems = problems;
     cd(currentDirectory);

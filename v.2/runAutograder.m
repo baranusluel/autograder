@@ -93,10 +93,7 @@ function [] = runAutograder(varargin)
         try
 
             % start timer
-            tic
-
-            % start profiling
-            profile on;
+            tstart = tic;
 
             % get the current directory (to go back to after running)
             currentDirectory = pwd;
@@ -104,6 +101,14 @@ function [] = runAutograder(varargin)
             % add the autograder folder to the MATLAB path
             autograderFolderPath = fileparts(mfilename('fullpath'));
             addpath(autograderFolderPath);
+
+            % throw error if the destination folder is not empty
+            if exist(destinationFolderPath, 'dir') && isFolderEmpty(destinationFolderPath)
+                error('The destination folder must be empty');
+            end
+
+            % create destination folder
+            mkdir(destinationFolderPath);
 
             % get gradebook
             disp('Getting gradebook...');
@@ -141,8 +146,11 @@ function [] = runAutograder(varargin)
             end
             zip(outputZipFilePath, gradebook.folderPaths.homework);
 
-            % upload homework generator files to server
-            uploadHomeworkGeneratorFilesToServer(rubric, gradebook.homeworkNumber, gradebook.isResubmission);
+            % autograder run time
+            toc(tstart)
+            
+            % upload files to server
+            uploadFilesToServer(gradebook, rubric);
 
             % remove the autograder folder from the MATLAB path
             rmpath(autograderFolderPath);
@@ -159,12 +167,8 @@ function [] = runAutograder(varargin)
             % close parallel pool if open (opened when running student submissions)
             delete(gcp('nocreate'));
 
-            % stop timer
-            toc
-
-            % stop profiling
-            profile viewer;
-            profsave;
+            % total run time
+            toc(tstart);
 
         catch ME
 

@@ -22,18 +22,9 @@ function rubric = getRubric(rubricZipFilePath, destinationFolderPath, isResubmis
     % get settings
     settings = getSettings();
 
-    % throw error if the destination folder is not empty
-    if exist(destinationFolderPath, 'dir') && isFolderEmpty(destinationFolderPath)
-        error('The destination folder must be empty');
-    end
-
-    % create destination folder
-    mkdir(destinationFolderPath);
-
     % unzip zip file
     rubricFolderPath = unzipFile(rubricZipFilePath, destinationFolderPath);
 
-    rubric.folderPaths.rubricStudent = fullfile(rubricFolderPath, settings.folderNames.RUBRIC_STUDENT);
     rubricFolderPath = fullfile(rubricFolderPath, settings.folderNames.RUBRIC_GRADER);
 
     % load rubric
