@@ -19,7 +19,16 @@ function uploadHomeworkGeneratorFilesToServer(rubric, homeworkNumber, isResubmis
         end
     end
 
-    % TODO: upload supporting files
+    % upload supporting files zip
+    if isResubmission
+        supporting_files_zip_file_name = 'Supporting Files Resub.zip';
+    else
+        supporting_files_zip_file_name = 'Supporting Files.zip';
+    end
+    local_supporting_files_zip_file_path = fullfile(rubric.folderPaths.rubric, supporting_files_zip_file_name);
+    remote_supporting_files_zip_file_path = fullfile(paths.SOLUTIONS, sprintf('Homework%d', homeworkNumber), supporting_files_zip_file_name);
+    zip(local_supporting_files_zip_file_path, rubric.addpath.supportingFiles);
+    [channel, sftp_client] = uploadFile(local_supporting_files_zip_file_path, remote_supporting_files_zip_file_path, channel, sftp_client);
 
     % get homework number string
     homeworkNumber = num2str(homeworkNumber);
@@ -37,7 +46,7 @@ function uploadHomeworkGeneratorFilesToServer(rubric, homeworkNumber, isResubmis
     end
     remote_file_path = fullfile(paths.RUBRICS, remote_file_name);
     [channel, sftp_client] = uploadFile(local_file_path, remote_file_path, channel, sftp_client);
-    
+
     sftp_client.close();
     channel.close();
 end
