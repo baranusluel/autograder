@@ -95,7 +95,55 @@ function formattedValue = visualizeValue(value)
             formattedValue(end) = '}';
         end
     elseif isstruct(value)
-        % TODO: implement
+        % basically, for each of the structures in the possible array, get
+        % the MATLAB display of it (Because it is already displayed by
+        % MATLAB quite nicely I believe!)
+        % get the size and summarize our structure:
+        if numel(value) == 1
+            strTemp = 'element';
+        else
+            strTemp = 'elements';
+        end
+        strStart = sprintf('Structure of size [%s] (%d %s):', num2str(size(value)), numel(value), strTemp);
+        % prep for a cellfun:
+        stcValue = value(:);
+        stcValue = num2cell(stcValue);
+        % since MATLAB actually does a great job of visualizing a
+        % structure, we're just going to evaluate (disp(stc)) and save the
+        % results!
+        cellReps = cellfun(@(stc)(evalc('disp(stc);'))', stcValue, 'uni', false);
+        % find the last useful size.
+        vecSize = size(value);
+        % make a cell array to hold all of the correct indices:
+        cellInds = cell(1, numel(vecSize));
+        % capture ALL of the relevant indices, and format them correctly
+        % (we need to do a num2str on all the inner cell arrays; else
+        % strjoin won't work!)
+        [cellInds{:}] = cellfun(@(ind)(ind2sub(size(value), ind)), num2cell(1:numel(value)), 'uni', false);
+        % create our formatted indices
+        %   first, we reorganize our cell array of indices such that we
+        %   numel(value) on the OUTSIDE, and numel(vecSize) on the INSIDE!
+        cellInds = cellfun(@(r)(cellfun(@(ind)(cellInds{ind}(r)), num2cell(1:numel(vecSize)), 'uni', false)), num2cell(1:numel(value)), 'uni', false);
+        %   Now, we need to get each element of cellInds (which is now of
+        %   size 1 row, numel(value) columns) to hold all of its
+        %   corresponding elements. Each inner cell array only holds a cell
+        %   array of 1 (and EXACTLY 1) integer, which is the index for that
+        %   dimension - that's why each cell array inside of cellInds is of
+        %   size numel(vecSize).
+        cellInds = cellfun(@(c1)(cellfun(@(int)(num2str(int{1})), c1, 'uni', false)), cellInds, 'uni', false);
+        %   finally, concatenate all of the indices back together and place
+        %   the result into each of the corresponding indices!
+        cellInds = cellfun(@(d1)(strjoin(d1, ', ')), cellInds, 'uni', false);
+        % create our string. Concatenate the index of the current structure
+        % with the display of the structure.
+        strVal = cellfun(@(strInd, str2)(['struct(' strInd '):' char(10) str2']), cellInds', cellReps, 'uni', false);
+        % join everything together. Since the returns are already there we
+        % don't need to join with a carriage return!
+        strVal = strjoin(strVal, '');
+        % get rid of the last extra returns:
+        strVal = strVal(1:end-1);
+        % add our beginning string and return the output:
+        formattedValue = [strStart char(10) strVal];
     end
 end
 
