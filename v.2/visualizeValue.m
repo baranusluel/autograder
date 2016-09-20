@@ -104,7 +104,9 @@ function formattedValue = visualizeValue(value)
         else
             strTemp = 'elements';
         end
-        strStart = sprintf('Structure of size [%s] (%d %s):', num2str(size(value)), numel(value), strTemp);
+        strStart = sprintf('Structure of size [%s] (%d %s):\nFields:', num2str(size(value)), numel(value), strTemp);
+        strFields = strjoin(fieldnames(value), char(10));
+        strStart = [strStart char(10) strFields char(10)];
         % prep for a cellfun:
         stcValue = value(:);
         stcValue = num2cell(stcValue);
