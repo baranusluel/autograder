@@ -18,8 +18,6 @@ function uploadStudentFilesToServer(gradebook)
 
     homeworkNumber = gradebook.homeworkNumber;
     isResubmission = gradebook.isResubmission;
-    channel = [];
-    sftp_client = [];
 
     for ndxStudent = 1:length(gradebook.students)
         student = gradebook.students(ndxStudent);
@@ -62,12 +60,12 @@ function uploadStudentFilesToServer(gradebook)
             end
 
             % upload file to server via sftp
-            try
-                [channel, sftp_client] = uploadFile(file_path, remote_file_path, channel, sftp_client);
-            catch ME
-                % if an error occurs, ignore for now (probably should write to some error file or something...)
-                disp(ME.message);
-            end
+%             try
+                uploadFile(file_path, remote_file_path);
+%             catch ME
+%                 % if an error occurs, ignore for now (probably should write to some error file or something...)
+%                 disp(ME.message);
+%             end
         end
 
         %% upload feedback attachment files
@@ -110,15 +108,12 @@ function uploadStudentFilesToServer(gradebook)
             file_path = fullfile(student.folderPaths.feedbackAttachments, file.name);
 
             % upload file to server via sftp
-            try
-                [channel, sftp_client] = uploadFile(file_path, remote_file_path, channel, sftp_client);
-            catch ME
-                % if an error occurs, ignore for now (probably should write to some error file or something...)
-                disp(ME.message);
-            end
+%             try
+                uploadFile(file_path, remote_file_path);
+%             catch ME
+%                 % if an error occurs, ignore for now (probably should write to some error file or something...)
+%                 disp(ME.message);
+%             end
         end
     end
-    
-    sftp_client.close();
-    channel.close();
 end
