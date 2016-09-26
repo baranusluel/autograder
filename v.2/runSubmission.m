@@ -44,7 +44,7 @@ function student = runSubmission(rubric, student)
         if problems(ndxProblem).fileExists
             functionHandle = str2func(problem.name);
 
-            % TODO: implement banned functions
+            % implement banned functions
             addpath(problem.bannedFunctionsFolderPath);
 
             % run each test case
@@ -57,7 +57,7 @@ function student = runSubmission(rubric, student)
                 else
                     timeout = settings.TIMEOUT_LENIENCY;
                 end
-                testCases(ndxTestCase).output = runTestCase(functionHandle, testCase, problem.inputs, false, timeout);
+                testCases(ndxTestCase).output = runTestCase(functionHandle, testCase, problem.inputs, false, timeout, rubric.addpath.overridenFunctionsFolderPath);
             end
 
             problems(ndxProblem).testCases = testCases;

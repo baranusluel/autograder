@@ -118,16 +118,9 @@ function [] = runAutograder(varargin)
             disp('Getting rubric...');
             rubric = getRubric(rubricZipFilePath, destinationFolderPath, gradebook.isResubmission);
 
-            % add overridenFunctions to the MATLAB path before grading
-            overridenFunctionsFolderPath = fullfile(pwd, 'overridenFunctions');
-            addpath(overridenFunctionsFolderPath);
-
             % grade student submissions
             disp('Grading student submissions...');
             gradebook = gradeStudentSubmissions(gradebook, rubric);
-
-            % remove overridenFunctions from the MATLAB path
-            rmpath(overridenFunctionsFolderPath);
 
             % write grades.csv
             disp('Writing grades to grades.csv...');
@@ -148,7 +141,7 @@ function [] = runAutograder(varargin)
 
             % autograder run time
             toc(tstart)
-            
+
             % upload files to server
             uploadFilesToServer(gradebook, rubric);
 
