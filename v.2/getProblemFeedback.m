@@ -31,12 +31,7 @@ function student = getProblemFeedback(problem, student, problemNumber)
         student.feedback = sprintf('%s<h3>Test Case %d</h3>', student.feedback, ndxTestCase);
 
         % concatenate test case
-        student.feedback = sprintf('%s<pre>', student.feedback);
-        for ndxInputVariable = 1:length(testCase.inputVariables)
-            inputVariable = testCase.inputVariables{ndxInputVariable};
-            student.feedback = sprintf('%s%s = %s;<br/>', student.feedback, inputVariable, visualizeValue(problem.inputs.(inputVariable)));
-        end
-        student.feedback = sprintf('%s%s</pre>', student.feedback, testCase.call);
+        student.feedback = sprintf('%s<pre>load(''%s'');<br/>%s<br/></pre>', student.feedback, problem.matFile, testCase.call);
 
         % only run if there is a feedback submission
         if ~student.problems(problemNumber).fileExists
@@ -63,13 +58,13 @@ function student = getProblemFeedback(problem, student, problemNumber)
                         student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - %s %s</p><br/>', student.feedback, outputVariable, message, settings.images.RED_CROSS);
 
                         % open table
-                        student.feedback = sprintf('%s<table style="padding-left:20px">', student.feedback);
+                        student.feedback = sprintf('%s<table style="padding-left:20px;table-layout:fixed;width:100%%">', student.feedback);
 
                         % concatenate function value
-                        student.feedback = sprintf('%s<tr><td style="vertical-align:top"><p>Function Value</p></td><td style="padding-left:10px"><pre>%s</pre></td></tr>', student.feedback, visualizeValue(student.problems(problemNumber).testCases(ndxTestCase).output.variables{ndxVariable}));
+                        student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Function Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(student.problems(problemNumber).testCases(ndxTestCase).output.variables{ndxVariable}));
 
                         % concatenate solution value
-                        student.feedback = sprintf('%s<tr><td style="vertical-align:top"><p>Solution Value</p></td><td style="padding-left:10px"><pre>%s</pre></td></tr>', student.feedback, visualizeValue(testCase.output.variables{ndxVariable}));
+                        student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Solution Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(testCase.output.variables{ndxVariable}));
 
                         % close table
                         student.feedback = sprintf('%s</table>', student.feedback);
