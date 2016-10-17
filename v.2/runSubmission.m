@@ -34,6 +34,7 @@ function student = runSubmission(rubric, student)
     % copy files from the supporting files folder to the student folder
     % - I don't think we actually need to do this since we added the supporting files folder to the MATLAB path, but leaving this comment here just so we know to confirm or deny this statement the next time a hw is graded
 
+    student.timeout.isTimeout = false;
     problems = struct([]);
     for ndxProblem = 1:length(rubric.problems)
         problem = rubric.problems(ndxProblem);
@@ -52,12 +53,24 @@ function student = runSubmission(rubric, student)
 
             for ndxTestCase = 1:length(problem.testCases)
                 testCase = problem.testCases(ndxTestCase);
+                % set timeout
                 if testCase.output.timeElapsed > settings.TIMEOUT_LENIENCY
                     timeout = testCase.output.timeElapsed .* 10;
                 else
                     timeout = settings.TIMEOUT_LENIENCY;
                 end
+
                 testCases(ndxTestCase).output = runTestCase(functionHandle, testCase, problem.inputs, false, timeout, rubric.addpath.overridenFunctionsFolderPath);
+
+                % handle timeout
+                if testCases(ndxTestCase).output.isTimeout
+                    if ~any(strcmp(fieldnames(student), 'problems'))
+                        student.timeout.problems = struct([]);
+                        student.timeout.problems(length(rubric.problems)).testCaseIndices = [];
+                    end
+                    student.timeout.isTimeout = true;
+                    student.timeout.problems(ndxProblem).testCaseIndices(end+1) = ndxTestCase;
+                end
             end
 
             problems(ndxProblem).testCases = testCases;

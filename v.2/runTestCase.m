@@ -41,7 +41,11 @@ function output = runTestCase(functionHandle, testCase, inputs, varargin)
     end
 
     % initialize output
-    output = struct('variables', [], 'files', [], 'plots', struct([]), 'errors', []);
+    output = struct('variables', [],...
+                    'files'    , [],...
+                    'plots'    , struct([]),...
+                    'errors'   , [],...
+                    'isTimeout', false);
 
     functionInputs = cell(1, length(testCase.inputVariables));
     for ndxInput = 1:length(testCase.inputVariables)
@@ -77,10 +81,8 @@ function output = runTestCase(functionHandle, testCase, inputs, varargin)
 
             % if timeout was exceeded, f_ndx will be empty
             if isempty(f_ndx)
-                % TODO: account for students whose test cases timeout
-                disp('TIMEOUT');
-                messages = getMessages();
-                error(messages.errors.timeout);
+                output.isTimeout = true;
+                return;
             end
         catch ME
             output.errors = ME;
