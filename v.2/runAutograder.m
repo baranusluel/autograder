@@ -103,7 +103,7 @@ function [] = runAutograder(varargin)
             addpath(autograderFolderPath);
 
             % throw error if the destination folder is not empty
-            if exist(destinationFolderPath, 'dir') && isFolderEmpty(destinationFolderPath)
+            if ~exist(destinationFolderPath, 'dir') || ~isFolderEmpty(destinationFolderPath)
                 error('The destination folder must be empty');
             end
 
