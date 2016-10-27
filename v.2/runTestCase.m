@@ -69,7 +69,6 @@ function output = runTestCase(functionHandle, testCase, inputs, varargin)
         % add overridenFunctions to the MATLAB path before grading
         addpath(overridenFunctionsFolderPath);
         try
-
             % create parallel function eval job
             f = parfeval(gcp(), functionHandle, length(testCase.outputVariables), functionInputs{:});
 
@@ -81,8 +80,10 @@ function output = runTestCase(functionHandle, testCase, inputs, varargin)
 
             % if timeout was exceeded, f_ndx will be empty
             if isempty(f_ndx)
-                output.isTimeout = true;
-                return;
+%                 output.isTimeout = true;
+%                 return;
+                messages = getMessages();
+                error(messages.errors.infiniteLoop);
             end
         catch ME
             output.errors = ME;
@@ -95,7 +96,7 @@ function output = runTestCase(functionHandle, testCase, inputs, varargin)
 
     newDirectoryContents = getDirectoryContents(pwd, false, true);
 
-    [~, outputFiles] = setdiff({newDirectoryContents.name}, {directoryContents.name});
+    outputFiles = setdiff({newDirectoryContents.name}, {directoryContents.name});
 
     % get possible img format extensions
     possibleImageExtensions = imformats;
@@ -103,27 +104,30 @@ function output = runTestCase(functionHandle, testCase, inputs, varargin)
 
     % get files
     for ndxOutputFile = 1:length(outputFiles)
-        outputFile = outputFiles(ndxOutputFile);
-        [~, ~, extension] = fileparts(outputFile.name);
+        outputFile = outputFiles{ndxOutputFile};
+        [~, ~, extension] = fileparts(outputFile);
         extension         = strtok(extension,'.');
 
         output.files(ndxOutputFile).fileType = extension;
-        output.files(ndxOutputFile).name = outputFile.name;
+        output.files(ndxOutputFile).name = outputFile;
 
         switch extension
             case {'xls','xlsx'}
-                [~, ~, raw] =  xlsread(outputFile.name);
+                [~, ~, raw] =  xlsread(outputFile);
                 output.files(ndxOutputFile).value = raw;
             case possibleImageExtensions
-                img = imread(outputFile.name);
+                img = imread(outputFile);
                 output.files(ndxOutputFile).value = img;
             case {'txt', 'm'}
-                fh = fopen(outputFile.name, 'r');
+                fh = fopen(outputFile, 'r');
                 file = '';
-                line = fgets(fh);
+                line = fgetl(fh);
                 while ischar(line)
                     file = [file, line]; %#ok
-                    line = fgets(fh);
+                    line = fgetl(fh);
+                    if ischar(line)
+                        file = [file, sprintf('\n')]; %#ok
+                    end
                 end
                 fclose(fh);
                 output.files(ndxOutputFile).value = file;

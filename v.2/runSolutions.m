@@ -42,6 +42,13 @@ function rubric = runSolutions(rubric)
         % create banned functions
         problem.bannedFunctionsFolderPath = overrideBannedFunctions(fullfile(rubric.folderPaths.rubric, 'bannedFunctions'), problem.bannedFunctions, ndxProblem, problem.name);
 
+        % copy files from the supporting files folder to the solution folder for the current problem
+        for ndxSupportingFile = 1:length(problem.supportingFiles)
+            copyfile(fullfile(rubric.addpath.supportingFiles,...
+                              problem.supportingFiles{ndxSupportingFile}),...
+                     rubric.folderPaths.solutions);
+        end
+
         % run each test case
         testCases = struct([]);
         for ndxTestCase = 1:length(problem.testCases)

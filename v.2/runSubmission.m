@@ -31,9 +31,6 @@ function student = runSubmission(rubric, student)
         movefile(p_file.name, temp_folder_path);
     end
 
-    % copy files from the supporting files folder to the student folder
-    % - I don't think we actually need to do this since we added the supporting files folder to the MATLAB path, but leaving this comment here just so we know to confirm or deny this statement the next time a hw is graded
-
     student.timeout.isTimeout = false;
     problems = struct([]);
     for ndxProblem = 1:length(rubric.problems)
@@ -47,6 +44,13 @@ function student = runSubmission(rubric, student)
 
             % implement banned functions
             addpath(problem.bannedFunctionsFolderPath);
+
+            % copy files from the supporting files folder to the student folder for the current problem
+            for ndxSupportingFile = 1:length(problem.supportingFiles)
+                copyfile(fullfile(rubric.addpath.supportingFiles,...
+                                  problem.supportingFiles{ndxSupportingFile}),...
+                         student.folderPaths.submissionAttachments);
+            end
 
             % run each test case
             testCases = struct([]);
@@ -62,15 +66,15 @@ function student = runSubmission(rubric, student)
 
                 testCases(ndxTestCase).output = runTestCase(functionHandle, testCase, problem.inputs, false, timeout, rubric.addpath.overridenFunctionsFolderPath);
 
-                % handle timeout
-                if testCases(ndxTestCase).output.isTimeout
-                    if ~any(strcmp(fieldnames(student), 'problems'))
-                        student.timeout.problems = struct([]);
-                        student.timeout.problems(length(rubric.problems)).testCaseIndices = [];
-                    end
-                    student.timeout.isTimeout = true;
-                    student.timeout.problems(ndxProblem).testCaseIndices(end+1) = ndxTestCase;
-                end
+%                 % handle timeout
+%                 if testCases(ndxTestCase).output.isTimeout
+%                     if ~any(strcmp(fieldnames(student), 'problems'))
+%                         student.timeout.problems = struct([]);
+%                         student.timeout.problems(length(rubric.problems)).testCaseIndices = [];
+%                     end
+%                     student.timeout.isTimeout = true;
+%                     student.timeout.problems(ndxProblem).testCaseIndices(end+1) = ndxTestCase;
+%                 end
             end
 
             problems(ndxProblem).testCases = testCases;

@@ -28,19 +28,19 @@ function gradebook = gradeStudentSubmissions(gradebook, rubric)
         end
 
         student = runSubmission(rubric, student);
-        % handle timeout
-        if student.timeout.isTimeout
-            gradebook.timeout.isTimeout = true;
-            gradebook.timeout.studentIndices(end+1) = ndxStudent;
-            fields = setdiff(fieldnames(students), fieldnames(student));
-            for ndxField = 1:length(fields)
-                field = fields{ndxField};
-                student.(field) = [];
-            end
-        else
+%         % handle timeout
+%         if student.timeout.isTimeout
+%             gradebook.timeout.isTimeout = true;
+%             gradebook.timeout.studentIndices(end+1) = ndxStudent;
+%             fields = setdiff(fieldnames(students), fieldnames(student));
+%             for ndxField = 1:length(fields)
+%                 field = fields{ndxField};
+%                 student.(field) = [];
+%             end
+%         else
             student = gradeSubmission(rubric, student);
             student = getFeedback(rubric, student, gradebook.folderPaths.homework);
-        end
+%         end
 
         students(ndxStudent) = student;
     end
