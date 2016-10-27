@@ -21,7 +21,14 @@ function folderPath = unzipFile(zipFilePath, destinationFolderPath)
     temporaryFilePath = tempname;
 
     % unzip
-    unzip(zipFilePath, temporaryFilePath);
+    if ispc
+        system(['7z x ' zipFilePath ' -o' temporaryFilePath]);
+%         file = dir;
+%         [~, loc] = max([file.datenum]);
+%         movefile(file(loc).name, temportaryFilePath);
+    else
+        unzip(zipFilePath, temporaryFilePath);
+    end
 
     % get folders
     directoryContents  = getDirectoryContents(temporaryFilePath, true, false);
