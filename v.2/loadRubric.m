@@ -28,6 +28,13 @@ function rubric = loadRubric(rubricJSONFilePath)
         rubric.problems(ndxProblem).matFile         = problem.matFiles;
         rubric.problems(ndxProblem).bannedFunctions = problem.banned;
 
+        % check if supFiles is class char (i.e. there is only one test case)
+        if ischar(problem.supFiles)
+            problem.supFiles = {problem.supFiles};
+        end
+
+        rubric.problems(ndxProblem).supportingFiles = problem.supFiles;
+
         % check if testcases is class char (i.e. there is only one test case)
         if ischar(problem.tests)
             problem.tests = {problem.tests};

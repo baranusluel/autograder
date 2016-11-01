@@ -75,10 +75,15 @@ function student = gradeSubmission(rubric, student)
                     % go through output files
                     for ndxFile = 1:length(testCase.output.files)
 
-                        filesMask = strcmp(testCase.output.files(ndxFile).name, {student.problems(ndxProblem).testCases(ndxTestCase).output.files(:).name});
+                        ndx = ndxFile + length(testCase.output.variables);
+                        
+                        if ~isempty(student.problems(ndxProblem).testCases(ndxTestCase).output.files)
+                            filesMask = strcmp(testCase.output.files(ndxFile).name, {student.problems(ndxProblem).testCases(ndxTestCase).output.files(:).name}); 
+                        else
+                            filesMask = false;
+                        end
+                        
                         if any(filesMask)
-                            ndx = ndxFile + length(testCase.output.variables);
-
                             % run compare function to generate if the output is equal and
                             % message corresponding to it
                             [isEqual, message] = compare(student.problems(ndxProblem).testCases(ndxTestCase).output.files(filesMask).value, testCase.output.files(ndxFile).value, isFile);

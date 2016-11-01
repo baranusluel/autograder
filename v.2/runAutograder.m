@@ -122,7 +122,16 @@ function [] = runAutograder(varargin)
             disp('Grading student submissions...');
             gradebook = gradeStudentSubmissions(gradebook, rubric);
 
-            % write grades.csv
+%             % handle timeout
+%             if gradebook.timeout.isTimeout
+%                 disp('Sad bois... Found students with timeouts...');
+%                 dbstop in handleStudentTimeouts at 1;
+%                 gradebook = handleStudentTimeouts(gradebook, rubric);
+%             else
+%                 disp('Good news! There were no timeouts!')
+%             end
+
+           % write grades.csv
             disp('Writing grades to grades.csv...');
             writeGradesCsv(gradebook);
 

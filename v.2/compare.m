@@ -23,12 +23,12 @@ function [isEqual,message] = compare(studentAnswer,solutionAnswer,isFile)
     messages = getMessages();
 
     if isFile
-        
+
         [isEqual,message] = compareValue(studentAnswer,solutionAnswer,messages);
 
         if false == isEqual
 
-            message = messages.compare.fileMismatch;
+            message = messages.compare.fileIncorrect;
 
         end
 
@@ -37,7 +37,7 @@ function [isEqual,message] = compare(studentAnswer,solutionAnswer,isFile)
         [isEqual,message] = compareClass(studentAnswer,solutionAnswer,messages);
 
         if isEqual
-            
+
             if ischar(solutionAnswer)
 
                 [isEqual,message] = compareValue(studentAnswer,solutionAnswer,messages);
@@ -47,18 +47,18 @@ function [isEqual,message] = compare(studentAnswer,solutionAnswer,isFile)
                 [isEqual,message] = compareDimensions(studentAnswer,solutionAnswer,messages);
 
                 if isEqual
-                    
+
                     if isnumeric(solutionAnswer)
 
                         [isEqual,message] = compareNumeric(studentAnswer,solutionAnswer,messages);
-                        
+
                     else
                         [isEqual,message] = compareValue(studentAnswer,solutionAnswer,messages);
-                        
+
                     end
 
                 end
-                
+
             end
 
         end
@@ -82,7 +82,7 @@ function [isEqual,message] = compareDimensions(studentAnswer,solutionAnswer,mess
 
     isEqual = (isempty(solutionAnswer) && isempty(studentAnswer)) || isequal(size(studentAnswer),size(solutionAnswer));
     message = '';
-    
+
     if false == isEqual
         message = messages.compare.dimensionMismatch;
     end
@@ -97,23 +97,23 @@ function [isEqual,message] = compareValue(studentAnswer,solutionAnswer,messages)
     if false == isEqual
         message = messages.compare.valueIncorrect;
     end
-    
+
 end
 
 function [isEqual,message] = compareNumeric(studentAnswer,solutionAnswer,messages)
 
     % check if student answer is within +/- 0.01 of the solution answer
     isEqual = all(abs(studentAnswer(:) - solutionAnswer(:)) < 0.01);
-    
+
     % check if student answer is correct if there are NaN values. Using ||
     % because NaN values would cause the above conditional to return false
     % since NaNs always propagate (i.e. NaN == NaN -> false)
     isEqual = isEqual || isequaln(studentAnswer,solutionAnswer);
-    
+
     message = '';
 
     if false == isEqual
         message = messages.compare.valueIncorrect;
     end
-    
+
 end
