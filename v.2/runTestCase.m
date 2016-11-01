@@ -83,6 +83,8 @@ function output = runTestCase(functionHandle, testCase, inputs, varargin)
 %                 output.isTimeout = true;
 %                 return;
                 messages = getMessages();
+                poolobj = gcp('nocreate');
+                delete(poolobj);
                 error(messages.errors.infiniteLoop);
             end
         catch ME
