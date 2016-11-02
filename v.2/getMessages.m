@@ -18,6 +18,7 @@ function messages = getMessages()
     messages.compare.fileIncorrect     = 'FILE INCORRECT';
     
     messages.errors.timeout            = 'TIMEOUT';
+    messages.errors.infiniteLoop       = 'INFINITE LOOP';
 
     messages.files.outputFileNotFound  = 'OUTPUT FILE NOT FOUND';
 

@@ -18,6 +18,8 @@
 %       Runs, grades, and generates feedback for each student
 function gradebook = gradeStudentSubmissions(gradebook, rubric)
 
+    gradebook.timeout = struct('isTimeout', false,...
+                               'studentIndices' , []);
     for ndxStudent = length(gradebook.students):-1:1
         student = gradebook.students(length(gradebook.students) - ndxStudent + 1);
 
@@ -26,8 +28,19 @@ function gradebook = gradeStudentSubmissions(gradebook, rubric)
         end
 
         student = runSubmission(rubric, student);
-        student = gradeSubmission(rubric, student);
-        student = getFeedback(rubric, student, gradebook.folderPaths.homework);
+%         % handle timeout
+%         if student.timeout.isTimeout
+%             gradebook.timeout.isTimeout = true;
+%             gradebook.timeout.studentIndices(end+1) = ndxStudent;
+%             fields = setdiff(fieldnames(students), fieldnames(student));
+%             for ndxField = 1:length(fields)
+%                 field = fields{ndxField};
+%                 student.(field) = [];
+%             end
+%         else
+            student = gradeSubmission(rubric, student);
+            student = getFeedback(rubric, student, gradebook.folderPaths.homework);
+%         end
 
         students(ndxStudent) = student;
     end

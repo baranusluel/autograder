@@ -70,6 +70,50 @@ function student = getProblemFeedback(problem, student, problemNumber)
                         student.feedback = sprintf('%s</table>', student.feedback);
                     end
                 end
+
+                % if there are output files
+                if ~isempty(testCase.output.files)
+                    
+                    studentFiles = student.problems(problemNumber).testCases(ndxTestCase).output.files;
+                    studentMessages = student.problems(problemNumber).testCases(ndxTestCase).output.messages;
+                    
+                    for ndxFile = 1:length(testCase.output.files)
+                        file = testCase.output.files(ndxFile);
+                        
+                        ndx = ndxFile + length(testCase.outputVariables);
+                        
+                        pointsReceived = student.problems(problemNumber).testCases(ndxTestCase).pointsPerOutput(ndx);
+                        pointsOutOf = testCase.pointsPerOutput(ndx);
+
+                        % if student has output files with the given name
+                        if ~isempty(studentFiles) && any(strcmp({studentFiles.name},file.name))
+                            
+                            message = studentMessages{ndx};
+                            
+                            if pointsReceived == pointsOutOf
+                                %concatenate variable
+                                student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: PASS (%.2f points) %s</p><br/>', student.feedback, file.name, pointsReceived, settings.images.GRN_CHECK);
+                            else
+                                %concatenate filename
+                                student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - %s %s</p><br/>', student.feedback, file.name, message, settings.images.RED_CROSS);
+
+                                % open table
+                                student.feedback = sprintf('%s<table style="padding-left:20px;table-layout:fixed;width:100%%">', student.feedback);
+
+                                % concatenate function file value
+                                student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Function Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(studentFiles(strcmp({studentFiles.name},file.name)).value));
+
+                                % concatenate solution file value
+                                student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Solution Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(file.value));
+
+                                % close table
+                                student.feedback = sprintf('%s</table>', student.feedback);
+                            end
+                        else
+                            student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - FILE DOES NOT EXIST %s</p><br/>', student.feedback, file.name, settings.images.RED_CROSS);
+                        end
+                    end
+                end
             end
 
             %concatenate test case score
