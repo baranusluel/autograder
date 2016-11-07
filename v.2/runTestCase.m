@@ -22,11 +22,13 @@
 %       output (struct)
 %           - a struct containing the output variables, output files, and
 %           any errors that may have occurred
+%       testCasesTimedOut (cell)
+%           - a cell array containing the test cases on which 
 %
 %   Description:
 %       Runs the test case and returns the output variables, files, and
 %       errors
-function output = runTestCase(functionHandle, testCase, inputs, varargin)
+function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
 
     if ~isempty(varargin)
         isSolution = varargin{1};

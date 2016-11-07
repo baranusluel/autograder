@@ -8,6 +8,8 @@
 %       rubric (struct)
 %           - structure representing the rubric and contains details
 %           regarding the problems and test cases
+%       timeout log handle (double)
+%           - text file handle for printing to timeout log
 %
 %   Output(s):
 %       gradebook (struct)
@@ -16,7 +18,7 @@
 %
 %   Description:
 %       Runs, grades, and generates feedback for each student
-function gradebook = gradeStudentSubmissions(gradebook, rubric)
+function gradebook = gradeStudentSubmissions(gradebook, rubric, timeoutLogH)
 
     gradebook.timeout = struct('isTimeout', false,...
                                'studentIndices' , []);
@@ -27,7 +29,7 @@ function gradebook = gradeStudentSubmissions(gradebook, rubric)
             fprintf('\t%s, %s\n', student.lastName, student.firstName);
         end
 
-        student = runSubmission(rubric, student);
+        student = runSubmission(rubric, student, timeoutLogH);
 %         % handle timeout
 %         if student.timeout.isTimeout
 %             gradebook.timeout.isTimeout = true;

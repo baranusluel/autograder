@@ -29,8 +29,10 @@ function rubric = loadRubric(rubricJSONFilePath)
         rubric.problems(ndxProblem).bannedFunctions = problem.banned;
 
         % check if supFiles is class char (i.e. there is only one test case)
-        if ischar(problem.supFiles)
+        if isfield(problem, 'supFiles') && ischar(problem.supFiles)
             problem.supFiles = {problem.supFiles};
+        else 
+            problem.supfiles = {};
         end
 
         rubric.problems(ndxProblem).supportingFiles = problem.supFiles;

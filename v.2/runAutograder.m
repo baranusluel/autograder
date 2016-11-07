@@ -120,7 +120,10 @@ function [] = runAutograder(varargin)
 
             % grade student submissions
             disp('Grading student submissions...');
-            gradebook = gradeStudentSubmissions(gradebook, rubric);
+            timeoutLogH = fopen([destinationFolderPath filesep 'timeoutLog.txt'], 'wt');
+            fprintf(timeoutLogH, 'Student Function Timeouts:\n\n');
+            gradebook = gradeStudentSubmissions(gradebook, rubric, timeoutLogH);
+            fclose(timeoutLogH);
 
 %             % handle timeout
 %             if gradebook.timeout.isTimeout

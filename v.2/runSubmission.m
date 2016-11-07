@@ -8,6 +8,8 @@
 %           regarding the problems and test cases
 %       student (struct)
 %           - structure representing a student
+%       timeout log handle (double)
+%           - text file handle for printing to timeout log
 %
 %   Output:
 %       student (struct)
@@ -16,7 +18,7 @@
 %
 %   Description:
 %       Runs a student's submission
-function student = runSubmission(rubric, student)
+function student = runSubmission(rubric, student, timeoutLogH)
     settings = getSettings();
 
     currentDirectory = pwd;
@@ -33,6 +35,7 @@ function student = runSubmission(rubric, student)
 
     student.timeout.isTimeout = false;
     problems = struct([]);
+    studentTimeoutMatrix = [];
     for ndxProblem = 1:length(rubric.problems)
         problem = rubric.problems(ndxProblem);
 
@@ -54,7 +57,7 @@ function student = runSubmission(rubric, student)
 
             % run each test case
             testCases = struct([]);
-
+            timeoutTestCaseInds = [];
             for ndxTestCase = 1:length(problem.testCases)
                 testCase = problem.testCases(ndxTestCase);
                 % set timeout
@@ -65,7 +68,10 @@ function student = runSubmission(rubric, student)
                 end
 
                 testCases(ndxTestCase).output = runTestCase(functionHandle, testCase, problem.inputs, false, timeout, rubric.addpath.overridenFunctionsFolderPath);
-
+                %if test case timed out
+                if ~isempty(testCases(ndxTestCase).output.errors) && (strcmpi(testCases(ndxTestCase).output.errors.message, 'INFINITE LOOP'))
+                    timeoutTestCaseInds = [timeoutTestCaseInds ndxTestCase];
+                end
 %                 % handle timeout
 %                 if testCases(ndxTestCase).output.isTimeout
 %                     if ~any(strcmp(fieldnames(student), 'problems'))
@@ -76,12 +82,38 @@ function student = runSubmission(rubric, student)
 %                     student.timeout.problems(ndxProblem).testCaseIndices(end+1) = ndxTestCase;
 %                 end
             end
-
+            
+            if ~isempty(timeoutTestCaseInds)
+               %rows are problem #, cols are test case #
+               for testCaseInd = timeoutTestCaseInds
+                   studentTimeoutMatrix(ndxProblem, testCaseInd) = true;
+               end
+            end
+                
             problems(ndxProblem).testCases = testCases;
 
             rmpath(problem.bannedFunctionsFolderPath);
         end
     end
+    
+    %log timed out test cases into file -> timeoutLogH
+    if any(studentTimeoutMatrix)
+        [r c] = size(studentTimeoutMatrix);
+        fprintf(timeoutLogH, ['\n' student.displayID '\n']);
+        for i = 1:r
+            [timedOutTestCases] = find(studentTimeoutMatrix(i,:));
+            if ~isempty(timedOutTestCases)
+                fprintf(timeoutLogH, '\t%s test cases: %d', rubric.problems(ndxProblem).name, timedOutTestCases(1));
+                timedOutTestCases(1) = [];
+                for caseInd = timedOutTestCases
+                    fprintf(timeoutLogH, ' ,%d', caseInd);
+                end
+                fprintf(timeoutLogH,'\n');
+            end
+        end
+    end
+                    
+        
 
     % move _soln.p files from temp folder back to the student folder
     p_files = getDirectoryContents(fullfile(temp_folder_path, '*_soln.p'), false, true);
