@@ -49,6 +49,6 @@ function rubric = getRubric(rubricZipFilePath, destinationFolderPath, isResubmis
     rubric.folderPaths.solutions = fullfile(rubricFolderPath, settings.folderNames.SOLUTIONS);
     rubric = runSolutions(rubric);
 
-    % get overrideenFunctions folder path
+    % get overridenFunctions folder path
     rubric.addpath.overridenFunctionsFolderPath = fullfile(pwd, 'overridenFunctions');
 end
