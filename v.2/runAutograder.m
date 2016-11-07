@@ -102,13 +102,15 @@ function [] = runAutograder(varargin)
             autograderFolderPath = fileparts(mfilename('fullpath'));
             addpath(autograderFolderPath);
 
-            % throw error if the destination folder is not empty
-            if ~exist(destinationFolderPath, 'dir') || ~isFolderEmpty(destinationFolderPath)
-                error('The destination folder must be empty');
+            % create destination folder if it doesn't exist
+            if ~exist(destinationFolderPath, 'dir')
+                mkdir(destinationFolderPath);
+            else
+                % throw error if the destination folder is not empty
+                if ~isFolderEmpty(destinationFolderPath)
+                    error('The destination folder must be empty');
+                end
             end
-
-            % create destination folder
-            mkdir(destinationFolderPath);
 
             % get gradebook
             disp('Getting gradebook...');
