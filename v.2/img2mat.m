@@ -15,8 +15,8 @@
 function filename_mat = img2mat(filename_img)
 
     img = imread(filename_img); %#ok
-    [~, filename_mat, extension] = fileparts(filename_img);
-    filename_mat = [filename_mat '_' extension(2:end) '.mat'];
+    [filepath, filename_mat, extension] = fileparts(filename_img);
+    filename_mat = fullfile(filepath, [filename_mat '_' extension(2:end) '.mat']);
     save(filename_mat, 'img');
 
 end
