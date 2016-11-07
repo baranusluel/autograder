@@ -90,7 +90,7 @@ function output = runTestCase(functionHandle, testCase, inputs, varargin)
         catch ME
             output.errors = ME;
         end
-        % remove overridentFunctions folder from MATLAB path
+        % remove overridenFunctions folder from MATLAB path
         rmpath(overridenFunctionsFolderPath);
     end
 

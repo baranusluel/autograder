@@ -22,7 +22,8 @@ function folderPath = unzipFile(zipFilePath, destinationFolderPath)
 
     % unzip
     if ispc
-        system(['7z x ' zipFilePath ' -o' temporaryFilePath]);
+        [result, msg] = system(['7z x "' zipFilePath '" -o"' temporaryFilePath '"']);
+        
 %         file = dir;
 %         [~, loc] = max([file.datenum]);
 %         movefile(file(loc).name, temportaryFilePath);
