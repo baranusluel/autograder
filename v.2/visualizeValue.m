@@ -113,7 +113,10 @@ function formattedValue = visualizeValue(value)
         % since MATLAB actually does a great job of visualizing a
         % structure, we're just going to evaluate (disp(stc)) and save the
         % results!
-        cellReps = cellfun(@(stc)(evalc('disp(stc);'))', stcValue, 'uni', false);
+        cellReps = cellfun(@(stc)(evalc('disp(stc);')), stcValue, 'uni', false);
+        cellReturns = strfind(cellReps, char(10), 'ForceCellOutput', true);
+        cellReturns = cellfun(@(vec)(vec(end:-1:1)), cellReturns, 'uni', false);
+        cellReps = cellfun(@(str, inds)(return2break(str, inds))', cellReps, cellReturns, 'uni', false);
         % find the last useful size.
         vecSize = size(value);
         % make a cell array to hold all of the correct indices:
@@ -146,6 +149,7 @@ function formattedValue = visualizeValue(value)
         strVal = strVal(1:end-1);
         % add our beginning string and return the output:
         formattedValue = [strStart '<br>' strVal];
+        inds = strfind(formattedValue, '\n');
     end
 end
 
@@ -176,4 +180,10 @@ function formattedValue = format2DLogicalArray(value, r, c)
         formattedValue(end) = ';';
     end
     formattedValue(end) = ']';
+end
+
+function strIn = return2break(strIn, inds)
+    for ind = inds
+        strIn = [strIn(1:ind-1) '<br>' strIn(ind+1:end)];
+    end
 end
