@@ -104,9 +104,9 @@ function formattedValue = visualizeValue(value)
         else
             strTemp = 'elements';
         end
-        strStart = sprintf('Structure of size [%s] (%d %s):\nFields:', num2str(size(value)), numel(value), strTemp);
-        strFields = strjoin(fieldnames(value), char(10));
-        strStart = [strStart char(10) strFields char(10)];
+        strStart = sprintf('Structure of size [%s] (%d %s):<br>Fields:', num2str(size(value)), numel(value), strTemp);
+        strFields = strjoin(fieldnames(value), '<br>');
+        strStart = [strStart '<br>' strFields '<br>'];
         % prep for a cellfun:
         stcValue = value(:);
         stcValue = num2cell(stcValue);
@@ -138,14 +138,14 @@ function formattedValue = visualizeValue(value)
         cellInds = cellfun(@(d1)(strjoin(d1, ', ')), cellInds, 'uni', false);
         % create our string. Concatenate the index of the current structure
         % with the display of the structure.
-        strVal = cellfun(@(strInd, str2)(['struct(' strInd '):' char(10) str2']), cellInds', cellReps, 'uni', false);
+        strVal = cellfun(@(strInd, str2)(['struct(' strInd '):' '<br>' str2']), cellInds', cellReps, 'uni', false);
         % join everything together. Since the returns are already there we
         % don't need to join with a carriage return!
         strVal = strjoin(strVal, '');
         % get rid of the last extra returns:
         strVal = strVal(1:end-1);
         % add our beginning string and return the output:
-        formattedValue = [strStart char(10) strVal];
+        formattedValue = [strStart '<br>' strVal];
     end
 end
 
