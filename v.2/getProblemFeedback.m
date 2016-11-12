@@ -101,21 +101,21 @@ function student = getProblemFeedback(problem, student, problemNumber)
                                 % "Difference". 
                                 
                                     % We find the visdiff:
-                                % strHTML = visdiff(file.name, studentFiles(strcmp({studentFiles.name},file.name)).name);
+                                strHTML = visdiff(file.name, studentFiles(strcmp({studentFiles.name},file.name)).name);
                                     % then, instead of 'concatenate
                                     % function file value', we do this:
-                                % student.feedback = sprintf('%s<tr><td></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, strHTML);
+                                student.feedback = sprintf('%s<tr><td></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, strHTML);
                                 %concatenate filename
                                 student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - %s %s</p><br/>', student.feedback, file.name, message, settings.images.RED_CROSS);
 
                                 % open table
                                 student.feedback = sprintf('%s<table style="padding-left:20px;table-layout:fixed;width:100%%">', student.feedback);
-
+                                student.feedback = sprintf('%s<tr><td></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, strHTML);
                                 % concatenate function file value
-                                student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Function Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(studentFiles(strcmp({studentFiles.name},file.name)).value));
+                                %student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Function Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(studentFiles(strcmp({studentFiles.name},file.name)).value));
 
                                 % concatenate solution file value
-                                student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Solution Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(file.value));
+                                %student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Solution Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(file.value));
 
                                 % close table
                                 student.feedback = sprintf('%s</table>', student.feedback);
