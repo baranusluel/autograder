@@ -124,6 +124,9 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
                 output.files(ndxOutputFile).value = img;
             case {'txt', 'm'}
                 fh = fopen(outputFile, 'r');
+                % I think this could potentially be MUCH more efficient:
+                % file = textscan(fh, '%s', 'Delimiter', '\n');
+                % file = strjoin(file{1}', '\n');
                 file = '';
                 line = fgetl(fh);
                 while ischar(line)

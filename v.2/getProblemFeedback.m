@@ -94,6 +94,17 @@ function student = getProblemFeedback(problem, student, problemNumber)
                                 %concatenate variable
                                 student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: PASS (%.2f points) %s</p><br/>', student.feedback, file.name, pointsReceived, settings.images.GRN_CHECK);
                             else
+                                % This is my rendition of having a visual
+                                % comparison of the text files. It simply
+                                % utilizes MATLAB's visdiff() function and
+                                % puts the html in as the field
+                                % "Difference". 
+                                
+                                    % We find the visdiff:
+                                % strHTML = visdiff(file.name, studentFiles(strcmp({studentFiles.name},file.name)).name);
+                                    % then, instead of 'concatenate
+                                    % function file value', we do this:
+                                % student.feedback = sprintf('%s<tr><td></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, strHTML);
                                 %concatenate filename
                                 student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - %s %s</p><br/>', student.feedback, file.name, message, settings.images.RED_CROSS);
 
