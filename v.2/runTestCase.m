@@ -142,16 +142,19 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
     % get plots
     plots = get(figureHandle, 'Children');
     for ndxPlot = 1:length(plots)
-        output.plots(ndxPlot).properties.XData   = get(get(plots(ndxPlot),'Children'),'XData');
-        output.plots(ndxPlot).properties.YData   = get(get(plots(ndxPlot),'Children'),'YData');
-        output.plots(ndxPlot).properties.ZData   = get(get(plots(ndxPlot),'Children'),'ZData');
-        output.plots(ndxPlot).properties.XLabels = get(get(plots(ndxPlot),'XLabel'), 'String');
-        output.plots(ndxPlot).properties.YLabels = get(get(plots(ndxPlot),'YLabel'), 'String');
-        output.plots(ndxPlot).properties.ZLabels = get(get(plots(ndxPlot),'ZLabel'), 'String');
-        output.plots(ndxPlot).properties.Colors  = get(get(plots(ndxPlot),'Children'),'Color');
-        output.plots(ndxPlot).properties.Marker  = get(get(plots(ndxPlot),'Children'),'Marker');
-        output.plots(ndxPlot).properties.Title   = get(get(plots(ndxPlot),'Title'),'String');
-
+        try
+            output.plots(ndxPlot).properties.XData   = get(get(plots(ndxPlot),'Children'),'XData');
+            output.plots(ndxPlot).properties.YData   = get(get(plots(ndxPlot),'Children'),'YData');
+            output.plots(ndxPlot).properties.ZData   = get(get(plots(ndxPlot),'Children'),'ZData');
+            output.plots(ndxPlot).properties.XLabels = get(get(plots(ndxPlot),'XLabel'), 'String');
+            output.plots(ndxPlot).properties.YLabels = get(get(plots(ndxPlot),'YLabel'), 'String');
+            output.plots(ndxPlot).properties.ZLabels = get(get(plots(ndxPlot),'ZLabel'), 'String');
+            output.plots(ndxPlot).properties.Colors  = get(get(plots(ndxPlot),'Children'),'Color');
+            output.plots(ndxPlot).properties.Marker  = get(get(plots(ndxPlot),'Children'),'Marker');
+            output.plots(ndxPlot).properties.Title   = get(get(plots(ndxPlot),'Title'),'String');
+        catch
+            fprintf('This student''s plot was unable to be checked via getting X, Y, Z data.\n');
+        end
         output.plots(ndxPlot).image = base64img(figureHandle);
     end
     close(figureHandle);
