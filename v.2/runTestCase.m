@@ -127,6 +127,9 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
                 % file = textscan(fh, '%s', 'Delimiter', '\n');
                 % file = strjoin(file{1}', '\n');
                 fh = fopen(outputFile, 'r');
+                % I think this could potentially be MUCH more efficient:
+                % file = textscan(fh, '%s', 'Delimiter', '\n');
+                % file = strjoin(file{1}', '\n');
                 file = '';
                 line = fgetl(fh);
                 while ischar(line)
