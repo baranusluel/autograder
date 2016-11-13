@@ -123,6 +123,9 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
                 img = imread(outputFile);
                 output.files(ndxOutputFile).value = img;
             case {'txt', 'm'}
+                % I think this could potentially be MUCH more efficient:
+                % file = textscan(fh, '%s', 'Delimiter', '\n');
+                % file = strjoin(file{1}', '\n');
                 fh = fopen(outputFile, 'r');
                 file = '';
                 line = fgetl(fh);
@@ -152,10 +155,11 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
             output.plots(ndxPlot).properties.Colors  = get(get(plots(ndxPlot),'Children'),'Color');
             output.plots(ndxPlot).properties.Marker  = get(get(plots(ndxPlot),'Children'),'Marker');
             output.plots(ndxPlot).properties.Title   = get(get(plots(ndxPlot),'Title'),'String');
-        catch
-            fprintf('This student''s plot was unable to be checked via getting X, Y, Z data.\n');
+            
+        catch ME %#ok<NASGU>
         end
         output.plots(ndxPlot).image = base64img(figureHandle);
     end
+        
     close(figureHandle);
 end

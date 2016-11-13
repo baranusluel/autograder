@@ -120,7 +120,10 @@ function student = gradeSubmission(rubric, student)
                                 end
                             end
                         else
-                            student.problems(ndxProblem).testCases(ndxTestCase).output.messages{ndx} = messages.plots.plotNotFound;
+                            % I think it's supposed to be ndxPlot, not ndx?
+                            % that is, messages{ndxPlot} instead of
+                            % messages{ndx}, since ndx has no meaning here.
+                            student.problems(ndxProblem).testCases(ndxTestCase).output.messages{ndxPlot} = messages.plots.plotNotFound;
                         end
 
                     end
