@@ -95,77 +95,94 @@ function student = getProblemFeedback(problem, student, problemNumber)
                                 student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: PASS (%.2f points) %s</p><br/>', student.feedback, file.name, pointsReceived, settings.images.GRN_CHECK);
                             else
                                 % get the value of the student and soln files:
-                                strStudent = studentFiles(strcmp({studentFiles.name},file.name)).value;
-                                strSoln = file.value;
-                                % open new files to write (temp files):
-                                fstStudent = tempname;
-                                fstSoln = tempname;
-                                fidStudent = fopen(fstStudent, 'w');
-                                fidSoln = fopen(fstSoln, 'w');
-                                % write the files:
-                                fwrite(fidStudent, strStudent, 'char');
-                                fwrite(fidSoln, strSoln, 'char');
-                                % close the files:
-                                fclose(fidStudent);
-                                fclose(fidSoln);
-                                % get the HTML from visdiff:
-                                strHTML = visdiff(fstSoln, fstStudent);
-                                % delete the temp files:
-                                delete(fstStudent);
-                                delete(fstSoln);
-                                % we'll need to delete/modify some of the
-                                % information in the HTML:
-                                    % 1. the full path of the file (just the name should suffice)
-                                    % 2. remove all href tags.
-                                    % 3. remove the title.
-                                    % 4. remove the "toolstrip" msg.
-                                    % 5. (possibly) fix the grammar.
-                                % thus, we need to:
-                                    % loop through the lines, and do a
-                                    % regexp for the href tag.
-                                    % loop through the lines, and do a
-                                    % regexp for the soln and student file
-                                    % names.
-                                % get the lines:
-                                % remove the title:
-                                strHTML = regexprep(strHTML, '<title>{1}?.*?</title>{1}?', '');
-                                % pattern for an href tag:
-                                strPatHref = '\s*?href="javascript.*?;"';
-                                % pattern for a student:
-                                [~, strName, ~] = fileparts(fstStudent);
-                                strPatStud = ['(?<=>{1}?)[^<]*?' strName '{1}?.*?(?=<{1}?)'];
-                                % pattern for the solution:
-                                [~, strName, ~] = fileparts(fstSoln);
-                                strPatSoln = ['(?<=>{1}?)[^<]*?' strName '{1}?.*?(?=<{1}?)'];
-                                % check for href:
-                                strHTML = regexprep(strHTML, strPatHref, '');
-                                % check for the student:
-                                strHTML = regexprep(strHTML, strPatStud, 'Student File');
-                                % check for the solution:
-                                strHTML = regexprep(strHTML, strPatSoln, 'Solution File');
-                                % get the indices for the # differences:
-                                [cellNum, intStart, intEnd] = regexp(strHTML, '(\d*?) differences found\.\s*?Use the toolstrip buttons to navigate to them\.', 'tokens');
-                                intDiff = str2double(cellNum{1}{1});
-                                if intDiff == 1
-                                    strHTML = [strHTML(1:(intStart - 1)) '1 difference was found.' strHTML((intEnd + 1):end)];
-                                else
-                                    strHTML = [strHTML(1:(intStart - 1)) num2str(intDiff) ' differences were found.' strHTML((intEnd + 1):end)];
+                                switch file.fileType
+                                    case {'txt'}
+                                        strStudent = studentFiles(strcmp({studentFiles.name},file.name)).value;
+                                        strSoln = file.value;
+                                        % open new files to write (temp files):
+                                        fstStudent = tempname;
+                                        fstSoln = tempname;
+                                        fidStudent = fopen(fstStudent, 'w');
+                                        fidSoln = fopen(fstSoln, 'w');
+                                        % write the files:
+                                        fwrite(fidStudent, strStudent, 'char');
+                                        fwrite(fidSoln, strSoln, 'char');
+                                        % close the files:
+                                        fclose(fidStudent);
+                                        fclose(fidSoln);
+                                        % get the HTML from visdiff:
+                                        strHTML = visdiff(fstSoln, fstStudent);
+                                        % delete the temp files:
+                                        delete(fstStudent);
+                                        delete(fstSoln);
+                                        % we'll need to delete/modify some of the
+                                        % information in the HTML:
+                                            % 1. the full path of the file (just the name should suffice)
+                                            % 2. remove all href tags.
+                                            % 3. remove the title.
+                                            % 4. remove the "toolstrip" msg.
+                                            % 5. (possibly) fix the grammar.
+                                        % thus, we need to:
+                                            % loop through the lines, and do a
+                                            % regexp for the href tag.
+                                            % loop through the lines, and do a
+                                            % regexp for the soln and student file
+                                            % names.
+                                        % get the lines:
+                                        % remove the title:
+                                        strHTML = regexprep(strHTML, '<title>{1}?.*?</title>{1}?', '');
+                                        % pattern for an href tag:
+                                        strPatHref = '\s*?href="javascript.*?;"';
+                                        % pattern for a student:
+                                        [~, strName, ~] = fileparts(fstStudent);
+                                        strPatStud = ['(?<=>{1}?)[^<]*?' strName '{1}?.*?(?=<{1}?)'];
+                                        % pattern for the solution:
+                                        [~, strName, ~] = fileparts(fstSoln);
+                                        strPatSoln = ['(?<=>{1}?)[^<]*?' strName '{1}?.*?(?=<{1}?)'];
+                                        % check for href:
+                                        strHTML = regexprep(strHTML, strPatHref, '');
+                                        % check for the student:
+                                        strHTML = regexprep(strHTML, strPatStud, 'Student File');
+                                        % check for the solution:
+                                        strHTML = regexprep(strHTML, strPatSoln, 'Solution File');
+                                        % get the indices for the # differences:
+                                        [cellNum, intStart, intEnd] = regexp(strHTML, '(\d*?) differences found\.\s*?Use the toolstrip buttons to navigate to them\.', 'tokens');
+                                        intDiff = str2double(cellNum{1}{1});
+                                        if intDiff == 1
+                                            strHTML = [strHTML(1:(intStart - 1)) '1 difference was found.' strHTML((intEnd + 1):end)];
+                                        else
+                                            strHTML = [strHTML(1:(intStart - 1)) num2str(intDiff) ' differences were found.' strHTML((intEnd + 1):end)];
+                                        end
+                                        % concatenate filename
+                                        student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - %s %s</p><br/>', student.feedback, file.name, message, settings.images.RED_CROSS);
+
+                                        % open table
+                                        student.feedback = sprintf('%s<table style="padding-left:20px;table-layout:fixed;width:100%%">', student.feedback);
+                                        % add the visdiff output:
+                                        student.feedback = sprintf('%s<tr><td style="padding-left:10px;word-wrap:break-word">%s</td><td></td></tr>', student.feedback, strHTML);
+                                        % concatenate function file value
+                                        %student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Function Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(studentFiles(strcmp({studentFiles.name},file.name)).value));
+
+                                        % concatenate solution file value
+                                        %student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Solution Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(file.value));
+
+                                        % close table
+                                        student.feedback = sprintf('%s</table>', student.feedback);
+                                    otherwise
+                                        % concatenate filename
+                                        student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - %s %s</p><br/>', student.feedback, file.name, message, settings.images.RED_CROSS);
+
+                                        % open table
+                                        student.feedback = sprintf('%s<table style="padding-left:20px;table-layout:fixed;width:100%%">', student.feedback);
+                                        % concatenate function file value
+                                        student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Function Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(studentFiles(strcmp({studentFiles.name},file.name)).value));
+
+                                        % concatenate solution file value
+                                        student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Solution Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(file.value));
+
+                                        % close table
+                                        student.feedback = sprintf('%s</table>', student.feedback);
                                 end
-                                % concatenate filename
-                                student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - %s %s</p><br/>', student.feedback, file.name, message, settings.images.RED_CROSS);
-
-                                % open table
-                                student.feedback = sprintf('%s<table style="padding-left:20px;table-layout:fixed;width:100%%">', student.feedback);
-                                % add the visdiff output:
-                                student.feedback = sprintf('%s<tr><td style="padding-left:10px;word-wrap:break-word">%s</td><td></td></tr>', student.feedback, strHTML);
-                                % concatenate function file value
-                                %student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Function Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(studentFiles(strcmp({studentFiles.name},file.name)).value));
-
-                                % concatenate solution file value
-                                %student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Solution Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(file.value));
-
-                                % close table
-                                student.feedback = sprintf('%s</table>', student.feedback);
                             end
                         else
                             student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - FILE DOES NOT EXIST %s</p><br/>', student.feedback, file.name, settings.images.RED_CROSS);
