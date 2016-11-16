@@ -149,7 +149,6 @@ function formattedValue = visualizeValue(value)
         strVal = strVal(1:end-1);
         % add our beginning string and return the output:
         formattedValue = [strStart '<br>' strVal];
-        inds = strfind(formattedValue, '\n');
     end
 end
 

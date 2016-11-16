@@ -22,7 +22,7 @@ function directoryContents = getDirectoryContents(folderPath, keepFolders, keepF
     directoryContents = dir(folderPath);
 
     % remove hidden folders (starts with '.')
-    directoryContents(cellfun(@(x) x(1) == '.', {directoryContents.name})) = [];
+    directoryContents(cellfun(@(x)(x(1) == '.' || x(1) == '$'), {directoryContents.name})) = [];
 
     folders = [];
     if keepFolders

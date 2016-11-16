@@ -13,7 +13,7 @@
 %           - cell array containing the output variables
 %       variableInitialization (char)
 %           - part of the string before the function call
-%       numberOfOutputs (char)
+%       numberOfOutputs (double)
 %           - number of outputs for the function call
 %
 %   Description:
