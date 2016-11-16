@@ -36,12 +36,12 @@ function student = runSubmission(rubric, student, timeoutLogH)
     student.timeout.isTimeout = false;
     problems = struct([]);
     % I think you could do this:
-    % cellProbs = {rubric.problems};
-    % vecS = cellfun(@(st)(numel(st.testCases)), cellProbs, 'uni', false);
-    % studentTimeoutMatrix = false(length(rubric.problems), max(vecS));
+    cellProbs = {rubric.problems};
+    vecS = cellfun(@(st)(numel(st.testCases)), cellProbs, 'uni', true);
+    studentTimeoutMatrix = false(length(rubric.problems), max(vecS));
     % That way, the studentTimeoutMatrix is pre-allocated - this should
     % speed up the autograder!
-    studentTimeoutMatrix = [];
+    % studentTimeoutMatrix = [];
     for ndxProblem = 1:length(rubric.problems)
         problem = rubric.problems(ndxProblem);
 
@@ -63,7 +63,7 @@ function student = runSubmission(rubric, student, timeoutLogH)
 
             % run each test case
             testCases = struct([]);
-            timeoutTestCaseInds = [];
+            timeoutTestCaseInds = zeros(1, length(problem.testCases));
             for ndxTestCase = 1:length(problem.testCases)
                 testCase = problem.testCases(ndxTestCase);
                 % set timeout
@@ -76,7 +76,8 @@ function student = runSubmission(rubric, student, timeoutLogH)
                 testCases(ndxTestCase).output = runTestCase(functionHandle, testCase, problem.inputs, false, timeout, rubric.addpath.overridenFunctionsFolderPath);
                 %if test case timed out
                 if ~isempty(testCases(ndxTestCase).output.errors) && (strcmpi(testCases(ndxTestCase).output.errors.message, 'INFINITE LOOP'))
-                    timeoutTestCaseInds = [timeoutTestCaseInds ndxTestCase];
+%                    timeoutTestCaseInds = [timeoutTestCaseInds ndxTestCase];
+                    timeoutTestCaseInds(ndxTestCase) = ndxTestCase;
                 end
 %                 % handle timeout
 %                 if testCases(ndxTestCase).output.isTimeout
@@ -91,12 +92,13 @@ function student = runSubmission(rubric, student, timeoutLogH)
             
             % the isempty call is unnecessary; if timeoutTestCaseInds is
             % empty, the for loop won't run!
-            if ~isempty(timeoutTestCaseInds)
+%            if ~isempty(timeoutTestCaseInds)
                %rows are problem #, cols are test case #
+               timeoutTestCaseInds = timeoutTestCaseInds(timeoutTestCaseInds ~= 0);
                for testCaseInd = timeoutTestCaseInds
                    studentTimeoutMatrix(ndxProblem, testCaseInd) = true;
                end
-            end
+%            end
                 
             problems(ndxProblem).testCases = testCases;
 
@@ -111,11 +113,13 @@ function student = runSubmission(rubric, student, timeoutLogH)
         for i = 1:r
             [timedOutTestCases] = find(studentTimeoutMatrix(i,:));
             if ~isempty(timedOutTestCases)
-                fprintf(timeoutLogH, '\t%s test cases: %d', rubric.problems(ndxProblem).name, timedOutTestCases(1));
-                timedOutTestCases(1) = [];
-                for caseInd = timedOutTestCases
-                    fprintf(timeoutLogH, ' ,%d', caseInd);
-                end
+                fprintf(timeoutLogH, '\t%s test cases: %s', rubric.problems(ndxProblem).name, ...
+                    strjoin(arrayfun(@num2str, timedOutTestCases, 'uni', false), ', '));
+                % This is widely inefficient!
+%                timedOutTestCases(1) = [];
+%                 for caseInd = timedOutTestCases
+%                     fprintf(timeoutLogH, ' ,%d', caseInd);
+%                 end
                 fprintf(timeoutLogH,'\n');
             end
         end
