@@ -96,7 +96,7 @@ function student = getProblemFeedback(problem, student, problemNumber)
                             else
                                 % get the value of the student and soln files:
                                 switch file.fileType
-                                    case {'txt'}
+                                    case {'txt', '.m'}
                                         strStudent = studentFiles(strcmp({studentFiles.name},file.name)).value;
                                         strSoln = file.value;
                                         % open new files to write (temp files):
