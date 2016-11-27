@@ -32,14 +32,20 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
 
     if ~isempty(varargin)
         isSolution = varargin{1};
+    else
+        isSolution = false;
     end
 
     if nargin > 4
         timeout = varargin{2};
+    else
+        timeout = 30;
     end
 
     if nargin == 6
         overridenFunctionsFolderPath = varargin{3};
+    else
+        overridenFunctionsFolderPath = '';
     end
 
     % initialize output
