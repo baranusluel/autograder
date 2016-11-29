@@ -18,12 +18,18 @@
 function folderPath = unzipFile(zipFilePath, destinationFolderPath)
 
     % unzip
+    if nargin == 1
+        destinationFolderPath = pwd;
+    end
     if ispc
         % get folders
         oldDirectoryContents  = getDirectoryContents(destinationFolderPath, true, false);
         
         [result, msg] = system(['7z x "' zipFilePath '" -o"' destinationFolderPath '"']);
-        
+        if result ~= 0
+            error(struct('message', sprintf('7-Zip failed to convert. Here''s the message: %s', msg), ...
+                'identifier', 'MATLAB:UnzipFile:SystemCall'));
+        end
         % get folders
         newDirectoryContents  = getDirectoryContents(destinationFolderPath, true, false);
 
@@ -57,7 +63,7 @@ function folderPath = unzipFile(zipFilePath, destinationFolderPath)
         movefile(fullfile(temporaryFilePath, folder), destinationFolderPath);
 
         % clean up
-        rmdir(temporaryFilePath,'s');
+        rmdir(temporaryFilePath, 's');
     end
 
 end

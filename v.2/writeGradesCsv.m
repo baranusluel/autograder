@@ -23,8 +23,8 @@ function writeGradesCsv(gradebook,varargin)
         gradesCsv = varargin{1};
     end
     
-    if false == isempty(gradebook)
-        gradesCsv(4:end,5) = cellfun(@(x) sprintf('%.1f', x), {gradebook.students.grade}, 'UniformOutput', false);
+    if ~isempty(gradebook)
+        gradesCsv(4:end,5) = cellfun(@(x)(sprintf('%.1f', x)), {gradebook.students.grade}, 'uni', false);
     end
     
     filename = gradebook.filePaths.gradesCsv;
