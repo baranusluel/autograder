@@ -1,0 +1,22 @@
+Function Name: uploadFile.m
+
+Inputs: 
+       File
+Outputs: None
+Specific Uses: runAutograder.m, uploadFilesToServer.m, uploadStudentFilesToServer.m
+Description: Uploads file to cs1371.gatech.edu server
+Use Cases:
+     uploadFile('h') or uploadFile('help')
+     - Prints help information
+
+   	 uploadFile('v') or uploadFile('version')
+     - Prints the file version
+
+     paths = uploadFile('p') or paths = uploadFile('paths')
+     - Returns the structure of the remote root paths
+
+     uploadFile(local_file_path, remote_file_path)
+     - Uploads the local file to the remote path. If the remote path does not contain a file name, then the name of the local file will be used
+
+     uploadFile(local_file_path, remote_file_path, channel, sftp_client)
+     - Uploads the local file to the remote path using the input channel and sftp_client. If the remote path does not contain a file name, then the name of the local file will be used

@@ -1,0 +1,7 @@
+Function Name: getFeedback.m
+Inputs: rubric - a structure representing the rubric (See this object's documentation)
+        student - a structure representing a student (See this object's documentation)
+        homeworkFolderPath - a string representing the path to the student's submission folder and grades.csv
+Outputs: student - a structure representing that student.
+Specific Uses: gradeStudentSubmissions.m
+Description: Given the rubric, the structure of the student's answers, and the folder path for their files, getFeedback will return the html representation of their feedback, creating the skeleton of the HTML to be given as feedback.html.

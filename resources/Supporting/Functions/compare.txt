@@ -1,0 +1,9 @@
+Function Name: compare.m
+Inputs: studentAnswer - a variable data type that represents the student's answer
+        solutionAnswer - a variable data that represents the solution answer.
+        isFile - a logical that is true when files are being compared.
+Outputs: isEqual - a logical of whether the answers are equal or not.
+         message - a string representing a message about the comparison.e
+Specific Uses:  comparePlots.m
+                gradeSubmission.m
+Description: compare will take in arguments of variable data types; one can think of compare as an overloaded form of isequal() - it will give a true or false; if it's true, the answers are the same; if it's false, the answers are different. This does not say by HOW MUCH the arguments differ; only that they differ.

@@ -1,0 +1,6 @@
+Function Name: getMessages.m
+Inputs: folderPath - a string representing the path for the folder to check.
+Outputs: isEmpty - a logical representing whether that folder was empty or not.
+Specific Uses:  convertSupportingFiles.m
+                runAutograder.m
+Description: This checks to see if the given file path is empty or not. Currently, it throws an error if the file path isn't a folder; this is considered a bug, not a feature, and will be fixed in the future.

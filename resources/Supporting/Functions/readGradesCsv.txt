@@ -1,0 +1,6 @@
+Function Name: readGradesCsv.m
+Inputs: gradesCsvFilePath - a string that represents the grades.csv file path.
+Outputs: gradebookTemplate - a cell array representation of the grades.csv
+Specific Uses:  getGradebook.m
+                writeGradesCsv.m
+Description: This returns the grades.csv, as a cell array. First the headers, a row of blanks, and the rest of the data. The cell array is the same size as the actual gradebook in terms of rows of data.

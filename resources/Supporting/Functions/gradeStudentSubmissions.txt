@@ -1,0 +1,7 @@
+Function Name: gradeStudentSubmissions.m
+Inputs: gradebook - a structure representing the gradebook (see this object's documentation)
+        rubric - a structure representing the rubric (see this object's documentation)
+        timeoutLogH - a file handle representing the file used to keep track of timeouts.
+Outputs: gradebook - a structure representing the updated gradebook.
+Specific Uses: runAutograder.m
+Description: Given the gradebook and the rubric, gradeStudentSubmissions will, using runTestCase, run, grade, and give feedback for that particular student in the gradebook. It returns the completely updated gradebook and is the starting and ending points for the student object.

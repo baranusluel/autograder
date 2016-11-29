@@ -1,0 +1,10 @@
+Function Name: runTestCase.m
+Inputs: functionHandle - a function handle to use with the inputs.
+        testCase - a structure containing all the information about the test case
+        inputs - a structure containing the actual input arguments
+        isSolution* - a logical that represents if this test case is for a solution answer or not.
+        timeout* - a double that represents how long to run the test case (a timeout value), in seconds.
+Outputs: output - a structure containing the output information.
+Specific Uses:  runSolutions.m
+                runSubmission.m
+Description: runTestCase.m runs a specific test case, and returns all the necessary information about the test case. This is where the actual "work" happens in the autograder - this is where the test case is actually RUN and captured. The output will contain output variables, files, plots, and errors, with corresponding fields. Note that if you want to give a timeout, but not a solution value, you can simply say that isSolution is false or empty vector ([]).

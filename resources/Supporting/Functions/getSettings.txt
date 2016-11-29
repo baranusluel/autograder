@@ -1,0 +1,7 @@
+Function Name: getSettings.m
+Inputs: 
+       None
+Outputs: settings (struct) - a struct containing the settings for the autograder
+Specific Uses: getGradebook.m, getRubric.m, getFeedback.m, getProblemFeedback.m, runSubmission.m  
+Dependencies: None
+Description: General autograder information (especially hardcoded filenames) stored as a function that can be called by other functions for catered autograder use. Important: You can change the timeout settings here

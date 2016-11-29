@@ -1,0 +1,6 @@
+Function Name: base64img.m
+Inputs: fig* - a figure handle representing the figure to save as an image
+        dpi* - a double representing the dots per inch (resolution) to use.
+Outputs: base64string - a string representing the image
+Specific Uses: runTestCase.m
+Description: Given a figure handle, base64img will use the Apache Picture Codec to compress the image. This is a lossy conversion, so downsampling does happen. The resulting string is somewhat like a hash; while larger images will necessitate larger strings, a small difference in the string can mean a large difference in the picture, and a small difference in the picture can mean a large difference in strings. If no arguments are given, the gcf (getCurrentFigure) command is used to get the figure; if the dpi is not given, a default value of 75 is used.

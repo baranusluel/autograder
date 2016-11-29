@@ -1,0 +1,5 @@
+Function Name: xls2mat.m
+Inputs: filename_xls - a string representing the filepath of an excel document.
+Outputs: filename_mat - a string representing the output filepath of the mat file
+Specific Uses:  convertSupportingFiles.m
+Description: This converts an Excel workboook (.xls, .xlsx) into a .mat file for loading later.

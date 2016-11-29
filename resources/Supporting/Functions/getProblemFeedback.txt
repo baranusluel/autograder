@@ -1,0 +1,7 @@
+Function: getProblemFeedback.m
+Inputs: problem - A structure representing a specific homework problem; see the documentation for this object.
+        student - A structure representing the student; see the documentation for this object.
+        problemNumber - a double representing what problem we are on.
+Outputs: student - A structure representing the student, updated with feedback for the specified problem.
+Specific Uses: getFeedback.m
+Description: Given a problem and a student's results, as well as the problem number, getProblemFeedback will return the student structure updated with an HTML representation of the breakdown for that specific problem. This HTML is used by getFeedback to create the feedback.html for that student. It uses MATLAB's visDiff for text and Excel file comparison.

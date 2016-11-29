@@ -1,0 +1,7 @@
+Function Name: getMessages.m
+Inputs:
+Outputs: messages - a structure with all the default error messages.
+Specific Uses:  compare.m
+                gradeSubmission.m
+                runTestCase.m
+Description: This returns the default error message to use if a student causes the specified error. It is a convenience method; instead of changing the class mismatch error everywhere you use it, just change it here.
