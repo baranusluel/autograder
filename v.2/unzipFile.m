@@ -17,35 +17,53 @@
 %       the resulting folder
 function folderPath = unzipFile(zipFilePath, destinationFolderPath)
 
-    % get system temporary directoryContents
-    temporaryFilePath = tempname;
-
     % unzip
-    if ispc
-        [result, msg] = system(['7z x "' zipFilePath '" -o"' temporaryFilePath '"']);
-        
-%         file = dir;
-%         [~, loc] = max([file.datenum]);
-%         movefile(file(loc).name, temportaryFilePath);
-    else
-        unzip(zipFilePath, temporaryFilePath);
+    if nargin == 1
+        destinationFolderPath = pwd;
     end
+    if ispc
+        % get folders
+        oldDirectoryContents  = getDirectoryContents(destinationFolderPath, true, false);
+        
+        [result, msg] = system(['7z x "' zipFilePath '" -o"' destinationFolderPath '"']);
+        if result ~= 0
+            error(struct('message', sprintf('7-Zip failed to convert. Here''s the message: %s', msg), ...
+                'identifier', 'MATLAB:UnzipFile:SystemCall'));
+        end
+        % get folders
+        newDirectoryContents  = getDirectoryContents(destinationFolderPath, true, false);
 
-    % get folders
-    directoryContents  = getDirectoryContents(temporaryFilePath, true, false);
+        % get name of unzipped folder
+        folder = setdiff({newDirectoryContents.name}, {oldDirectoryContents.name});
 
-    % get index of last modified folder (unzipped folder)
-    [~, ndx] = max([directoryContents.datenum]);
+        % setdiff returns a cell so extract string in cell
+        folder = folder{1};
+        
+        % get folder path in destination folder
+        folderPath = fullfile(destinationFolderPath, folder);
+    else
+        % get system temporary directoryContents
+        temporaryFilePath = tempname;
 
-    % get last modified folder name
-    folder = directoryContents(ndx).name;
-    % get folder path in destination folder
-    folderPath = fullfile(destinationFolderPath, folder);
+        unzip(zipFilePath, temporaryFilePath);
+        
+        % get folders
+        directoryContents  = getDirectoryContents(temporaryFilePath, true, false);
 
-    % move unzipped folder from the temporary path to the destination folder
-    movefile(fullfile(temporaryFilePath, folder), destinationFolderPath);
+        % get index of last modified folder (unzipped folder)
+        [~, ndx] = max([directoryContents.datenum]);
 
-    % clean up
-    rmdir(temporaryFilePath,'s');
+        % get last modified folder name
+        folder = directoryContents(ndx).name;
+        
+        % get folder path in destination folder
+        folderPath = fullfile(destinationFolderPath, folder);
+
+        % move unzipped folder from the temporary path to the destination folder
+        movefile(fullfile(temporaryFilePath, folder), destinationFolderPath);
+
+        % clean up
+        rmdir(temporaryFilePath, 's');
+    end
 
 end

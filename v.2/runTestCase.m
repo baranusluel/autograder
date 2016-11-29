@@ -22,7 +22,7 @@
 %       output (struct)
 %           - a struct containing the output variables, output files, and
 %           any errors that may have occurred
-%       testCasesTimedOut (cell)
+%       testCasesTimedOut (cell) - CURRENTLY NOT SUPPORTED
 %           - a cell array containing the test cases on which 
 %
 %   Description:
@@ -30,16 +30,22 @@
 %       errors
 function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
 
-    if ~isempty(varargin)
+    if nargin > 3
         isSolution = varargin{1};
+    else
+        isSolution = false;
     end
 
     if nargin > 4
         timeout = varargin{2};
+    else
+        timeout = 30;
     end
 
     if nargin > 5
         overridenFunctionsFolderPath = varargin{3};
+    else
+        overridenFunctionsFolderPath = '';
     end
 
     % initialize output

@@ -94,6 +94,11 @@ function formattedValue = visualizeValue(value)
             end
             formattedValue(end) = '}';
         end
+        % I think this will work better. I created a function, cell2txt,
+        % which more accurately shows the cell array AND can be used with
+        % visdiff!
+        % formattedValue = cell2txt(value);
+        % formattedValue = 
     elseif isstruct(value)
         % basically, for each of the structures in the possible array, get
         % the MATLAB display of it (Because it is already displayed by
@@ -128,7 +133,8 @@ function formattedValue = visualizeValue(value)
         % create our formatted indices
         %   first, we reorganize our cell array of indices such that we
         %   numel(value) on the OUTSIDE, and numel(vecSize) on the INSIDE!
-        cellInds = cellfun(@(r)(cellfun(@(ind)(cellInds{ind}(r)), num2cell(1:numel(vecSize)), 'uni', false)), num2cell(1:numel(value)), 'uni', false);
+        cellInds = cellfun(@(r)(cellfun(@(ind)(cellInds{ind}(r)), num2cell(1:numel(vecSize)), 'uni', false)), ...
+            num2cell(1:numel(value)), 'uni', false);
         %   Now, we need to get each element of cellInds (which is now of
         %   size 1 row, numel(value) columns) to hold all of its
         %   corresponding elements. Each inner cell array only holds a cell

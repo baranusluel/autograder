@@ -1,7 +1,9 @@
 function uploadHomeworkGeneratorFilesToServer(rubric, homeworkNumber, isResubmission)
     settings = getSettings();
     paths = uploadFile('p');
-
+    if nargin == 2
+        isResubmission = false;
+    end
     % upload student rubric files (_soln.p, .pdf)
     if ~isResubmission
         rubric_folder_path = fileparts(rubric.folderPaths.rubric);

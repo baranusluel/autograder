@@ -1,5 +1,3 @@
-% CALLED BY:
-%       runSolutions.m
 function inputVariables = getInputVariables(functionCall)
     inputVariables = {};
     openingParenthesisIndex = find(functionCall == '(');
