@@ -38,7 +38,7 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
         timeout = varargin{2};
     end
 
-    if nargin == 6
+    if nargin > 5
         overridenFunctionsFolderPath = varargin{3};
     end
 
@@ -59,6 +59,8 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
     close all;
     figure('Visible', 'Off');
 
+    % add overridenFunctions to the MATLAB path before grading
+    addpath(overridenFunctionsFolderPath);
     if isSolution
         % start timer
         tic
@@ -68,8 +70,6 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
         % set time elapsed
         output.timeElapsed = toc;
     else
-        % add overridenFunctions to the MATLAB path before grading
-        addpath(overridenFunctionsFolderPath);
         try
             % create parallel function eval job
             f = parfeval(gcp(), functionHandle, length(testCase.outputVariables), functionInputs{:});
@@ -92,9 +92,9 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
         catch ME
             output.errors = ME;
         end
-        % remove overridenFunctions folder from MATLAB path
-        rmpath(overridenFunctionsFolderPath);
     end
+    % remove overridenFunctions folder from MATLAB path
+    rmpath(overridenFunctionsFolderPath);
 
     figureHandle = gcf;
 

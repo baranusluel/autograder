@@ -26,6 +26,9 @@ function filename_mat = imwrite(img, filename_img,varargin)
 
     elseif nargin == 3
 
+        % get .mat filename
+        [filename_img, ~] = strtok(filename_img,'.');
+        
         % get file extension
         extension = lower(varargin{1});
 
@@ -47,7 +50,7 @@ function filename_mat = imwrite(img, filename_img,varargin)
     % get output .mat file name
     filename_mat = [filename_img '_' extension '.mat'];
 
-    save(filename_mat,img);
+    save(filename_mat,'img');
 
 end
 

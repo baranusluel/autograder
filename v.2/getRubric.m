@@ -45,10 +45,10 @@ function rubric = getRubric(rubricZipFilePath, destinationFolderPath, isResubmis
     % add supporting files to MATLAB path
     addpath(rubric.addpath.supportingFiles);
 
+    % get overridenFunctions folder path
+    rubric.addpath.overridenFunctionsFolderPath = fullfile(pwd, 'overridenFunctions');
+
     % get solution output
     rubric.folderPaths.solutions = fullfile(rubricFolderPath, settings.folderNames.SOLUTIONS);
     rubric = runSolutions(rubric);
-
-    % get overridenFunctions folder path
-    rubric.addpath.overridenFunctionsFolderPath = fullfile(pwd, 'overridenFunctions');
 end

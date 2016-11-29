@@ -55,11 +55,7 @@ function student = runSubmission(rubric, student, timeoutLogH)
             addpath(problem.bannedFunctionsFolderPath);
 
             % copy files from the supporting files folder to the student folder for the current problem
-            for ndxSupportingFile = 1:length(problem.supportingFiles)
-                copyfile(fullfile(rubric.addpath.supportingFiles,...
-                                  problem.supportingFiles{ndxSupportingFile}),...
-                         student.folderPaths.submissionAttachments);
-            end
+            copyFilesFromSupportingFilesFolder(rubric.addpath.supportingFiles, problem.supportingFiles, student.folderPaths.submissionAttachments);
 
             % run each test case
             testCases = struct([]);

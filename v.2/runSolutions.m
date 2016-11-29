@@ -43,18 +43,14 @@ function rubric = runSolutions(rubric)
         problem.bannedFunctionsFolderPath = overrideBannedFunctions(fullfile(rubric.folderPaths.rubric, 'bannedFunctions'), problem.bannedFunctions, ndxProblem, problem.name);
 
         % copy files from the supporting files folder to the solution folder for the current problem
-        for ndxSupportingFile = 1:length(problem.supportingFiles)
-            copyfile(fullfile(rubric.addpath.supportingFiles,...
-                              problem.supportingFiles{ndxSupportingFile}),...
-                     rubric.folderPaths.solutions);
-        end
+        copyFilesFromSupportingFilesFolder(rubric.addpath.supportingFiles, problem.supportingFiles, rubric.folderPaths.solutions);
 
         % run each test case
         testCases = struct([]);
         for ndxTestCase = 1:length(problem.testCases)
             testCase = problem.testCases(ndxTestCase);
             [testCase.inputVariables, testCase.outputVariables] = parseTestCase(testCase.call);
-            testCase.output = runTestCase(functionHandle, testCase, problem.inputs, true);
+            testCase.output = runTestCase(functionHandle, testCase, problem.inputs, true, [], rubric.addpath.overridenFunctionsFolderPath);
 
             numberOfVariables = length(testCase.output.variables);
             numberOfFiles     = length(testCase.output.files);
