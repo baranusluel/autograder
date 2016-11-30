@@ -1,7 +1,34 @@
-function strTable = cell2txt(cellData)
-if isempty(cellData)
-    strTable = 'Empty Cell Array';
+function strTable = cell2txt(cellData, logLines)
+%CELL2TXT convert a cell array into a string representation.
+%
+%   T = cell2txt(C, L)
+%
+%   Given C, cell2txt will construct a character array that represents the
+%   cell array given in C. If C is not a cell array, it is assumed that you
+%   only want to show that data, and it is treated as a 1x1 cell array. The
+%   output string is stored in T.
+%
+%   If T is not requested, cell2txt will instead print the answer onto the
+%   command window.
+%
+%   If L is not present or present and false, the output will be an array,
+%   with returns represented as rows. If L is true, then the output is a
+%   1xN character array, with new lines represented by char(10).
+
+if nargin == 0
+    strTable = 'NO DATA FOUND';
     if nargout == 0
+        disp(strTable);
+        clear strTable;
+    end
+    return;
+elseif nargin == 1
+    logLines = false;
+end
+if isempty(cellData)
+    strTable = 'NO DATA FOUND';
+    if nargout == 0
+        disp(strTable)
         clear strTable
     end
     return;
@@ -22,6 +49,7 @@ vecWidths = max(w);
 cellArr = cell(size(cellData, 1), 1);
 for r = 1:size(cellData, 1)
     intH = vecHeights(r);
+    % strRow = zeros(intH, 0);
     strRow = zeros(intH, sum(vecWidths) + 1 + 2 * numel(vecWidths));
     cEnd = 0;
     for c = 1:size(cellData, 2)
@@ -32,16 +60,30 @@ for r = 1:size(cellData, 1)
         strData = strVSize(strData, intH);
         strData = strHSize(strData, intW);
         strData = strPad(strData, '|');
+        % strRow = [strRow strData];
         strRow(:, cStart:cEnd) = strData;
     end
+    % strPd = zeros(intH, 1);
+    % strPd(:) = '|';
+    % strRow = [strRow strPd];
     strRow(:, end) = '|';
+    % strPd = zeros(1, size(strRow, 2));
+    % strPd(:) = '-';
+    % strRow = [strRow; strPd];
+    % cellArr{r} = strRow;
     cellArr{r} = char([strRow; zeros(1, size(strRow, 2)) + 45]);
 end
 strTable = vertcat(cellArr{:});
 strPd = zeros(1, size(strTable, 2));
 strPd(:) = '-';
 strTable = [strPd; strTable];
+if logLines
+    strTable = num2cell(strTable);
+    strTable = arrayfun(@(r)(horzcat(strTable{r, :})), 1:size(strTable, 1), 'uni', false)';
+    strTable = strjoin(strTable, '\n');
+end
 if nargout == 0
+    disp(strTable)
     clear strTable
 end
 end
