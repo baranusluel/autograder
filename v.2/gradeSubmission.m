@@ -76,13 +76,13 @@ function student = gradeSubmission(rubric, student)
                     for ndxFile = 1:length(testCase.output.files)
 
                         ndx = ndxFile + length(testCase.output.variables);
-                        
+
                         if ~isempty(student.problems(ndxProblem).testCases(ndxTestCase).output.files)
-                            filesMask = strcmp(testCase.output.files(ndxFile).name, {student.problems(ndxProblem).testCases(ndxTestCase).output.files(:).name}); 
+                            filesMask = strcmp(testCase.output.files(ndxFile).name, {student.problems(ndxProblem).testCases(ndxTestCase).output.files(:).name});
                         else
                             filesMask = false;
                         end
-                        
+
                         if any(filesMask)
                             % run compare function to generate if the output is equal and
                             % message corresponding to it
@@ -107,6 +107,8 @@ function student = gradeSubmission(rubric, student)
                     % go through output plots
                     for ndxPlot = 1:length(testCase.output.plots)
 
+                        ndx = ndxPlot + length(testCase.output.variables) + length(testCase.output.files);
+
                         if length(student.problems(ndxProblem).testCases(ndxTestCase).output.plots) > ndxPlot
                             plotComparisonResult = comparePlots(student.problems(ndxProblem).testCases(ndxTestCase).output.plots(ndxPlot), testCase.output.plots(ndxPlot));
 
@@ -120,10 +122,7 @@ function student = gradeSubmission(rubric, student)
                                 end
                             end
                         else
-                            % I think it's supposed to be ndxPlot, not ndx?
-                            % that is, messages{ndxPlot} instead of
-                            % messages{ndx}, since ndx has no meaning here.
-                            student.problems(ndxProblem).testCases(ndxTestCase).output.messages{ndxPlot} = messages.plots.plotNotFound;
+                            student.problems(ndxProblem).testCases(ndxTestCase).output.messages{ndx} = messages.plots.plotNotFound;
                         end
 
                     end

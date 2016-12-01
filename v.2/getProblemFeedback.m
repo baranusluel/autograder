@@ -73,26 +73,41 @@ function student = getProblemFeedback(problem, student, problemNumber)
 
                 % if there are output files
                 if ~isempty(testCase.output.files)
-                    
+
                     studentFiles = student.problems(problemNumber).testCases(ndxTestCase).output.files;
                     studentMessages = student.problems(problemNumber).testCases(ndxTestCase).output.messages;
-                    
+
                     for ndxFile = 1:length(testCase.output.files)
                         file = testCase.output.files(ndxFile);
-                        
+
                         ndx = ndxFile + length(testCase.outputVariables);
-                        
+
                         pointsReceived = student.problems(problemNumber).testCases(ndxTestCase).pointsPerOutput(ndx);
                         pointsOutOf = testCase.pointsPerOutput(ndx);
 
+                        % deal with filename
+                        switch file.fileType
+                            case {'txt', '.m'}
+                                filename = file.name;
+                            otherwise
+                                % reverse filename and remove .mat
+                                [~, filename] = strtok(file.name(end:-1:1), '.');
+                                filename(1) = [];
+
+                                % get extension and filename
+                                [extension, filename] = strtok(filename, '_');
+
+                                % concatenate filename and extension and reverse
+                                filename = [filename(end:-1:2) '.' extension(end:-1:1)];
+                        end
+
                         % if student has output files with the given name
                         if ~isempty(studentFiles) && any(strcmp({studentFiles.name},file.name))
-                            
+
                             message = studentMessages{ndx};
-                            
+
                             if pointsReceived == pointsOutOf
-                                % concatenate variable
-                                student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: PASS (%.2f points) %s</p><br/>', student.feedback, file.name, pointsReceived, settings.images.GRN_CHECK);
+                                student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: PASS (%.2f points) %s</p><br/>', student.feedback, filename, pointsReceived, settings.images.GRN_CHECK);
                             else
                                 % get the value of the student and soln files:
                                 switch file.fileType
@@ -168,12 +183,15 @@ function student = getProblemFeedback(problem, student, problemNumber)
 
                                         % close table
                                         student.feedback = sprintf('%s</table>', student.feedback);
+
+                                    % presumably _<extension>.mat files
                                     otherwise
                                         % concatenate filename
-                                        student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - %s %s</p><br/>', student.feedback, file.name, message, settings.images.RED_CROSS);
+                                        student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - %s %s</p><br/>', student.feedback, filename, message, settings.images.RED_CROSS);
 
                                         % open table
                                         student.feedback = sprintf('%s<table style="padding-left:20px;table-layout:fixed;width:100%%">', student.feedback);
+
                                         % concatenate function file value
                                         student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Function Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(studentFiles(strcmp({studentFiles.name},file.name)).value));
 
@@ -185,7 +203,35 @@ function student = getProblemFeedback(problem, student, problemNumber)
                                 end
                             end
                         else
-                            student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - FILE DOES NOT EXIST %s</p><br/>', student.feedback, file.name, settings.images.RED_CROSS);
+                            student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - FILE DOES NOT EXIST %s</p><br/>', student.feedback, filename, settings.images.RED_CROSS);
+                        end
+                    end
+                end
+
+                % if there are output plots
+                if ~isempty(testCase.output.plots)
+                    studentPlots = student.problems(problemNumber).testCases(ndxTestCase).output.plots;
+                    studentMessages = student.problems(problemNumber).testCases(ndxTestCase).output.messages;
+
+                    for ndxPlot = 1:length(testCase.output.plots)
+                        plot = testCases.output.plots(ndxPlot);
+
+                        ndx = ndxPlot + length(testCase.outputVariables) + length(testCase.output.files);
+
+                        pointsReceived = student.problems(problemNumber).testCases(ndxTestCase).pointsPerOutput(ndx);
+                        pointsOutOf = testCase.pointsPerOutput(ndx);
+
+                        if ~isempty(studentPlots) && ndxPlot <= length(studentPlots)
+                            message = studentMessages{ndx};
+
+                            if pointsReceived == pointsOutOf
+                                % concatenate variable
+                                student.feedback = sprintf('%s<pre style="display:inline">Plot #%d</pre><p style="display:inline">: PASS (%.2f points) %s</p><br/>', student.feedback, ndxPlot, pointsReceived, settings.images.GRN_CHECK);
+                            else
+                                % if studentMessages{ndx} ==
+                                % visualize plots...
+                                student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - %s %s</p><br/>', student.feedback, outputVariable, message, settings.images.RED_CROSS);
+                            end
                         end
                     end
                 end

@@ -35,13 +35,10 @@ function student = runSubmission(rubric, student, timeoutLogH)
 
     student.timeout.isTimeout = false;
     problems = struct([]);
-    % I think you could do this:
-    cellProbs = {rubric.problems};
-    vecS = cellfun(@(st)(numel(st.testCases)), cellProbs, 'uni', true);
-    studentTimeoutMatrix = false(length(rubric.problems), max(vecS));
-    % That way, the studentTimeoutMatrix is pre-allocated - this should
-    % speed up the autograder!
-    % studentTimeoutMatrix = [];
+
+    % initialize studentTimeoutMatrix
+    studentTimeoutMatrix = false(length(rubric.problems), max(cellfun(@(st)(numel(st.testCases)), num2cell(rubric.problems), 'uni', true)));
+
     for ndxProblem = 1:length(rubric.problems)
         problem = rubric.problems(ndxProblem);
 
@@ -85,7 +82,7 @@ function student = runSubmission(rubric, student, timeoutLogH)
 %                     student.timeout.problems(ndxProblem).testCaseIndices(end+1) = ndxTestCase;
 %                 end
             end
-            
+
             % the isempty call is unnecessary; if timeoutTestCaseInds is
             % empty, the for loop won't run!
 %            if ~isempty(timeoutTestCaseInds)
@@ -95,13 +92,13 @@ function student = runSubmission(rubric, student, timeoutLogH)
                    studentTimeoutMatrix(ndxProblem, testCaseInd) = true;
                end
 %            end
-                
+
             problems(ndxProblem).testCases = testCases;
 
             rmpath(problem.bannedFunctionsFolderPath);
         end
     end
-    
+
     %log timed out test cases into file -> timeoutLogH
     if any(studentTimeoutMatrix)
         r = size(studentTimeoutMatrix, 1);
@@ -120,8 +117,8 @@ function student = runSubmission(rubric, student, timeoutLogH)
             end
         end
     end
-                    
-        
+
+
 
     % move _soln.p files from temp folder back to the student folder
     p_files = getDirectoryContents(fullfile(temp_folder_path, '*_soln.p'), false, true);

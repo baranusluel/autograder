@@ -19,27 +19,35 @@ function formattedValue = visualizeValue(value)
     r = dimensions{1};
     c = dimensions{2};
     if isnumeric(value)
-        % if empty
-        if isempty(value)
-            formattedValue = '[]';
-        % if scalar
-        elseif length(value) == 1
-            % if is integer
-            if floor(value) == value
-                formattedValue = sprintf('%d', value);
-            else
-                formattedValue = sprintf('%.4f', value);
-            end
-        % if vector or 2D array
-        elseif numberOfDimensions == 2
-            formattedValue = mat2str(value);
-        % if 3D array
+        if strcmp(class(value), 'uint8')
+            close all;
+            figure('Visible', 'Off');
+            imshow(value);
+            figureHandle = gcf;
+            formattedValue = sprintf('<img src="data:image/png;base64, %s" />', base64img(figureHandle));
         else
-            formattedValue = 'cat(3';
-            for ndx = 1:dimensions{3}
-                formattedValue = [formattedValue, ',', mat2str(value(:, :, ndx))]; %#ok
+            % if empty
+            if isempty(value)
+                formattedValue = '[]';
+            % if scalar
+            elseif length(value) == 1
+                % if is integer
+                if floor(value) == value
+                    formattedValue = sprintf('%d', value);
+                else
+                    formattedValue = sprintf('%.4f', value);
+                end
+            % if vector or 2D array
+            elseif numberOfDimensions == 2
+                formattedValue = mat2str(value);
+            % if 3D array
+            else
+                formattedValue = 'cat(3';
+                for ndx = 1:dimensions{3}
+                    formattedValue = [formattedValue, ',', mat2str(value(:, :, ndx))]; %#ok
+                end
+                formattedValue = [formattedValue, ')'];
             end
-            formattedValue = [formattedValue, ')'];
         end
     elseif ischar(value)
         % if empty
@@ -98,7 +106,7 @@ function formattedValue = visualizeValue(value)
         % which more accurately shows the cell array AND can be used with
         % visdiff!
         % formattedValue = cell2txt(value);
-        % formattedValue = 
+        % formattedValue =
     elseif isstruct(value)
         % basically, for each of the structures in the possible array, get
         % the MATLAB display of it (Because it is already displayed by
@@ -155,6 +163,8 @@ function formattedValue = visualizeValue(value)
         strVal = strVal(1:end-1);
         % add our beginning string and return the output:
         formattedValue = [strStart '<br>' strVal];
+    else
+        formattedValue = evalc('disp(value)');
     end
 end
 

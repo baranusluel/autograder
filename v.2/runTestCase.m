@@ -23,7 +23,7 @@
 %           - a struct containing the output variables, output files, and
 %           any errors that may have occurred
 %       testCasesTimedOut (cell) - CURRENTLY NOT SUPPORTED
-%           - a cell array containing the test cases on which 
+%           - a cell array containing the test cases on which
 %
 %   Description:
 %       Runs the test case and returns the output variables, files, and
@@ -99,6 +99,7 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
             output.errors = ME;
         end
     end
+
     % remove overridenFunctions folder from MATLAB path
     rmpath(overridenFunctionsFolderPath);
 
@@ -110,7 +111,7 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
 
     % get possible img format extensions
     possibleImageExtensions = imformats;
-    possibleImageExtensions = [possibleImageExtensions.ext];
+    possibleImageExtensions = cellfun(@(x) ['_' x '.mat'], [possibleImageExtensions.ext], 'uni', false);
 
     % get files
     for ndxOutputFile = 1:length(outputFiles)
@@ -121,32 +122,31 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
         output.files(ndxOutputFile).fileType = extension;
         output.files(ndxOutputFile).name = outputFile;
 
-        switch extension
-            case {'xls','xlsx'}
-                [~, ~, raw] =  xlsread(outputFile);
-                output.files(ndxOutputFile).value = raw;
-            case possibleImageExtensions
-                img = imread(outputFile);
-                output.files(ndxOutputFile).value = img;
-            case {'txt', 'm'}
-                % I think this could potentially be MUCH more efficient:
-                % file = textscan(fh, '%s', 'Delimiter', '\n');
-                % file = strjoin(file{1}', '\n');
-                fh = fopen(outputFile, 'r');
-                % I think this could potentially be MUCH more efficient:
-                % file = textscan(fh, '%s', 'Delimiter', '\n');
-                % file = strjoin(file{1}', '\n');
-                file = '';
+        if any(cellfun(@(x) ~isempty(strfind(outputFile, x)), {'_xls.mat', '_xlsx.mat'}, 'uni', true))
+            load(outputFile);
+            output.files(ndxOutputFile).value = raw;
+        elseif any(cellfun(@(x) ~isempty(strfind(outputFile, x)), possibleImageExtensions, 'uni', true))
+            load(outputFile);
+            output.files(ndxOutputFile).value = img;
+        elseif any(cellfun(@(x) ~isempty(strfind(extension, x)), {'txt', 'm'}, 'uni', true))
+            % I think this could potentially be MUCH more efficient:
+            % file = textscan(fh, '%s', 'Delimiter', '\n');
+            % file = strjoin(file{1}', '\n');
+            fh = fopen(outputFile, 'r');
+            % I think this could potentially be MUCH more efficient:
+            % file = textscan(fh, '%s', 'Delimiter', '\n');
+            % file = strjoin(file{1}', '\n');
+            file = '';
+            line = fgetl(fh);
+            while ischar(line)
+                file = [file, line]; %#ok
                 line = fgetl(fh);
-                while ischar(line)
-                    file = [file, line]; %#ok
-                    line = fgetl(fh);
-                    if ischar(line)
-                        file = [file, sprintf('\n')]; %#ok
-                    end
+                if ischar(line)
+                    file = [file, sprintf('\n')]; %#ok
                 end
-                fclose(fh);
-                output.files(ndxOutputFile).value = file;
+            end
+            fclose(fh);
+            output.files(ndxOutputFile).value = file;
         end
 
     end
@@ -164,11 +164,10 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
             output.plots(ndxPlot).properties.Colors  = get(get(plots(ndxPlot),'Children'),'Color');
             output.plots(ndxPlot).properties.Marker  = get(get(plots(ndxPlot),'Children'),'Marker');
             output.plots(ndxPlot).properties.Title   = get(get(plots(ndxPlot),'Title'),'String');
-            
         catch ME %#ok<NASGU>
         end
         output.plots(ndxPlot).image = base64img(figureHandle);
     end
-        
+
     close(figureHandle);
 end
