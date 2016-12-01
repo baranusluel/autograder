@@ -32,7 +32,7 @@ function rubric = loadRubric(rubricJSONFilePath)
         if isfield(problem, 'supFiles') && ischar(problem.supFiles)
             problem.supFiles = {problem.supFiles};
         else 
-            problem.supfiles = {};
+            problem.supFiles = {};
         end
 
         rubric.problems(ndxProblem).supportingFiles = problem.supFiles;

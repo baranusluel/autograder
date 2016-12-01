@@ -1,0 +1,6 @@
+Function: getStudentIds.m
+Inputs: problem - filePath - a string representing the path to student folders and the grades.csv file.
+Outputs:    studentIds - an Nx1 cell array of the student IDs.
+            studentFolders - An Nx1 structure array representing the foldernames of student folders.
+Specific Uses: getGradebook.m
+Description: Given the correct file path, getStudentIds will extract all of the student IDs and folder names for these students. Both outputs are listed in the same order; that is, if student A's ID is at index N in the first output, his or her folder is at the same output in the second output.

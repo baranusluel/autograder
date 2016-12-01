@@ -1,0 +1,7 @@
+Function Name: runSubmission.m
+Inputs: rubric - the rubric object.
+        student - the student structure (a single student)
+        timeoutLogH - a file handle to the timeout file.
+Outputs: student - the updated student structure.
+Specific Uses:  gradeStudentSubmissions.m
+Description: This runs the student's submission, and updates the student structure. This also writes to the timeout file. This takes care of any cheat-proofing and returns the student, grades and all.

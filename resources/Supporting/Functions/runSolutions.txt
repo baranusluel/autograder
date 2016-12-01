@@ -1,0 +1,7 @@
+Function Name: runSolutions.m
+Inputs: 
+       rubric (struct)- a struct containing the details for the problems for the current homework (test cases, points, etc.)
+Outputs: rubric (struct) - a struct containing the details for the problems for the current homework (test cases, points, solutions, etc.)
+Specific Uses: getRubric.m
+Dependencies: Uses parseTestCase.m, getInputVariables.m
+Description: Runs solution code and stores the outputs produced in the rubric structure

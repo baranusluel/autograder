@@ -1,0 +1,11 @@
+Function Name: loadjson.m
+Inputs: fname - a string representing the file path of the JSON file.
+        varargin*: a structure representing options. Options are:
+            SimplifyCell (0|1): if 1, loadjson will use cell2mat on each element of the JSON data, and group arrays based on cell2mat rules.
+            FastArrayParser (0|1|integer): if 0, use a legacy parser; if 1, use speed-optimized array parser. if greater than 1, the number represents the minimum dimension to enable the fast parser.
+            ShowProgress (0|1): if 1, show a progress bar.
+            varargin can be either a structure or set of name-value pairs.
+Outputs: dat - a cell array representing the JSON data; {} are cell arrays, [] are normal arrays.
+Specific Uses:  loadRubric.m
+                lint.m
+Description: Given a JSON file path or JSON string, loadjson will return the data stored within. This was not created in house, and was instead downloaded from MathWork's FileExchange site.

@@ -1,0 +1,7 @@
+Function Name: unzipFile.m
+Inputs: zipFilePath - a string representing the path to the .zip file.
+        destinationFolderPath* - a string representing where to unzip the files to
+Outputs: folderPath - a string representing the unzipped folder path.
+Specific Uses:  getGradebook.m
+                getRubric.m
+Description: This unzips the files specified in the first argument into the folder specified by the second argument. If no second argument is given, the current working directory is assumed. This function produces identical results on any machine, but does use different methods on different Operating Systems. Specifically, if on a PC, unzipFile will use the 7-Zip command line command; if run on a UNIX machine, it will simply use MATLAB's built in unzip function. If there is an error while unzipping, unzipFile will throw an appropriate error.

@@ -1,0 +1,9 @@
+Function Name: getRubric.m
+Inputs: 
+       rubricZipFilePath (char) - path to the rubric .zip file
+       destinationFolderPath (char) - path to the working directory
+       isResubmission (logical) - whether the homework being graded is the original or the resubmission
+Outputs: rubric (struct) - a struct containing the details for the problems for the current homework (test cases, points, solutions, etc.)
+Specific Uses: runAutograder.m
+Dependencies: Uses unzipFile.m, convertSupportingFiles.m, runSolutions.m, getSettings.m
+Description: Prepares the rubric structure that contains all the information about the homework that week in terms of solution outputs and supporting folders

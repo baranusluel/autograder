@@ -1,0 +1,6 @@
+Function Name: gradeSubmission.m
+Inputs: rubric - a structure representing the rubric (see this object's documentation)
+        student - a structure representing the particular student (see this object's documentation)
+Outputs: student - a structure representing the particular student (see this object's documentation)
+Specific Uses: gradeStudentSubmissions.m
+Description: Given the rubric and a specific student, gradeSubmission returns that same student with all of the points and, if appropriate, error messages needed to accurately describe the student's performance. This function does this on a student-by-student basis; that is, it only works on one student per call. It will additionally return the student's overall grade for this specific homework.

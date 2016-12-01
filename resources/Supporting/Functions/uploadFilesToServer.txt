@@ -1,0 +1,6 @@
+Function Name: uploadFilesToServer.m
+Inputs: gradebook - the gradebook structure.
+        rubric - the rubric structure.
+Outputs:
+Specific Uses:  runAutograder
+Description: This is experimental; it uploads all the student files to the MATLAB server, and the homework generator files as well. Right now, it takes way too long to complete, and is usually omitted from testing.

@@ -1,0 +1,5 @@
+Function Name: getInputVariables.m
+Inputs: functionCall - a string representing the complete call for a test case.
+Outputs: inputVariables - a cell array of strings, representing the input variables.
+Specific Uses:  getInputVariables.m
+Description: getInputVariables gets the input variables from the function call. It is relatively straightforward in how it does this, using strsplit. The cell array output is in the same order as the function call; first input is the first entry in the cell array.
