@@ -48,6 +48,10 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
         overridenFunctionsFolderPath = '';
     end
 
+    if nargin > 6
+        solutionOutput = varargin{4};
+    end
+
     % initialize output
     output = struct('variables', [],...
                     'files'    , [],...
@@ -152,21 +156,74 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
     end
 
     % get plots
-    plots = get(figureHandle, 'Children');
+    % plots = get(figureHandle, 'Children');
+    % for ndxPlot = 1:length(plots)
+    %     try
+    %         output.plots(ndxPlot).properties.XData   = get(get(plots(ndxPlot),'Children'),'XData');
+    %         output.plots(ndxPlot).properties.YData   = get(get(plots(ndxPlot),'Children'),'YData');
+    %         output.plots(ndxPlot).properties.ZData   = get(get(plots(ndxPlot),'Children'),'ZData');
+    %         output.plots(ndxPlot).properties.XLabels = get(get(plots(ndxPlot),'XLabel'), 'String');
+    %         output.plots(ndxPlot).properties.YLabels = get(get(plots(ndxPlot),'YLabel'), 'String');
+    %         output.plots(ndxPlot).properties.ZLabels = get(get(plots(ndxPlot),'ZLabel'), 'String');
+    %         output.plots(ndxPlot).properties.Colors  = get(get(plots(ndxPlot),'Children'),'Color');
+    %         output.plots(ndxPlot).properties.Marker  = get(get(plots(ndxPlot),'Children'),'Marker');
+    %         output.plots(ndxPlot).properties.Title   = get(get(plots(ndxPlot),'Title'),'String');
+    %     catch ME %#ok<NASGU>
+    %     end
+    %     output.plots(ndxPlot).image = base64img(figureHandle);
+    % end
+    % enlarge the figure size
+
+    % FIG_SIZE x FIG_SIZE will be used as the fiure size. Even though we are downsampling, this is important to fully capture all data even if there are several subplots
+    FIG_SIZE = 1200;
+    % smaller numbers increase tolerance; both numbers should be the same. [100, 100] is enough to detect a single point difference
+    SCALE = [75, 75];
+    % number of bins to use when creating color histograms
+    HIST_BINS = 16;
+
+
+    set(figureHandle, 'Position', [0, 0, FIG_SIZE, FIG_SIZE]);
+    set(figureHandle, 'Color', [1 1 1]);
+    % get a vector of axes
+    plots = figureHandle.Children(:);
+    % reorder subplots to follow the subplot numbering order
+    [~, idx] = sort(cellfun(@(x) -x(2) * 2 + x(1), {plots(:).Position}));
+    plots = plots(idx);
+    % get info for each subplot
     for ndxPlot = 1:length(plots)
-        try
-            output.plots(ndxPlot).properties.XData   = get(get(plots(ndxPlot),'Children'),'XData');
-            output.plots(ndxPlot).properties.YData   = get(get(plots(ndxPlot),'Children'),'YData');
-            output.plots(ndxPlot).properties.ZData   = get(get(plots(ndxPlot),'Children'),'ZData');
-            output.plots(ndxPlot).properties.XLabels = get(get(plots(ndxPlot),'XLabel'), 'String');
-            output.plots(ndxPlot).properties.YLabels = get(get(plots(ndxPlot),'YLabel'), 'String');
-            output.plots(ndxPlot).properties.ZLabels = get(get(plots(ndxPlot),'ZLabel'), 'String');
-            output.plots(ndxPlot).properties.Colors  = get(get(plots(ndxPlot),'Children'),'Color');
-            output.plots(ndxPlot).properties.Marker  = get(get(plots(ndxPlot),'Children'),'Marker');
-            output.plots(ndxPlot).properties.Title   = get(get(plots(ndxPlot),'Title'),'String');
-        catch ME %#ok<NASGU>
+        plot = plots(ndxPlot);
+        % normalize the view
+        plot.View = [0, 90];
+        % get axes labels
+        output.plots(ndxPlot).properties.XLabel = plot.XLabel.String;
+        output.plots(ndxPlot).properties.YLabel = plot.YLabel.String;
+        output.plots(ndxPlot).properties.ZLabel = plot.ZLabel.String;
+        % get title
+        output.plots(ndxPlot).properties.Title = plot.Title.String;
+        % get axes range
+        output.plots(ndxPlot).properties.XLim = plot.XLim;
+        output.plots(ndxPlot).properties.YLim = plot.YLim;
+        output.plots(ndxPlot).properties.ZLim = plot.ZLim;
+        % set axis limits to the solution output's limits
+        if ~isSolution && if ndxPlot <= length(solutionOutput.plots)
+            plot.XLim = solutionOutput.plots(ndxPlot).properties.XLim;
+            plot.YLim = solutionOutput.plots(ndxPlot).properties.YLim;
+            plot.ZLim = solutionOutput.plots(ndxPlot).properties.ZLim;
         end
-        output.plots(ndxPlot).image = base64img(figureHandle);
+        % convert the axis object to image
+        output.plots(ndxPlot).img = frame2im(getframe(plot));
+        % resize img
+        img = imresize(output.plots(ndxPlot).img, SCALE);
+        % convert to black and white image
+        output.plots(ndxPlot).imgBWResized = sum(img, 3) == (255*3);
+        % get histograms for each layer of the image
+        output.plots(ndxPlot).histogram(1) = imhist(output.plots(ndxPlot).imgBWResized(:,:,1), HIST_BINS);
+        output.plots(ndxPlot).histogram(2) = imhist(output.plots(ndxPlot).imgBWResized(:,:,2), HIST_BINS);
+        output.plots(ndxPlot).histogram(3) = imhist(output.plots(ndxPlot).imgBWResized(:,:,3), HIST_BINS);
+        % get base64 encoded image for use in feedback file
+        figureHandle2 = figure;
+        imshow(output.plots(ndxPlot).img);
+        output.plots(ndxPlot).base64img = base64img(figureHandle2);
     end
 
     close(figureHandle);

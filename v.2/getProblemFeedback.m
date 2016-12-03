@@ -192,8 +192,8 @@ function student = getProblemFeedback(problem, student, problemNumber)
                                         % open table
                                         student.feedback = sprintf('%s<table style="padding-left:20px;table-layout:fixed;width:100%%">', student.feedback);
 
-                                        % concatenate function file value
-                                        student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Function Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(studentFiles(strcmp({studentFiles.name},file.name)).value));
+                                        % concatenate
+                                        student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>x-axis</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(studentFiles(strcmp({studentFiles.name},file.name)).value));
 
                                         % concatenate solution file value
                                         student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Solution Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, visualizeValue(file.value));
@@ -210,27 +210,104 @@ function student = getProblemFeedback(problem, student, problemNumber)
 
                 % if there are output plots
                 if ~isempty(testCase.output.plots)
-                    studentPlots = student.problems(problemNumber).testCases(ndxTestCase).output.plots;
-                    studentMessages = student.problems(problemNumber).testCases(ndxTestCase).output.messages;
+                    studPlots = student.problems(problemNumber).testCases(ndxTestCase).output.plots;
+
+                    ndx = length(testCase.outputVariables) + length(testCase.output.files);
 
                     for ndxPlot = 1:length(testCase.output.plots)
-                        plot = testCases.output.plots(ndxPlot);
+                        solnPlot = testCases.output.plots(ndxPlot);
 
-                        ndx = ndxPlot + length(testCase.outputVariables) + length(testCase.output.files);
+                        ndx = ndx + 1;
 
-                        pointsReceived = student.problems(problemNumber).testCases(ndxTestCase).pointsPerOutput(ndx);
-                        pointsOutOf = testCase.pointsPerOutput(ndx);
+                        pointsReceived = student.problems(problemNumber).testCases(ndxTestCase).pointsPerOutput(ndx:ndx+8);
+                        pointsOutOf = testCase.pointsPerOutput(ndx:ndx+8);
+                        studMessages = student.problems(problemNumber).testCases(ndxTestCase).output.messages(ndx:ndx+8);
+
+                        ndx = ndx + 8;
 
                         if ~isempty(studentPlots) && ndxPlot <= length(studentPlots)
-                            message = studentMessages{ndx};
+                            studPlot = studentPlots(ndxPlot);
 
-                            if pointsReceived == pointsOutOf
-                                % concatenate variable
-                                student.feedback = sprintf('%s<pre style="display:inline">Plot #%d</pre><p style="display:inline">: PASS (%.2f points) %s</p><br/>', student.feedback, ndxPlot, pointsReceived, settings.images.GRN_CHECK);
+                            if all(pointsReceived == pointsOutOf)
+                                student.feedback = sprintf('%s<pre style="display:inline">Plot #%d</pre><p style="display:inline">: PASS (%.2f points) %s</p><br/>', student.feedback, ndxPlot, sum(pointsReceived), settings.images.GRN_CHECK);
                             else
-                                % if studentMessages{ndx} ==
-                                % visualize plots...
-                                student.feedback = sprintf('%s<pre style="display:inline">%s</pre><p style="display:inline">: FAIL - %s %s</p><br/>', student.feedback, outputVariable, message, settings.images.RED_CROSS);
+                                student.feedback = sprintf('%s<pre style="display:inline">Plot #%d</pre><p style="display:inline">: FAIL %s</p><br/>', student.feedback, ndxPlot, settings.images.RED_CROSS);
+
+                                % open table
+                                student.feedback = sprintf('%s<table style="padding-left:20px;table-layout:fixed;width:100%%">', student.feedback);
+
+                                % check x-axis
+                                if pointsReceived(1) == pointsOutOf(1)
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>x-label</p></td><td style="padding-left:10px;word-wrap:break-word">PASS (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(1), pointsOutOf(1), settings.images.GRN_CHECK);
+                                else
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>x-label</p></td><td style="padding-left:10px;word-wrap:break-word">FAIL (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(1), pointsOutOf(1), settings.images.RED_CROSS);
+                                end
+
+                                % check y-axis
+                                if pointsReceived(2) == pointsOutOf(2)
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>y-label</p></td><td style="padding-left:10px;word-wrap:break-word">PASS (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(2), pointsOutOf(2), settings.images.GRN_CHECK);
+                                else
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>y-label</p></td><td style="padding-left:10px;word-wrap:break-word">FAIL (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(2), pointsOutOf(2), settings.images.RED_CROSS);
+                                end
+
+                                % check z-axis
+                                if pointsReceived(3) == pointsOutOf(3)
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>z-label</p></td><td style="padding-left:10px;word-wrap:break-word">PASS (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(3), pointsOutOf(3), settings.images.GRN_CHECK);
+                                else
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>z-label</p></td><td style="padding-left:10px;word-wrap:break-word">FAIL (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(3), pointsOutOf(3), settings.images.RED_CROSS);
+                                end
+
+                                % check title
+                                if pointsReceived(4) == pointsOutOf(4)
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>title</p></td><td style="padding-left:10px;word-wrap:break-word">PASS (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(4), pointsOutOf(4), settings.images.GRN_CHECK);
+                                else
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>title</p></td><td style="padding-left:10px;word-wrap:break-word">FAIL (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(4), pointsOutOf(4), settings.images.RED_CROSS);
+                                end
+
+                                % check x-axis
+                                if pointsReceived(5) == pointsOutOf(5)
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>x-axis</p></td><td style="padding-left:10px;word-wrap:break-word">PASS (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(5), pointsOutOf(5), settings.images.GRN_CHECK);
+                                else
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>x-axis</p></td><td style="padding-left:10px;word-wrap:break-word">FAIL (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(5), pointsOutOf(5), settings.images.RED_CROSS);
+                                end
+
+                                % check x-axis
+                                if pointsReceived(6) == pointsOutOf(6)
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>y-axis</p></td><td style="padding-left:10px;word-wrap:break-word">PASS (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(6), pointsOutOf(6), settings.images.GRN_CHECK);
+                                else
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>y-axis</p></td><td style="padding-left:10px;word-wrap:break-word">FAIL (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(6), pointsOutOf(6), settings.images.RED_CROSS);
+                                end
+
+                                % check x-axis
+                                if pointsReceived(7) == pointsOutOf(7)
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>z-axis</p></td><td style="padding-left:10px;word-wrap:break-word">PASS (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(7), pointsOutOf(7), settings.images.GRN_CHECK);
+                                else
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>z-axis</p></td><td style="padding-left:10px;word-wrap:break-word">FAIL (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(7), pointsOutOf(7), settings.images.RED_CROSS);
+                                end
+
+                                % check x-axis
+                                if pointsReceived(8) == pointsOutOf(8)
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>color</p></td><td style="padding-left:10px;word-wrap:break-word">PASS (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(8), pointsOutOf(8), settings.images.GRN_CHECK);
+                                else
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>color</p></td><td style="padding-left:10px;word-wrap:break-word">FAIL (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(8), pointsOutOf(8), settings.images.RED_CROSS);
+                                end
+
+                                % check data
+                                if pointsReceived(9) == pointsOutOf(9)
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>data</p></td><td style="padding-left:10px;word-wrap:break-word">PASS (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(9), pointsOutOf(9), settings.images.GRN_CHECK);
+                                else
+                                    student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>data</p></td><td style="padding-left:10px;word-wrap:break-word">FAIL (%.2f/%.2f) %s</td></tr>', student.feedback, pointsReceived(9), pointsOutOf(9), settings.images.RED_CROSS);
+                                end
+
+                                % concatenate function plot image
+                                student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Function Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, studPlot.base64img);
+
+                                % concatenate solution plot image
+                                student.feedback = sprintf('%s<tr><td style="vertical-align:top;width:50px"><p>Solution Value</p></td><td style="padding-left:10px;word-wrap:break-word">%s</td></tr>', student.feedback, solnPlot.base64img);
+
+                                % close table
+                                student.feedback = sprintf('%s</table>', student.feedback);
+
                             end
                         end
                     end

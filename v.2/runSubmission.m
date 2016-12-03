@@ -66,7 +66,7 @@ function student = runSubmission(rubric, student, timeoutLogH)
                     timeout = settings.TIMEOUT_LENIENCY;
                 end
 
-                testCases(ndxTestCase).output = runTestCase(functionHandle, testCase, problem.inputs, false, timeout, rubric.addpath.overridenFunctionsFolderPath);
+                testCases(ndxTestCase).output = runTestCase(functionHandle, testCase, problem.inputs, false, timeout, rubric.addpath.overridenFunctionsFolderPath, problem.testCases(ndxTestCase).output);
                 %if test case timed out
                 if ~isempty(testCases(ndxTestCase).output.errors) && (strcmpi(testCases(ndxTestCase).output.errors.message, 'INFINITE LOOP'))
 %                    timeoutTestCaseInds = [timeoutTestCaseInds ndxTestCase];

@@ -55,14 +55,24 @@ function rubric = runSolutions(rubric)
             numberOfVariables = length(testCase.output.variables);
             numberOfFiles     = length(testCase.output.files);
             numberOfPlots     = length(testCase.output.plots);
-            if numberOfPlots > 0
-                numberOfPlotProperties = length(fieldnames(testCase.output.plots));
-            else
-                numberOfPlotProperties = 0;
-            end
 
-            testCase.numberOfOutputs = numberOfVariables + numberOfFiles + numberOfPlots * numberOfPlotProperties;
-            testCase.pointsPerOutput = (testCase.points ./ testCase.numberOfOutputs) .* ones(1, testCase.numberOfOutputs);
+            % 9 -> x-label, y-label, z-label, title, x-limits, y-limits, z-limits, colors, data
+            pointsBreakDown = testCase.points ./ (numberOfVariables + numberOfFiles + numberOfPlots);
+            testCase.numberOfOutputs = numberOfVariables + numberOfFiles + numberOfPlots * 9;
+            testCase.pointsPerOutput = ones(1, testCase.numberOfOutputs);
+            ndxPointsPerOutput = 1;
+            for ndxPoints = 1:length(pointsBreakDown)
+                if ndxPoints <= numberOfVariables
+                    testCase.pointsPerOutput(ndxPointsPerOutput) = pointsBreakDown(ndxPoints);
+                    ndxPointsPerOutput = ndxPointsPerOutput + 1;
+                elseif ndxPoints <= numberOfFiles
+                    testCase.pointsPerOutput(ndxPointsPerOutput) = pointsBreakDown(ndxPoints);
+                    ndxPointsPerOutput = ndxPointsPerOutput + 1;
+                elseif ndxPoints <= numberOfPlots
+                    testCase.pointsPerOutput(ndxPointsPerOutput:ndxPointsPerOutput+8) = pointsBreakDown(ndxPoints) .* [[ones(1, 8).*0.02],0.84];
+                    ndxPointsPerOutput = ndxPointsPerOutput + 9;
+                end
+            end
             testCases = [testCases, testCase]; %#ok
         end
 
