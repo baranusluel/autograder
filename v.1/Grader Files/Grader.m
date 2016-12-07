@@ -1,4 +1,4 @@
-function [studentIDs final_grades] = Grader(hw_num, file_names, prob_weights, prob_preConds, file_tests, file_vars, file_vars_types, prob_test_weights)
+function [studentIDs, final_grades] = Grader(hw_num, file_names, prob_weights, prob_preConds, file_tests, file_vars, file_vars_types, prob_test_weights)
 
 prob_num = length(file_names); % Find number of problems
 var_solutions = cell(1, prob_num); % Initialize solutions
@@ -17,7 +17,7 @@ for i = 1:prob_num
         test_cases = file_tests{i};
         var_solutions{i} = cell(1, length(test_cases));
         for j = 1:length(test_cases)
-            [var_exist var_solutions{i}{j} Merror] = runTestCase(test_cases{j}, file_vars{i}{j});
+            [var_exist, var_solutions{i}{j}, Merror] = runTestCase(test_cases{j}, file_vars{i}{j});
             fh = fopen('soln_errors.txt', 'a');
             if ~isempty(Merror)
                 fprintf(fh, 'Solution File %s produced the following error on Test Case %d:\r\n %s\r\n', file_names{i}, j, Merror.message);
@@ -81,7 +81,7 @@ for i = 1:num_students
         % Check Problem Preconditions
         fprintf(student_fid, 'Preconditions:\r\n');
         tests = checkPreconditions(preConds, student_mfiles, file_names{j}, test_cases);
-        for p = 1:length(tests);
+        for p = 1:length(tests)
             if tests(p)
                 fprintf(student_fid,'- %s: PASS\r\n', preConds{p});
             else
@@ -116,7 +116,7 @@ for i = 1:num_students
                     end
                 end
                 
-                [var_exist student_vals Merror] = runTestCase(test_cases{k}, variables{k});
+                [var_exist, student_vals, Merror] = runTestCase(test_cases{k}, variables{k});
                 student_fid = fopen(['..' filesep 'Feedback Attachment(s)' filesep 'grade.txt'], 'a');
                 if isempty(Merror)
                     test_soln = test_case_solns{k};
@@ -128,7 +128,7 @@ for i = 1:num_students
                         if ~var_exist(x)
                             fprintf(student_fid,'- %s: FAIL - Variable did not exist\r\n',vars{x});
                         else
-                            [match message] = gradeVar(test_soln{x}, student_vals{x}, var_types{x});
+                            [match, message] = gradeVar(test_soln{x}, student_vals{x}, var_types{x});
                             switch var_types{x}
                                 case 'file'
                                     if match
@@ -185,19 +185,19 @@ disp('Grade Computation Complete');
 end
 
 %% Run Test Case
-function [val_exist out_vals ME] = runTestCase(test_case, variables)
+function [val_exist, out_vals, ME] = runTestCase(test_case, variables)
 % Initialize storage for variable values
 val_exist = false(1, length(variables));
 out_vals = cell(1, length(variables));
 ME = [];
 
 % Error out certain functions
-clear = @(vargin) error('Used the clear function');
+clear = @(vargin) error('Used the clear function'); %#ok<*NASGU>
 clc = @(vargin) error('Used the clc function');
 input = @(vargin) error('Used the input function');
 solve = @(vargin) error('Used the solve function');
 % Set state of rand to 0
-rand('twister',0);
+rand('twister',0); %#ok<RAND>
 % Close all images
 close('all');
 
@@ -208,7 +208,7 @@ try
     set(0, 'RecursionLimit', 500);
     % Store variable values in cell array. If variable produces error, state it
     % does not exist
-    for i = 1:length(variables);
+    for i = 1:length(variables)
         try
             out_vals{i} = eval(variables{i});
             val_exist(i) = true;
@@ -235,24 +235,20 @@ end
 %   2. message - reason why variable values mismatched
 %
 % The gradeVar function
-function [match message] = gradeVar(soln_ans, student_ans, type)
+function [match, message] = gradeVar(soln_ans, student_ans, type)
 match = false;
 message = 'NONE';
 
-if iscell(soln_ans)
-    type = 'cell';
-end
-
 switch type
     case 'sound'
-        [match message] = grader_CompareSounds(student_ans, soln_ans);
+        [match, message] = grader_CompareSounds(student_ans, soln_ans);
     case 'image'
-        [match message] = compareImage(student_ans, soln_ans);
+        [match, message] = compareImage(student_ans, soln_ans);
     case 'cell'
-        [match message] = compareCell(student_ans, soln_ans);
+        [match, message] = compareCell(student_ans, soln_ans);
     case 'file'
         % Send file_name to grade file code
-        [match message] = gradeFile(soln_ans);
+        [match, message] = gradeFile(soln_ans);
     case 'empty'
         if isempty(student_ans)
             match = true;
@@ -280,8 +276,8 @@ switch type
         end
         
         for i = 1:length(student_ans)
-            message{end+1} = sprintf('\r\nPlot %d of %d:\r\n', i, length(student_ans));
-            [m mess] = comparePlot(student_ans(i), soln_ans(i));
+            message{end+1} = sprintf('\r\nPlot %d of %d:\r\n', i, length(student_ans)); %#ok<*AGROW>
+            [m, mess] = comparePlot(student_ans(i), soln_ans(i));
             match(1) = match(1) + m;
             match(2) = match(2) + 9;
             message = [message mess];
@@ -290,12 +286,12 @@ switch type
             match(2) = 1;
         end
     otherwise
-        [match message] = compareDefault(student_ans, soln_ans);
+        [match, message] = compareDefault(student_ans, soln_ans);
 end
 end
 
 %% Grade Files
-function [match message] = gradeFile(file_name)
+function [match, message] = gradeFile(file_name)
 message = 'File Did Not Match Solution File';
 dot_loc = find(file_name == '.');
 switch file_name(dot_loc:end)
@@ -311,7 +307,7 @@ switch file_name(dot_loc:end)
         stud_ans = raw;
         load(['..' filesep '..' filesep 'Solutions' filesep mat_file]);
         soln_ans = raw;
-        [match message] = compareCell(stud_ans, soln_ans);
+        [match, message] = compareCell(stud_ans, soln_ans);
         return;
     case '.csv'
         if ~exist([cd filesep file_name], 'file')
@@ -373,7 +369,7 @@ switch file_name(dot_loc:end)
         if exist(file_name, 'file')
             stud_img = imread(file_name);
             soln_img = imread(['..' filesep '..' filesep 'Solutions' filesep file_name]);
-            [match message] = compareImage(stud_img, soln_img);
+            [match, message] = compareImage(stud_img, soln_img);
         else
             match = false;
             message = 'Image File Did Not Exist';
@@ -381,9 +377,9 @@ switch file_name(dot_loc:end)
         return;
     case '.wav'
         if exist(file_name, 'file')
-            [stud_data stud_fs] = wavread(file_name);
-            [soln_data soln_fs] = wavread(['..' filesep '..' filesep 'Solutions' filesep file_name]);
-            [match message] = grader_CompareSounds({stud_data, stud_fs}, {soln_data, soln_fs});
+            [stud_data, stud_fs] = wavread(file_name); %#ok<*DWVRD>
+            [soln_data, soln_fs] = wavread(['..' filesep '..' filesep 'Solutions' filesep file_name]);
+            [match, message] = grader_CompareSounds({stud_data, stud_fs}, {soln_data, soln_fs});
         else
             match = false;
             message = 'Sound File Did Not Exist';
@@ -409,7 +405,7 @@ for i = 1:length(preConds)
                     eval(test_cases{j})
                 end
             catch ME
-                if strcmp(ME.identifier, 'MATLAB:recursionLimit');
+                if strcmp(ME.identifier, 'MATLAB:recursionLimit')
                     tests(i) = true;
                 end
             end
@@ -420,27 +416,37 @@ for i = 1:length(preConds)
 end
 end
 
-%% Plot Grader
-function plotData = plotGrader()
+%% Plot Grader - THIS IS NOT USED???
+function plotData = plotGrader() %#ok<DEFNU>
 h = gcf;
 if isempty(get(h, 'Children'))
     plotData = {};
     return
 end
 
-s = get(h, 'Children');
+% TEMP: Use buildStruct to get the image!
+plotData = {buildStructFromPlot(h)};
+return;
+end
 
-for i = 1:length(s)
-    if strcmp('',get(s(i),'Tag'))
-        plotData(i) = buildStructFromPlot(s(i));
-    else
-        plotData(i) = [];
-    end
-end
-end
+% s = get(h, 'Children');
+% plotData = cell(1, length(s));
+% for i = length(s):-1:1
+%     if strcmp('',get(s(i),'Tag'))
+%         plotData(i) = buildStructFromPlot(s(i));
+%     else
+%         plotData(i) = [];
+%     end
+% end
+% end
 
 function data = buildStructFromPlot(h)
-data.xdata = [];
+% TEMPORARILY: JUST SAVE THE IMAGE!
+saveas(h, 'testCase.jpg');
+data.img = imread('testCase.jpg');
+delete('testCase.jpg');
+return;
+data.xdata = []; %#ok<UNRCH>
 data.ydata = [];
 data.zdata = [];
 data.color = [];
@@ -479,7 +485,7 @@ if strcmp('',get(h,'Tag'))
             end
         end
     else %One thing was plotted
-        [xdata ind] = sort(xdata);
+        [xdata, ind] = sort(xdata);
         if length(ydata) == length(xdata)
             ydata = ydata(ind);
         end
@@ -514,23 +520,23 @@ if strcmp('',get(h,'Tag'))
     data.title = get(get(h, 'Title'),'String');
 
     frame = getframe(h);
-    [img ~] = frame2im(frame);
+    [img, ~] = frame2im(frame);
     data.img = img;
 else
     j = 1;
     C = get(h,'Children');
     for i = 1:length(C)
        if ~strcmp('',get(C(i),'Tag'))
-            leg(j).String = get(C(i),'Tag');
-            leg(j).Color = get(C(i),'Color');
-            leg(j).Marker = get(C(i),'Color');
+            leg(1).String = get(C(i),'Tag');
+            leg(1).Color = get(C(i),'Color');
+            leg(1).Marker = get(C(i),'Color');
        end
     end
 end
 end
 
 %% Default Comparison
-function [match message] = compareDefault(student_ans, soln_ans)
+function [match, message] = compareDefault(student_ans, soln_ans)
 match = false;
 message = 'NONE';
 if strcmp(class(soln_ans), class(student_ans))
@@ -538,7 +544,7 @@ if strcmp(class(soln_ans), class(student_ans))
         if isequal(size(student_ans), size(soln_ans))
             if all(abs(student_ans - soln_ans) < .01)
                 match = true;
-            elseif isequalwithequalnans(student_ans, soln_ans)
+            elseif isequaln(student_ans, soln_ans)
                 match = true;
             else
                 % TODO: Values do not agree mismatch text
@@ -562,7 +568,7 @@ end
 end
 
 %% Cell Comparison
-function [match message] = compareCell(student_cell, soln_cell)
+function [match, message] = compareCell(student_cell, soln_cell)
 match = false;
 message = 'NONE';
 student_class = class(student_cell);
@@ -577,11 +583,11 @@ if strcmp(student_class, soln_class)
     dim_student = size(student_cell);
     dim_soln = size(soln_cell);
     
-    if length(dim_student) ~= length(dim_soln) || any(dim_student ~= dim_soln);
+    if length(dim_student) ~= length(dim_soln) || any(dim_student ~= dim_soln)
         message = sprintf('Dimensions Incorrect. Expected %s, not %s.', ...
             dim2str(dim_soln), dim2str(dim_student));
     else
-        for i = 1:prod(dim_soln);
+        for i = 1:prod(dim_soln)
             student_cell_val = student_cell{i};
             soln_cell_val = soln_cell{i};
             
@@ -593,7 +599,7 @@ if strcmp(student_class, soln_class)
                     case 'double'
                         dim_student_val = size(student_cell_val);
                         dim_soln_val = size(soln_cell_val);
-                        if length(dim_student_val) ~= length(dim_soln_val) || any(dim_student_val ~= dim_soln_val);
+                        if length(dim_student_val) ~= length(dim_soln_val) || any(dim_student_val ~= dim_soln_val)
                             message = sprintf('Dimensions of content at index %s incorrect. Expected %s, not %s.', ...
                                 ind2str(ind2subv(dim_soln, i)), dim2str(dim_soln), dim2str(dim_student));
                             return;
@@ -654,11 +660,11 @@ end
 
 
 %% Compare Images
-function [match message] = compareImage(student_ans, soln_ans)
+function [match, message] = compareImage(student_ans, soln_ans)
 match = false;
 message = 'NONE';
 % Comparing two image matrices
-if strcmp(class(student_ans), 'uint8')
+if isa(student_ans, 'uint8')
     stud_size = size(student_ans);
     if length(stud_size) == 3
         if stud_size(3) == 3
@@ -684,11 +690,41 @@ end
 
 
 %% Compare Plots
-function [out printout] = comparePlot(sdata, tdata)
+function [out, printout] = comparePlot(sdata, tdata)
 out = 0;
 printout = {};
 
-if ~isstruct(sdata)
+% TEMPORARILY, we have elected to do a straight up IMAGE CHECK instead.
+% Here's how it works:
+    % Plots are saved as images
+    % Images are read and resized to be the same as solution.
+    % Both images are downsampled by a factor of 2.
+    % For every pixel of soln that is NOT background, the students answer
+    % is compared to that pixel.
+    % There is a 5% margin of errror for reading plots.
+
+sIMG = sdata{1}.img;
+tIMG = tdata{1}.img;
+sIMG = imresize(sIMG, [size(tIMG, 1), size(tIMG, 2)]);
+sIMG = convn(sIMG, ones(2)/4, 'same');
+tIMG = convn(tIMG, ones(2)/4, 'same');
+bgMask = tIMG(:, :, 1) == 255 & tIMG(:, :, 2) == 255 & tIMG(:, :, 3) == 255;
+bgMask = ~bgMask;
+cTest = cell(1, 3);
+cStud = cTest;
+for k = 1:3
+    cTest{k} = tIMG(:, :, k);
+    cStud{k} = sIMG(:, :, k);
+    cTest{k} = cTest{k}(bgMask);
+    cStud{k} = cStud{k}(bgMask);
+    cStud{k} = cTest{k} ~= cStud{k};
+end
+arrStud = cStud{1} | cStud{2} | cStud{3};
+pDiff = sum(arrStud(1:end)) / numel(arrStud);
+out = 9; % For some reason, out must be 9. Haven't figured this out yet.
+message = sprintf('Plot Percent Difference: %0.2f%%', pDiff * 100);
+return;
+if ~isstruct(sdata) %#ok<UNRCH>
     out = 9;
     printout = 'Success';
 else
@@ -835,7 +871,7 @@ end
 
 
 %% Compare Sounds
-function [match message] = grader_CompareSounds(stud_sound, soln_sound)
+function [match, message] = grader_CompareSounds(stud_sound, soln_sound)
 match = false;
 message = 'NONE';
 
@@ -855,8 +891,8 @@ else
 end
 
 if stud_Fs == soln_Fs
-    [stud_len c1] = size(stud_data);
-    [soln_len c2] = size(soln_data);
+    [stud_len, c1] = size(stud_data);
+    [soln_len , ~] = size(soln_data);
     if c1 == 1
         if abs(stud_len/soln_Fs - soln_len/stud_Fs) <= 0.05
             if stud_len < soln_len
@@ -882,11 +918,11 @@ if stud_Fs == soln_Fs
             soln_ind = zeros(1, num_max_freqs);
             stud_ind= zeros(1, num_max_freqs);
             for i = 1:num_max_freqs
-                [temp_y temp_ind] = max(soln_y);
+                [temp_y, temp_ind] = max(soln_y);
                 soln_max(i) = temp_y;
                 soln_ind(i) = temp_ind;
                 soln_y(temp_ind) = -1;
-                [temp_y temp_ind] = max(stud_y);
+                [temp_y, temp_ind] = max(stud_y);
                 stud_max(i) = temp_y;
                 stud_ind(i) = temp_ind;
                 stud_y(temp_ind) = -1;
