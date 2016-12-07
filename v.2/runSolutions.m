@@ -57,9 +57,9 @@ function rubric = runSolutions(rubric)
             numberOfPlots     = length(testCase.output.plots);
 
             % 9 -> x-label, y-label, z-label, title, x-limits, y-limits, z-limits, colors, data
-            pointsBreakDown = testCase.points ./ (numberOfVariables + numberOfFiles + numberOfPlots);
+            pointsBreakDown = ones(1, numberOfVariables + numberOfFiles + numberOfPlots) .* (testCase.points ./ (numberOfVariables + numberOfFiles + numberOfPlots));
             testCase.numberOfOutputs = numberOfVariables + numberOfFiles + numberOfPlots * 9;
-            testCase.pointsPerOutput = ones(1, testCase.numberOfOutputs);
+            testCase.pointsPerOutput = zeros(1, testCase.numberOfOutputs);
             ndxPointsPerOutput = 1;
             for ndxPoints = 1:length(pointsBreakDown)
                 if ndxPoints <= numberOfVariables

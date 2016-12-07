@@ -118,7 +118,7 @@ function student = gradeSubmission(rubric, student)
 
                         ndx = ndx + 1;
 
-                        if length(student.problems(ndxProblem).testCases(ndxTestCase).output.plots) > ndxPlot
+                        if length(student.problems(ndxProblem).testCases(ndxTestCase).output.plots) >= ndxPlot
                             studPlot = student.problems(ndxProblem).testCases(ndxTestCase).output.plots(ndxPlot);
                             solnPlot = testCase.output.plots(ndxPlot);
 
@@ -168,8 +168,8 @@ function student = gradeSubmission(rubric, student)
 
                             % check color
                             for ndxLayer = 1:length(solnPlot.histogram)
-                                studHist = studPlot.histogram(ndxLayer);
-                                solnHist = solnPlot.histogram(ndxLayer);
+                                studHist = studPlot.histogram{ndxLayer};
+                                solnHist = solnPlot.histogram{ndxLayer};
                                 % calculate angle between these two vectors
                                 th = acosd(dot(studHist, solnHist) / (norm(studHist) * norm(solnHist)));
                                 if th > COLOR_TOL
@@ -179,7 +179,7 @@ function student = gradeSubmission(rubric, student)
                             end
 
                             % check data visually
-                            dataDifference = sum(sum(studPlot.imBWResized ~= solnPlot.imBWResized));
+                            dataDifference = sum(sum(studPlot.imgBWResized ~= solnPlot.imgBWResized));
                             if dataDifference > DIFFERENCE_FACTOR
                                 isEqual(9) = false;
                                 outputMessages{9} = 'The data values differ from the solution';
@@ -187,11 +187,14 @@ function student = gradeSubmission(rubric, student)
 
                             % allocate points
                             pointsPerOutput = testCase.pointsPerOutput(ndx:ndx+8);
-                            student.problems(ndxProblem).testCases(ndxTestCase).pointsPerOutput(ndx:ndx+8) = pointsPerOutput(isEqual);
-                            ndx = ndx + 8;
+                            student.problems(ndxProblem).testCases(ndxTestCase).pointsPerOutput(ndx:ndx+8) = pointsPerOutput.*isEqual;
+                            student.problems(ndxProblem).testCases(ndxTestCase).output.messages(ndx:ndx+8) = outputMessages;
                         else
-                            student.problems(ndxProblem).testCases(ndxTestCase).output.messages{ndx} = messages.plots.plotNotFound;
+                            student.problems(ndxProblem).testCases(ndxTestCase).pointsPerOutput(ndx:ndx+8) = zeros(1,9);
+                            [student.problems(ndxProblem).testCases(ndxTestCase).output.messages{ndx:ndx+8}] = deal(messages.plots.plotNotFound);
                         end
+
+                        ndx = ndx + 8;
 
                     end
 

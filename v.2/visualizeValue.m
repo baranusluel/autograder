@@ -24,6 +24,7 @@ function formattedValue = visualizeValue(value)
             figure('Visible', 'Off');
             imshow(value);
             figureHandle = gcf;
+            set(figureHandle, 'Position', [0, 0, FIG_SIZE, FIG_SIZE]);
             formattedValue = sprintf('<img src="data:image/png;base64, %s" />', base64img(figureHandle));
         else
             % if empty
