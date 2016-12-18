@@ -44,9 +44,8 @@ Autograder Unit Testing Framework (prototype)
     example: https://www.mathworks.com/help/matlab/function-based-unit-tests.html
     Once you have read and have a general understanding of the funcionality that
     MATLAB function-based unit testing provides, you can take a look at the code
-    in ExampleUnitTest.m. This will give you a general idea of how to structure
-    your unit tests so that they are uniform across all units and recognizable
-    by the UnitTestDriver (the code that runs all of the unit tests).
+    in the UnitTests folder. This will give you a general idea of how to structure
+    your unit tests so that they are uniform across all units and easily runnable.
 
 5.  Reasoning for Unit Testing
     At this point, you may be wondering why this way of doing things is any
