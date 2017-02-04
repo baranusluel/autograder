@@ -1,8 +1,15 @@
 function runtimeInfo = autograder(rubric,studentDirName,homeworkName)
+<<<<<<< HEAD
 rubric = 'rubrica.json';
 studentDirName = 'HW1';
 homeworkName = studentDirName;
 runDir = 'C:\Users\suba\Documents\Gatech\CS1371_TA\TechTeam\autograder\v.avidano';
+=======
+rubric = 'rubric.json';
+studentDirName = 'HW1';
+homeworkName = studentDirName;
+runDir = 'C:\Users\mavidano3\Documents\MATLAB\autograderRun';
+>>>>>>> ce0ee032cd7bf7c8609b73ef01aa1b64803774d3
 cd(runDir);
 
 %File Structure
