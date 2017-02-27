@@ -1,0 +1,10 @@
+{
+	"funcName": "cellCat",
+	"matFiles": [],
+	"supFiles": "",
+	"banned": "",
+	"tests": [
+		"str1 = cellCat({'this ', 'one', 5, ' is ', true, {'pretty '}, 'simple'})",
+		"str2 = cellCat({{{{'this ', [4, 3, 2], {'is '}, 'a'}, ' little'}, [true false], {{' more '}}}, 'complex'})"
+	]
+}
