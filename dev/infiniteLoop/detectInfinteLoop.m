@@ -1,6 +1,6 @@
 function detectInfinteLoop
 
-t = timer('TimerFcn',@watchDog,'StartDelay',3);
+t = timer('TimerFcn',@watch,'StartDelay',1);
 try
     start(t);
     notInfinteLoop();
@@ -20,6 +20,7 @@ end
 delete(t);
 end
 
-function watchDog(handle,data)
+function watch(handle, data)
+% c = onCleanup(@() error('timeout!'));
 error('timeout!');
 end

@@ -36,9 +36,9 @@ try
         end
     end        
 catch exception
-    error('Timeout!');
-%     ME = MException('VerifyOutput:OutOfBounds', ...
-%              'Results are outside the allowable limits');
-%     throw(ME);
-%     throwAsCaller(ME);
+%     throw(exception);
+    ME = MException('VerifyOutput:OutOfBounds', ...
+             'Results are outside the allowable limits');
+    throw(ME);
+    throwAsCaller(ME);
 end
