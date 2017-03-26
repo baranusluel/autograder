@@ -222,7 +222,7 @@ function [allMessages, points] = comparePlots(studPlot, solnPlot)
 AXIS_TOL = .2;
 % DIFFERENCE_FACTOR = 300; % larger number increases tolerance. This is the number of pixels in the downsampled and filtered image that can be different
 COLOR_TOL = 10; % angle in degrees by which any two histogram vectors may differ and still be considered equal
-HAUSDORFF_TOL = 3; % Hausdorff distance between two plots
+HAUSDORFF_TOL = 80; % Hausdorff distance between two plots
 % go through output plots
 allMessages = cell(length(studPlot.plots),1);
 points = cell(size(allMessages));
