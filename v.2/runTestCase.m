@@ -134,13 +134,13 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
         output.files(ndxOutputFile).fileType = extension;
         output.files(ndxOutputFile).name = outputFile;
 
-        if any(cellfun(@(x) ~isempty(strfind(outputFile, x)), {'_xls.mat', '_xlsx.mat'}, 'uni', true))
+        if any(cellfun(@(x) contains(outputFile, x), {'_xls.mat', '_xlsx.mat'}, 'uni', true))
             load(outputFile);
             output.files(ndxOutputFile).value = raw;
-        elseif any(cellfun(@(x) ~isempty(strfind(outputFile, x)), possibleImageExtensions, 'uni', true))
+        elseif any(cellfun(@(x) contains(outputFile, x), possibleImageExtensions, 'uni', true))
             load(outputFile);
             output.files(ndxOutputFile).value = img;
-        elseif any(cellfun(@(x) ~isempty(strfind(extension, x)), {'txt', 'm'}, 'uni', true))
+        elseif any(cellfun(@(x) contains(extension, x), {'txt', 'm'}, 'uni', true))
             % I think this could potentially be MUCH more efficient:
             % file = textscan(fh, '%s', 'Delimiter', '\n');
             % file = strjoin(file{1}', '\n');

@@ -114,6 +114,7 @@ function student = gradeSubmission(rubric, student)
 
                     % go through output plots
                     isMoreThanOnePlot = length(testCase.output.plots) > 1;
+                    % What is isMoreThanOnePlot? Why do we have it?
                     for ndxPlot = 1:length(testCase.output.plots)
 
                         ndx = ndx + 1;
@@ -179,6 +180,8 @@ function student = gradeSubmission(rubric, student)
                             end
 
                             % check data visually
+                            %%%% THIS IS WHERE HAUSDORFF IMPLEMENTATION
+                            %%%% GOES
                             dataDifference = sum(sum(studPlot.imgBWResized ~= solnPlot.imgBWResized));
                             if dataDifference > DIFFERENCE_FACTOR
                                 isEqual(9) = false;
