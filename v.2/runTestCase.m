@@ -67,7 +67,8 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
     directoryContents = getDirectoryContents(pwd, false, true);
 
     % add overridenFunctions to the MATLAB path before grading
-    addpath(overridenFunctionsFolderPath);
+    % Do this in initialization
+    % addpath(overridenFunctionsFolderPath);
     if isSolution
         close all;
         figure('Visible', 'Off');
@@ -113,7 +114,8 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
     end
 
     % remove overridenFunctions folder from MATLAB path
-    rmpath(overridenFunctionsFolderPath);
+    % do this 
+    % rmpath(overridenFunctionsFolderPath);
 
     newDirectoryContents = getDirectoryContents(pwd, false, true);
 

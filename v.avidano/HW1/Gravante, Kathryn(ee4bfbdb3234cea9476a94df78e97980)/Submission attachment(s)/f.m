@@ -1,0 +1,11 @@
+function[z]=f(x,y,k)
+b=y+k;
+c=rem(b,17);
+d=-17.*x;
+g=d-c;
+h=2.^g;
+i=b./17;
+j=i.*h;
+k=rem(j,2);
+z=floor(k)  
+end
