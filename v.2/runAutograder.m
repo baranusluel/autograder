@@ -22,6 +22,12 @@ function [] = runAutograder(varargin)
         homeworkZipFilePath   = varargin{1};
         rubricZipFilePath     = varargin{2};
         destinationFolderPath = varargin{3};
+        if ispc
+            rmpath([getenv('USERPROFILE') '\Documents\MATLAB\']);
+        elseif ismac || isunix
+            rmpath('~/Documents/MATLAB/');
+        end
+            
     end
 
     try
@@ -157,14 +163,18 @@ function [] = runAutograder(varargin)
 
             % autograder run time
             toc(tstart)
-
+            if ispc
+                addpath([getenv('USERPROFILE') '\Documents\MATLAB\']);
+            elseif ismac || isunix
+                addpath('~/Documents/MATLAB/');
+            end
             % upload files to server
             uploadFilesToServer(gradebook, rubric);
 
             % remove the autograder folder from the MATLAB path
             rmpath(autograderFolderPath);
 
-            % remote all folders added to the MATLAB path
+            % remove all folders added to the MATLAB path
             pathsToRemove = fieldnames(rubric.addpath);
             for ndx = 1:length(pathsToRemove)
                 rmpath(rubric.addpath.(pathsToRemove{ndx}));
