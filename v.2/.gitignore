@@ -42,3 +42,4 @@ Thumbs.db
 *.sublime-workspace
 *.m~
 testScript*.m
+*.asv

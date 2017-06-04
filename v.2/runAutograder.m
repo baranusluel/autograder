@@ -22,8 +22,23 @@ function [] = runAutograder(varargin)
         homeworkZipFilePath   = varargin{1};
         rubricZipFilePath     = varargin{2};
         destinationFolderPath = varargin{3};
+            
     end
-
+    if ispc
+        if contains(path, [getenv('USERPROFILE') '\Documents\MATLAB'])
+            rmpath([getenv('USERPROFILE') '\Documents\MATLAB\']);
+            isDoc = true;
+        else
+            isDoc = false;
+        end
+    elseif ismac || isunix
+        if contains(path, [cd(cd('~')) '/Documents/MATLAB'])
+            isDoc = true;
+            rmpath('~/Documents/MATLAB/');
+        else
+            isDoc = false;
+        end
+    end
     try
         % getting homework .zip file
         if ~exist('homeworkZipFilePath', 'var') || ~exist(homeworkZipFilePath, 'file')
@@ -157,14 +172,20 @@ function [] = runAutograder(varargin)
 
             % autograder run time
             toc(tstart)
-
+            % restore Documents
+            if isDoc && ispc
+                addpath([getenv('USERPROFILE') '\Documents\MATLAB\']);
+            elseif isDoc && (ismac || isunix)
+                addpath('~/Documents/MATLAB/');
+            end
+            
             % upload files to server
             uploadFilesToServer(gradebook, rubric);
 
             % remove the autograder folder from the MATLAB path
             rmpath(autograderFolderPath);
 
-            % remote all folders added to the MATLAB path
+            % remove all folders added to the MATLAB path
             pathsToRemove = fieldnames(rubric.addpath);
             for ndx = 1:length(pathsToRemove)
                 rmpath(rubric.addpath.(pathsToRemove{ndx}));
@@ -212,6 +233,12 @@ function [] = runAutograder(varargin)
         end
     catch ME
         disp(ME.message);
+    end
+    % restore Documents
+    if isDoc && ispc
+        addpath([getenv('USERPROFILE') '\Documents\MATLAB\']);
+    elseif isDoc && (ismac || isunix)
+        addpath('~/Documents/MATLAB/');
     end
 
 end
