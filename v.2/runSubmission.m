@@ -42,7 +42,7 @@ function student = runSubmission(rubric, student, timeoutLogH)
     for ndxProblem = 1:length(rubric.problems)
         problem = rubric.problems(ndxProblem);
 
-        problems(ndxProblem).fileExists = exist([problem.name, '.m'], 'file');
+        problems(ndxProblem).fileExists = ~isempty(dir([problem.name, '.m']));
 
         % if the student has a submission for this problem
         if problems(ndxProblem).fileExists
@@ -98,7 +98,8 @@ function student = runSubmission(rubric, student, timeoutLogH)
             rmpath(problem.bannedFunctionsFolderPath);
         end
     end
-
+    delete('*.mat');
+    delete('*.p');
     %log timed out test cases into file -> timeoutLogH
     if any(studentTimeoutMatrix)
         r = size(studentTimeoutMatrix, 1);
