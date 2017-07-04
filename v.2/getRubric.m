@@ -25,7 +25,7 @@ function rubric = getRubric(rubricZipFilePath, destinationFolderPath, isResubmis
     % unzip zip file
     rubricFolderPath = unzipFile(rubricZipFilePath, destinationFolderPath);
 
-    %rubricFolderPath = fullfile(rubricFolderPath, settings.folderNames.RUBRIC_GRADER);
+    rubricFolderPath = fullfile(rubricFolderPath, settings.folderNames.RUBRIC_GRADER);
 
     % load rubric
     if isResubmission

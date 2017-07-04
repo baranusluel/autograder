@@ -86,7 +86,6 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
             numberOfOutputs = length(testCase.outputVariables);
             % create parallel function eval job
             f = parfeval(gcp(), @callFunction, numberOfOutputs+1, functionHandle, numberOfOutputs, functionInputs{:});
-
             % fetch outputs from job with timeout cutoff
             outputs = {};
             [f_ndx, outputs{1:numberOfOutputs+1}] = fetchNext(f, timeout);
@@ -134,30 +133,19 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
         output.files(ndxOutputFile).fileType = extension;
         output.files(ndxOutputFile).name = outputFile;
 
-        if any(cellfun(@(x) contains(outputFile, x), {'_xls.mat', '_xlsx.mat'}, 'uni', true))
+        if any(strcmp(extension, {'xls', 'xlsx'}))
+            [~, ~, output.files(ndxOutputFile).value] = xlsread(outputFile);
+        elseif any(cellfun(@(x) contains(outputFile, x), {'_xls.mat', '_xlsx.mat'}, 'uni', true))
             load(outputFile);
             output.files(ndxOutputFile).value = raw;
         elseif any(cellfun(@(x) contains(outputFile, x), possibleImageExtensions, 'uni', true))
             load(outputFile);
             output.files(ndxOutputFile).value = img;
         elseif any(cellfun(@(x) contains(extension, x), {'txt', 'm'}, 'uni', true))
-            % I think this could potentially be MUCH more efficient:
-            % file = textscan(fh, '%s', 'Delimiter', '\n');
-            % file = strjoin(file{1}', '\n');
             fh = fopen(outputFile, 'r');
-            % I think this could potentially be MUCH more efficient:
-            % file = textscan(fh, '%s', 'Delimiter', '\n');
-            % file = strjoin(file{1}', '\n');
-            file = '';
-            line = fgetl(fh);
-            while ischar(line)
-                file = [file, line]; %#ok
-                line = fgetl(fh);
-                if ischar(line)
-                    file = [file, sprintf('\n')]; %#ok
-                end
-            end
+            file = textscan(fh, '%s', 'Delimiter', {'\r', '\n', '\r\n'});
             fclose(fh);
+            file = strjoin(file{1}', '\n');
             output.files(ndxOutputFile).value = file;
         end
 

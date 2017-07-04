@@ -17,7 +17,23 @@
 %       initializes the gradebook
 function gradebook = getGradebook(homeworkZipFilePath, destinationFolderPath)
     % unzip zip file
-    gradebook.folderPaths.homework = unzipFile(homeworkZipFilePath, destinationFolderPath);
+    if ~isdir(homeworkZipFilePath)
+        gradebook.folderPaths.homework = unzipFile(homeworkZipFilePath, destinationFolderPath);
+    else
+        oldDirectoryContents  = getDirectoryContents(destinationFolderPath, true, false);
+        copyfile(homeworkZipFilePath, destinationFolderPath, 'f');
+        % get folders
+        newDirectoryContents  = getDirectoryContents(destinationFolderPath, true, false);
+
+        % get name of unzipped folder
+        folder = setdiff({newDirectoryContents.name}, {oldDirectoryContents.name});
+
+        % setdiff returns a cell so extract string in cell
+        folder = folder{1};
+        
+        % get folder path in destination folder
+        gradebook.folderPaths.homework = fullfile(destinationFolderPath, folder);
+    end
 
     % get relevant homework information
     [~, homeworkFolderName] = fileparts(gradebook.folderPaths.homework);

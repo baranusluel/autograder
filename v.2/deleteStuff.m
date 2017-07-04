@@ -6,5 +6,9 @@ for d = 1:numel(D)
     name = d.name;
     cd([name '\Submission attachment(s)']);
     delete('*.mat');
-    cd ..\..
+    cd ..
+    cd('Feedback Attachment(s)');
+    delete('*');
+    cd ..
+    cd ..
 end

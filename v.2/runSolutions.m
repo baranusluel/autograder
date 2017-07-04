@@ -51,7 +51,10 @@ function rubric = runSolutions(rubric)
             testCase = problem.testCases(ndxTestCase);
             [testCase.inputVariables, testCase.outputVariables] = parseTestCase(testCase.call);
             testCase.output = runTestCase(functionHandle, testCase, problem.inputs, true, [], rubric.addpath.overridenFunctionsFolderPath);
-
+            % Need to strip the _soln.txt:
+            for s = 1:numel(testCase.output.files)
+                testCase.output.files(s).name = regexprep(testCase.output.files(s).name, '_soln\.txt$', '.txt');
+            end
             numberOfVariables = length(testCase.output.variables);
             numberOfFiles     = length(testCase.output.files);
             numberOfPlots     = length(testCase.output.plots);
@@ -61,14 +64,16 @@ function rubric = runSolutions(rubric)
             testCase.numberOfOutputs = numberOfVariables + numberOfFiles + numberOfPlots * 9;
             testCase.pointsPerOutput = zeros(1, testCase.numberOfOutputs);
             ndxPointsPerOutput = 1;
+            % I have ABSOLUTELY NO IDEA WHAT THIS FOR LOOP IS SUPPOSED TO
+            % DO
             for ndxPoints = 1:length(pointsBreakDown)
                 if ndxPoints <= numberOfVariables
                     testCase.pointsPerOutput(ndxPointsPerOutput) = pointsBreakDown(ndxPoints);
                     ndxPointsPerOutput = ndxPointsPerOutput + 1;
-                elseif ndxPoints <= numberOfFiles
+                elseif ndxPoints <= numberOfFiles + numberOfVariables
                     testCase.pointsPerOutput(ndxPointsPerOutput) = pointsBreakDown(ndxPoints);
                     ndxPointsPerOutput = ndxPointsPerOutput + 1;
-                elseif ndxPoints <= numberOfPlots
+                elseif ndxPoints <= numberOfPlots + numberOfFiles + numberOfVariables
                     testCase.pointsPerOutput(ndxPointsPerOutput:ndxPointsPerOutput+8) = pointsBreakDown(ndxPoints) .* [[ones(1, 8).*0.02],0.84];
                     ndxPointsPerOutput = ndxPointsPerOutput + 9;
                 end

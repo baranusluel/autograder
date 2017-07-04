@@ -24,6 +24,8 @@ function folderPath = unzipFile(zipFilePath, destinationFolderPath)
     if ispc
         % get folders
         oldDirectoryContents  = getDirectoryContents(destinationFolderPath, true, false);
+        % I think this would work:
+        % unzip(zipfilePath, destinationFolderPath);
         
         [result, msg] = system(['7z x "' zipFilePath '" -o"' destinationFolderPath '"']);
         if result ~= 0

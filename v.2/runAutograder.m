@@ -13,31 +13,30 @@
 %
 %   How to run:
 %
-function [] = runAutograder(varargin)
+function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationFolderPath, varargin)
 
     clc;
     close all;
 
-    if nargin == 3
-        homeworkZipFilePath   = varargin{1};
-        rubricZipFilePath     = varargin{2};
-        destinationFolderPath = varargin{3};
-            
-    end
-    if ispc
-        if contains(path, [getenv('USERPROFILE') '\Documents\MATLAB'])
-            rmpath([getenv('USERPROFILE') '\Documents\MATLAB\']);
-            isDoc = true;
-        else
-            isDoc = false;
+    isCurrent = ver('MATLAB');
+    if strcmp(isCurrent.Release, '(R2017a)')
+        if ispc
+            if contains(path, [getenv('USERPROFILE') '\Documents\MATLAB'])
+                rmpath([getenv('USERPROFILE') '\Documents\MATLAB\']);
+                isDoc = true;
+            else
+                isDoc = false;
+            end
+        elseif ismac || isunix
+            if contains(path, [cd(cd('~')) '/Documents/MATLAB'])
+                isDoc = true;
+                rmpath('~/Documents/MATLAB/');
+            else
+                isDoc = false;
+            end
         end
-    elseif ismac || isunix
-        if contains(path, [cd(cd('~')) '/Documents/MATLAB'])
-            isDoc = true;
-            rmpath('~/Documents/MATLAB/');
-        else
-            isDoc = false;
-        end
+    else
+        isDoc = true;
     end
     try
         % getting homework .zip file
@@ -179,8 +178,8 @@ function [] = runAutograder(varargin)
                 addpath('~/Documents/MATLAB/');
             end
             
-            % upload files to server
-            uploadFilesToServer(gradebook, rubric);
+            % upload files to server (Deprecated)
+            % uploadFilesToServer(gradebook, rubric);
 
             % remove the autograder folder from the MATLAB path
             rmpath(autograderFolderPath);
