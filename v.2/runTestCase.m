@@ -122,7 +122,7 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
 
     % get possible img format extensions
     possibleImageExtensions = imformats;
-    possibleImageExtensions = cellfun(@(x) ['_' x '.mat'], [possibleImageExtensions.ext], 'uni', false);
+    possibleImageExtensions = [possibleImageExtensions.ext];
 
     % get files
     for ndxOutputFile = 1:length(outputFiles)
@@ -131,16 +131,24 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
         extension         = strtok(extension,'.');
 
         output.files(ndxOutputFile).fileType = extension;
-        output.files(ndxOutputFile).name = outputFile;
+        if strcmpi(extension, 'mat')
+            % This is a "hotfix" for images. Remove .mat, replace with '',
+            % then take last _ and replace with .
+            outputFileNew = outputFile(1:end-4);
+            inds = strfind(outputFileNew, '_');
+            outputFileNew(inds(end)) = '.';
+        else
+            outputFileNew = outputFile;
+        end
+        output.files(ndxOutputFile).name = outputFileNew;
 
         if any(strcmp(extension, {'xls', 'xlsx'}))
             [~, ~, output.files(ndxOutputFile).value] = xlsread(outputFile);
         elseif any(cellfun(@(x) contains(outputFile, x), {'_xls.mat', '_xlsx.mat'}, 'uni', true))
-            load(outputFile);
-            output.files(ndxOutputFile).value = raw;
+            raw = load(outputFile);
+            output.files(ndxOutputFile).value = raw.raw;
         elseif any(cellfun(@(x) contains(outputFile, x), possibleImageExtensions, 'uni', true))
-            load(outputFile);
-            output.files(ndxOutputFile).value = img;
+            output.files(ndxOutputFile).value = imread(outputFile);
         elseif any(cellfun(@(x) contains(extension, x), {'txt', 'm'}, 'uni', true))
             fh = fopen(outputFile, 'r');
             file = textscan(fh, '%s', 'Delimiter', {'\r', '\n', '\r\n'});

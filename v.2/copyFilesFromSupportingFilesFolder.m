@@ -11,7 +11,7 @@ function copyFilesFromSupportingFilesFolder(supportingFilesFolderPath, supportin
         % get file extension
         [~, ~, extension] = fileparts(filename);
         extension         = strtok(extension,'.');
-
+        %{
         switch extension
             case {'xls','xlsx'}
                 [filepath, filename, extension] = fileparts(filename);
@@ -21,6 +21,7 @@ function copyFilesFromSupportingFilesFolder(supportingFilesFolderPath, supportin
                 filename = fullfile(filepath, [filename '_' extension(2:end) '.mat']);
             otherwise
         end
+        %}
         copyfile(fullfile(supportingFilesFolderPath,...
                           filename),...
                  destinationFolderPath);

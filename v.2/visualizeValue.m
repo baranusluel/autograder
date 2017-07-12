@@ -13,18 +13,18 @@
 %   Description:
 %       Gets feedback for a student for a single problem
 function formattedValue = visualizeValue(value)
+    FIG_SIZE = 1024;
     numberOfDimensions = ndims(value);
     dimensions = {};
     [dimensions{1:numberOfDimensions}] = size(value);
     r = dimensions{1};
     c = dimensions{2};
     if isnumeric(value)
-        if strcmp(class(value), 'uint8')
+        if isa(value, 'uint8')
             close all;
-            figure('Visible', 'Off');
+            figureHandle = figure('Visible', 'Off');
             imshow(value);
-            figureHandle = gcf;
-            set(figureHandle, 'Position', [0, 0, FIG_SIZE, FIG_SIZE]);
+            figureHandle.Position = [0, 0, FIG_SIZE, FIG_SIZE];
             formattedValue = sprintf('<img src="data:image/png;base64, %s" />', base64img(figureHandle));
         else
             % if empty
@@ -128,7 +128,7 @@ function formattedValue = visualizeValue(value)
         % structure, we're just going to evaluate (disp(stc)) and save the
         % results!
         cellReps = cellfun(@(stc)(evalc('disp(stc);')), stcValue, 'uni', false);
-        cellReturns = strfind(cellReps, char(10), 'ForceCellOutput', true);
+        cellReturns = strfind(cellReps, newline, 'ForceCellOutput', true);
         cellReturns = cellfun(@(vec)(vec(end:-1:1)), cellReturns, 'uni', false);
         cellReps = cellfun(@(str, inds)(return2break(str, inds))', cellReps, cellReturns, 'uni', false);
         % find the last useful size.

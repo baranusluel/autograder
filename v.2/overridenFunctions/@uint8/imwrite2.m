@@ -16,7 +16,7 @@
 %   Description:
 %       The imwrite overload function simulates image writing using a .mat
 %       file to store the 3D uint8 image array.
-function filename_mat = imwrite(img, filename_img,varargin)
+function filename_mat = imwrite2(img, filename_img,varargin)
 
     if nargin == 2
 

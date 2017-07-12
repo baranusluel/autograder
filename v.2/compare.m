@@ -19,82 +19,53 @@
 %   Description:
 %       Compares student answer with solution and outputs message
 function [isEqual,message] = compare(studentAnswer,solutionAnswer,isFile)
-
     messages = getMessages();
-
     if isFile
-
         [isEqual,message] = compareValue(studentAnswer,solutionAnswer,messages);
-
-        if false == isEqual
-
+        if ~isEqual
             message = messages.compare.fileIncorrect;
-
         end
-
     else
-
         [isEqual,message] = compareClass(studentAnswer,solutionAnswer,messages);
-
         if isEqual
-
             if ischar(solutionAnswer)
-
                 [isEqual,message] = compareValue(studentAnswer,solutionAnswer,messages);
-
             else
-
                 [isEqual,message] = compareDimensions(studentAnswer,solutionAnswer,messages);
-
                 if isEqual
-
                     if isnumeric(solutionAnswer)
-
                         [isEqual,message] = compareNumeric(studentAnswer,solutionAnswer,messages);
-
                     else
                         [isEqual,message] = compareValue(studentAnswer,solutionAnswer,messages);
-
                     end
-
                 end
-
             end
-
         end
-
     end
-
 end
 
 function [isEqual,message] = compareClass(studentAnswer,solutionAnswer,messages)
-
     isEqual = strcmp(class(studentAnswer),class(solutionAnswer));
     message  = '';
-
-    if false == isEqual
+    if ~isEqual
         message = messages.compare.classMismatch;
     end
-
 end
 
 function [isEqual,message] = compareDimensions(studentAnswer,solutionAnswer,messages)
-
     isEqual = (isempty(solutionAnswer) && isempty(studentAnswer)) || isequal(size(studentAnswer),size(solutionAnswer));
     message = '';
 
-    if false == isEqual
+    if ~isEqual
         message = messages.compare.dimensionMismatch;
     end
-
 end
 
 function [isEqual,message] = compareValue(studentAnswer,solutionAnswer,messages)
-
     isEqual = isequaln(studentAnswer,solutionAnswer);
     message = '';
 
-    if false == isEqual
+    if ~isEqual
         message = messages.compare.valueIncorrect;
     end
 
@@ -112,7 +83,7 @@ function [isEqual,message] = compareNumeric(studentAnswer,solutionAnswer,message
 
     message = '';
 
-    if false == isEqual
+    if ~isEqual
         message = messages.compare.valueIncorrect;
     end
 
