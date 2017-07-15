@@ -224,93 +224,92 @@ AXIS_TOL = .2;
 COLOR_TOL = 10; % angle in degrees by which any two histogram vectors may differ and still be considered equal
 HAUSDORFF_TOL = 80; % Hausdorff distance between two plots
 % go through output plots
-allMessages = cell(length(studPlot.plots),1);
-points = cell(size(allMessages));
-numPlots = min(length(studPlot.plots), length(solnPlot.plots));
-if (length(studPlot.plots) ~= length(solnPlot.plots))
-    disp(['Warning! Number of subplots ' ...
-        'between student and solution (' num2str(length(studPlot.plots)) ... 
-        ' v.s. ' num2str(length(solnPlot.plots)) ') do not match']);
+% allMessages = cell(length(studPlot.plots),1);
+% points = cell(size(allMessages));
+% numPlots = min(length(studPlot.plots), length(solnPlot.plots));
+% if (length(studPlot.plots) ~= length(solnPlot.plots))
+%     disp(['Warning! Number of subplots ' ...
+%         'between student and solution (' num2str(length(studPlot.plots)) ... 
+%         ' v.s. ' num2str(length(solnPlot.plots)) ') do not match']);
+% end
+% for ndxPlot = 1:numPlots
+%     studSubPlot = studPlot.plots(ndxPlot);
+%     solnSubPlot = solnPlot.plots(ndxPlot);
+isEqual = true(1, 9);
+outputMessages = cell(1, 9);
+studSubPlot = studPlot;
+solnSubPlot = solnPlot;
+% check axis labels
+if iscell(studSubPlot.properties.XLabel)
+    studSubPlot.properties.XLabel = studSubPlot.properties.XLabel{1};
 end
-for ndxPlot = 1:numPlots
-    studSubPlot = studPlot.plots(ndxPlot);
-    solnSubPlot = solnPlot.plots(ndxPlot);
+if iscell(studSubPlot.properties.YLabel)
+    studSubPlot.properties.YLabel = studSubPlot.properties.YLabel{1};
+end
+if iscell(studSubPlot.properties.ZLabel)
+    studSubPlot.properties.ZLabel = studSubPlot.properties.ZLabel{1};
+end                            
+if ~isequal(studSubPlot.properties.XLabel, solnSubPlot.properties.XLabel)
+    isEqual(1) = false;
+    outputMessages{1} = 'The x-axis label differs from the solution';
+end
+if ~isequal(studSubPlot.properties.YLabel, solnSubPlot.properties.YLabel)
+    isEqual(2) = false;
+    outputMessages{2} = 'The y-axis label differs from the solution';
+end
+if ~isequal(studSubPlot.properties.ZLabel, solnSubPlot.properties.ZLabel) 
+    isEqual(3) = false;
+    outputMessages{3} = 'The z-axis label differs from the solution';
+end
 
-    isEqual = true(1, 9);
-    outputMessages = cell(1, 9);
+% check the title
+if ~isequal(studSubPlot.properties.Title, solnSubPlot.properties.Title)
+    isEqual(4) = false;
+    outputMessages{4} = 'The title differs from the solution';
+end
 
-    % check axis labels
-    if iscell(studSubPlot.properties.XLabel)
-        studSubPlot.properties.XLabel = studSubPlot.properties.XLabel{1};
-    end
-    if iscell(studSubPlot.properties.YLabel)
-        studSubPlot.properties.YLabel = studSubPlot.properties.YLabel{1};
-    end
-    if iscell(studSubPlot.properties.ZLabel)
-        studSubPlot.properties.ZLabel = studSubPlot.properties.ZLabel{1};
-    end                            
-    if ~isequal(studSubPlot.properties.XLabel, solnSubPlot.properties.XLabel)
-        isEqual(1) = false;
-        outputMessages{1} = 'The x-axis label differs from the solution';
-    end
-    if ~isequal(studSubPlot.properties.YLabel, solnSubPlot.properties.YLabel)
-        isEqual(2) = false;
-        outputMessages{2} = 'The y-axis label differs from the solution';
-    end
-    if ~isequal(studSubPlot.properties.ZLabel, solnSubPlot.properties.ZLabel) 
-        isEqual(3) = false;
-        outputMessages{3} = 'The z-axis label differs from the solution';
-    end
+% check x axis range
+range = AXIS_TOL * diff(solnSubPlot.properties.XLim);
+if abs(studSubPlot.properties.XLim(1) - solnSubPlot.properties.XLim(1)) > range || abs(studSubPlot.properties.XLim(2) - solnSubPlot.properties.XLim(2)) > range
+    isEqual(5) = false;
+    outputMessages{5} = 'The x-axis range differs from the solution';
+end
 
-    % check the title
-    if ~isequal(studSubPlot.properties.Title, solnSubPlot.properties.Title)
-        isEqual(4) = false;
-        outputMessages{4} = 'The title differs from the solution';
-    end
+% check y axis range
+range = AXIS_TOL * diff(solnSubPlot.properties.YLim);
+if abs(studSubPlot.properties.YLim(1) - solnSubPlot.properties.YLim(1)) > range || abs(studSubPlot.properties.YLim(2) - solnSubPlot.properties.YLim(2)) > range
+    isEqual(6) = false;
+    outputMessages{6} = 'The y-axis range differs from the solution';
+end
 
-    % check x axis range
-    range = AXIS_TOL * diff(solnSubPlot.properties.XLim);
-    if abs(studSubPlot.properties.XLim(1) - solnSubPlot.properties.XLim(1)) > range || abs(studSubPlot.properties.XLim(2) - solnSubPlot.properties.XLim(2)) > range
-        isEqual(5) = false;
-        outputMessages{5} = 'The x-axis range differs from the solution';
-    end
+% check z axis range
+range = AXIS_TOL * diff(solnSubPlot.properties.ZLim);
+if abs(studSubPlot.properties.ZLim(1) - solnSubPlot.properties.ZLim(1)) > range || abs(studSubPlot.properties.ZLim(2) - solnSubPlot.properties.ZLim(2)) > range
+    isEqual(7) = false;
+    outputMessages{7} = 'The z-axis range differs from the solution';
+end
 
-    % check y axis range
-    range = AXIS_TOL * diff(solnSubPlot.properties.YLim);
-    if abs(studSubPlot.properties.YLim(1) - solnSubPlot.properties.YLim(1)) > range || abs(studSubPlot.properties.YLim(2) - solnSubPlot.properties.YLim(2)) > range
-        isEqual(6) = false;
-        outputMessages{6} = 'The y-axis range differs from the solution';
+% check color
+for ndxLayer = 1:length(solnSubPlot.histogram)
+    studHist = studSubPlot.histogram{ndxLayer};
+    solnHist = solnSubPlot.histogram{ndxLayer};
+    % calculate angle between these two vectors
+    th = acosd(dot(studHist, solnHist) / (norm(studHist) * norm(solnHist)));
+    if th > COLOR_TOL
+        isEqual(8) = false;
+        outputMessages{8} = 'The colors differ from the solution';
     end
+end
 
-    % check z axis range
-    range = AXIS_TOL * diff(solnSubPlot.properties.ZLim);
-    if abs(studSubPlot.properties.ZLim(1) - solnSubPlot.properties.ZLim(1)) > range || abs(studSubPlot.properties.ZLim(2) - solnSubPlot.properties.ZLim(2)) > range
-        isEqual(7) = false;
-        outputMessages{7} = 'The z-axis range differs from the solution';
-    end
-
-    % check color
-    for ndxLayer = 1:length(solnSubPlot.histogram)
-        studHist = studSubPlot.histogram{ndxLayer};
-        solnHist = solnSubPlot.histogram{ndxLayer};
-        % calculate angle between these two vectors
-        th = acosd(dot(studHist, solnHist) / (norm(studHist) * norm(solnHist)));
-        if th > COLOR_TOL
-            isEqual(8) = false;
-            outputMessages{8} = 'The colors differ from the solution';
-        end
-    end
-
-    % check data visually
+% check data visually
 %     dataDifference = sum(sum(studSubPlot.imgBWResized ~= solnSubPlot.imgBWResized));
-    hausdorffDiff = HausdorffDist(studSubPlot.imgBWResized , solnSubPlot.imgBWResized, 0);
-    disp(['Hausdorff Distance Computed for Subplot ' num2str(ndxPlot) ' is ' num2str(hausdorffDiff,3)]);
-    if hausdorfDiff > HAUSDORFF_TOL
-        isEqual(9) = false;
-        outputMessages{9} = 'The data values differ from the solution';
-    end
-    points(ndxPlot) = {isEqual};
-    allMessages(ndxPlot) = {outputMessages}; 
+hausdorffDiff = HausdorffDist(studSubPlot.imgBWResized , solnSubPlot.imgBWResized, 0);
+disp(['Hausdorff Distance Computed for Subplot ' '1' ' is ' num2str(hausdorffDiff,3)]);
+if hausdorffDiff > HAUSDORFF_TOL
+    isEqual(9) = false;
+    outputMessages{9} = 'The data values differ from the solution';
 end
+points = {isEqual};
+allMessages = {outputMessages}; 
 points = mean(vertcat(points{:}));
 end
