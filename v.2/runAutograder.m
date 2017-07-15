@@ -17,7 +17,9 @@ function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationF
 
     clc;
     close all;
-
+    userFigureSetting = get(0,'DefaultFigureVisible');
+    set(0,'DefaultFigureVisible','off');
+    
     isCurrent = ver('MATLAB');
     if strcmp(isCurrent.Release, '(R2017a)')
         if ispc
@@ -177,7 +179,7 @@ function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationF
             elseif isDoc && (ismac || isunix)
                 addpath('~/Documents/MATLAB/');
             end
-            
+            set(0,'DefaultFigureVisible',userFigureSetting);
             % upload files to server (Deprecated)
             % uploadFilesToServer(gradebook, rubric);
 
@@ -239,5 +241,5 @@ function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationF
     elseif isDoc && (ismac || isunix)
         addpath('~/Documents/MATLAB/');
     end
-
+    set(0,'DefaultFigureVisible',userFigureSetting);
 end
