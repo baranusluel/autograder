@@ -215,6 +215,7 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
             figureHandle2 = figure('Visible', 'Off');
             imshow(output.plots(ndxPlot).img);
             output.plots(ndxPlot).base64img = base64img(figureHandle2);
+            close(figureHandle2);
         end
 
         close(figureHandle);
