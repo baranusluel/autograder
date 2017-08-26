@@ -51,8 +51,10 @@ function rubric = runSolutions(rubric)
             testCase = problem.testCases(ndxTestCase);
             [testCase.inputVariables, testCase.outputVariables] = parseTestCase(testCase.call);
             testCase.output = runTestCase(functionHandle, testCase, problem.inputs, true, [], rubric.addpath.overridenFunctionsFolderPath);
+            % Need to delete any output files:
             % Need to strip the _soln.*:
             for s = 1:numel(testCase.output.files)
+                delete(testCase.output.files(s).name);
                 testCase.output.files(s).name = regexprep(testCase.output.files(s).name, '_soln\.', '.');                
             end
             numberOfVariables = length(testCase.output.variables);
