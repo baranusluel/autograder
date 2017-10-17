@@ -141,13 +141,13 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
             outputFileNew = outputFile;
         end
         output.files(ndxOutputFile).name = outputFileNew;
-
+        
         if any(strcmp(extension, {'xls', 'xlsx'}))
             [~, ~, output.files(ndxOutputFile).value] = xlsread(outputFile);
         elseif any(cellfun(@(x) contains(outputFile, x), {'_xls.mat', '_xlsx.mat'}, 'uni', true))
             raw = load(outputFile);
             output.files(ndxOutputFile).value = raw.raw;
-        elseif any(cellfun(@(x) contains(outputFile, x), possibleImageExtensions, 'uni', true))
+        elseif any(cellfun(@(x) contains(extension, x), possibleImageExtensions, 'uni', true))
             output.files(ndxOutputFile).value = imread(outputFile);
         elseif any(cellfun(@(x) contains(extension, x), {'txt', 'm'}, 'uni', true))
             fh = fopen(outputFile, 'r');
