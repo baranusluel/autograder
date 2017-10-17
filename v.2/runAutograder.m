@@ -13,7 +13,7 @@
 %
 %   How to run:
 %
-function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationFolderPath, varargin)
+function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationFolderPath)
 
     clc;
     close all;
@@ -21,7 +21,16 @@ function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationF
     set(0,'DefaultFigureVisible','off');
     
     isCurrent = ver('MATLAB');
-    if strcmp(isCurrent.Release, '(R2017a)')
+    if str2double(isCurrent.Release(3:6)) > 2016
+        if isstring(homeworkZipFilePath)
+            homeworkZipFilePath = homeworkZipFilePath.char;
+        end
+        if isstring(rubricZipFilePath)
+            rubricZipFilePath = rubricZipFilePath.char;
+        end
+        if isstring(destinationFolderPath)
+            destinationFolderPath = destinationFolderPath.char;
+        end
         if ispc
             if contains(path, [getenv('USERPROFILE') '\Documents\MATLAB'])
                 rmpath([getenv('USERPROFILE') '\Documents\MATLAB\']);
