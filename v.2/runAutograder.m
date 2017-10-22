@@ -19,36 +19,7 @@ function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationF
     close all;
     userFigureSetting = get(0,'DefaultFigureVisible');
     set(0,'DefaultFigureVisible','off');
-    
-    isCurrent = ver('MATLAB');
-    if str2double(isCurrent.Release(3:6)) > 2016
-        if isstring(homeworkZipFilePath)
-            homeworkZipFilePath = homeworkZipFilePath.char;
-        end
-        if isstring(rubricZipFilePath)
-            rubricZipFilePath = rubricZipFilePath.char;
-        end
-        if isstring(destinationFolderPath)
-            destinationFolderPath = destinationFolderPath.char;
-        end
-        if ispc
-            if contains(path, [getenv('USERPROFILE') '\Documents\MATLAB'])
-                rmpath([getenv('USERPROFILE') '\Documents\MATLAB\']);
-                isDoc = true;
-            else
-                isDoc = false;
-            end
-        elseif ismac || isunix
-            if contains(path, [cd(cd('~')) '/Documents/MATLAB'])
-                isDoc = true;
-                rmpath('~/Documents/MATLAB/');
-            else
-                isDoc = false;
-            end
-        end
-    else
-        isDoc = true;
-    end
+    isDoc = true;
     try
         % getting homework .zip file
         if ~exist('homeworkZipFilePath', 'var') || ~exist(homeworkZipFilePath, 'file')
@@ -114,7 +85,33 @@ function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationF
                 end
             end
         end
-
+    isCurrent = ver('MATLAB');
+    if str2double(isCurrent.Release(3:6)) > 2016
+        if isstring(homeworkZipFilePath)
+            homeworkZipFilePath = homeworkZipFilePath.char;
+        end
+        if isstring(rubricZipFilePath)
+            rubricZipFilePath = rubricZipFilePath.char;
+        end
+        if isstring(destinationFolderPath)
+            destinationFolderPath = destinationFolderPath.char;
+        end
+        if ispc
+            if contains(path, [getenv('USERPROFILE') '\Documents\MATLAB'])
+                rmpath([getenv('USERPROFILE') '\Documents\MATLAB\']);
+                isDoc = true;
+            else
+                isDoc = false;
+            end
+        elseif ismac || isunix
+            if contains(path, [cd(cd('~')) '/Documents/MATLAB'])
+                isDoc = true;
+                rmpath('~/Documents/MATLAB/');
+            else
+                isDoc = false;
+            end
+        end
+    end
         try
 
             % start timer
