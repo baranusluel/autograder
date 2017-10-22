@@ -143,7 +143,12 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
         output.files(ndxOutputFile).name = outputFileNew;
         
         if any(strcmp(extension, {'xls', 'xlsx'}))
-            [~, ~, output.files(ndxOutputFile).value] = xlsread(outputFile);
+            try
+                [~, ~, output.files(ndxOutputFile).value] = xlsread(outputFile);
+            catch ME
+                % Couldn't read the file - contents should be {'INVALID FILE FORMAT'}
+                output.files(ndxOutputFile).value = 'INVALID FILE FORMAT';
+            end
         elseif any(cellfun(@(x) contains(outputFile, x), {'_xls.mat', '_xlsx.mat'}, 'uni', true))
             raw = load(outputFile);
             output.files(ndxOutputFile).value = raw.raw;
