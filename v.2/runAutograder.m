@@ -14,8 +14,11 @@
 %   How to run:
 %
 function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationFolderPath)
-
-    clc;
+    
+    % Begin Canvas Integration Attempt
+    homeworkZipFilePath = canvasConverter;
+    % End Canvas Integration Attempts
+    
     close all;
     userFigureSetting = get(0,'DefaultFigureVisible');
     set(0,'DefaultFigureVisible','off');
