@@ -39,7 +39,7 @@ function gradebook = getGradebook(homeworkZipFilePath, destinationFolderPath)
     [~, homeworkFolderName] = fileparts(gradebook.folderPaths.homework);
     homeworkNumber = strtok(homeworkFolderName, '-');
     gradebook.homeworkNumber = str2double(homeworkNumber(homeworkNumber >= '0' & homeworkNumber <= '9'));
-    gradebook.isResubmission = ~isempty(strfind(lower(gradebook.folderPaths.homework), 'resubmission'));
+    gradebook.isResubmission = contains(gradebook.folderPaths.homework, 'resubmission', 'IgnoreCase', true);
 
     settings = getSettings();
     gradebook.filePaths.gradesCsv = fullfile(gradebook.folderPaths.homework, settings.fileNames.GRADES_CSV);
