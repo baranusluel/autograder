@@ -140,7 +140,7 @@ function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationF
 
             % get rubric
             disp('Getting rubric...');
-            rubric = getRubric(rubricZipFilePath, destinationFolderPath, gradebook.isResubmission);
+            [rubric, releaseFolderPath] = getRubric(rubricZipFilePath, destinationFolderPath, gradebook.isResubmission);
 
             % grade student submissions
             disp('Grading student submissions...');
@@ -168,14 +168,14 @@ function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationF
             disp('Saving gradebook and rubric to autograder.mat...');
             save(fullfile(destinationFolderPath, 'autograder.mat'), 'rubric', 'gradebook');
 
-            % zip the graded homework folder for upload to t-square
-            disp('Zipping homework upload folder...');
-            outputZipFilePath = [gradebook.folderPaths.homework, '.zip'];
-            if exist(outputZipFilePath, 'file')
-                % delete the file if it already exists
-                delete(outputZipFilePath);
-            end
-            zip(outputZipFilePath, gradebook.folderPaths.homework);
+%             % zip the graded homework folder for upload to t-square
+%             disp('Zipping homework upload folder...');
+%             outputZipFilePath = [gradebook.folderPaths.homework, '.zip'];
+%             if exist(outputZipFilePath, 'file')
+%                 % delete the file if it already exists
+%                 delete(outputZipFilePath);
+%             end
+%             zip(outputZipFilePath, gradebook.folderPaths.homework);
 
             % autograder run time
             toc(tstart)
@@ -203,6 +203,12 @@ function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationF
 
             % close parallel pool if open (opened when running student submissions)
             delete(gcp('nocreate'));
+            
+            % clean up by deleting unzipped hw##_release folder, log file
+            % and .mat file
+            rmdir(releaseFolderPath, 's');
+            delete(fullfile(destinationFolderPath, 'autograder.mat'));
+            delete(fullfile(destinationFolderPath, 'timeoutLog.txt'));
 
             % total run time
             toc(tstart);
