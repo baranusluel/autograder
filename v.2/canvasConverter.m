@@ -12,8 +12,7 @@ function out_file = canvasConverter(submissions_file, gradebook, hw_name)
         % UI input if fewer than 3 inputs.
         [submissions_file,sub_path] = uigetfile('*.zip','Select the .zip downloaded from canvas');
         [gradebook,gradebook_path] = uigetfile([sub_path '\*.csv'],'Select the .csv downloaded from canvas');
-        submissions_file = fullfile(sub_path,submissions_file);
-        gradebook = fullfile(gradebook_path,gradebook);
+        
         
         f = figure('Name','Select Homework',...
                    'Visible','on',...
@@ -47,7 +46,10 @@ function out_file = canvasConverter(submissions_file, gradebook, hw_name)
     end
     
     out_file = ['formatted' upper(submissions_file(1)) submissions_file(2:end)];
-
+    out_file = fullfile(sub_path,out_file);
+    submissions_file = fullfile(sub_path,submissions_file);
+    gradebook = fullfile(gradebook_path,gradebook);
+    
     % Create temporary working directory
     mkdir('canvasConverter_tmp');
     % Unzip student submissions from Canvas
