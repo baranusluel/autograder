@@ -83,7 +83,7 @@ function runAutograder(canvasZipPath, rubricZipPath, destinationPath, canvasGrad
     
     % Put individual students into individual folders with more appropriate
     %   names
-    parsedCanvasPath = canvasParser(canvasZipPath, canvasGradebookPath, hwName, resub);
+    parsedCanvasPath = canvasParser(canvasZipPath, canvasGradebookPath, hwName);
     
     
     
