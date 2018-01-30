@@ -17,30 +17,31 @@ function runAutograder(canvasZipPath, rubricZipPath, destinationPath, canvasGrad
     
     % Retrieve the Canvas submissions
     if ~exist('canvasZipPath', 'var')
-        [canvasZip, canvasPath] = uigetfile('*.zip', 'Select the .zip downloaded from canvas');
+        [canvasZip, canvasPath] = uigetfile([lookupPath '\*.zip'], 'Select the .zip downloaded from canvas');
         canvasZipPath = fullfile(canvasPath, canvasZip);
+        lookupPath = canvasPath;
     end
     
     % Retrieve the Rubric .zip file
     if ~exist('rubricZipPath', 'var')
-        [rubricZip, rubricPath] = uigetfile('*.zip', 'Select the rubric .zip');
+        [rubricZip, rubricPath] = uigetfile([lookupPath '\*.zip'], 'Select the rubric .zip');
         rubricZipPath = fullfile(rubricPath, rubricZip);
+        lookupPath = rubricPath;
     end
 	
     % Retrieve the destination folder
     if ~exist('destinationPath','var')
-        destinationPath = uigetdir('
+        destinationPath = uigetdir(lookupPath, 'Select the destination folder');
+        lookupPath = destinationPath;
     end
     
+    % Retrieve the canvas gradebook
+    if ~exist('canvasGradebookPath','var')
+        [canvasGradebook, gradebookPath] = uigetfile([lookupPath '\*.csv'], 'Select the gradebook .csv downloaded from canvas');
+        canvasGradebookPath = fullfile(gradebookPath, canvasGradebook);
+    end
     
-    
-    
-    
-    
-    
-        [canvasZipPath,subPath] = uigetfile('*.zip','Select the .zip downloaded from canvas');
-        [gradebook,gradebookPath] = uigetfile([subPath '\*.csv'],'Select the .csv downloaded from canvas');
-        
+    if ~exist('hwName','var') || ~exist('resub','var')
         f = figure('Name','Select Homework',...
                    'Visible','on',...
                    'Units','Normalized',...
@@ -73,22 +74,34 @@ function runAutograder(canvasZipPath, rubricZipPath, destinationPath, canvasGrad
         uiwait(f);
         hwName = list.String{list.Value};
         resub = logical(chkbx.Value);
-        close(f)
-        if resub
-            hwName = [hwName(1:find(hwName == '-')+1) 'Resubmission'];
-        end
-        parsedCanvasPath = ['formatted' upper(canvasZipPath(1)) canvasZipPath(2:end)];
-        parsedCanvasPath = fullfile(subPath,parsedCanvasPath);
-        canvasZipPath = fullfile(subPath,canvasZipPath);
-        gradebook = fullfile(gradebookPath,gradebook);
-        
-    elseif nargin < 2
+        close(f)    
     end
     
-    
+    if resub
+        hwName = [hwName(1:find(hwName == '-')+1) 'Resubmission'];
+    end
     
     % Put individual students into individual folders with more appropriate
     %   names
-    parsedCanvasPath = canvasParser(canvasZipPath, canvasGradebookPath, hwName, resub)
+    parsedCanvasPath = canvasParser(canvasZipPath, canvasGradebookPath, hwName, resub);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
 end
