@@ -1,6 +1,6 @@
 %% getRubric Gets the rubric to run the homework
 %
-%   rubric = getRubric(rubricZipFilePath, destinationFolderPath, isResubmission)
+%   [rubric, releaseFolderPath] = getRubric(rubricZipFilePath, destinationFolderPath, isResubmission)
 %
 %   Inputs:
 %       rubricZipFilePath (char)
@@ -14,18 +14,20 @@
 %       rubric (struct)
 %           - a struct containing the details for the problems for the
 %           current homework (test cases, points, solutions, etc.)
+%       releaseFolderPath (char)
+%            - path to the unzipped release / rubric in the working directory
 %
 %   Description:
 %       Unzips the rubric .zip file, parses the rubric.json file, converts
 %       supporting files to .mat, and runs the solutions
-function rubric = getRubric(rubricZipFilePath, destinationFolderPath, isResubmission)
+function [rubric, releaseFolderPath] = getRubric(rubricZipFilePath, destinationFolderPath, isResubmission)
     % get settings
     settings = getSettings();
 
     % unzip zip file
-    rubricFolderPath = unzipFile(rubricZipFilePath, destinationFolderPath);
+    releaseFolderPath = unzipFile(rubricZipFilePath, destinationFolderPath);
 
-    rubricFolderPath = fullfile(rubricFolderPath, settings.folderNames.RUBRIC_GRADER);
+    rubricFolderPath = fullfile(releaseFolderPath, settings.folderNames.RUBRIC_GRADER);
 
     % load rubric
     if isResubmission
