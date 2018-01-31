@@ -31,10 +31,11 @@ function parsedCanvasPath = canvasParser(canvasZipPath, canvasGradebookPath, hwN
         end
     end
     
-    % parse the student submissions to respective directories.
+    % Parse the student submissions to respective directories.
     allFiles = dir([parentPath 'canvasParserTemp\submissions\*.m']);
     for file = allFiles'
         tokens = strsplit(file.name, '_');
+        % Account for nomenclature induced Errors
         if length(tokens) ~= 4
             if isnan(str2double(tokens{2}))
                 tokens{1} = [tokens{1} '_' tokens{2}];
