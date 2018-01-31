@@ -41,6 +41,7 @@ function runAutograder(canvasZipPath, rubricZipPath, destinationPath, canvasGrad
         canvasGradebookPath = fullfile(gradebookPath, canvasGradebook);
     end
     
+    % Get the Homework
     if ~exist('hwName','var') || ~exist('resub','var')
         f = figure('Name','Select Homework',...
                    'Visible','on',...
@@ -72,13 +73,15 @@ function runAutograder(canvasZipPath, rubricZipPath, destinationPath, canvasGrad
                     'Position',[.25 .05 .5,.15],...
                     'Callback','uiresume(gcbf)');
         uiwait(f);
-        hwName = list.String{list.Value};
+        origHwName = list.String{list.Value};
         resub = logical(chkbx.Value);
         close(f)    
     end
     
     if resub
-        hwName = [hwName(1:find(hwName == '-')+1) 'Resubmission'];
+        hwName = [origHwName(1:find(origHwName == '-')+1) 'Resubmission'];
+    else
+        hwName = origHwName;
     end
     
     % Put individual students into individual folders with more appropriate
