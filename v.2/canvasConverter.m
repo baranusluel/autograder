@@ -73,8 +73,9 @@ function out_file = canvasConverter(submissions_file, gradebook, hw_name)
         name = gradebook_raw{r,1};
         [lastname,firstname] = strtok(name,',');
         lastname(lastname == '?') = [];
+        lastname = strtok(lastname,' ');
         firstname(firstname == '?') = [];
-        firstname = firstname(3:end);
+        firstname = strtok(firstname,', ');
         id = gradebook_raw{r, 2};
         tsquareID = gradebook_raw{r,4};
         % Populate containers map with student's first and last names,
@@ -171,8 +172,9 @@ function out_file = canvasConverter(submissions_file, gradebook, hw_name)
         name = gradebook_raw{r,1};
         [lastname,firstname] = strtok(name,',');
         lastname(lastname == '?') = [];
+        lastname = strtok(lastname,' ');
         firstname(firstname == '?') = [];
-        firstname = firstname(2:end);
+        firstname = strtok(firstname,', ');
         id = gradebook_raw{r, 2};
         tsquareID = gradebook_raw{r,4};
         csvdat(r-2,:) = {tsquareID, id, lastname, firstname};
