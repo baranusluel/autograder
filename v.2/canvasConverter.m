@@ -12,8 +12,7 @@ function out_file = canvasConverter(submissions_file, gradebook, hw_name)
         % UI input if fewer than 3 inputs.
         [submissions_file,sub_path] = uigetfile('*.zip','Select the .zip downloaded from canvas');
         [gradebook,gradebook_path] = uigetfile([sub_path '\*.csv'],'Select the .csv downloaded from canvas');
-        submissions_file = fullfile(sub_path,submissions_file);
-        gradebook = fullfile(gradebook_path,gradebook);
+        
         
         f = figure('Name','Select Homework',...
                    'Visible','on',...
@@ -23,9 +22,15 @@ function out_file = canvasConverter(submissions_file, gradebook, hw_name)
                            'String',{'Homework 01 - Basics',...
                                      'Homework 02 - Functions',...
                                      'Homework 03 - Vectors and Strings',...
-                                     'Homework 04 - Logicals',...
-                                     'Homework 05 - Arrays and Masking',...
-                                     'Homework 06 - ???'},... % Add more homeworks later as they are decided
+                                     'Homework 04 - Logicals and Masking',...
+                                     'Homework 05 - Arrays and Images',...
+                                     'Homework 06 - Conditionals',...
+                                     'Homework 07 - Iteration',...
+                                     'Homework 08 - Low Level IO',...
+                                     'Homework 09 - High Level IO',...
+                                     'Homework 10 - Structures',...
+                                     'Homework 11 - Plotting and Numerical Methods',...
+                                     'Homework 12 - Recursion'},...
                            'Units','Normalized',...
                            'Position',[.05 .35 .90 .60]);
         chkbx = uicontrol(f,'Style','checkbox',...
@@ -47,7 +52,10 @@ function out_file = canvasConverter(submissions_file, gradebook, hw_name)
     end
     
     out_file = ['formatted' upper(submissions_file(1)) submissions_file(2:end)];
-
+    out_file = fullfile(sub_path,out_file);
+    submissions_file = fullfile(sub_path,submissions_file);
+    gradebook = fullfile(gradebook_path,gradebook);
+    
     % Create temporary working directory
     mkdir('canvasConverter_tmp');
     % Unzip student submissions from Canvas
@@ -71,8 +79,9 @@ function out_file = canvasConverter(submissions_file, gradebook, hw_name)
         name = gradebook_raw{r,1};
         [lastname,firstname] = strtok(name,',');
         lastname(lastname == '?') = [];
+        lastname = strtok(lastname,' ');
         firstname(firstname == '?') = [];
-        firstname = firstname(3:end);
+        firstname = strtok(firstname,', ');
         id = gradebook_raw{r, 2};
         tsquareID = gradebook_raw{r,4};
         % Populate containers map with student's first and last names,
@@ -169,8 +178,9 @@ function out_file = canvasConverter(submissions_file, gradebook, hw_name)
         name = gradebook_raw{r,1};
         [lastname,firstname] = strtok(name,',');
         lastname(lastname == '?') = [];
+        lastname = strtok(lastname,' ');
         firstname(firstname == '?') = [];
-        firstname = firstname(2:end);
+        firstname = strtok(firstname,', ');
         id = gradebook_raw{r, 2};
         tsquareID = gradebook_raw{r,4};
         csvdat(r-2,:) = {tsquareID, id, lastname, firstname};
