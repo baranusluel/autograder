@@ -16,7 +16,7 @@
 function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationFolderPath)
     
     % Begin Canvas Integration Attempt
-    homeworkZipFilePath = canvasConverter;
+    [homeworkZipFilePath, gradebookPath, hwName] = canvasConverter;
     % End Canvas Integration Attempts
     
     close all;
@@ -250,6 +250,10 @@ function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationF
     catch ME
         disp(ME.message);
     end
+    
+    % Begin canvas Itegration attempt
+    tsquare2canvasCSV(tsquareCSV,canvasCSV,hwName)
+    
     % restore Documents
     if isDoc && ispc
         addpath([getenv('USERPROFILE') '\Documents\MATLAB\']);
