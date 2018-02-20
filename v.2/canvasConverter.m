@@ -6,7 +6,7 @@
 %   out_file: Name of zip file to export to
 %   hw_name: Name of homework. Eg: 'Homework 4 - Logicals'
 
-function out_file = canvasConverter(submissions_file, gradebook, hw_name)
+function [out_file gradebook, hwName] = canvasConverter(submissions_file, gradebook, hw_name)
     
     if nargin < 3
         % UI input if fewer than 3 inputs.
