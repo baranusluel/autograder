@@ -252,7 +252,7 @@ function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationF
     end
     
     % Begin canvas Itegration attempt
-    tsquare2canvasCSV(fullfile(destinationPath,hwName,'grades.csv'),gradebookPath,hwName)
+    tsquare2canvasCSV(fullfile(destinationFolderPath,hwName,'grades.csv'),gradebookPath,hwName)
     
     % restore Documents
     if isDoc && ispc
