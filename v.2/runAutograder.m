@@ -15,9 +15,13 @@
 %
 function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationFolderPath)
     
-    % Begin Canvas Integration Attempt
-    [homeworkZipFilePath, gradebookPath, hwName] = canvasConverter;
-    % End Canvas Integration Attempts
+    if islogical(homeworkZipFilePath) || strcmpi(homeworkZipFilePath,{'Single Student','Single'})
+        [gradebookPath, hwName] = singleStudent;
+    else
+        % Begin Canvas Integration Attempt
+        [homeworkZipFilePath, gradebookPath, hwName] = canvasConverter;
+        % End Canvas Integration Attempts
+    end
     
     close all;
     userFigureSetting = get(0,'DefaultFigureVisible');
