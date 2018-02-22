@@ -1,5 +1,5 @@
 function [gradebook_path, hw_name] = singleStudent()
-    [~,gradebook_path] = uigetfile([sub_path '\*.csv'],'Select the .csv downloaded from canvas');
+    [gradebook,gradebook_path] = uigetfile('*.csv','Select the .csv downloaded from canvas');
     f = figure('Name','Select Homework',...
                'Visible','on',...
                'Units','Normalized',...
@@ -35,4 +35,5 @@ function [gradebook_path, hw_name] = singleStudent()
     if resub
         hw_name = [hw_name(1:find(hw_name == '-')+1) 'Resubmission'];
     end
+    gradebook_path = fullfile(gradebook_path,gradebook);
 end
