@@ -15,9 +15,13 @@
 %
 function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationFolderPath)
     
-    % Begin Canvas Integration Attempt
-    [homeworkZipFilePath, gradebookPath, hwName] = canvasConverter;
-    % End Canvas Integration Attempts
+    if islogical(homeworkZipFilePath) || strcmpi(homeworkZipFilePath,{'Single Student','Single'})
+        [gradebookPath, hwName] = singleStudent;
+    else
+        % Begin Canvas Integration Attempt
+        [homeworkZipFilePath, gradebookPath, hwName] = canvasConverter;
+        % End Canvas Integration Attempts
+    end
     
     close all;
     userFigureSetting = get(0,'DefaultFigureVisible');
@@ -252,7 +256,7 @@ function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationF
     end
     
     % Begin canvas Itegration attempt
-    tsquare2canvasCSV(fullfile(destinationPath,hwName,'grades.csv'),gradebookPath,hwName)
+    tsquare2canvasCSV(fullfile(destinationFolderPath,hwName,'grades.csv'),gradebookPath,hwName)
     
     % restore Documents
     if isDoc && ispc
