@@ -1,5 +1,5 @@
 function tsquare2canvasCSV(tsquareCSV,canvasCSV,hwName)
-    hwNumStr = hwName(hwName <= '9' && hwName >= '0');
+    hwNumStr = hwName(hwName <= '9' & hwName >= '0');
     resub = contains(hwName,'Resubmission');
     [~,~,tsquare] = xlsread(tsquareCSV);
     [~,~,canvas] = xlsread(canvasCSV);
