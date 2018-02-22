@@ -15,7 +15,7 @@
 %
 function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationFolderPath)
     
-    if islogical(homeworkZipFilePath) || strcmpi(homeworkZipFilePath,{'Single Student','Single'})
+    if exist('homeworkZipFilePath','var') && (islogical(homeworkZipFilePath) || strcmpi(homeworkZipFilePath,{'Single Student','Single'}))
         [gradebookPath, hwName] = singleStudent;
     else
         % Begin Canvas Integration Attempt
