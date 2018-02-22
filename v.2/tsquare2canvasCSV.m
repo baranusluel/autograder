@@ -3,7 +3,7 @@ function tsquare2canvasCSV(tsquareCSV,canvasCSV,hwName)
     resub = contains(hwName,'Resubmission');
     [~,~,tsquare] = xlsread(tsquareCSV);
     [~,~,canvas] = xlsread(canvasCSV);
-    canvas = canvas(:,1:22);
+    %canvas = canvas(:,1:22);
     canvasDimvec = size(canvas);
     if resub
         mask = contains(canvas(1,:),hwNumStr) & contains(canvas(1,:),'Resub');
