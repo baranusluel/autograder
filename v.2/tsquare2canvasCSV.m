@@ -3,16 +3,16 @@ function tsquare2canvasCSV(tsquareCSV,canvasCSV,hwName)
     resub = contains(hwName,'Resubmission');
     [~,~,tsquare] = xlsread(tsquareCSV);
     [~,~,canvas] = xlsread(canvasCSV);
-    %canvas = canvas(:,1:22);
+    tsquareDimvec = size(tsquare);
     canvasDimvec = size(canvas);
     if resub
         mask = contains(canvas(1,:),hwNumStr) & contains(canvas(1,:),'Resub');
     else
         mask = contains(canvas(1,:),hwNumStr) & ~contains(canvas(1,:),'Resub');
     end
-    for r = 3:canvasDimvec(1)
-        id = canvas{r,2};
-        t2mask = cellfun(@(x) isequal(x,id),tsquare(:,2));
+    for r = 4:tsquareDimvec(1)
+        id = tsquare{r,2};
+        t2mask = cellfun(@(x) isequal(x,id),canvas(:,2));
         grade = tsquare{t2mask,5};
         canvas{r,mask} = grade;
     end
