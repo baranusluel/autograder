@@ -26,7 +26,7 @@ function gradebook = gradeStudentSubmissions(gradebook, rubric, timeoutLogH)
         student = gradebook.students(length(gradebook.students) - ndxStudent + 1);
 
         if isVerbose()
-            fprintf('\t%s, %s\n', student.lastName, student.firstName);
+            fprintf('\t%s\n', student.ID);%lastName, student.firstName);
         end
 
         student = runSubmission(rubric, student, timeoutLogH);

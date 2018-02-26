@@ -11,10 +11,10 @@ function tsquare2canvasCSV(tsquareCSV,canvasCSV,hwName)
         mask = contains(canvas(1,:),hwNumStr) & ~contains(canvas(1,:),'Resub');
     end
     for r = 4:tsquareDimvec(1)
-        id = tsquare{r,2};
-        t2mask = cellfun(@(x) isequal(x,id),canvas(:,2));
-        grade = tsquare{t2mask,5};
-        canvas{r,mask} = grade;
+        id = tsquare{r,1};
+        t2mask = cellfun(@(x) isequal(x,id),canvas(:,4));
+        grade = tsquare{r,5};
+        canvas{t2mask,mask} = grade;
     end
     parentPath = fileparts(canvasCSV);
     fh = fopen([parentPath '\writtenGrades.csv'],'w');

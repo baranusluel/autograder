@@ -76,19 +76,13 @@ function [out_file, gradebook, hw_name] = canvasConverter(submissions_file, grad
     % Iterate for every row except header (i.e. for every student)
     for r = 3:rows
         % Extract Names and IDs from canvas.csv
-        name = gradebook_raw{r,1};
-        [lastname,firstname] = strtok(name,',');
-        lastname(lastname == '?') = [];
-        lastname = strtok(lastname,' ');
-        firstname(firstname == '?') = [];
-        firstname = strtok(firstname,', ');
         id = gradebook_raw{r, 2};
         tsquareID = gradebook_raw{r,4};
         % Populate containers map with student's first and last names,
         % with a key of their student ID
-        students(id) = struct('firstname', firstname, 'lastname', lastname, 'tsquareID', tsquareID, 'submissions', []);
+        students(id) = struct('tsquareID', tsquareID, 'submissions', []);
         % Construct directory paths
-        student_path = ['canvasConverter_tmp/', hw_name, '/', lastname, ', ', firstname, '(', num2str(id), ')'];
+        student_path = fullfile('canvasConverter_tmp/',hw_name,tsquareID);
         submission_path = [student_path, '/Submission attachment(s)/'];
         % If this student's folder hasn't been created yet
         if exist(submission_path, 'dir') == 0
@@ -143,12 +137,12 @@ function [out_file, gradebook, hw_name] = canvasConverter(submissions_file, grad
         if isKey(students, student_id)
             student = students(student_id);
         else
-            warning(['Couldn''t find student with ID ', num2str(student_id), ' in gradebook!']);
+            warning(['Couldn''t find student with ID ', student_id, ' in gradebook!']);
             continue;
         end
         
         % Construct directory paths
-        student_path = [hw_name, '/', student.lastname, ', ', student.firstname, '(', num2str(student_id), ')'];
+        student_path = fullfile(hw_name,student.tsquareID);
         submission_path = [student_path, '/Submission attachment(s)/'];
         
         % Get relevant student's submissions (processed so far)
@@ -186,7 +180,7 @@ function [out_file, gradebook, hw_name] = canvasConverter(submissions_file, grad
         csvdat(r-2,:) = {tsquareID, id, lastname, firstname};
     end
     % Ensure the order is the same as window's sorting.
-    [~,inds] = sort(csvdat(:,3));
+    [~,inds] = sort(csvdat(:,1));
     csvdat = csvdat(inds,:);
     for i = 1:r-2
         fprintf(grades_file, '%s,%d,%s,%s,\n', csvdat{i,:});

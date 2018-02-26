@@ -31,7 +31,7 @@ function student = getFeedback(rubric, student, homeworkFolderPath)
     student.feedback = sprintf('%s<h1>%s</h1>', student.feedback, homeworkFolderName);
 
     % concatenate student name
-    student.feedback = sprintf('%s<p>%s, %s</p>', student.feedback, student.lastName, student.firstName);
+    student.feedback = sprintf('%s<p>%s</p>', student.feedback, student.ID);
 
     % open grade table
     student.feedback = sprintf('%s<table border="1" style="border-collapse:collapse">', student.feedback);

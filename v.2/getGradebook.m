@@ -59,9 +59,6 @@ function gradebook = getGradebook(homeworkZipFilePath, destinationFolderPath)
 
     % define columns
     displayIdColumn = columnIndices(1);
-    idColumn        = columnIndices(2);
-    lastNameColumn  = columnIndices(3);
-    firstNameColumn = columnIndices(4);
     gradeColumn     = columnIndices(5);
 
     % get student ids from folders
@@ -70,16 +67,13 @@ function gradebook = getGradebook(homeworkZipFilePath, destinationFolderPath)
 
     % initialize gradebook struct
     gradebook.students = struct(...
-        'displayID'  , gradebookTemplate(:,displayIdColumn),...
-        'id'         , gradebookTemplate(:,idColumn),...
-        'firstName'  , cellfun(@strtrim,gradebookTemplate(:,firstNameColumn),'UniformOutput',false),...
-        'lastName'   , gradebookTemplate(:,lastNameColumn),...
+        'ID'  , gradebookTemplate(:,displayIdColumn),...
         'grade'      , gradebookTemplate(:,gradeColumn),...
         'folderPaths', cellfun(@(folderName)(struct('submissionAttachments', fullfile(gradebook.folderPaths.homework, folderName, settings.folderNames.SUBMISSION_ATTACHMENTS), 'feedbackAttachments', fullfile(gradebook.folderPaths.homework, folderName, settings.folderNames.FEEDBACK_ATTACHMENTS))), {studentFolders.name}, 'UniformOutput', false)'...
     );
 
     % get student ids from grades.csv
-    studentIdsFromGradesCsv = gradebookTemplate(:, idColumn);
+    studentIdsFromGradesCsv = gradebookTemplate(:, displayIdColumn);
     [sortedStudentIdsFromGradesCsv,~] = sort(studentIdsFromGradesCsv);
 
     % check if the student ids from folders and grades.csv file matches

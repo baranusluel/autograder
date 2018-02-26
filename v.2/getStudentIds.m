@@ -26,7 +26,6 @@ function [studentIds,studentFolders] = getStudentIds(filePath)
     studentFolders = files(isStudentFolder);
 
     % get cell array of student ids
-    [~,studentIds] = cellfun(@(x) strtok(x,'('),{studentFolders.name},'UniformOutput',false);
-    [studentIds,~] = cellfun(@(x) strtok(x,'()'),studentIds,'UniformOutput',false);
+    studentIds = {studentFolders.name};
 
 end
