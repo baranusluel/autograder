@@ -1,9 +1,0 @@
-function[d]=cartDist(x,y,c,b)
-k=c-x;
-n=b-y;
-a=k.^2;
-e=n.^2; 
-f=a+e;
-h=sqrt(f);
-g=round(h,2);
-end

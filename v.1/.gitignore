@@ -1,6 +1,0 @@
-# ignore os x hidden folders
-.DS_Store
-
-# ignore MATLAB autosaved files
-*.m~
-*.asv
