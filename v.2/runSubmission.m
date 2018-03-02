@@ -103,7 +103,7 @@ function student = runSubmission(rubric, student, timeoutLogH)
     %log timed out test cases into file -> timeoutLogH
     if any(studentTimeoutMatrix)
         r = size(studentTimeoutMatrix, 1);
-        fprintf(timeoutLogH, ['\n' student.displayID '\n']);
+        fprintf(timeoutLogH, ['\n' student.ID '\n']);
         for i = 1:r
             [timedOutTestCases] = find(studentTimeoutMatrix(i,:));
             if ~isempty(timedOutTestCases)
