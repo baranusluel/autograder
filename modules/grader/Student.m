@@ -48,9 +48,10 @@ classdef Student
         % Creates an instance of the Student class from the student's
         % submission path.
         %
-        % this = Student(PATH) returns an instance of Student. PATH should
-        % be a character vector representing the fully qualified
-        % (absolute) path to the student's folder.
+        % this = Student(PATH, NAME) returns an instance of Student.
+        % PATH should be a character vector representing the fully
+        % qualified (absolute) path to the student's folder.
+        % NAME is a character vector of the full name of the student.
         %
         %%% Remarks
         %
@@ -66,30 +67,30 @@ classdef Student
         %
         % Given a valid PATH to a student folder containing submissions
         % (with filenames FILE1, FILE2, ...):
-        % this = Student(PATH);
+        % this = Student(PATH, NAME);
         % 
-        % this.name -> Student's full name
-        % this.id -> Student's GT username
+        % this.name -> NAME;
+        % this.id -> Student's GT username (from name of folder)
         % this.path -> PATH;
         % this.submissions -> {FILE1, FILE2, ...};
         % this.feedbacks -> {};
         % this.isGraded -> false;
         %
         % Given a valid PATH to a student folder containing no submissions:
-        % this = Student(PATH);
+        % this = Student(PATH, NAME);
         %
-        % this.name -> Student's full name
-        % this.id -> Student's GT username
+        % this.name -> NAME;
+        % this.id -> Student's GT username (from name of folder)
         % this.path -> PATH;
         % this.submissions -> {};
         % this.feedbacks -> {};
         % this.isGraded -> false;
         %
         % Given an invalid PATH (e.g. folder does not exist):
-        % this = Student(PATH);
+        % this = Student(PATH, NAME);
         %
         % Constructor threw exception AUTOGRADER:STUDENT:DIRECTORYNOTFOUND
-        function this = Student(path)
+        function this = Student(path, name)
             
         end
     end
