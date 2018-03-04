@@ -9,25 +9,25 @@
 %
 %%% Fields
 %
-% - name: Full name of the student
+% * name: Full name of the student
 %
-% - id: The ID (GT username) of the student (e.g. busluel3)
+% * id: The ID (GT username) of the student (e.g. busluel3)
 %
-% - path: The fully qualified path for this student's directory
+% * path: The fully qualified path for this student's directory
 %
-% - submissions: A string array of file names that represent all names
+% * submissions: A string array of file names that represent all names
 % of submitted files.
 %
-% - feedbacks: A cell array of Feedback arrays. Each cell is a Feedback
+% * feedbacks: A cell array of Feedback arrays. Each cell is a Feedback
 % array representing all test cases for a specific problem.
 %
-% - isGraded: A logical that indicates whether a student has been graded
+% * isGraded: A logical that indicates whether a student has been graded
 %
 %%% Methods
 %
-% - gradeProblem
+% * gradeProblem
 %
-% - generateFeedback
+% * generateFeedback
 %
 %%% Remarks
 %
@@ -43,6 +43,55 @@ classdef Student
         isGraded;
     end
     methods (Access = public)
+        %% Constructor: Instantiates a Student
+        %
+        % Creates an instance of the Student class from the student's
+        % submission path.
+        %
+        % this = Student(PATH) returns an instance of Student. PATH should
+        % be a fully qualified (absolute) path to the student's folder.
+        %
+        %%% Remarks
+        %
+        % **TBD**
+        % 
+        %%% Exceptions
+        %
+        % An AUTOGRADER:STUDENT:DIRECTORYNOTFOUND exception will be thrown
+        % if the PATH input is invalid (e.g. empty) or the directory does
+        % not exist.
+        %
+        %%% Unit Tests
+        %
+        % Given a valid PATH to a student folder containing submissions
+        % (with filenames FILE1, FILE2, ...):
+        % this = Student(PATH);
+        % 
+        % this.name -> Student's full name
+        % this.id -> Student's GT username
+        % this.path -> PATH;
+        % this.submissions -> {FILE1, FILE2, ...};
+        % this.feedbacks -> {};
+        % this.isGraded -> false;
+        %
+        % Given a valid PATH to a student folder containing no submissions:
+        % this = Student(PATH);
+        %
+        % this.name -> Student's full name
+        % this.id -> Student's GT username
+        % this.path -> PATH;
+        % this.submissions -> {};
+        % this.feedbacks -> {};
+        % this.isGraded -> false;
+        %
+        % Given an invalid PATH (e.g. folder does not exist):
+        % this = Student(PATH);
+        %
+        % Constructor threw exception AUTOGRADER:STUDENT:DIRECTORYNOTFOUND
+        function this = Student(path)
+            
+        end
+        
         %% gradeProblem: Grades the given problem and records the results
         %   
         % gradeProblem is used to evaluate the student code for a given
@@ -91,7 +140,6 @@ classdef Student
         % Empty submissions will give appropritate score and reason values
         % in the Feedback class.
         % The Feedback classes will then be added to the feedbacks field.
-        %
         function gradeProblem(problem)
             
         end
@@ -123,11 +171,11 @@ classdef Student
         % When invoked in a Student class containing a valid (non-empty)
         % feedbacks field, generateFeedback will generate an HTML page
         % with:
-        % - A header, containing the name of the homework as the title, and
+        % * A header, containing the name of the homework as the title, and
         % the student's name and ID.
-        % - A table with the student's points on each problem and total
+        % * A table with the student's points on each problem and total
         % score.
-        % - A section for each individual problem, where every test case
+        % * A section for each individual problem, where every test case
         % and the result (including points received, reason for losing
         % points, visual comparison of file outputs) is listed.
         function html = generateFeedback()
