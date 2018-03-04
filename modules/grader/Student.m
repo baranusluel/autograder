@@ -25,6 +25,8 @@
 %
 %%% Methods
 %
+% * Student
+% 
 % * gradeProblem
 %
 % * generateFeedback
@@ -50,12 +52,17 @@ classdef Student
         %
         % this = Student(PATH, NAME) returns an instance of Student.
         % PATH should be a character vector representing the fully
-        % qualified (absolute) path to the student's folder.
-        % NAME is a character vector of the full name of the student.
+        % qualified (absolute) path to the student's folder. NAME is a 
+        % character vector or string of the full name of the student.
         %
         %%% Remarks
         %
-        % **TBD**
+        % The Student Constructor is the primary means of creating a
+        % |Student|. It takes in a single name and path, and creates a
+        % single |Student|. This constructor may implicitly call
+        % |unpackStudentSubmissions| when running - this is so after a
+        % |Student| is constructed, their directory is completely compliant
+        % with what the autograder will expect
         % 
         %%% Exceptions
         %
@@ -63,33 +70,56 @@ classdef Student
         % if the PATH input is missing, invalid (e.g. empty or
         % incorrect class) or the directory does not exist.
         %
+        % An AUTOGRADER:STUDENT:ARGUMENTEXCEPTION exception will be thrown
+        % if NAME is empty or only white space.
+        %
         %%% Unit Tests
         %
         % Given a valid PATH to a student folder containing submissions
         % (with filenames FILE1, FILE2, ...):
-        % this = Student(PATH, NAME);
+        %
+        %   NAME = 'Hello';
+        %   this = Student(PATH, NAME);
         % 
-        % this.name -> NAME;
-        % this.id -> Student's GT username (from name of folder)
-        % this.path -> PATH;
-        % this.submissions -> {FILE1, FILE2, ...};
-        % this.feedbacks -> {};
-        % this.isGraded -> false;
+        %   this.name -> "Hello"
+        %   this.id -> Student's GT username (from name of folder)
+        %   this.path -> PATH;
+        %   this.submissions -> ["FILE1", "FILE2", ...];
+        %   this.feedbacks -> Feedback[];
+        %   this.isGraded -> false;
         %
         % Given a valid PATH to a student folder containing no submissions:
-        % this = Student(PATH, NAME);
+        %   NAME = 'Hi';
+        %   this = Student(PATH, NAME);
         %
-        % this.name -> NAME;
-        % this.id -> Student's GT username (from name of folder)
-        % this.path -> PATH;
-        % this.submissions -> {};
-        % this.feedbacks -> {};
-        % this.isGraded -> false;
+        %   this.name -> "Hi";
+        %   this.id -> Student's GT username (from name of folder);
+        %   this.path -> PATH;
+        %   this.submissions -> ["FILE1", "FILE2", ...]
+        %   this.feedbacks -> Feeback[];
+        %   this.isGraded -> false;
         %
         % Given an invalid PATH (e.g. folder does not exist):
-        % this = Student(PATH, NAME);
+        %   NAME = 'Hi';
+        %   this = Student(PATH, NAME);
         %
-        % Constructor threw exception AUTOGRADER:STUDENT:DIRECTORYNOTFOUND
+        %   Constructor threw exception 
+        %   AUTOGRADER:STUDENT:DIRECTORYNOTFOUND
+        %
+        % Given a valid PATH:
+        %   NAME = '';
+        %   this = Student(PATH, NAME);
+        %
+        %   Constructor threw exception
+        %   AUTOGRADER:STUDENT:ARGUMENTEXCEPTION
+        %
+        % Given a valid PATH:
+        %   NAME = '    ';
+        %   this = Student(PATH, NAME);
+        %
+        %   Constructor threw exception
+        %   AUTOGRADER:STUDENT:ARGUMENTEXCEPTION
+        %
         function this = Student(path, name)
             
         end
