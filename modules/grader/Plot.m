@@ -45,8 +45,8 @@ classdef Plot
     methods
         %% Constructor: Instantiates a Plot
         %
-        % Creates an instance of the Plot class from the student's
-        % submission path.
+        % Creates an instance of the Plot class from a student's plot
+        % information.
         %
         % this = Plot(TITLE,XDATA,YDATA,ZDATA,IMAGE,LEGEND,COLORS) returns an instance of Plot. 
         % TITLE should be a string representing the title of the plot.
@@ -61,12 +61,34 @@ classdef Plot
         %
         %%% Remarks
         %
+        % This class takes in student plot information and compares it with
+        % the solution plot information to return feedback for each
+        % student.
         %
         %%% Exceptions
         %
+        % An AUTOGRADER:PLOT:NOAXISDATA exception will be thrown if no axis
+        % data is provided.
         %
         %%% Unit Tests
         %
+        % TITLE = 'My Plot'
+        % Given valid axis data, IMAGE, LEGEND, and COLORS
+        % this = Plot(TITLE,XDATA,YDATA,ZDATA,IMAGE,LEGEND,COLORS)
+        %
+        % this.title -> 'My Plot'
+        % this.xData -> XDATA (a cell array of vectors)
+        % this.yData -> YDATA (a cell array of vectors)
+        % this.zData -> ZDATA (a cell array of vectors)
+        % this.image -> IMAGE (a uint8 array)
+        % this.legend -> ["name1", "name2", ...]
+        % this.colors -> ["color1", "color2", ...]
+        %
+        % TITLE = 'My Plot'
+        % Given no axis data, IMAGE, LEGEND, and COLORS
+        %
+        % Constructor threw exception
+        % AUTOGRADER:PLOT:NOAXISDATA
         %
         function this = Plot(TITLE,XDATA,YDATA,ZDATA,IMAGE,LEGEND,COLORS)
             this.title = TITLE;
@@ -81,4 +103,4 @@ classdef Plot
     methods (Access=public)
         %% equals: Checks if the given plot is equal to this plot
         %
-        %
+        % 
