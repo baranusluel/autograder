@@ -2,9 +2,8 @@
 %
 % Represents a single student in the grader.
 % 
-% Holds student's relevant information (identification, submissions, 
-%feedback, etc.) 
-%as fields.
+% Holds student's relevant information (identification, submissions,
+% feedback, etc.) as fields.
 %
 % Has methods to grade student's submissions and generate Feedback.
 %
@@ -47,25 +46,34 @@ classdef Student
         %% gradeProblem: Grades the given problem and records the results
         %   
         % gradeProblem is used to evaluate the student code for a given
-        % problem and records the results in the feedbacks field
+        % problem and record the results in the feedbacks field.
         %
-        % gradeProblem(PROBLEM) will take in a valid PROBLEM class,
+        % gradeProblem(PROBLEM) takes in a valid PROBLEM class,
         % evaluates the student code, creates a Feedback instance for each
-        % TestCase, which in turn gets added to the feedbacks field.
+        % TestCase, which it adds to the feedbacks field. It finally
+        % sets the isGraded field to true.
         %
         %%% Remarks
         %
+        % The function will return without making any changes to the class
+        % if the isGraded field is already true.
+        % 
         % The feedback field should always be populated, even if
-        % submissions field is empty.
+        % the submissions field is empty.
         %
-        % If Matlab throws an exception, this function will catch the
+        % If MATLAB throws an exception, this function will catch the
         % exception and output it to the reason field in Feedback. If the
         % reason field already has content in it, the exception ID will be
         % concatenated to the data already found in reason.
         %
+        % If the student code contains an infinite loop, gradeProblem will
+        % detect it and add a statement to the reason field of Feedback.
+        %
         %%% Exceptions
         %
-        % TBD need to take care of infinite loops
+        % An AUTOGRADER:STUDENT:GRADEPROBLEM:INVALIDPROBLEM exception will
+        % be thrown if PROBLEM is invalid (i.e. if it is empty or
+        % if name or testcases fields of PROBLEM are empty).
         %
         %%% Unit Tests
         %
