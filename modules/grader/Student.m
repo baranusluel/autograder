@@ -49,7 +49,8 @@ classdef Student
         % submission path.
         %
         % this = Student(PATH) returns an instance of Student. PATH should
-        % be a fully qualified (absolute) path to the student's folder.
+        % be a character vector representing the fully qualified
+        % (absolute) path to the student's folder.
         %
         %%% Remarks
         %
@@ -58,8 +59,8 @@ classdef Student
         %%% Exceptions
         %
         % An AUTOGRADER:STUDENT:DIRECTORYNOTFOUND exception will be thrown
-        % if the PATH input is invalid (e.g. empty) or the directory does
-        % not exist.
+        % if the PATH input is missing, invalid (e.g. empty or
+        % incorrect class) or the directory does not exist.
         %
         %%% Unit Tests
         %
