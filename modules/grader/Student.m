@@ -42,7 +42,7 @@ classdef Student
         feedbacks;
         isGraded;
     end
-    methods (Access = public)
+    methods
         %% Constructor: Instantiates a Student
         %
         % Creates an instance of the Student class from the student's
@@ -91,7 +91,8 @@ classdef Student
         function this = Student(path)
             
         end
-        
+    end
+    methods (Access=public)
         %% gradeProblem: Grades the given problem and records the results
         %   
         % gradeProblem is used to evaluate the student code for a given
@@ -140,7 +141,7 @@ classdef Student
         % Empty submissions will give appropritate score and reason values
         % in the Feedback class.
         % The Feedback classes will then be added to the feedbacks field.
-        function gradeProblem(problem)
+        function gradeProblem(this, problem)
             
         end
         
@@ -178,7 +179,7 @@ classdef Student
         % * A section for each individual problem, where every test case
         % and the result (including points received, reason for losing
         % points, visual comparison of file outputs) is listed.
-        function html = generateFeedback()
+        function html = generateFeedback(this)
             
         end
     end
