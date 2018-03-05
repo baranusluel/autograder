@@ -48,22 +48,17 @@ classdef Plot
         % Creates an instance of the Plot class from a student's plot
         % information.
         %
-        % this = Plot(TITLE,XDATA,YDATA,ZDATA,IMAGE,LEGEND,COLORS) returns an instance of Plot. 
-        % TITLE should be a string representing the title of the plot.
-        % XDATA should be a cell array of vectors representing all the
-        % XData points for the plot. YDATA should be a cell array of 
-        % vectors representing all the YData points for the plot. ZDATA
-        % should be a cell array of vectors representing all the ZData
-        % points for the plot. IMAGE should be an image taken of the plot,
-        % as an MxNx3 uint8 array. LEGEND should be a string array of all
-        % the names in the legend. COLORS should be a string array of that
-        % represents the color used for every line. 
+        % this = Plot(HANDLE) creates an instance of Plot from the given axes handle.
         %
         %%% Remarks
         %
         % This class takes in student plot information and compares it with
         % the solution plot information to return feedback for each
         % student.
+        %
+        % Note that xDdata, yData, and zData will all be cell arrays of the same size.
+        % If the plot had data in that dimension, that entry of the cell array will have a vector;
+        % otherwise, it will be empty.
         %
         %%% Exceptions
         %
@@ -72,32 +67,24 @@ classdef Plot
         %
         %%% Unit Tests
         %
-        % TITLE = 'My Plot'
-        % Given valid axis data, IMAGE, LEGEND, and COLORS
-        % this = Plot(TITLE,XDATA,YDATA,ZDATA,IMAGE,LEGEND,COLORS)
+        % Given valid axes handle
+        %   this = Plot(pHandle)
         %
-        % this.title -> 'My Plot'
-        % this.xData -> XDATA (a cell array of vectors)
-        % this.yData -> YDATA (a cell array of vectors)
-        % this.zData -> ZDATA (a cell array of vectors)
-        % this.image -> IMAGE (a uint8 array)
-        % this.legend -> ["name1", "name2", ...]
-        % this.colors -> ["color1", "color2", ...]
+        %   this.title -> 'My Plot'
+        %   this.xData -> XDATA (a cell array of vectors)
+        %   this.yData -> YDATA (a cell array of vectors)
+        %   this.zData -> ZDATA (a cell array of vectors)
+        %   this.image -> IMAGE (a uint8 array)
+        %   this.legend -> ["name1", "name2", ...]
+        %   this.colors -> ["color1", "color2", ...]
         %
-        % TITLE = 'My Plot'
-        % Given no axis data, IMAGE, LEGEND, and COLORS
+        % Given invalid axes handle
         %
         % Constructor threw exception
         % AUTOGRADER:PLOT:NOAXISDATA
         %
-        function this = Plot(TITLE,XDATA,YDATA,ZDATA,IMAGE,LEGEND,COLORS)
-            this.title = TITLE;
-            this.xData = XDATA;
-            this.yData = YDATA;
-            this.zData = ZDATA;
-            this.image = IMAGE;
-            this.legend = LEGEND;
-            this.colors = COLORS;
+        function this = Plot(pHandle)
+            
         end
     end
     methods (Access=public)
@@ -146,9 +133,8 @@ classdef Plot
         % equals threw an exception
         % AUTOGRADER:PLOT:EQUALS:NOPLOT
         %
-        function equals(PLOT)
+        function equals(this, that)
             
         end
-        
-        
-        
+    end
+end
