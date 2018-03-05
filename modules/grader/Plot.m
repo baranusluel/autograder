@@ -67,8 +67,8 @@ classdef Plot
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:PLOT:NOAXISDATA exception will be thrown if no axis
-        % data is provided.
+        % An AUTOGRADER:PLOT:NODATA exception will be thrown if no input is
+        % provided
         %
         %%% Unit Tests
         %
@@ -103,4 +103,52 @@ classdef Plot
     methods (Access=public)
         %% equals: Checks if the given plot is equal to this plot
         %
+        % equals is used to check a student plot against the solution plot.
         % 
+        % equals(PLOT) takes in a valid PLOT class and evaluates the plot
+        % against the solution file and returns a boolean true/false and a
+        % string message if the two plots do not match. 
+        %
+        %%% Remarks
+        %
+        % This function will compare the two plots and return a boolean
+        % value.
+        %
+        % The message will be empty if the plots are equal.
+        %
+        %%% Exceptions
+        %
+        % An AUTOGRADER:PLOT:EQUALS:NOPLOT exception will be thrown if PLOT
+        % is not of type Plot, or no input is given.
+        %
+        %%% Unit Tests
+        %
+        % Given that PLOT is a valid instance of Plot equal to this.
+        % [check, message] = this.equals(PLOT)
+        %
+        % check -> true
+        % message -> ''
+        %
+        % Given that PLOT is a valid instance of Plot not equal to this.
+        % [check, message] = this.equals(PLOT)
+        %
+        % check -> false
+        % message -> 'Reason for inconsistency between plots'
+        %
+        % Given that PLOT is not a valid instance of Plot.
+        % [check, message] = this.equals(PLOT)
+        %
+        % equals threw an exception
+        % AUTOGRADER:PLOT:EQUALS:NOPLOT
+        %
+        % [check, message] = this.equals()
+        %
+        % equals threw an exception
+        % AUTOGRADER:PLOT:EQUALS:NOPLOT
+        %
+        function equals(PLOT)
+            
+        end
+        
+        
+        
