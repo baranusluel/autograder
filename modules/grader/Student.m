@@ -35,7 +35,7 @@
 %
 % **TBD**
 %
-classdef Student
+classdef Student < handle
     properties (Access = public)
         name;
         id;
