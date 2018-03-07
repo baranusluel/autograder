@@ -1,11 +1,11 @@
 %% generateFeedback: Generate HTML feedback for primitives
 %
-% generateFeedback makes presentation-ready HTML that depicts how the 
+% |generateFeedback| makes presentation-ready HTML that depicts how the 
 % student's primitive result compares to the solution's primitive result.
 %
 % HTML = generateFeedback(SOLN, STUD) will generate HTML encoded feedback, 
 % given the student's result and the solution's result. Both must be given, 
-% but empty is a valid result.
+% but empty is a valid input for either.
 %
 %%% Remarks
 %
@@ -13,20 +13,27 @@
 % the type of the given values must be one of the following:
 %
 % * |double|
+%
 % * |single|
+%
 % * |uint8|, |uint16|, |uint32|, |uint64|
+%
 % * |int8|, |int16|, |int32|, |int64|
+%
 % * |char|
+%
 % * |string|
+%
 % * |cell|
+%
 % * |struct|
+%
 % * |logical|
 %
-%
-% Note that NaN is considered equal to NaN; ie, NaN == NaN = true.
+% Note that |NaN| is considered equal to |NaN|; ie, |NaN == NaN = true|.
 % This is different from isequal, and instead follows isequaln.
 %
-% generateFeedback first checks to see they are |isequaln|. If they are, 
+% |generateFeedback| first checks to see they are |isequaln|. If they are, 
 % |PASSING| is returned. Otherwise, generateFeedback will first check 
 % each value's class. If they differ, a |DIFF_CLASS| is returned. Otherwise,
 % depending on the class, a visualization of the difference between the given 

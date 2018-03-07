@@ -32,7 +32,7 @@
 %
 % TBD
 %
-classdef Plot
+classdef Plot < handle
     properties (Access = public)
         title;
         xData;
@@ -43,7 +43,7 @@ classdef Plot
         colors;
     end
     methods
-        %% Constructor: Instantiates a Plot
+        %% Constructor
         %
         % Creates an instance of the Plot class from a student's plot
         % information.

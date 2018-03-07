@@ -35,7 +35,7 @@
 %
 % **TBD**
 %
-classdef Student
+classdef Student < handle
     properties (Access = public)
         name;
         id;
@@ -45,7 +45,7 @@ classdef Student
         isGraded;
     end
     methods
-        %% Constructor: Instantiates a Student
+        %% Constructor
         %
         % Creates an instance of the Student class from the student's
         % submission path.
