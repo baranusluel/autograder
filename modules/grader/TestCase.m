@@ -50,7 +50,7 @@
 %
 % Now suppose |fid| is now 3. This will pass in 3 as an input to the function.
 %
-classdef TestCase
+classdef TestCase < handle
     properties (Access = public)
         call;
         initializer;

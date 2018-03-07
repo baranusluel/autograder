@@ -32,7 +32,7 @@
 %
 % TBD
 %
-classdef Plot
+classdef Plot < handle
     properties (Access = public)
         title;
         xData;
