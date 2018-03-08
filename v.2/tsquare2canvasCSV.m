@@ -5,11 +5,18 @@ function tsquare2canvasCSV(tsquareCSV,canvasCSV,hwName)
     [~,~,canvas] = xlsread(canvasCSV);
     tsquareDimvec = size(tsquare);
     canvasDimvec = size(canvas);
-    if resub
-        mask = contains(canvas(1,:),hwNumStr) & contains(canvas(1,:),'Resub');
-    else
-        mask = contains(canvas(1,:),hwNumStr) & ~contains(canvas(1,:),'Resub');
+    mask = contains(canvas(1,:),hwName);
+    if sum(mask) ~= 1
+        assignmentNames = canvas(1,6:end);
+        assignment = listdlg('ListString',assignmentNames,'SelectionMode','single',...
+                             'PromptString','Which Assignment is this?','OKString','Select');
+        mask = strcmp(canvas(1,:),assignmentNames{assignment});
     end
+%     if resub
+%         mask = contains(canvas(1,:),hwNumStr) & contains(canvas(1,:),'Resub');
+%     else
+%         mask = contains(canvas(1,:),hwNumStr) & ~contains(canvas(1,:),'Resub');
+%     end
     for r = 4:tsquareDimvec(1)
         id = tsquare{r,1};
         t2mask = cellfun(@(x) isequal(x,id),canvas(:,4));
