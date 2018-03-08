@@ -141,17 +141,41 @@ classdef Plot < handle
         end
     end
     methods (Access=public)
-        %%generateFeedback: Generates HTML feedback for the student and solution Plot.
+        %% generateFeedback: Generates HTML feedback for the student and solution Plot.
         %
-        %generateFeedback will return the feedback for the student's plot. 
+        % generateFeedback will return the feedback for the student's plot. 
         %
-        %[HTML] = generateFeedback(PLOT) will return a character vector in HTML that contains the 
-        %markup for HTML. The contents of this vector will be the feedback associated with a student's
-        %plot.
+        % [HTML] = generateFeedback(PLOT) will return a character vector in HTML that contains the 
+        % markup for HTML. The contents of this vector will be the feedback associated with a student's
+        % plot.
         %
         %%% Remarks
         %
-        % This function will 
+        % This function will output a character after calling the generateFeedback method with input as 
+        % the student plot submission and the solution plot.
+        %
+        %%% Exceptions
+        %
+        % An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be thrown if the student or 
+        % solution plots are missing from the generateFeedback method call. 
+        %
+        %%% Unit Tests
+        %
+        % When called, the generateFeedback method will check the student Plot against the solution Plot.
+        % If the student plot matches the solution plot, the character HTML vector will contain both the 
+        % solution and student plot. It will also contain confirmation that the plot was correct.
+        %
+        % If the student plot does not matches the solution plot, the character HTML vector will contain both the 
+        % solution and student plot. It will also contain a description of why the student plot is not correct,
+        % referencing the solution plot as needed.
+        %
+        % An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be thrown if generateFeedback is called
+        % with only one or no input Plots. 
+        %
+        function [HTMl] = generateFeedback(this, that)
+
+        end
+        
     end
     
 end
