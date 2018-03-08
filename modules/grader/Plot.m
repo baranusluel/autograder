@@ -62,7 +62,7 @@ classdef Plot < handle
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:PLOT:NODATA exception will be thrown if no input is
+        % An AUTOGRADER:PLOT:NOAXISDATA exception will be thrown if no input axis are
         % provided
         %
         %%% Unit Tests
@@ -92,9 +92,9 @@ classdef Plot < handle
         %
         % equals is used to check a student plot against the solution plot.
         % 
-        % equals(PLOT) takes in a valid PLOT class and evaluates the plot
-        % against the solution file and returns a boolean true/false and a
-        % string message if the two plots do not match. 
+        % [check, message] = equals(PLOT) takes in a valid PLOT class and evaluates the plot
+        % against the solution file and returns a boolean true/false stored in check and a
+        % string stored in message if the two plots do not match. 
         %
         %%% Remarks
         %
@@ -105,30 +105,33 @@ classdef Plot < handle
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:PLOT:EQUALS:NOPLOT exception will be thrown if PLOT
-        % is not of type Plot, or no input is given.
+        % An AUTOGRADER:PLOT:EQUALS:NOPLOT exception will be thrown if inputs
+        % are not of type Plot, or only one input is given.
         %
         %%% Unit Tests
         %
         % Given that PLOT is a valid instance of Plot equal to this.
+        % Given that this is a valid instance of Plot.
         % [check, message] = this.equals(PLOT)
         %
         % check -> true
         % message -> ''
         %
         % Given that PLOT is a valid instance of Plot not equal to this.
+        % Given that this is a valid instance of Plot.
         % [check, message] = this.equals(PLOT)
         %
         % check -> false
         % message -> 'Reason for inconsistency between plots'
         %
         % Given that PLOT is not a valid instance of Plot.
-        % [check, message] = this.equals(PLOT)
+        % Given that this is a valid instance of Plot.
+        % [check, message] = equals(this, PLOT)
         %
         % equals threw an exception
         % AUTOGRADER:PLOT:EQUALS:NOPLOT
         %
-        % [check, message] = this.equals()
+        % [check, message] = equals(this)
         %
         % equals threw an exception
         % AUTOGRADER:PLOT:EQUALS:NOPLOT
@@ -137,4 +140,18 @@ classdef Plot < handle
             
         end
     end
+    methods (Access=public)
+        %%generateFeedback: Generates HTML feedback for the student and solution Plot.
+        %
+        %generateFeedback will return the feedback for the student's plot. 
+        %
+        %[HTML] = generateFeedback(PLOT) will return a character vector in HTML that contains the 
+        %markup for HTML. The contents of this vector will be the feedback associated with a student's
+        %plot.
+        %
+        %%% Remarks
+        %
+        % This function will 
+    end
+    
 end
