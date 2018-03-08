@@ -101,7 +101,8 @@ function [out_file, gradebook, hw_name] = canvasConverter(submissions_file, grad
     % Iterate for each file. 'Files' transposed because row vector required
     for file = files'
         % Extract student and function names from filename
-        tokens = strsplit(file.name, '_');
+        newName = strrep(file.name,'_late','');
+        tokens = strsplit(newName, '_');
         % Account for ABCs_*.m and hyphenated student names
         if length(tokens) ~= 4
             if isnan(str2double(tokens{2}))
