@@ -33,8 +33,16 @@
 %
 %%% Remarks
 %
-% **TBD**
+% The Student class represents a single student in the eyes of the
+% autograder. Each student maps to one (and only one) folder in the
+% submission archive.
 %
+% The student is considered the center of data transfer within the
+% autograder. Each Student is given a problem to grade at runtime, and
+% students are finished one at a time - in other words, the first student
+% is graded, then the second, and so on.
+%
+% Grading is done via the parallel pool and parfeval.
 classdef Student < handle
     properties (Access = public)
         name;
