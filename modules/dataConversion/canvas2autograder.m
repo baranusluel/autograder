@@ -4,22 +4,22 @@
 %
 % students = canvas2autograder(canvasZipFile)
 %
-% This function will take in the zip file downloaded from canvas as well as
-% the gradebook downloaded from canvas.
+% This function will take in the zip file downloaded from Canvas as well as
+% the gradebook downloaded from Canvas.
 %
-% This function will return a student array to be graded
+% This function will return a student array to be graded.
 %
 %%% Remarks
 %
 % This function will create a series of folders within the working
 % directory of the autograder to ensure that there is no confusion between
-% different student's submitted files as well as create runable files from
-% canvas downloaded student code.
+% different student's submitted files as well as create runnable files from
+% Canvas downloaded student code.
 %
 %%% Exceptions
 %
 % AUTOGRADER:CANVAS2AUTOGRADER:INVALIDFILE if the canvasZipFile either does
-% not contain students or is not in canvas format.
+% not contain students or is not in Canvas format.
 %
 %%% Unit Tests
 %
