@@ -12,8 +12,8 @@
 %
 % * |points|: The points possible for this specific test case
 %
-% * |inputs|: A structure where the field name is the name of the variable, 
-% and the field value is the value of the variable
+% * |inputs|: A structure array where the field names are the names of the
+% variables, and the field values are the values of the variables
 %
 % * |supportingFiles|: A string array of complete file paths that will need 
 % to be copied to the student's directory
@@ -39,16 +39,22 @@
 % outputs for comparison.
 %
 % The |initializer| is useful if a variable's value cannot be determined 
-% until right before the function call. Each output's name must exactly 
-% match the name of an input. The values for the outputs overwrite the 
-% value for its corresponding input.
-%
+% until right before the function call. If |initializer| has outputs that will
+% be used as inputs when calling the student's function, the names of the
+% outputs must match the expected input names in |call| exactly. Such inputs
+% that are generated at runtime don't need to appear in the |inputs| field, and
+% should be overwritten if they do exist.
+% 
 % For example, suppose you wanted to populate input |fid| with a file handle.
 % In that case, your |initializer| would look like:
 %
 %   [fid] = fopen('myInput.txt');
 %
 % Now suppose |fid| is now 3. This will pass in 3 as an input to the function.
+%
+% The initializer function can also be used to load a MAT-file, from the
+% |supportingFiles| that are copied into the student's directory. Again, the
+% variable names inside the MAT-file should match the input names in |call|.
 %
 classdef TestCase < handle
     properties (Access = public)
@@ -68,8 +74,8 @@ classdef TestCase < handle
         % The |TestCase| constructor creates a new |TestCase| from JSON.
         %
         % T = TestCase(JSON) will create a new |TestCase| with all the fields 
-        % filled with values from the solution. The |TestCase| expects actual 
-        % JSON, _not a JSON file_.
+        % filled with values from the solution. The |TestCase| expects an actual 
+        % JSON string, _not a JSON filename_.
         %
         %%% Remarks
         %
@@ -105,7 +111,7 @@ classdef TestCase < handle
         %
         % Note that white space does _not_ matter in the input JSON.
         %
-        % The _initializer_ is a special function call. _initializer_ specifies
+        % The |initializer| is a special function call. |initializer| specifies
         % a function that is designed to run _the moment before_ the main test 
         % case is run. This is useful for defining an input that can't be 
         % known until runtime. For example, suppose you wanted an open 
@@ -126,7 +132,7 @@ classdef TestCase < handle
         % If the initializer is not found, or is left blank, then it is assumed
         % that no initialization is required.
         %
-        % As for the |inputs| array, it's values _must be literals. You cannot 
+        % As for the |inputs| array, it's values _must_ be literals. You cannot 
         % use arbitrary MATLAB code as the value. To execute arbitrary MATLAB 
         % code, see the remarks for the |initializer|.
         %
@@ -193,7 +199,7 @@ classdef TestCase < handle
         %   }
         %
         % Note the |initializer| is set. Suppose the following is 
-        % found in |supportFunction__.m|:
+        % found in "supportFunction__.m":
         %
         %   function out = supportFunction__()
         %       out = fopen('myFile.txt', 'r');
