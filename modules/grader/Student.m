@@ -182,7 +182,21 @@ classdef Student < handle
         % in the Feedback class.
         % The Feedback classes will then be added to the feedbacks field.
         function gradeProblem(this, problem)
-            
+            for i = 1:numel(problem.testCases)
+                tCase = problem.testCases(i);
+                % inputs is cell of inputs in correct order
+                % outputs is cell of outputs
+                inputs = {};
+                outputs = {};
+                fut = parfeval(@runTest, nargout, f, inputs{:});
+                isFine = wait(fut, 'finished', t);
+                if isFine
+                    [outputs{:}] = fetchOutputs(fut);
+                else
+                    delete(fut);
+                    % We have timed out; act accordingly!
+                end
+            end
         end
         
         %% generateFeedback: Generate HTML feedback for student
@@ -222,5 +236,17 @@ classdef Student < handle
         function html = generateFeedback(this)
             
         end
+    end
+end
+
+
+function varargout = runTest(f, varargin)
+    cleanup = onCleanup(@() clean());
+    fclose('all');
+    
+    [varargout{1:nargout}] = f(varargin{:});
+    
+    function clean()
+        fclose('all');
     end
 end
