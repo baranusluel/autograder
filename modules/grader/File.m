@@ -92,7 +92,10 @@ classdef File < handle
         %%% Exceptions
         %
         % An AUTOGRADER:FILE:EQUALS:NOFILE exception will be thrown if SOLN
-        % is not of type File, or no input is given.
+        % is not of type File.
+        %
+        % An AUTOGRADER:FILE:EQUALS:INVALIDFILE exception will be thrown if no 
+        % input is given.
 		%
         %%% Unit Tests
         %
@@ -106,14 +109,16 @@ classdef File < handle
 		%
 		%	 OUT will contain HTML describing that THIS and B are not the same.
 		%   
-        %    If C is an invalid File instance or not type File:
+        %    If C is an invalid File instance:
+		%	 [HTML] = generateFeedback(THIS, C)
+		%
+		%	 equals threw AUTOGRADER:FILE:EQUALS:INVALIDFILE exception
+		%
+        %    If C does not contain a vaild File path:
 		%	 [HTML] = generateFeedback(THIS, C)
 		%
 		%	 equals threw AUTOGRADER:FILE:EQUALS:NOFILE exception
-		%
 		%	 [HTML] = generateFeedback()
-		%
-		%    equals threw AUTOGRADER:FILE:EQUALS:NOFILE exception
         %
         %    
         function [html] = generateFeedback(this, other)
