@@ -15,9 +15,8 @@
 %
 %%% Methods
 % 
-%%% Remarks
+% * |Problem(string json)|
 % 
-% *TBD*
 %
 classdef Problem < handle
     properties (Access = public)
@@ -31,11 +30,7 @@ classdef Problem < handle
         % The constructor creates a new Problem from a JSON.
         %
         % P = Problem(J) will return a Problem with all the fields
-        % contain the appropriate information for the Problem
-        %
-        %%% Remarks
-        %
-        % *TBD*
+        % containing the appropriate information for the Problem
         %
         %%% Exceptions
         %
@@ -46,10 +41,27 @@ classdef Problem < handle
         %
         %%% Unit Tests
         %
-        % 1) Valid and Complete JSON
+        % Given that the input is a complete and valid JSON:
+        %    J = '...' % Valid JSON
+        %    P = Problem(J)
         %
-        % 2) JSON missing information
+        %    P -> complete Problem with a defined name and a cell
+        %    array of the names of banned functions
         %
+        % Given that the input is an invalid JSON:
+        %    J = '...' % Invalid JSON
+        %    P = Problem(J)
+        %
+        %    Constructor threw exception
+        %    AUTOGRADER:PROBLEM:INVALIDJSON
+        % 
+        % Given that the input is a valid JSON that is missing
+        % information:
+        %    J = '...' % Valid JSON with missing information
+        %    P = Problem(J)
+        % 
+        %    Constructor threw exception
+        %    AUTOGRADER:PROBLEM:INVALIDJSON
         % 
         function this = Problem(JSON)
             
