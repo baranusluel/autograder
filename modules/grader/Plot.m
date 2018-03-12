@@ -30,7 +30,10 @@
 %
 %%% Remarks
 %
-% TBD
+% The Plot class keeps all relevant data about a specific plot; note that 
+% a subplot is considered a single plot. Like the File class, the Plot 
+% class copies over any data necessary to recreate the plot entirely; as 
+% such, the plot can be deleted once a Plot object is created!
 %
 classdef Plot < handle
     properties (Access = public)
@@ -92,9 +95,9 @@ classdef Plot < handle
         %
         % equals is used to check a student plot against the solution plot.
         % 
-        % [check, message] = equals(PLOT) takes in a valid PLOT class and evaluates the plot
-        % against the solution file and returns a boolean true/false stored in check and a
-        % string stored in message if the two plots do not match. 
+        % [OK, MSG] = equals(PLOT) takes in a valid PLOT class and evaluates the plot
+        % against the solution file and returns a boolean true/false stored in OK and a
+        % string stored in MSG if the two plots do not match. 
         %
         %%% Remarks
         %
@@ -106,41 +109,34 @@ classdef Plot < handle
         %%% Exceptions
         %
         % An AUTOGRADER:PLOT:EQUALS:NOPLOT exception will be thrown if inputs
-        % are not of type Plot, or only one input is given.
+        % are not of type Plot.
         %
         %%% Unit Tests
         %
         % Given that PLOT is a valid instance of Plot equal to this.
         % Given that this is a valid instance of Plot.
-        % [check, message] = this.equals(PLOT)
+        %   [OK, MSG] = this.equals(PLOT)
         %
-        % check -> true
-        % message -> ''
+        %   OK -> true
+        %   MSG -> ''
         %
         % Given that PLOT is a valid instance of Plot not equal to this.
         % Given that this is a valid instance of Plot.
-        % [check, message] = this.equals(PLOT)
+        %   [OK, MSG] = this.equals(PLOT)
         %
-        % check -> false
-        % message -> 'Reason for inconsistency between plots'
+        %   OK -> false
+        %   MSG -> 'Reason for inconsistency between plots'
         %
         % Given that PLOT is not a valid instance of Plot.
         % Given that this is a valid instance of Plot.
-        % [check, message] = equals(this, PLOT)
+        %   [OK, MSG] = equals(this, PLOT)
         %
-        % equals threw an exception
-        % AUTOGRADER:PLOT:EQUALS:NOPLOT
+        %   equals threw an exception
+        %   AUTOGRADER:PLOT:EQUALS:NOPLOT
         %
-        % [check, message] = equals(this)
-        %
-        % equals threw an exception
-        % AUTOGRADER:PLOT:EQUALS:NOPLOT
-        %
-        function equals(this, that)
+        function [areEqual, message] = equals(this, that)
             
         end
-    end
-    methods (Access=public)
         %% generateFeedback: Generates HTML feedback for the student and solution Plot.
         %
         % generateFeedback will return the feedback for the student's plot. 
@@ -172,10 +168,8 @@ classdef Plot < handle
         % An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be thrown if generateFeedback is called
         % with only one or no input Plots. 
         %
-        function [HTMl] = generateFeedback(this, that)
+        function [html] = generateFeedback(this, that)
 
         end
-        
     end
-    
 end
