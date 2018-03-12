@@ -47,7 +47,7 @@ classdef File < handle
         % Checks if this file object is equal to another (containing same name,
 		% extension, and data).
         %
-        % [ISEQUAL, MSG] = equals(THIS, OTHER) checks whether THIS is equal to 
+        % [ISEQUAL, MSG] = equals(OTHER) checks whether THIS is equal to 
 		% OTHER. If THIS and OTHER have the same name, extension, and data, ISEQUAL
 		% will be true. If the two file objects are not the same, ISEQUAL is false,
 		% and MSG contains the reason why the files aren't equal.
@@ -95,7 +95,7 @@ classdef File < handle
         %
         % Create an HTML page for the student based on the solution File object.
         %
-        % [HTML] = generateFeedback(THIS, SOLN) creates a feedback file containing
+        % [HTML] = generateFeedback(SOLN) creates a feedback file containing
 		% information the equality of THIS and SOLN, where THIS and SOLN are both
 		% type File. If SOLN is a text file, HTML contains a visdiff() of the two
 		% files. If SOLN is an image, the Image Comparison Tool will be used. If 
