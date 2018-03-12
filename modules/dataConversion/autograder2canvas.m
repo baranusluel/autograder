@@ -7,7 +7,7 @@
 % H.
 %
 % This function will take in a graded student array (S), the name of the
-% gradebook from the canvas website(C), and the name of the homework that 
+% gradebook from the canvas website (C), and the name of the homework that 
 % it is grading (H). H should be selected before the autograder runs and as
 % such should always be valid.
 %
@@ -18,7 +18,6 @@
 %
 % If autograder2canvas is given an ungraded student in an array, it will
 % simply pass over the student and not put a grade in the gradebook.
-%
 %
 %%% Exceptions
 %
@@ -33,59 +32,34 @@
 %
 %%% Unit Tests
 %
-% 1)
-% Inputs:
-%   Graded StudentArray
-%   Valid Gradebook Name
-%   Valid Homework Name
+%   S = [...]; % Assume valid graded Student Array
+%   G = 'C:\Users\...\grades.csv'; % Valid grades.csv
+%   H = 'Homework 1';
+%   autograder2canvas(S, G, H);
 %
-% Runtime:
-%   None
+%   CSV found in path G is now correctly formatted for Canvas
 %
-% Outputs:
-%   None
+%   S = [...]; % Assume valid graded Student Array
+%   G = 'C:\Users\...\grades.csv'; % Valid path, but invalid format!
+%   H = 'Homework 1';
+%   autograder2canvas(S, G, H);
 %
-% File Outputs:
-%   An Updated Gradebook
+%   Threw INVALIDGRADEBOOK exception
 %
-% 2)
-% Inputs:
-%   Graded StudentArray
-%   Invalid Gradebook Name
-%   Valid Homework Name
+%   S = [...]; % Assume valid UNGRADED Student Array
+%   G = 'C:\Users\...\grades.csv'; % Valid grades.csv
+%   H = 'Homework 1';
+%   autograder2canvas(S, G, H);
 %
-% Runtime:
-%   INVALIDGRADEBOOK exception
+%   No changes were made, since Student is not graded
+% 
+%   S = [...]; % Graded Student array
+%   G = ''; % Invalid path
+%   H = 'Homework 1';
+%   autograder2canvas(S, G, H);
 %
-% Outputs:
-%   None
-% File Outputs:
-%   None
+%   Threw INVALIDGRADEBOOK exception
 %
-% 3)
-% Inputs:
-%   Ungraded StudentArray
-%   Valid Gradebook Name
-%   Valid Homework Name
-%
-% Runtime:
-%   None
-%
-% Outputs:
-%   None
-% File Outputs:
-%   None
-%
-% 4)
-% Inputs:
-%   Ungraded StudentArray
-%   Invalid Gradebook Name
-%   Valid Homework Name
-%
-% Runtime:
-%   INVALIDGRADEBOOK exception
-%
-% Outputs:
-%   None
-% File Outputs:
-%   None
+function autograder2canvas(students, gradebook, homework)
+
+end
