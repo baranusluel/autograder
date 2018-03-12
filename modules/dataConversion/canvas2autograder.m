@@ -1,13 +1,10 @@
-%% canvas2autograder Converts canvas files to autograder structure
+%% canvas2autograder: Converts Canvas files to autograder structure
 %
-% create student array from canvas downloads
+% Creates correctly formatted student folders from the Canvas download
 %
-% students = canvas2autograder(canvasZipFile)
-%
-% This function will take in the zip file downloaded from Canvas as well as
-% the gradebook downloaded from Canvas.
-%
-% This function will return a student array to be graded.
+% PATH = canvas2autograder(CANVAS) Takes the path in CANVAS and unzips
+% accordingly, reformatting the folder names correctly, and ensuring that 
+% the contents of the Student folders are always just the student's files.
 %
 %%% Remarks
 %
@@ -23,22 +20,23 @@
 %
 %%% Unit Tests
 %
-% 1)
-% Inputs:
-%   Valid canvasZipFile
+%   CANVAS = 'C:\Users\...\Canvas.zip'; % Valid path
+%   PATH = canvas2autograder(CANVAS);
 %
-% Runtime:
-%   None
+%   PATH points to a new, unzipped path that is completely 
+%   unzipped all student's folders, and the folder names 
+%   are correct.
 %
-% Outputs:
-%   Valid ungraded Student vector
+%   CANVAS = ''; % Invalid Path
+%   PATH = canvas2autograder(CANVAS);
 %
-% 2)
-% Inputs:
-%   Invalid canvasZipFile
+%   Threw INVALIDFILE exception
 %
-% Runtime:
-%   INVALIDFILE exception
+%   CANVAS = 'C:\Users\...\Canvas.zip'; % Valid path, but INVALID archive!
+%   PATH = canvas2autograder(CANVAS);
 %
-% Outputs:
-%   None
+%   Threw INVALIDFILE exception
+%
+function newPath = canvas2autograder(canvasPath)
+
+end
