@@ -1,24 +1,31 @@
-%% unpackStuentSubmission: Unpacks a student's sumissions
+%% processStuentSubmission: Processes a student's sumissions
 %   
-% unpackStudentSubmission will unpack a student's submissions into their same 
+% processStudentSubmission will unpack a student's submissions into their same 
 % folder.
 %
-% [void] = unpackStudentSubmission(string_startPath) will try and unpack
-% the data located at the given pathway into a single folder. The function
-% is able to manage .png, .mat, .m, .jpeg, .txt, .xlsx, .xls, (.json?), and ZIP 
-% archives found in pathway.
-% string_startPath will be a character vector indicating the pathway to
-% access the information.
+% processStudentSubmission(P) will try and unpack
+% the data located at the given pathway into a single folder. P is a 
+% string or character vector that represents the path to the student's 
+% folder.
 %
 %%% Remarks
 %
 % If the student submitted each file seperately, this function will do
 % nothing.
 %
+% processStudentSubmission won't _recursively_ unzip archives. In other words,
+% suppose the student submits a ZIP archive that has, inside of it, _another_ 
+% ZIP archive. That second archive will not be unzipped!
+%
+% In the event of a name collision (i.e., suppose the ZIP archive has a file
+% with the same name as an existing file), the existing file will always win.
+% Note that in the case of having multiple archives present, there is no 
+% guarantee as to which file will survive if both archives have the same file.
+%
 %%% Exceptions
 %
-% An AUTOGRADER:ISEMPTY:NOVALIDINPUT exception will be thrown if 
-% the pathway is empty
+% An AUTOGRADER:ISEMPTY:INVALIDPATH exception will be thrown if 
+% the pathway is invalid
 %
 %%% Unit Tests
 %
@@ -26,15 +33,14 @@
 %   to the student's labeled folder.
 %
 %   Given a pathway with one or more ZIP archive, the function will open the ZIP
-%   archive and move its contents to the student's labelled folder.
+%   archive and move its contents to the student's folder.
 %
 %   Given both ZIP archives and files found on the given pathway, the files
 %   found will be moved to the student's labeled folder and then the ZIP
 %   archives will be opened and their contents moved to the student's
-%   labelled folder.
+%   folder.
 %
-%   Exception Raised: no files found in given pathway
+%   P = ''; % Invalid Path
+%   processStudentSubmissions(P);
 %
-%   Given a pathway that is empty, the function will output (a value that
-%   will represent to the next function that the student did not submit any
-%   code, letting it skip the grading procedure.
+%   Threw INVALIDPATH exception
