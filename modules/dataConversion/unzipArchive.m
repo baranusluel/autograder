@@ -7,10 +7,17 @@
 % UNZIPPATH = unzipArchive(PATH) unzips the arhive at PATH into the current 
 % folder.
 %
-% UNZIPPATH = unzipArchive(PATH, ISTEMP, DELETEORIGINAL) unzips the archive 
-% at PATH into a temporary folder if ISTEMP is true and into the current folder
-% otherwise. If DELETEORIGINAL is true, the original archive at PATH will be
-% deleted.
+% UNZIPPATH = unzipArchive(PATH, DESTINATION) unzips the archive at PATH to
+% a folder specified by DESTINATION. If DESTINATION is a folder path, the
+% archive will be unzipped to the destination. If DESTINATION is either the
+% character vector 'temp', the string "temp", or a logical true, the
+% archive will be unzipped to a temporary folder. If DESTINATION is the 
+% character vector 'curr', the string "curr", or a logical false, the
+% archive will be unzipped to the current directory.
+%
+% UNZIPPATH = unzipArchive(PATH, DESTINATION, DELETEORIGINAL) has the same
+% behavior as the previous usage, however it will delete the archive if
+% DELETEORIGINAL is true.
 %
 %%% Remarks
 %
@@ -18,22 +25,30 @@
 %
 %%% Exceptions
 %
+% AUTOGRADER:UNZIPARCHIVE:INVALIDPATH exception will be thrown if an
+% invalid path is passed in.
 %
+% AUTOGRADER:UNZIPARCHIVE:INVALIDFILE exception will be thrown if a non
+% archive file is passed in.
 %
 %%% Unit Tests
 %
-%   P = unzipArchive('students.zip')
+%   P = unzipArchive('test.zip')
 %
-%   P contains the path of the current directory and the contents of students.zip 
-%   are unzipped into the current directory.
+%   P contains '\test\' appended to the end of the current directory path 
+%   and the contents of test.zip are unzipped into the newly created test\ 
+%   folder.
 %
-%   P = unzipArchive('test.zip', true)
+%   P = unzipArchive('test.zip', true) or P = unzipArchive('test.zip', 'temp')
 %
-%   P contains '\test\' appended to the end of the current directory path and the
-%   contents of test.zip are unzipped into the newly created test\ folder.
+%   P contains a path to a temporary folder named 'test' somewhere in the
+%   temporary appdata designated to MATLAB.
 %
-%   P = unzipArchive('test.zip', true, true)
+%   P = unzipArchive('test.zip', 'curr', true)
 %
-%   P contains '\test\' appended to the end of the current directory path and the
-%   contents of test.zip are unzipped into the newly created test\ folder. The
-%   original archive test.zip is deleted.
+%   P contains '\test\' appended to the end of the current directory path 
+%   and the contents of test.zip are unzipped into the newly created test\ 
+%   folder. The original archive test.zip is deleted.
+%
+%
+%
