@@ -15,9 +15,8 @@
 %
 %%% Methods
 % 
-% * |Problem(string json)|
+% * Problem
 % 
-%
 classdef Problem < handle
     properties (Access = public)
         name;
@@ -31,6 +30,12 @@ classdef Problem < handle
         %
         % P = Problem(J) will return a Problem with all the fields
         % containing the appropriate information for the Problem
+        %
+        %%% Remarks
+        %
+        % The Problem constructor will _not_ catch any errors thrown by
+        % TestCase; these are fatal errors that generally mean something 
+        % serious is wrong with the solution JSON file.
         %
         %%% Exceptions
         %
