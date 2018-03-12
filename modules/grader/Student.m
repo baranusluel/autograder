@@ -37,7 +37,7 @@
 % autograder. Each student maps to one (and only one) folder in the
 % submission archive.
 %
-% The student is considered the center of data transfer within the
+% The student is considered the center of data transfer within the 
 % autograder. Each Student is given a problem to grade at runtime, and
 % students are finished one at a time - in other words, the first student
 % is graded, then the second, and so on.
@@ -70,7 +70,7 @@ classdef Student < handle
         % single |Student|. This constructor may implicitly call
         % |unpackStudentSubmissions| when running - this is so after a
         % |Student| is constructed, their directory is completely compliant
-        % with what the autograder will expect
+        % with what the autograder will expect.
         % 
         %%% Exceptions
         %

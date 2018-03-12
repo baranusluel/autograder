@@ -1,13 +1,15 @@
-%% autograder2canvas: Generate Canvas files from autograder
+%% autograder2Canvas: Generate Canvas files from autograder
 % 
 % Create the gradebook csv file used by canvas to import grades.
-% 
-% autograder2canvas(studentArray, canvasGradebookFileName, *optional* homeworkName)
 %
-% This function will take in a graded Student Array, the name of the
-% gradebook from the canvas website, and the name of the homework that it
-% is grading. The homework Name should be selected before the autograder
-% runs and as such should always be valid.
+% autograder2Canvas(S, C, H) takes the graded Student Array in S and writes
+% it to the CSV given by the path in C in the assignment name specified by
+% H.
+%
+% This function will take in a graded student array (S), the name of the
+% gradebook from the canvas website(C), and the name of the homework that 
+% it is grading (H). H should be selected before the autograder runs and as
+% such should always be valid.
 %
 % This function will edit the gradebook such that it has the new scores
 % from the student array.
@@ -17,8 +19,6 @@
 % If autograder2canvas is given an ungraded student in an array, it will
 % simply pass over the student and not put a grade in the gradebook.
 %
-% If autograder2canvas should never be given an invalid homeworkName
-% because it should come from the original inputs to the function.
 %
 %%% Exceptions
 %
