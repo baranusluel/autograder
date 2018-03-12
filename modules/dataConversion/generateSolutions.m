@@ -1,4 +1,4 @@
-%% generateSolutions: generate the solution values for comparison 
+%% generateSolutions: Generate the solution values for comparison 
 %   
 % This will generate the solution values, given a path to the 
 % solution ZIP archive. These solutions are held in a `Problem` array.
