@@ -172,9 +172,6 @@ function engine(runnable)
         [~, supportingFiles{i}, ext] = fileparts(supportingFiles{i});
         supportingFiles{i} = [supportingFiles{i}, ext];
     end
-    for i = 1:numel(loadFiles)
-        load(loadFiles{i});
-    end
     % Record starting point
     beforeSnap = dir();
     beforeSnap = {beforeSnap.name};
@@ -307,8 +304,13 @@ function defs = buildVariableDefs(tCase)
     for i = 1:numel(varNames)
         defs{i} = [varNames{i} ' = ' tCase.inputs.(varNames{i}) ';'];
     end
+    
+    % Load MAT files
+    for i = 1:numel(tCase.loadFiles)
+        defs{end + 1} = ['load(' tCase.loadFiles{i} ');'];
+    end
+    
     % Run any initializers
-
     if ~isempty(tCase.initializer)
         % Append initializer call to end of varDefs
         % Make sure suppressed!
