@@ -212,10 +212,8 @@ function engine(runnable)
         delete(supportingFiles{i});
     end
 
-    % Close all figures, EXCEPT for possible GUI (reference constant?)
+    % Close all figures with visible handles?
     figs = findobj(0, 'type', 'figure');
-    % GUI_NAME = '__AutograderGUIWindow__';
-    % figs(strcmp({figs.Name}, GUI_NAME)) = [];
     delete(figs);
     
     % If timeout and TestCase, throw error
