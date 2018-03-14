@@ -105,5 +105,60 @@ function engine(runnable)
 %   represents all functions called by any function inside the FunctionName.m
 %   file.
 
+% This code is divided up into three sections:
+% 
+%   1. Setup
+%   2. Running
+%   3. Cleanup
+%
+% Setup sets up the initial call. It cleans up the workspace, 
+% sets up the supporting Files, and defines all the variables.
+% *NOTE*: Late-bound variables (defined via the initializer) are NOT 
+% defined in Setup. These variables are instead defined immediately
+% before the function is run. Variable literals are, however, defined in this 
+% step.
+%
+% Running defines all late-bound variables and runs the function itself,
+% on a parallel worker. This is done to protect against timeouts. The Feedback
+% or TestCase object is populated here - EVEN IF there is a timeout exception.
+% However, if the TestCase times out, engine should rethrow the timeout error.
+%
+% Cleanup cleans up the directory to make it look "pristine" - or at least as it 
+% did before. It deletes all files mentioned in the runnable's outputs, and closes 
+% all plots.
 
+%% Setup
+
+%% Running
+    
+%% Cleanup
+
+end
+
+function runCase(runnable)
+    % Setup workspace
+    timeout = Timeout();
+    cleanup = onCleanup(@() cleanup(runnable, timeout));
+    fclose('all');
+
+    % run the function
+
+    timeout.isTimeout = false;
+end
+
+function cleanup(runnable, isTimeout)
+    % check if runnable is TestCase or Feedback
+    fclose('all');
+    
+    if isa(runnable, 'Feedback')
+        if timeout.isTimeout
+            runnable.exception = MException('TIMEOUT');
+            return;
+        end
+    else
+        if timeout.isTimeout
+            e = MException('TIMEOUT');
+            throw(e);
+        end
+    end
 end
