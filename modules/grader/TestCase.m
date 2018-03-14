@@ -281,8 +281,8 @@ classdef TestCase < handle
                 this.loadFiles = info.supportingFiles(toLoad);
                 this.supportingFiles = info.supportingFiles(~toLoad);
             catch
-                throw(MException('AUTOGRADER:TESTCASE:CTOR:PARSEERROR', ...
-                    'Problem parsing JSON'));
+                throw(MException('AUTOGRADER:TESTCASE:CTOR:BADINFO', ...
+                    'Problem with INFO struct fields'));
             end
             
             % Engine can throw parse exceptions for bad |call| or
