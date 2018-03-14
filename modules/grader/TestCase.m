@@ -63,6 +63,7 @@ classdef TestCase < handle
         points;
         inputs;
         supportingFiles;
+        path;
         outputs;
         files;
         plots;
