@@ -8,8 +8,7 @@
 %
 % * hasPassed: True if the student passed this test completely
 %
-% * images: A File array that represents all the images produced by the 
-%           student
+% * path: The fully qualified path for this student's directory
 %
 % * files: A File array that represents all the files produced by the
 %          student
@@ -55,7 +54,7 @@ classdef Feedback < handle
     properties (Access = public)
         testCase;
         hasPassed;
-        images;
+        path;
         files;
         plots;
         reason;
