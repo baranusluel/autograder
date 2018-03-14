@@ -134,10 +134,7 @@ function engine(runnable)
     else
         tCase = runnable.testCase;
     end
-    % Check for banned function use
- 
 
-    %
     % Copy over supporting files
     supportingFiles = tCase.supportingFiles;
     [inNames, outNames, func] = parseFunction(tCase.call);
