@@ -137,6 +137,7 @@ function engine(runnable)
 
     % Copy over supporting files
     supportingFiles = tCase.supportingFiles;
+    loadFiles = tCase.loadFiles;
     [inNames, outNames, func] = parseFunction(tCase.call);
 
     allCalls = getcallinfo([func2str(func) '.m']);
@@ -145,7 +146,7 @@ function engine(runnable)
     calls = [calls.names];
 
     % Test for recursion. If any function calls itself, good to go.
-    isRecur = false;
+    isRecur = tCase.isRecursive;
     for i = 1:numel(allCalls)
         call = allCalls(i);
         if strcmp(call.name, call.calls.innerCalls.names)
@@ -154,8 +155,7 @@ function engine(runnable)
         end
     end
 
-    % Where do we get access to banned functions??
-    bannedFunctions = tCase.bannedFunctions;
+    bannedFunctions = tCase.banned;
     for i = 1:numel(bannedFunctions)
         if any(strcmpi(calls, bannedFunctions{i}))
             if isa(runnable, 'TestCase')
@@ -171,6 +171,9 @@ function engine(runnable)
         copyfile(supportingFiles{i});
         [~, supportingFiles{i}, ext] = fileparts(supportingFiles{i});
         supportingFiles{i} = [supportingFiles{i}, ext];
+    end
+    for i = 1:numel(loadFiles)
+        load(loadFiles{i});
     end
     % Record starting point
     beforeSnap = dir();
