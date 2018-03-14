@@ -15,9 +15,12 @@
 % the autograder. It provides a "sandboxed" environment for running code,
 % and protects against student errors and timeouts.
 %
+% Engine is run with a TestCase argument when running solution functions.
+% It is run with a Feedback argument when running student functions.
+%
 % Timeouts are handled using a parallel pool of workers. In essence, a 
 % student's code is limited to a certain runtime, 30 seconds by default.
-% To change this value, you should edit the TIMEOUT field of the STudent
+% To change this value, you should edit the TIMEOUT field of the Student
 % class.
 %
 % Errors in the code itself are handled differently, depending on whether 
@@ -40,6 +43,7 @@
 %
 % A TIMEOUT exception will never be thrown, but will be assigned to the 
 % Feedback's exception field instead, should the code timeout.
+%
 %%% Unit Tests
 %
 %   % Assume T is a valid TestCase that does NOT error.
