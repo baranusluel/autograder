@@ -65,7 +65,6 @@ Has the following fields:
 - `inputs`: A structure where the field name is the name of the variable, and the field value is the value of the variable
 - `supportingFiles`: A string array of complete file paths that will need to be copied to the student's directory
 - `outputs`: A structure where the field name is the name of the output, and the field value is the value of the output
-- `images`: A `File` array that represents all the images produced as outputs
 - `files`: A `File` array that represents all the files produced as outputs
 - `plots`: A `Plot` array that represents the data about all the plots generated
 
