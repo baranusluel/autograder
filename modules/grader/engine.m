@@ -112,16 +112,17 @@ function engine(runnable)
 %   3. Cleanup
 %
 % Setup sets up the initial call. It cleans up the workspace, 
-% sets up the supporting Files, and defines all the variables.
-% *NOTE*: Late-bound variables (defined via the initializer) are NOT 
-% defined in Setup. These variables are instead defined immediately
-% before the function is run. Variable literals are, however, defined in this 
-% step.
+% sets up the supporting Files.
 %
 % Running defines all late-bound variables and runs the function itself,
 % on a parallel worker. This is done to protect against timeouts. The Feedback
 % or TestCase object is populated here - EVEN IF there is a timeout exception.
 % However, if the TestCase times out, engine should rethrow the timeout error.
+%
+% *NOTE*: Late-bound variables (defined via the initializer) are defined immediately
+% before a function is run. As such, the produced error could be from an initializer.
+% However, this does not cause problems with students, since this error happens 
+% during solution code as well.
 %
 % Cleanup cleans up the directory to make it look "pristine" - or at least as it 
 % did before. It deletes all files mentioned in the runnable's outputs, and closes 
@@ -132,6 +133,8 @@ function engine(runnable)
 
     % Define static variables (based on TestCase)
 
+    % Record starting point
+    
     %% Running
     % Create a new job for the parallel pool
     test = parfeval(@runCase, 0, runnable);
@@ -143,16 +146,24 @@ function engine(runnable)
     end
     delete(test);
 
+    % Populate fields
+
+
     %% Cleanup
     % Delete all files mentioned in the files field
-
+    for i = 1:numel(runnable.files)
+        % Delete file with name of File
+        delete([runnable.files(i).name runnable.files(i).extension]);
+    end
     % Close all plots?
-
+    
     % If timeout and TestCase, throw error?
     if isa(runnable, 'TestCase') && isTimeout
         throw(MException('MATLAB:TIMEOUT', 'Solution Code Timed Out'));
     end
 end
+
+
 
 function runCase(runnable)
     % Setup workspace
@@ -160,8 +171,12 @@ function runCase(runnable)
     cleanup();
     cleaner = onCleanup(@() cleanup(runnable, timeout));
 
-    % run the function
+    % Setup the variables
+    
+    % Run any initializers
 
+    % run the function
+    
     timeout.isTimeout = false;
 end
 
