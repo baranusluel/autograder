@@ -240,7 +240,7 @@ classdef TestCase < handle
             try
                 % Parse JSON to get struct with fields |call|,
                 % |initializer|, |points|, |inputs|, |supportingFiles|
-                data = parseJSON(json);
+                data = parseJson(json);
                 % Copy values from struct to TestCase. Do one-by-one
                 % instead of iterating in case fields are wrong/missing.
                 % If a field is missing, exception is caught and
