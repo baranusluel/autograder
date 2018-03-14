@@ -20,6 +20,13 @@
 % * |supportingFiles|: A string array of complete file paths that will need 
 % to be copied to the student's directory
 %
+% * |loadFiles|: A string array of complete file paths of MAT files to load
+%
+% * |banned|: A string array of names of banned functions for this problem
+%
+% * |isRecursive|: A logical representing whether submission should be
+% checked for use of 
+%
 % * |outputs|: A structure where the field name is the name of the output, 
 % and the field value is the value of the output
 %
@@ -29,7 +36,7 @@
 %
 %%% Methods
 %
-% * |TestCase(string json, string path)|
+% * |TestCase(struct info, string path)|
 %
 %%% Remarks
 %
@@ -63,6 +70,9 @@ classdef TestCase < handle
         points;
         inputs;
         supportingFiles;
+        loadFiles;
+        banned;
+        isRecursive;
         path;
         outputs;
         files;
@@ -71,30 +81,19 @@ classdef TestCase < handle
     methods
         %% Constructor
         %
-        % The |TestCase| constructor creates a new |TestCase| from JSON.
+        % The |TestCase| constructor creates a new |TestCase| from a
+        % structure representing parsed JSON.
         %
-        % T = TestCase(JSON, PATH) will create a new |TestCase| with all the fields 
-        % filled with values from the solution. The |TestCase| expects an actual 
-        % JSON string, _not a JSON filename_. PATH is a fully qualified
-        % path to the student's directory.
+        % T = TestCase(INFO, PATH) will create a new |TestCase| with all the fields 
+        % filled with values from the solution. INFO should be a structure with
+        % the fields |call|, |initializer|, |points|, |inputs|, |supportingFiles|,
+        % |banned|, |isRecursive|. PATH is a fully qualified path to the
+        % student's directory.
         %
         %%% Remarks
         %
-        % The constructor parses the JSON and fills in all the information 
-        % gleaned from that. The JSON should be for a specific test case. Since
-        % the single |TestCase| only needs the solution value, banned functions
-        % don't matter; thus, |TestCase| does not need to know about what 
-        % problem it belongs to.
-        %
-        % Additionally, |TestCase| does _not_ use the same engine as 
-        % |gradeProblem| in the |Student| class. This is because we can safely 
-        % assume that a solution function will _not_ error or fall in an 
-        % infinite loop. Additionally, there are no banned functions to worry 
-        % about, so we don't need to account for those.
-        %
-        % The format for the JSON is rigidly defined. For a more complete 
-        % explanation for this definition, you can refer to the documentation. 
-        % However, below is an example submission for the |TestCase| JSON:
+        % The format that the structure |INFO| should follow
+        % is shown by the JSON example below:
         %
         %   {
         %       "call": "[out1, out2] = myFun(in1, in2);",
@@ -106,8 +105,16 @@ classdef TestCase < handle
         %       },
         %       "supportingFiles": [
         %           "myFile.txt",
-        %           "myInputImage.png"
-        %       ]
+        %           "myInputImage.png",
+        %           "myTestCases.mat"
+        %       ],
+        %       "banned": [
+        %           "fopen",
+        %           "fclose",
+        %           "fseek",
+        %           "frewind"
+        %       ],
+        %       "isRecursive": false
         %   }
         %
         % Note that white space does _not_ matter in the input JSON.
@@ -149,8 +156,8 @@ classdef TestCase < handle
         %
         %%% Exceptions
         %
-        % The constructor throws the |AUTOGRADER:TESTCASE:CTOR:PARSEERROR| if
-        % there are problems parsing the input JSON. This exception should not
+        % The constructor throws the |AUTOGRADER:TESTCASE:CTOR:BADINFO| if
+        % there are problems with the INFO structure. This exception should not
         % be consumed, because this means the |TestCase| is incomplete. It also
         % throws this error if |call| or |initializer| has a syntax error.
         %
@@ -161,9 +168,9 @@ classdef TestCase < handle
         %
         %%% Unit Tests
         %
-        % Assume JSON that looks like the example given above.
+        % Assume INFO struct that looks like the example given above.
         % 
-        %   J = '...' % Valid JSON;
+        %   J = '...' % Valid INFO;
         %   P = '...' % Valid path;
         %   T = TestCase(J, P);
         %
@@ -173,6 +180,9 @@ classdef TestCase < handle
         %   T.points -> 3;
         %   T.inputs -> struct('in1', 5, 'in2', true);
         %   T.supportingFiles -> ["myFile.txt", "myInputImage.png"];
+        %   T.loadFiles -> ["myTestCases.mat"];
+        %   T.banned -> ["fopen", "fclose", "fseek", "frewind"];
+        %   T.isRecursive -> false;
         %   T.path -> '...' % Valid path
         % 
         % Note that the following would be filled _after_ running the solution. 
@@ -184,7 +194,7 @@ classdef TestCase < handle
         %   T.outputs -> struct('out1', 2, 'out2', 'Hello, World!');
         %   T.files -> File[2]
         %
-        % Now suppose the JSON in |J| looks like this:
+        % Now suppose the structure in |J| is similiar to the following JSON:
         %
         %   {
         %       "call": "[out1, out2] = myFun(in1, in2);",
@@ -197,7 +207,15 @@ classdef TestCase < handle
         %           "myFile.txt",
         %           "myInputImage.png",
         %           "supportFunction__.m"
-        %       ]
+        %           "myTestCases.mat"
+        %       ],
+        %       "banned": [
+        %           "fopen",
+        %           "fclose",
+        %           "fseek",
+        %           "frewind"
+        %       ],
+        %       "isRecursive": false
         %   }
         %
         % Note the |initializer| is set. Suppose the following is 
@@ -217,6 +235,10 @@ classdef TestCase < handle
         %   T.points -> 3;
         %   T.inputs -> struct('in1', 5);
         %   T.supportingFiles -> ["myFile.txt", "myInputImage.png", "supportFunction__.m"];
+        %   T.loadFiles -> ["myTestCases.mat"];
+        %   T.banned -> ["fopen", "fclose", "fseek", "frewind"];
+        %   T.isRecursive -> false;
+        %   T.path -> '...' % Valid path
         %   T.path -> '...' % Valid path
         %
         % The following are filled in after everything is run. 
@@ -227,34 +249,37 @@ classdef TestCase < handle
         %   T.files -> File[2];
         %   T.plots -> Plot[1];
         %
-        % Assume J is empty or invalid JSON:
+        % Assume J structure is empty or has missing fields:
         %   T = TestCase(J, P);
         %
         %   The constructor threw exception 
-        %   AUTOGRADER:TESTCASE:CTOR:PARSEERROR
+        %   AUTOGRADER:TESTCASE:CTOR:BADINFO
         %
-        % Assume J is valid JSON, but the solution code errors.
+        % Assume J is valid structure, but the solution code errors.
         %
         % Running the constructor:
         %   T = TestCase(J, P);
         % 
         %   The constructor threw exception
         %   AUTOGRADER:TESTCASE:CTOR:BADSOLUTION
-        function this = TestCase(json, path)
+        function this = TestCase(info, path)
             try
                 this.path = path;
-                % Parse JSON to get struct with fields |call|,
-                % |initializer|, |points|, |inputs|, |supportingFiles|
-                data = jsondecode(json);
+                
                 % Copy values from struct to TestCase. Do one-by-one
                 % instead of iterating in case fields are wrong/missing.
                 % If a field is missing, exception is caught and
                 % re-thrown as a parse error.
-                this.call = data.call;
-                this.initializer = data.initializer;
-                this.points = data.points;
-                this.inputs = data.inputs;
-                this.supportingFiles = data.supportingFiles;
+                this.call = info.call;
+                this.initializer = info.initializer;
+                this.points = info.points;
+                this.inputs = info.inputs;
+                this.isRecursive = info.isRecursive;
+                this.banned = info.banned;
+                
+                toLoad = contains(info.supportingFiles, '.mat');
+                this.loadFiles = info.supportingFiles(toLoad);
+                this.supportingFiles = info.supportingFiles(~toLoad);
             catch
                 throw(MException('AUTOGRADER:TESTCASE:CTOR:PARSEERROR', ...
                     'Problem parsing JSON'));
