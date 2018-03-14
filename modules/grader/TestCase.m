@@ -29,7 +29,7 @@
 %
 %%% Methods
 %
-% * |TestCase(string json)|
+% * |TestCase(string json, string path)|
 %
 %%% Remarks
 %
@@ -73,9 +73,10 @@ classdef TestCase < handle
         %
         % The |TestCase| constructor creates a new |TestCase| from JSON.
         %
-        % T = TestCase(JSON) will create a new |TestCase| with all the fields 
+        % T = TestCase(JSON, PATH) will create a new |TestCase| with all the fields 
         % filled with values from the solution. The |TestCase| expects an actual 
-        % JSON string, _not a JSON filename_.
+        % JSON string, _not a JSON filename_. PATH is a fully qualified
+        % path to the student's directory.
         %
         %%% Remarks
         %
@@ -163,7 +164,8 @@ classdef TestCase < handle
         % Assume JSON that looks like the example given above.
         % 
         %   J = '...' % Valid JSON;
-        %   T = TestCase(J);
+        %   P = '...' % Valid path;
+        %   T = TestCase(J, P);
         %
         %   T isa |TestCase|
         %   T.call -> "[out1, out2] = myFun(in1, in2);"
@@ -171,6 +173,7 @@ classdef TestCase < handle
         %   T.points -> 3;
         %   T.inputs -> struct('in1', 5, 'in2', true);
         %   T.supportingFiles -> ["myFile.txt", "myInputImage.png"];
+        %   T.path -> '...' % Valid path
         % 
         % Note that the following would be filled _after_ running the solution. 
         % This is still done in the constructor. For this example, assume the 
@@ -206,7 +209,7 @@ classdef TestCase < handle
         %
         % Now we call the function:
         %
-        %   T = TestCase(J);
+        %   T = TestCase(J, P);
         %
         %   T isa |TestCase|
         %   T.call -> "[out1, out2] = myFun(in1, in2);"
@@ -214,6 +217,7 @@ classdef TestCase < handle
         %   T.points -> 3;
         %   T.inputs -> struct('in1', 5);
         %   T.supportingFiles -> ["myFile.txt", "myInputImage.png", "supportFunction__.m"];
+        %   T.path -> '...' % Valid path
         %
         % The following are filled in after everything is run. 
         % Note that for this case, the in2 is calculated _immediately_
@@ -224,7 +228,7 @@ classdef TestCase < handle
         %   T.plots -> Plot[1];
         %
         % Assume J is empty or invalid JSON:
-        %   T = TestCase(J);
+        %   T = TestCase(J, P);
         %
         %   The constructor threw exception 
         %   AUTOGRADER:TESTCASE:CTOR:PARSEERROR
@@ -232,15 +236,16 @@ classdef TestCase < handle
         % Assume J is valid JSON, but the solution code errors.
         %
         % Running the constructor:
-        %   T = TestCase(J);
+        %   T = TestCase(J, P);
         % 
         %   The constructor threw exception
         %   AUTOGRADER:TESTCASE:CTOR:BADSOLUTION
-        function this = TestCase(json)
+        function this = TestCase(json, path)
             try
+                this.path = path;
                 % Parse JSON to get struct with fields |call|,
                 % |initializer|, |points|, |inputs|, |supportingFiles|
-                data = parseJson(json);
+                data = jsondecode(json);
                 % Copy values from struct to TestCase. Do one-by-one
                 % instead of iterating in case fields are wrong/missing.
                 % If a field is missing, exception is caught and
