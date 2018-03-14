@@ -129,11 +129,52 @@ function engine(runnable)
     % all plots.
 
     %% Setup
-    
+    if isa(runnable, 'TestCase')
+        tCase = runnable;
+    else
+        tCase = runnable.testCase;
+    end
     % Check for banned function use
+ 
 
+    %
     % Copy over supporting files
+    supportingFiles = tCase.supportingFiles;
+    [inNames, outNames, func] = parseFunction(tCase.call);
 
+    allCalls = getcallinfo([func2str(func) '.m']);
+    calls = [allCalls.calls];
+    calls = [calls.fcnCalls];
+    calls = [calls.names];
+
+    % Test for recursion. If any function calls itself, good to go.
+    isRecur = false;
+    for i = 1:numel(allCalls)
+        call = allCalls(i);
+        if strcmp(call.name, call.calls.innerCalls.names)
+            isRecur = true;
+            break;
+        end
+    end
+
+    % Where do we get access to banned functions??
+    bannedFunctions = tCase.bannedFunctions;
+    for i = 1:numel(bannedFunctions)
+        if any(strcmpi(calls, bannedFunctions{i}))
+            if isa(runnable, 'TestCase')
+                throw(MException('AUTOGRADER:ENGINE:BADSOLUTION', 'Solution uses banned functions'));
+            else
+                runnable.exception = MException('AUTOGRADER:ENGINE:BANNED', 'File used banned function %s.', bannedFunctions{i});
+                return;
+            end
+        end
+    end
+
+    for i = 1:numel(supportingFiles)
+        copyfile(supportingFiles{i});
+        [~, supportingFiles{i}, ext] = fileparts(supportingFiles{i});
+        supportingFiles{i} = [supportingFiles{i}, ext];
+    end
     % Record starting point
     beforeSnap = dir();
     beforeSnap = {beforeSnap.name};
@@ -169,6 +210,11 @@ function engine(runnable)
         delete([runnable.files(i).name runnable.files(i).extension]);
     end
     
+    % Delete all files that were marked as supporting files
+    for i = 1:numel(supportingFiles)
+        delete(supportingFiles{i});
+    end
+
     % Close all figures, EXCEPT for possible GUI (reference constant?)
     figs = findobj(0, 'type', 'figure');
     % GUI_NAME = '__AutograderGUIWindow__';
@@ -197,7 +243,15 @@ function populateFiles(runnable, addedFiles)
 end
 
 function populatePlots(runnable)
+    % Get all handles; since the Position is captured, that can be used 
+    % for the subplot checking
+    pHandles = findobj(0, 'type', 'axes');
+    plots(numel(pHandles)) = Plot(pHandles(end));
+    for i = 1:(numel(pHandles) - 1)
+        plots(i) = Plot(pHandles(i));
+    end
 
+    runnable.plots = plots;
 end
 
 
@@ -218,7 +272,7 @@ function runCase(runnable)
     [inNames, outNames, func] = parseFunction(tCase.call);
     outs = cell(size(outNames));
     % run the function
-    [outs{:}] = runner(func, defs, inNames, outNames);
+    [outs{:}] = runner(func, defs, inNames, outNames, tCase.loads);
 
     % Populate outputs
     % outNames is in order of argument. For each outName, apply corresponding
@@ -229,11 +283,16 @@ function runCase(runnable)
     timeout.isTimeout = false;
 end
 
-function varargout = runner(func____, defs, ins, outs)
+function varargout = runner(func____, defs____, ins, outs, loads____)
+    
     % Create cell array with all inputs
     inCell____ = ['{' strjoin(ins, ',') '}'];
     varargout = cell(size(outs));
-    eval(defs);
+    % Load MAT files
+    for i____ = 1:numel(loads____)
+        load(loads____{i});
+    end
+    eval(defs____);
     ins____ = eval(inCell____);
     [varargout{:}] = func____(ins____{:});
 end
