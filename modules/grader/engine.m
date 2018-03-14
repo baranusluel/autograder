@@ -89,65 +89,78 @@
 %
 function engine(runnable)
 
-% For banned functions, we'll need to use static checking, instead of 
-% overwriting it in the directory. This is because some functions
-% (like length) are extremely necessary for MATLAB to even function
-% correctly. I would recommend the following:
-%
-%   calls = getcallinfo('FunctionName.m');
-%   calls = [calls.calls];
-%   calls = [calls.fcnCalls];
-%   calls = [calls.names];
-%
-%   Now, calls is cell array of called functions. For each function which 
-%   isn't built in, we could walk them recursively, checking for use of the
-%   banned function. Personally, I think that's overkill. This cell array
-%   represents all functions called by any function inside the FunctionName.m
-%   file.
+    % For banned functions, we'll need to use static checking, instead of 
+    % overwriting it in the directory. This is because some functions
+    % (like length) are extremely necessary for MATLAB to even function
+    % correctly. I would recommend the following:
+    %
+    %   calls = getcallinfo('FunctionName.m');
+    %   calls = [calls.calls];
+    %   calls = [calls.fcnCalls];
+    %   calls = [calls.names];
+    %
+    %   Now, calls is cell array of called functions. For each function which 
+    %   isn't built in, we could walk them recursively, checking for use of the
+    %   banned function. Personally, I think that's overkill. This cell array
+    %   represents all functions called by any function inside the FunctionName.m
+    %   file.
 
-% This code is divided up into three sections:
-% 
-%   1. Setup
-%   2. Running
-%   3. Cleanup
-%
-% Setup sets up the initial call. It cleans up the workspace, 
-% sets up the supporting Files.
-%
-% Running defines all late-bound variables and runs the function itself,
-% on a parallel worker. This is done to protect against timeouts. The Feedback
-% or TestCase object is populated here - EVEN IF there is a timeout exception.
-% However, if the TestCase times out, engine should rethrow the timeout error.
-%
-% *NOTE*: Late-bound variables (defined via the initializer) are defined immediately
-% before a function is run. As such, the produced error could be from an initializer.
-% However, this does not cause problems with students, since this error happens 
-% during solution code as well.
-%
-% Cleanup cleans up the directory to make it look "pristine" - or at least as it 
-% did before. It deletes all files mentioned in the runnable's outputs, and closes 
-% all plots.
+    % This code is divided up into three sections:
+    % 
+    %   1. Setup
+    %   2. Running
+    %   3. Cleanup
+    %
+    % Setup sets up the initial call. It cleans up the workspace, 
+    % sets up the supporting Files.
+    %
+    % Running defines all late-bound variables and runs the function itself,
+    % on a parallel worker. This is done to protect against timeouts. The Feedback
+    % or TestCase object is populated here - EVEN IF there is a timeout exception.
+    % However, if the TestCase times out, engine should rethrow the timeout error.
+    %
+    % *NOTE*: Late-bound variables (defined via the initializer) are defined immediately
+    % before a function is run. As such, the produced error could be from an initializer.
+    % However, this does not cause problems with students, since this error happens 
+    % during solution code as well.
+    %
+    % Cleanup cleans up the directory to make it look "pristine" - or at least as it 
+    % did before. It deletes all files mentioned in the runnable's outputs, and closes 
+    % all plots.
 
     %% Setup
+    
+    % Check for banned function use
+
     % Copy over supporting files
 
-    % Define static variables (based on TestCase)
-
     % Record starting point
+    beforeSnap = dir();
+    beforeSnap = {beforeSnap.name};
+    beforeSnap(strncmp(beforeSnap, '.', 1)) = [];
 
     %% Running
     % Create a new job for the parallel pool
     test = parfeval(@runCase, 0, runnable);
+
     % Wait until it's finished, up to 30 seconds
     isTimeout = wait(test, 'finished', Student.TIMEOUT);
+    
     % Delete the job
     if isTimeout
         cancel(test);
     end
     delete(test);
 
-    % Populate fields
+    % Populate files, plots
+    afterSnap = dir();
+    afterSnap = {afterSnap.name};
+    afterSnap(strncmp(afterSnap, '.', 1)) = [];
+    
+    addedFiles = sort(setdiff(afterSnap, beforeSnap));
 
+    populateFiles(runnable, addedFiles);
+    populatePlots(runnable);
 
     %% Cleanup
     % Delete all files mentioned in the files field
@@ -155,13 +168,38 @@ function engine(runnable)
         % Delete file with name of File
         delete([runnable.files(i).name runnable.files(i).extension]);
     end
-    % Close all plots?
     
-    % If timeout and TestCase, throw error?
+    % Close all figures, EXCEPT for possible GUI (reference constant?)
+    figs = findobj(0, 'type', 'figure');
+    % GUI_NAME = '__AutograderGUIWindow__';
+    % figs(strcmp({figs.Name}, GUI_NAME)) = [];
+    delete(figs);
+    
+    % If timeout and TestCase, throw error
     if isa(runnable, 'TestCase') && isTimeout
         throw(MException('MATLAB:TIMEOUT', 'Solution Code Timed Out'));
     end
 end
+
+function populateFiles(runnable, addedFiles)
+    % Get last file first to prealloc array
+    files(numel(addedFiles)) = File([pwd() filesep() addedFiles{end}])
+
+    for i = 1:(numel(addedFiles) - 1)
+        files(i) = File([pwd() filesep() addedFiles{i}]);
+        if isa(runnable, 'TestCase')
+            % Remove _soln from name
+            files(i).name = strrep(files(i).name, '_soln', '');
+        end
+    end
+
+    runnable.files = files;
+end
+
+function populatePlots(runnable)
+    
+end
+
 
 function runCase(runnable)
     % Setup workspace
@@ -191,11 +229,13 @@ function runCase(runnable)
     timeout.isTimeout = false;
 end
 
-function varargout = runner(func, defs, ins, outs)
+function varargout = runner(func____, defs, ins, outs)
     % Create cell array with all inputs
-    ins = eval(['{' strjoin(ins, ',') '}']);
+    inCell____ = ['{' strjoin(ins, ',') '}'];
     varargout = cell(size(outs));
-    [varargout{:}] = func(ins{:});
+    eval(defs);
+    ins____ = eval(inCell____);
+    [varargout{:}] = func____(ins____{:});
 end
 
 function defs = buildVariableDefs(tCase)
