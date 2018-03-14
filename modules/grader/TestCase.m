@@ -15,6 +15,8 @@
 % * |inputs|: A structure array where the field names are the names of the
 % variables, and the field values are the values of the variables
 %
+% * |path|: The fully qualified path to the solution code directory
+%
 % * |supportingFiles|: A string array of complete file paths that will need 
 % to be copied to the student's directory
 %
@@ -61,6 +63,7 @@ classdef TestCase < handle
         points;
         inputs;
         supportingFiles;
+        path;
         outputs;
         files;
         plots;
@@ -254,8 +257,8 @@ classdef TestCase < handle
             
             % Engine can throw parse exceptions for bad |call| or
             % |initializer|, and bad solution exception. Don't catch,
-            % let it pass through instead
-            [this.outputs, this.files, this.plots] = engine.runFunction(this);
+            % let it propagate instead
+            engine.runFunction(this);
         end
     end
 end
