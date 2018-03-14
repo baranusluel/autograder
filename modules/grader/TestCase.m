@@ -21,8 +21,6 @@
 % * |outputs|: A structure where the field name is the name of the output, 
 % and the field value is the value of the output
 %
-% * |images|: A |File| array that represents the images produced as outputs
-%
 % * |files|: A |File| array that represents all the files produced as outputs
 %
 % * |plots|: A |Plot| array that represents the plots generated
@@ -64,7 +62,6 @@ classdef TestCase < handle
         inputs;
         supportingFiles;
         outputs;
-        images;
         files;
         plots;
     end
@@ -179,8 +176,7 @@ classdef TestCase < handle
         % those files - that will be covered in |File|.
         %
         %   T.outputs -> struct('out1', 2, 'out2', 'Hello, World!');
-        %   T.images -> File[1] % File is of type .png;
-        %   T.files -> File[1] % File is of type .txt;
+        %   T.files -> File[2]
         %
         % Now suppose the JSON in |J| looks like this:
         %
@@ -221,8 +217,7 @@ classdef TestCase < handle
         % before the function is run.
         %
         %   T.outputs -> struct('out1', 1, 'out2', false);
-        %   T.images -> File[1];
-        %   T.files -> File[1];
+        %   T.files -> File[2];
         %   T.plots -> Plot[1];
         %
         % Assume J is empty or invalid JSON:
@@ -239,7 +234,28 @@ classdef TestCase < handle
         %   The constructor threw exception
         %   AUTOGRADER:TESTCASE:CTOR:BADSOLUTION
         function this = TestCase(json)
+            try
+                % Parse JSON to get struct with fields |call|,
+                % |initializer|, |points|, |inputs|, |supportingFiles|
+                data = parseJSON(json);
+                % Copy values from struct to TestCase. Do one-by-one
+                % instead of iterating in case fields are wrong/missing.
+                % If a field is missing, exception is caught and
+                % re-thrown as a parse error.
+                this.call = data.call;
+                this.initializer = data.initializer;
+                this.points = data.points;
+                this.inputs = data.inputs;
+                this.supportingFiles = data.supportingFiles;
+            catch
+                throw(MException('AUTOGRADER:TESTCASE:CTOR:PARSEERROR', ...
+                    'Problem parsing JSON'));
+            end
             
+            % Engine can throw parse exceptions for bad |call| or
+            % |initializer|, and bad solution exception. Don't catch,
+            % let it pass through instead
+            [this.outputs, this.files, this.plots] = engine.runFunction(this);
         end
     end
 end
