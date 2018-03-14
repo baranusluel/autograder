@@ -15,12 +15,9 @@
 % the autograder. It provides a "sandboxed" environment for running code,
 % and protects against student errors and timeouts.
 %
-% Engine is run with a TestCase argument when running solution functions.
-% It is run with a Feedback argument when running student functions.
-%
 % Timeouts are handled using a parallel pool of workers. In essence, a 
 % student's code is limited to a certain runtime, 30 seconds by default.
-% To change this value, you should edit the TIMEOUT field of the Student
+% To change this value, you should edit the TIMEOUT field of the STudent
 % class.
 %
 % Errors in the code itself are handled differently, depending on whether 
@@ -43,7 +40,6 @@
 %
 % A TIMEOUT exception will never be thrown, but will be assigned to the 
 % Feedback's exception field instead, should the code timeout.
-%
 %%% Unit Tests
 %
 %   % Assume T is a valid TestCase that does NOT error.
@@ -131,19 +127,38 @@ function engine(runnable)
 % did before. It deletes all files mentioned in the runnable's outputs, and closes 
 % all plots.
 
-%% Setup
+    %% Setup
+    % Copy over supporting files
 
-%% Running
-    
-%% Cleanup
+    % Define static variables (based on TestCase)
 
+    %% Running
+    % Create a new job for the parallel pool
+    test = parfeval(@runCase, 0, runnable);
+    % Wait until it's finished, up to 30 seconds
+    isTimeout = wait(test, 'finished', Student.TIMEOUT);
+    % Delete the job
+    if isTimeout
+        cancel(test);
+    end
+    delete(test);
+
+    %% Cleanup
+    % Delete all files mentioned in the files field
+
+    % Close all plots?
+
+    % If timeout and TestCase, throw error?
+    if isa(runnable, 'TestCase') && isTimeout
+        throw(MException('MATLAB:TIMEOUT', 'Solution Code Timed Out'));
+    end
 end
 
 function runCase(runnable)
     % Setup workspace
     timeout = Timeout();
-    cleanup = onCleanup(@() cleanup(runnable, timeout));
-    fclose('all');
+    cleanup();
+    cleaner = onCleanup(@() cleanup(runnable, timeout));
 
     % run the function
 
