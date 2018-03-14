@@ -134,7 +134,7 @@ function engine(runnable)
     % Define static variables (based on TestCase)
 
     % Record starting point
-    
+
     %% Running
     % Create a new job for the parallel pool
     test = parfeval(@runCase, 0, runnable);
@@ -163,21 +163,100 @@ function engine(runnable)
     end
 end
 
-
-
 function runCase(runnable)
     % Setup workspace
     timeout = Timeout();
     cleanup();
     cleaner = onCleanup(@() cleanup(runnable, timeout));
 
-    % Setup the variables
+    if isa(runnable, 'TestCase')
+        tCase = runnable;
+    else
+        tCase = runnable.testCase;
+    end
+    defs = buildVariableDefs(tCase);
     
+    % Parse the call
+    [inNames, outNames, func] = parseFunction(tCase.call);
+    outs = cell(size(outNames));
+    % run the function
+    [outs{:}] = runner(func, defs, inNames, outNames);
+
+    % Populate outputs
+    % outNames is in order of argument. For each outName, apply corresponding
+    % value
+    for i = 1:numel(outs)
+        runnable.outs.(outNames{i}) = outs{i};
+    end
+    timeout.isTimeout = false;
+end
+
+function varargout = runner(func, defs, ins, outs)
+    % Create cell array with all inputs
+    ins = eval(['{' strjoin(ins, ',') '}']);
+    varargout = cell(size(outs));
+    [varargout{:}] = func(ins{:});
+end
+
+function defs = buildVariableDefs(tCase)
+    % Setup the variables
+    % Any variable inside inputs is a literal; eval in this workspace;
+    varNames = fieldnames(tCase.inputs);
+    defs = cell(size(varNames));
+    for i = 1:numel(varNames)
+        defs{i} = [varNames{i} ' = ' tCase.inputs.(varNames{i}) ';'];
+    end
     % Run any initializers
 
-    % run the function
-    
-    timeout.isTimeout = false;
+    if ~isempty(tCase.initializer)
+        % Append initializer call to end of varDefs
+        % Make sure suppressed!
+        if tCase.initializer(end) ~= ';'
+            tCase.initializer = [tCase.initializer ';'];
+        end
+        defs{end + 1} = tCase.initializer;
+    end
+    defs = strjoin(defs, '\n');
+end
+
+function [ins, outs, func] = parseFunction(call)
+
+    % For inputs, look for starting paren. If not found, no inputs
+    ins = regexp(call, '(?<=\()([^)]+)(?=\))', 'match');
+    if ~isempty(ins)
+        ins = ins{1};
+        ins = strsplit(ins, ',');
+    end
+
+    % For outputs, look for an equal sign. No equal sign, no outputs
+    if ~contains(call, '=')
+        outs = {};
+    else
+        % if no bracket found, only one output. Grab accordingly
+        if ~contains(call, ']')
+            outs = regexp(call, '[^\=]*')
+        else
+            % We have brackets; find in between and engage
+            outs = regexp(call, '(?<=\[)([^\]]+)(?=\])');
+            if ~isempty(outs)
+                outs = outs{1};
+                outs = strsplit(outs, {', ', ',', ' '});
+            end
+        end
+    end
+
+    % For function name, strip everything before possible =, everything
+    % after possible (.
+    if contains(call, '=')
+        ind = strfind(call, '=');
+        call(1:ind) = '';
+    end
+    if contains(call, '(')
+        ind = strfind(call, '(');
+        call(ind:end) = '';
+    end
+    func = str2func(call);        
+
 end
 
 function cleanup(runnable, isTimeout)
