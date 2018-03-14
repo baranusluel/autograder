@@ -31,16 +31,62 @@
 %
 %%% Exceptions
 %
-% An AUTOGRADER:ENGINE:INVALIDRUNNABLE is thrown if the input is either
-% not a Runnable object OR if the input is in an invalid state.
+% An AUTOGRADER:ENGINE:INVALIDRUNNABLE exception is thrown if the input is in an 
+% invalid state.
 %
+% An AUTOGRADER:ENGINE:BADSOLUTION exception is thrown if the input is a solution
+% AND that solution errors. The original exception is added to the 
+% causes array of the MException.
+%
+% A TIMEOUT exception will never be thrown, but will be assigned to the 
+% Feedback's exception field instead, should the code timeout.
 %%% Unit Tests
 %
 %   % Assume T is a valid TestCase that does NOT error.
 %   T = TestCase(...);
 %   engine(T);
 %
-%   
+%   T now has files, outputs, etc. filled in correctly
+%
+%   % Assume T is a valid TestCase that errors
+%   T = TestCase(...);
+%   engine(T);
+%
+%   Threw exception BADSOLUTION, with the original error 
+%   in causes.
+%
+%   % Assume T has not been correctly initialized
+%   T;
+%   engine(T);
+%
+%   Threw exception INVALIDRUNNABLE
+%
+%   % Assume F is a valid Feedback with a valid TestCase
+%   F = Feedback(...);
+%   engine(F);
+%
+%   F now has files, outputs, etc. filled in correctly
+%
+%   % Assume F is a valid Feedback that errors
+%   F = Feedback(...);
+%   engine(F);
+%
+%   F will have no fields filled in except for points (0) and exception, 
+%   which will be the exception raised by the student code.
+%
+%   % Assume F is a valid Feedback that goes into an infinite loop
+%   F = Feedback(...);
+%   engine(F);
+%
+%   F will have no fields filled in except for points (0) and exception,
+%   which will be the TIMEOUT exception.
+%
+%   % Assume F is an invalid Feedback;
+%   F;
+%   engine(F);
+%
+%   Threw exception INVALIDRUNNABLE   
+%
 function engine(runnable)
 
 % For banned functions, we'll need to use static checking, instead of 
