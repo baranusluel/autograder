@@ -197,7 +197,7 @@ function populateFiles(runnable, addedFiles)
 end
 
 function populatePlots(runnable)
-    
+
 end
 
 
@@ -277,7 +277,7 @@ function [ins, outs, func] = parseFunction(call)
             outs = regexp(call, '[^\=]*')
         else
             % We have brackets; find in between and engage
-            outs = regexp(call, '(?<=\[)([^\]]+)(?=\])');
+            outs = regexp(call, '(?<=\[)([^\]]+)(?=\])', 'match');
             if ~isempty(outs)
                 outs = outs{1};
                 outs = strsplit(outs, {', ', ',', ' '});
