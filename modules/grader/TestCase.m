@@ -25,7 +25,7 @@
 % * |banned|: A string array of names of banned functions for this problem
 %
 % * |isRecursive|: A logical representing whether submission should be
-% checked for use of 
+% checked for use of recursion
 %
 % * |outputs|: A structure where the field name is the name of the output, 
 % and the field value is the value of the output
