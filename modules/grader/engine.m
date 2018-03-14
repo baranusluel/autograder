@@ -146,10 +146,10 @@ function engine(runnable)
     calls = [calls.names];
 
     % Test for recursion. If any function calls itself, good to go.
-    isRecur = tCase.isRecursive;
+    isRecur = false;
     for i = 1:numel(allCalls)
         call = allCalls(i);
-        if strcmp(call.name, call.calls.innerCalls.names)
+        if ~exist(call.name, 'builtin') && strcmp(call.name, call.calls.innerCalls.names)
             isRecur = true;
             break;
         end
@@ -214,6 +214,9 @@ function engine(runnable)
     for i = 1:numel(supportingFiles)
         delete(supportingFiles{i});
     end
+    for i = 1:numel(loadFiles)
+        delete(loadFiles{i});
+    end
 
     % Close all figures with visible handles?
     figs = findobj(0, 'type', 'figure');
@@ -228,8 +231,9 @@ end
 function populateFiles(runnable, addedFiles)
     % Get last file first to prealloc array
     files(numel(addedFiles)) = File([pwd() filesep() addedFiles{end}])
-
-    for i = 1:(numel(addedFiles) - 1)
+    % Iterate over all files (including last one again) so that _soln
+    % can be removed if necessary
+    for i = 1:numel(addedFiles)
         files(i) = File([pwd() filesep() addedFiles{i}]);
         if isa(runnable, 'TestCase')
             % Remove _soln from name
