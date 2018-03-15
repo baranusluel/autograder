@@ -6,19 +6,38 @@
 % give feedback for the student plot. 
 %
 %%% Fields
-% * title: The title used for the plot
+% * Title: A String of the title used for the plot
+% 
+% * XLabel: A String of the xLabel used for the plot
 %
-% * xData: A cell array of vectors that represents all XData points plotted for this plot
+% * YLabel: A String of the yLabel used for the plot
 %
-% * yData: A cell array of vectors that represents all YData points plotted for this plot
+% * ZLabel: A String of the zLabel used for the plot
 %
-% * zData: A cell array of vectors that represents all ZData points plotted for this plot
+% * Position: A 1X4 double vector of the position of the axes in the figure
+% window
 %
-% * image: An image taken of the plot, as an MxNx3 uint8 array.
+% * Image: An image taken of the plot, as an MxNx3 uint8 array.
 %
-% * legend: A string array of all the names in the legend
+% * Legend: A string array of all the names in the legend
 %
-% * colors: A string array that represents the color used for every line
+% * XData: A cell array of vectors that represents all XData points plotted
+% for this plot
+%
+% * XData: A cell array of vectors that represents all YData points plotted
+% for this plot
+%
+% * ZData: A cell array of vectors that represents all ZData points plotted
+% for this plot
+% 
+% * Color: A cell array containing the normalized 1X3 double vector of the
+% color used for each line
+%
+% * Marker: A cell array containing the charactor uses as a marker in the
+% line
+%
+% * LineStyle: A cell array containing the charactor uses as a marker in
+% the line
 %
 %%% Methods
 %
@@ -35,15 +54,22 @@
 % class copies over any data necessary to recreate the plot entirely; as 
 % such, the plot can be deleted once a Plot object is created!
 %
+%
 classdef Plot < handle
     properties (Access = public)
-        title;
-        xData;
-        yData;
-        zData;
-        image;
-        legend;
-        colors;
+        Title;
+        XLabel;
+        YLabel;
+        ZLabel;
+        XData;
+        YData;
+        ZData;
+        Position;
+        Image;
+        Legend;
+        Color;
+        Marker;
+        Linestyle;
     end
     methods
         %% Constructor
@@ -59,27 +85,28 @@ classdef Plot < handle
         % the solution plot information to return feedback for each
         % student.
         %
-        % Note that xDdata, yData, and zData will all be cell arrays of the same size.
-        % If the plot had data in that dimension, that entry of the cell array will have a vector;
-        % otherwise, it will be empty.
+        % Note that XDdata, YData, ZData, Color, LineStyle, and Marker will
+        % all be cell arrays of the same size. If the plot had data or
+        % specification in that dimension, that entry of the cell array
+        % will have a vector or character; otherwise, it will be empty.
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:PLOT:NOAXISDATA exception will be thrown if no input axis are
-        % provided
+        % An AUTOGRADER:PLOT:NOAXISDATA exception will be thrown if no
+        % input axis are provided
         %
         %%% Unit Tests
         %
         % Given valid axes handle
         %   this = Plot(pHandle)
         %
-        %   this.title -> 'My Plot'
-        %   this.xData -> XDATA (a cell array of vectors)
-        %   this.yData -> YDATA (a cell array of vectors)
-        %   this.zData -> ZDATA (a cell array of vectors)
-        %   this.image -> IMAGE (a uint8 array)
-        %   this.legend -> ["name1", "name2", ...]
-        %   this.colors -> ["color1", "color2", ...]
+        %   this.Title -> 'My Plot'
+        %   this.XData -> XDATA (a cell array of vectors)
+        %   this.YData -> YDATA (a cell array of vectors)
+        %   this.ZData -> ZDATA (a cell array of vectors)
+        %   this.Image -> IMAGE (a uint8 array)
+        %   this.Legend -> ["name1", "name2", ...]
+        %   this.Color -> ["color1", "color2", ...]
         %
         % Given invalid axes handle
         %
@@ -87,6 +114,28 @@ classdef Plot < handle
         % AUTOGRADER:PLOT:NOAXISDATA
         %
         function this = Plot(pHandle)
+            
+            % input validation needed (axes handle)
+            
+            this.Title = pHandle.Title.String;
+            this.Position = pHandle.Position;
+            
+            lHandles = allchild(pHandle);
+            
+            xcell = {};
+            ycell = {};
+            zcell = {};
+            
+            for line = lHandles
+                xcell = [xcell {line.XData}];
+                ycell = [ycell {line.YData}];
+                zcell = [zcell {line.ZData}];
+            end
+            
+            this.XData = xcell;
+            this.YData = ycell;
+            this.ZData = zcell;
+            
             
         end
     end
