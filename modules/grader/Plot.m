@@ -33,10 +33,10 @@
 % * Color: A cell array containing the normalized 1X3 double vector of the
 % color used for each line
 %
-% * Marker: A cell array containing the charactor uses as a marker in the
+% * Marker: A cell array containing the character uses as a marker in the
 % line
 %
-% * LineStyle: A cell array containing the charactor uses as a marker in
+% * LineStyle: A cell array containing the character uses as a marker in
 % the line
 %
 %%% Methods
@@ -61,15 +61,15 @@ classdef Plot < handle
         XLabel;
         YLabel;
         ZLabel;
-        XData;
-        YData;
-        ZData;
         Position;
         Image;
         Legend;
+        XData;
+        YData;
+        ZData;
         Color;
         Marker;
-        Linestyle;
+        LineStyle;
     end
     methods
         %% Constructor
@@ -85,10 +85,14 @@ classdef Plot < handle
         % the solution plot information to return feedback for each
         % student.
         %
+        % If the plot does not have a title, xlabel, ylabel, or zlabel, the
+        % appropriate field will contain an empty string.
+        %
         % Note that XDdata, YData, ZData, Color, LineStyle, and Marker will
         % all be cell arrays of the same size. If the plot had data or
         % specification in that dimension, that entry of the cell array
         % will have a vector or character; otherwise, it will be empty.
+        % (Note that color should never be empty)
         %
         %%% Exceptions
         %
@@ -101,12 +105,17 @@ classdef Plot < handle
         %   this = Plot(pHandle)
         %
         %   this.Title -> 'My Plot'
+        %   this.XLabel -> 'X-Axis'
+        %   this.YLabel -> 'Y-Axis'
+        %   this.ZLabel -> ''
+        %   this.Image -> IMAGE (a uint8 array)
+        %   this.Legend -> ["name1", "name2", ...]
         %   this.XData -> XDATA (a cell array of vectors)
         %   this.YData -> YDATA (a cell array of vectors)
         %   this.ZData -> ZDATA (a cell array of vectors)
-        %   this.Image -> IMAGE (a uint8 array)
-        %   this.Legend -> ["name1", "name2", ...]
-        %   this.Color -> ["color1", "color2", ...]
+        %   this.Color -> COLOR (a cell array of vectors)
+        %   this.Marker -> MARKER (a cell array of charactors)
+        %   this.LineStyle -> LINESTYLE (a cell array of charactors) 
         %
         % Given invalid axes handle
         %
@@ -118,23 +127,48 @@ classdef Plot < handle
             % input validation needed (axes handle)
             
             this.Title = pHandle.Title.String;
+            this.XLabel = pHandle.XLabel.String;
+            this.YLabel = pHandle.YLabel.String;
+            this.ZLabel = pHandle.ZLabel.String;
+            
             this.Position = pHandle.Position;
             
-            lHandles = allchild(pHandle);
+            lines = allchild(pHandle);
             
             xcell = {};
             ycell = {};
             zcell = {};
+            color = {};
+            marker = {};
+            linestyle = {};
             
-            for line = lHandles
+            for line = lines
                 xcell = [xcell {line.XData}];
                 ycell = [ycell {line.YData}];
                 zcell = [zcell {line.ZData}];
+                
+                color = [color {line.Color}];
+                
+                if strcmp(line.Marker,'none')
+                    marker = [marker {[]}];
+                else 
+                    marker = [marker {line.Marker}];
+                end
+                
+                if strcmp(line.LineStyle,'none')
+                    linestyle = [linestyle {[]}];
+                else 
+                    linestyle = [linestyle {line.LineStyle}];
+                end
+                
             end
             
             this.XData = xcell;
             this.YData = ycell;
             this.ZData = zcell;
+            this.Color = color;
+            this.Marker = marker;
+            this.LineStyle = linestyle;
             
             
         end
