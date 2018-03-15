@@ -180,17 +180,23 @@ function engine(runnable)
     beforeSnap = {beforeSnap.name};
     beforeSnap(strncmp(beforeSnap, '.', 1)) = [];
 
+    % See how long it takes to load data. Add that time to TIMEOUT
+    tic;
+    for i = 1:numel(tCase.loadFiles)
+        % throw away result
+        S = load(tCase.loadFiles{i});
+    end
+    timeToLoad = toc;
+    clear('S');
     %% Running
     % Create a new job for the parallel pool
     test = parfeval(@runCase, 0, runnable);
 
-    isTimeout = false;
     % Wait until it's finished, up to 30 seconds
-    wait(test, 'finished', Student.TIMEOUT);
+    isTimeout = ~wait(test, 'finished', Student.TIMEOUT + timeToLoad);
     
     % Delete the job
-    if ~strcmp(test.State, 'finished')
-        isTimeout = true;
+    if isTimeout
         cancel(test);
     end
     delete(test);
@@ -270,13 +276,22 @@ function runCase(runnable)
     else
         tCase = runnable.testCase;
     end
-    defs = buildVariableDefs(tCase);
+    if ~isempty(tCase.initializer)
+        % Append initializer call to end of varDefs
+        % Make sure suppressed!
+        if tCase.initializer(end) ~= ';'
+            tCase.initializer = [tCase.initializer ';'];
+        end
+        init = tCase.initializer;
+    else
+        init = '';
+    end
     
     % Parse the call
     [inNames, outNames, func] = parseFunction(tCase.call);
     outs = cell(size(outNames));
     % run the function
-    [outs{:}] = runner(func, defs, inNames, outNames, tCase.loadFiles);
+    [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
 
     % Populate outputs
     % outNames is in order of argument. For each outName, apply corresponding
@@ -287,42 +302,29 @@ function runCase(runnable)
     timeout.isTimeout = false;
 end
 
-function varargout = runner(func____, defs____, ins, outs, loads____)
+function varargout = runner(func____, init____, ins, loads____)
     
-    % Create cell array with all inputs
+    % Create statement that becomes cell array of all inputs.
+    % No input sanitization here because all input names have already
+    % been checked.
     inCell____ = ['{' strjoin(ins, ',') '}'];
-    varargout = cell(size(outs));
+    % varargout becomes cell array of the size of number of args requested
+    varargout = cell(size(nargout));
     % Load MAT files
-    for i____ = 1:numel(loads____)
-        load(loads____{i____});
+    cellfun(@load, loads____);
+    % Run initializer, if any
+    if ~isempty(init____)
+        eval(init____);
     end
-    eval(defs____);
+    % Create true cell array of inputs to use in func
     ins____ = eval(inCell____);
+    % Run func
     [varargout{:}] = func____(ins____{:});
 end
 
 function defs = buildVariableDefs(tCase)
-    % Setup the variables
-    % Any variable inside inputs is a literal; eval in this workspace;
-    varNames = fieldnames(tCase.inputs);
-    defs = cell(size(varNames));
-    for i = 1:numel(varNames)
-        % Get legal string expression for use in defining the variable
-        % e.g. for a string var2Str must be ' ''my string'' '
-        var2Str = primitive2Str(tCase.inputs.(varNames{i}));
-        defs{i} = [varNames{i} ' = ' var2Str ';'];
-    end
-    
     % Run any initializers
-    if ~isempty(tCase.initializer)
-        % Append initializer call to end of varDefs
-        % Make sure suppressed!
-        if tCase.initializer(end) ~= ';'
-            tCase.initializer = [tCase.initializer ';'];
-        end
-        defs{end + 1} = tCase.initializer;
-    end
-    defs = strjoin(defs, '\n');
+
 end
 
 function [ins, outs, func] = parseFunction(call)
