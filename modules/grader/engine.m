@@ -383,34 +383,3 @@ function cleanup(runnable, isTimeout)
         end
     end
 end
-
-function str = primitive2Str(var)
-    % Get legal string expression for use in defining the variable
-    % 
-    %%% Unit Tests
-    %
-    % var = 'hello';
-    % str = primitive2Str(var);
-    %
-    % str => '''hello'''
-    %
-    % var = 5;
-    % str = primitive2Str(var);
-    %
-    % str => '5'
-    %
-    % var = [1 3 5];
-    % str = primitive2Str(var);
-    %
-    % str => '[1 3 5]'
-    %
-    % var = {1,     'hello';
-    %        true,  []      }
-    % str = primitive2Str(var);
-    %
-    % str => '{1, ''hello''; true, [];}'
-    
-    
-    % for temporary testing purposes
-    str = ['''' var ''''];
-end
