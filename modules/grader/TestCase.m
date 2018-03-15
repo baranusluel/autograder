@@ -239,7 +239,6 @@ classdef TestCase < handle
         %   T.banned -> ["fopen", "fclose", "fseek", "frewind"];
         %   T.isRecursive -> false;
         %   T.path -> '...' % Valid path
-        %   T.path -> '...' % Valid path
         %
         % The following are filled in after everything is run. 
         % Note that for this case, the in2 is calculated _immediately_
@@ -277,9 +276,12 @@ classdef TestCase < handle
                 this.isRecursive = info.isRecursive;
                 this.banned = info.banned;
                 
-                toLoad = contains(info.supportingFiles, '.mat');
-                this.loadFiles = info.supportingFiles(toLoad);
-                this.supportingFiles = info.supportingFiles(~toLoad);
+                % contains() errors if supportingFiles is empty
+                if ~isempty(info.supportingFiles)
+                    toLoad = contains(info.supportingFiles, '.mat');
+                    this.loadFiles = info.supportingFiles(toLoad);
+                    this.supportingFiles = info.supportingFiles(~toLoad);
+                end
             catch
                 throw(MException('AUTOGRADER:TESTCASE:CTOR:BADINFO', ...
                     'Problem with INFO struct fields'));
