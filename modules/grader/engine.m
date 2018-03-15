@@ -149,7 +149,7 @@ function engine(runnable)
     isRecur = false;
     for i = 1:numel(allCalls)
         call = allCalls(i);
-        if ~exist(call.name, 'builtin') && strcmp(call.name, call.calls.innerCalls.names)
+        if ~exist(call.name, 'builtin') && any(strcmp(call.name, call.calls.innerCalls.names))
             isRecur = true;
             break;
         end
@@ -181,11 +181,13 @@ function engine(runnable)
     % Create a new job for the parallel pool
     test = parfeval(@runCase, 0, runnable);
 
+    isTimeout = false;
     % Wait until it's finished, up to 30 seconds
-    isTimeout = wait(test, 'finished', Student.TIMEOUT);
+    wait(test, 'finished', Student.TIMEOUT);
     
     % Delete the job
-    if isTimeout
+    if ~strcmp(test.State, 'finished')
+        isTimeout = true;
         cancel(test);
     end
     delete(test);
@@ -227,7 +229,7 @@ end
 
 function populateFiles(runnable, addedFiles)
     % Get last file first to prealloc array
-    files(numel(addedFiles)) = File([pwd() filesep() addedFiles{end}])
+    files(numel(addedFiles)) = File([pwd() filesep() addedFiles{end}]);
     % Iterate over all files (including last one again) so that _soln
     % can be removed if necessary
     for i = 1:numel(addedFiles)
@@ -257,7 +259,7 @@ end
 function runCase(runnable)
     % Setup workspace
     timeout = Timeout();
-    cleanup();
+    % is this supposed to be here?  -->     cleanup();
     cleaner = onCleanup(@() cleanup(runnable, timeout));
 
     if isa(runnable, 'TestCase')
@@ -271,7 +273,7 @@ function runCase(runnable)
     [inNames, outNames, func] = parseFunction(tCase.call);
     outs = cell(size(outNames));
     % run the function
-    [outs{:}] = runner(func, defs, inNames, outNames, tCase.loads);
+    [outs{:}] = runner(func, defs, inNames, outNames, tCase.loadFiles);
 
     % Populate outputs
     % outNames is in order of argument. For each outName, apply corresponding
@@ -289,7 +291,7 @@ function varargout = runner(func____, defs____, ins, outs, loads____)
     varargout = cell(size(outs));
     % Load MAT files
     for i____ = 1:numel(loads____)
-        load(loads____{i});
+        load(loads____{i____});
     end
     eval(defs____);
     ins____ = eval(inCell____);
@@ -302,12 +304,10 @@ function defs = buildVariableDefs(tCase)
     varNames = fieldnames(tCase.inputs);
     defs = cell(size(varNames));
     for i = 1:numel(varNames)
-        defs{i} = [varNames{i} ' = ' tCase.inputs.(varNames{i}) ';'];
-    end
-    
-    % Load MAT files
-    for i = 1:numel(tCase.loadFiles)
-        defs{end + 1} = ['load(' tCase.loadFiles{i} ');'];
+        % Get legal string expression for use in defining the variable
+        % e.g. for a string var2Str must be ' ''my string'' '
+        var2Str = primitive2Str(tCase.inputs.(varNames{i}));
+        defs{i} = [varNames{i} ' = ' var2Str ';'];
     end
     
     % Run any initializers
@@ -377,4 +377,35 @@ function cleanup(runnable, isTimeout)
             throw(e);
         end
     end
+end
+
+function str = primitive2Str(var)
+    % Get legal string expression for use in defining the variable
+    % 
+    %%% Unit Tests
+    %
+    % var = 'hello';
+    % str = primitive2Str(var);
+    %
+    % str => '''hello'''
+    %
+    % var = 5;
+    % str = primitive2Str(var);
+    %
+    % str => '5'
+    %
+    % var = [1 3 5];
+    % str = primitive2Str(var);
+    %
+    % str => '[1 3 5]'
+    %
+    % var = {1,     'hello';
+    %        true,  []      }
+    % str = primitive2Str(var);
+    %
+    % str => '{1, ''hello''; true, [];}'
+    
+    
+    % for temporary testing purposes
+    str = ['''' var ''''];
 end
