@@ -154,6 +154,9 @@ function engine(runnable)
             break;
         end
     end
+    if isa(runnable, 'Feedback')
+        runnable.isRecursive = isRecur;
+    end
 
     bannedFunctions = tCase.banned;
     for i = 1:numel(bannedFunctions)

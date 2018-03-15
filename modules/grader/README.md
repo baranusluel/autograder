@@ -66,7 +66,6 @@ Has the following fields:
 - `supportingFiles`: A string array of complete file paths that will need to be copied to the student's directory
 - `loadFiles`: A string array of complete file paths of MAT files to load
 - `banned`: A string array of names of banned functions for this problem
-- `isRecursive`: A logical representing whether submission should be checked for use of recursion
 - `path`: The fully qualified path to the solution code directory
 - `outputs`: A structure where the field name is the name of the output, and the field value is the value of the output
 - `files`: A `File` array that represents all the files produced as outputs

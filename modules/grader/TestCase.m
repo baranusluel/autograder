@@ -24,9 +24,6 @@
 %
 % * |banned|: A string array of names of banned functions for this problem
 %
-% * |isRecursive|: A logical representing whether submission should be
-% checked for use of recursion
-%
 % * |outputs|: A structure where the field name is the name of the output, 
 % and the field value is the value of the output
 %
@@ -72,7 +69,6 @@ classdef TestCase < handle
         supportingFiles;
         loadFiles;
         banned;
-        isRecursive;
         path;
         outputs;
         files;
@@ -87,7 +83,7 @@ classdef TestCase < handle
         % T = TestCase(INFO, PATH) will create a new |TestCase| with all the fields 
         % filled with values from the solution. INFO should be a structure with
         % the fields |call|, |initializer|, |points|, |inputs|, |supportingFiles|,
-        % |banned|, |isRecursive|. PATH is a fully qualified path to the
+        % |banned|. PATH is a fully qualified path to the
         % student's directory.
         %
         %%% Remarks
@@ -113,8 +109,7 @@ classdef TestCase < handle
         %           "fclose",
         %           "fseek",
         %           "frewind"
-        %       ],
-        %       "isRecursive": false
+        %       ]
         %   }
         %
         % Note that white space does _not_ matter in the input JSON.
@@ -182,7 +177,6 @@ classdef TestCase < handle
         %   T.supportingFiles -> ["myFile.txt", "myInputImage.png"];
         %   T.loadFiles -> ["myTestCases.mat"];
         %   T.banned -> ["fopen", "fclose", "fseek", "frewind"];
-        %   T.isRecursive -> false;
         %   T.path -> '...' % Valid path
         % 
         % Note that the following would be filled _after_ running the solution. 
@@ -214,8 +208,7 @@ classdef TestCase < handle
         %           "fclose",
         %           "fseek",
         %           "frewind"
-        %       ],
-        %       "isRecursive": false
+        %       ]
         %   }
         %
         % Note the |initializer| is set. Suppose the following is 
@@ -237,7 +230,6 @@ classdef TestCase < handle
         %   T.supportingFiles -> ["myFile.txt", "myInputImage.png", "supportFunction__.m"];
         %   T.loadFiles -> ["myTestCases.mat"];
         %   T.banned -> ["fopen", "fclose", "fseek", "frewind"];
-        %   T.isRecursive -> false;
         %   T.path -> '...' % Valid path
         %
         % The following are filled in after everything is run. 
@@ -273,7 +265,6 @@ classdef TestCase < handle
                 this.initializer = info.initializer;
                 this.points = info.points;
                 this.inputs = info.inputs;
-                this.isRecursive = info.isRecursive;
                 this.banned = info.banned;
                 
                 % contains() errors if supportingFiles is empty
