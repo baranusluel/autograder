@@ -40,6 +40,7 @@
 %
 % A TIMEOUT exception will never be thrown, but will be assigned to the 
 % Feedback's exception field instead, should the code timeout.
+%
 %%% Unit Tests
 %
 %   % Assume T is a valid TestCase that does NOT error.
@@ -149,6 +150,7 @@ function engine(runnable)
     isRecur = false;
     for i = 1:numel(allCalls)
         call = allCalls(i);
+        % Don't check builtin functions!
         if ~exist(call.name, 'builtin') && any(strcmp(call.name, call.calls.innerCalls.names))
             isRecur = true;
             break;
