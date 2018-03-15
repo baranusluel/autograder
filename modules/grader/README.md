@@ -62,7 +62,6 @@ Has the following fields:
     - Now suppose fid is now 3. This will _overwrite_ the previous value of `fid` (0) found in `inputs`.
     - If you want a custom function to run instead, include it as a supporting file and call it.
 - `points`: The points possible for this specific test case
-- `inputs`: A structure where the field name is the name of the variable, and the field value is the value of the variable
 - `supportingFiles`: A string array of complete file paths that will need to be copied to the student's directory
 - `loadFiles`: A string array of complete file paths of MAT files to load
 - `banned`: A string array of names of banned functions for this problem

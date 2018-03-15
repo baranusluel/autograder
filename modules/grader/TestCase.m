@@ -12,9 +12,6 @@
 %
 % * |points|: The points possible for this specific test case
 %
-% * |inputs|: A structure array where the field names are the names of the
-% variables, and the field values are the values of the variables
-%
 % * |path|: The fully qualified path to the solution code directory
 %
 % * |supportingFiles|: A string array of complete file paths that will need 
@@ -42,11 +39,14 @@
 % the instructions for running the test case, and includes the solution's
 % outputs for comparison.
 %
+% The input arguments referenced in |call| should either be defined in
+% |loadFiles| (the MAT files to be loaded), or in the |initializer|:
+%
 % The |initializer| is useful if a variable's value cannot be determined 
 % until right before the function call. If |initializer| has outputs that will
 % be used as inputs when calling the student's function, the names of the
 % outputs must match the expected input names in |call| exactly. Such inputs
-% that are generated at runtime don't need to appear in the |inputs| field, and
+% that are generated at runtime don't need to appear in the MAT files, and
 % should be overwritten if they do exist.
 % 
 % For example, suppose you wanted to populate input |fid| with a file handle.
@@ -65,7 +65,6 @@ classdef TestCase < handle
         call;
         initializer;
         points;
-        inputs;
         supportingFiles;
         loadFiles;
         banned;
@@ -82,7 +81,7 @@ classdef TestCase < handle
         %
         % T = TestCase(INFO, PATH) will create a new |TestCase| with all the fields 
         % filled with values from the solution. INFO should be a structure with
-        % the fields |call|, |initializer|, |points|, |inputs|, |supportingFiles|,
+        % the fields |call|, |initializer|, |points|, |supportingFiles|,
         % |banned|. PATH is a fully qualified path to the
         % student's directory.
         %
@@ -95,10 +94,6 @@ classdef TestCase < handle
         %       "call": "[out1, out2] = myFun(in1, in2);",
         %       "initializer": "",
         %       "points": 3,
-        %       "inputs": {
-        %           "in1": 5,
-        %           "in2": true
-        %       },
         %       "supportingFiles": [
         %           "myFile.txt",
         %           "myInputImage.png",
@@ -135,9 +130,9 @@ classdef TestCase < handle
         % If the initializer is not found, or is left blank, then it is assumed
         % that no initialization is required.
         %
-        % As for the |inputs| array, it's values _must_ be literals. You cannot 
-        % use arbitrary MATLAB code as the value. To execute arbitrary MATLAB 
-        % code, see the remarks for the |initializer|.
+        % As for the variables in the MAT files, it's values _must_ be
+        % literals. You cannot use arbitrary MATLAB code as the value. To
+        % execute arbitrary MATLAB code, see the remarks for the |initializer|.
         %
         % The caller does _not_ need to worry about "cleaning up" any open 
         % resources (such as files or figures). Since the autograder will 
@@ -173,7 +168,6 @@ classdef TestCase < handle
         %   T.call -> "[out1, out2] = myFun(in1, in2);"
         %   T.initializer -> [];
         %   T.points -> 3;
-        %   T.inputs -> struct('in1', 5, 'in2', true);
         %   T.supportingFiles -> ["myFile.txt", "myInputImage.png"];
         %   T.loadFiles -> ["myTestCases.mat"];
         %   T.banned -> ["fopen", "fclose", "fseek", "frewind"];
@@ -194,9 +188,6 @@ classdef TestCase < handle
         %       "call": "[out1, out2] = myFun(in1, in2);",
         %       "initializer": "in2 = supportFunction__",
         %       "points": 3,
-        %       "inputs": {
-        %           "in1": 5
-        %       },
         %       "supportingFiles": [
         %           "myFile.txt",
         %           "myInputImage.png",
@@ -226,7 +217,6 @@ classdef TestCase < handle
         %   T.call -> "[out1, out2] = myFun(in1, in2);"
         %   T.initializer -> "[in1] = supportFunction__();";
         %   T.points -> 3;
-        %   T.inputs -> struct('in1', 5);
         %   T.supportingFiles -> ["myFile.txt", "myInputImage.png", "supportFunction__.m"];
         %   T.loadFiles -> ["myTestCases.mat"];
         %   T.banned -> ["fopen", "fclose", "fseek", "frewind"];
@@ -264,7 +254,6 @@ classdef TestCase < handle
                 this.call = info.call;
                 this.initializer = info.initializer;
                 this.points = info.points;
-                this.inputs = info.inputs;
                 this.banned = info.banned;
                 
                 % contains() errors if supportingFiles is empty
