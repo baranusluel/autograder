@@ -40,6 +40,7 @@
 %
 % A TIMEOUT exception will never be thrown, but will be assigned to the 
 % Feedback's exception field instead, should the code timeout.
+%
 %%% Unit Tests
 %
 %   % Assume T is a valid TestCase that does NOT error.
@@ -146,15 +147,8 @@ function engine(runnable)
     calls = [calls.names];
 
     % Test for recursion. If any function calls itself, good to go.
-    isRecur = false;
-    for i = 1:numel(allCalls)
-        call = allCalls(i);
-        if ~exist(call.name, 'builtin') && any(strcmp(call.name, call.calls.innerCalls.names))
-            isRecur = true;
-            break;
-        end
-    end
     if isa(runnable, 'Feedback')
+        isRecur = checkRecur(allCalls, func2str(func));
         runnable.isRecursive = isRecur;
     end
 
@@ -180,17 +174,23 @@ function engine(runnable)
     beforeSnap = {beforeSnap.name};
     beforeSnap(strncmp(beforeSnap, '.', 1)) = [];
 
+    % See how long it takes to load data. Add that time to TIMEOUT
+    tic;
+    for i = 1:numel(tCase.loadFiles)
+        % throw away result
+        S = load(tCase.loadFiles{i});
+    end
+    timeToLoad = toc;
+    clear('S');
     %% Running
     % Create a new job for the parallel pool
     test = parfeval(@runCase, 0, runnable);
 
-    isTimeout = false;
     % Wait until it's finished, up to 30 seconds
-    wait(test, 'finished', Student.TIMEOUT);
+    isTimeout = ~wait(test, 'finished', Student.TIMEOUT + timeToLoad);
     
     % Delete the job
-    if ~strcmp(test.State, 'finished')
-        isTimeout = true;
+    if isTimeout
         cancel(test);
     end
     delete(test);
@@ -270,14 +270,34 @@ function runCase(runnable)
     else
         tCase = runnable.testCase;
     end
-    defs = buildVariableDefs(tCase);
+    if ~isempty(tCase.initializer)
+        % Append initializer call to end of varDefs
+        % Make sure suppressed!
+        if tCase.initializer(end) ~= ';'
+            tCase.initializer = [tCase.initializer ';'];
+        end
+        init = tCase.initializer;
+    else
+        init = '';
+    end
     
     % Parse the call
     [inNames, outNames, func] = parseFunction(tCase.call);
     outs = cell(size(outNames));
     % run the function
-    [outs{:}] = runner(func, defs, inNames, outNames, tCase.loadFiles);
-
+    % create sentinel file
+    fid = fopen(File.SENTINEL, 'r');
+    [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
+    name = fopen(fid);
+    fclose(fid);
+    if ~strcmp(name, File.SENTINEL)
+        % Communicate that user called fclose all.
+        if isa(runnable, 'TestCase')
+            throw(MException('AUTOGRADER:ENGINE:FCLOSEALL', 'The solution called fclose all'));
+        else
+            runnable.exception = MException('AUTOGRADER:FCLOSEALL', 'Student Code called fclose all');
+        end
+    end
     % Populate outputs
     % outNames is in order of argument. For each outName, apply corresponding
     % value
@@ -287,50 +307,95 @@ function runCase(runnable)
     timeout.isTimeout = false;
 end
 
-function varargout = runner(func____, defs____, ins, outs, loads____)
+function varargout = runner(func____, init____, ins, loads____)
     
-    % Create cell array with all inputs
+    % Create statement that becomes cell array of all inputs.
+    % No input sanitization here because all input names have already
+    % been checked.
     inCell____ = ['{' strjoin(ins, ',') '}'];
-    varargout = cell(size(outs));
+    % varargout becomes cell array of the size of number of args requested
+    varargout = cell(size(nargout));
     % Load MAT files
-    for i____ = 1:numel(loads____)
-        load(loads____{i____});
+    cellfun(@load, loads____);
+    % Run initializer, if any
+    if ~isempty(init____)
+        eval(init____);
     end
-    eval(defs____);
+    % Create true cell array of inputs to use in func
     ins____ = eval(inCell____);
+    % Run func
     [varargout{:}] = func____(ins____{:});
 end
 
-function defs = buildVariableDefs(tCase)
-    % Setup the variables
-    % Any variable inside inputs is a literal; eval in this workspace;
-    varNames = fieldnames(tCase.inputs);
-    defs = cell(size(varNames));
-    for i = 1:numel(varNames)
-        % Get legal string expression for use in defining the variable
-        % e.g. for a string var2Str must be ' ''my string'' '
-        var2Str = primitive2Str(tCase.inputs.(varNames{i}));
-        defs{i} = [varNames{i} ' = ' var2Str ';'];
-    end
-    
-    % Run any initializers
-    if ~isempty(tCase.initializer)
-        % Append initializer call to end of varDefs
-        % Make sure suppressed!
-        if tCase.initializer(end) ~= ';'
-            tCase.initializer = [tCase.initializer ';'];
-        end
-        defs{end + 1} = tCase.initializer;
-    end
-    defs = strjoin(defs, '\n');
-end
-
+%% parseFunction: Parse function call
+%
+% Parses the function call for inputs, outputs, and the function handle.
+%
+% [I, O, F] = parseFunction(C) will parse the function call C and
+% return the input names in I, the output names in O, and the function 
+% handle in F.
+%
+%%% Remarks
+%
+% This function is unaffected by any type of white space.
+%
+% This function is case sensitive
+%
+%%% Unit Tests
+% Unlike ordinary Unit Tests, this is a list of tests. P means passing, U 
+% means unknown.
+% 
+% * P |'myFun'| -> [{}, {}, @myFun]
+% * P |'myFun;'| -> [{}, {}, @myFun]
+% * P |'myFun()'| -> [{}, {}, @myFun]
+% * P |'myFun();'| -> [{}, {}, @myFun]
+% * P |'myFun(in)'| -> [{'in'}, {}, @myFun]
+% * P |'myFun(in);'| -> [{'in'}, {}, @myFun]
+% * P |'myFun(in,in2)'| -> [{'in', 'in2'}, {}, @myFun]
+% * P |'myFun(in,In2);'| -> [{'in', 'In2'}, {}, @myFun]
+% * P |'[] = myFun'| -> [{}, {}, @myFun]
+% * P |'[] = myFun;'| -> [{}, {}, @myFun]
+% * P |'[] = myFun()'| -> [{}, {}, @myFun]
+% * P |'[] = myFun();'| -> [{}, {}, @myFun]
+% * P |'[] = myFun(in)'| -> [{'in'}, {}, @myFun]
+% * P |'[] = myFun(in);'| -> [{'in'}, {}, @myFun]
+% * P |'[] = myFun(in1,in2)'| -> [{'in1', 'in2'}, {}, @myFun]
+% * P |'[] = myFun(in1,in2);'| -> [{'in1', 'in2'}, {}, @myFun]
+% * P |'[a] = myFun'| -> [{}, {'a'}, @myFun]
+% * P |'[a] = myFun;'| -> [{}, {'a'}, @myFun]
+% * P |'[a] = myFun()'| -> [{}, {'a'}, @myFun]
+% * P |'[a] = myFun();'| -> [{}, {'a'}, @myFun]
+% * P |'[a] = myFun(in)'| -> [{'in'}, {'a'}, @myFun]
+% * P |'[a] = myFun(in);'| -> [{'in'}, {'a'}, @myFun]
+% * P |'[a] = myFun(in1,in2)'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * P |'[a] = myFun(in1,in2);'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * P |'a = myFun'| -> [{}, {'a'}, @myFun]
+% * P |'a = myFun;'| -> [{}, {'a'}, @myFun]
+% * P |'a = myFun()'| -> [{}, {'a'}, @myFun]
+% * P |'a = myFun();'| -> [{}, {'a'}, @myFun]
+% * P |'a = myFun(in)'| -> [{'in'}, {'a'}, @myFun]
+% * P |'a = myFun(in);'| -> [{'in'}, {'a'}, @myFun]
+% * P |'a = myFun(in1, in2)'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * P |'a = myFun(in1, in2);'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * P |'[a,b] = myFun'| -> [{}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun;'| -> [{}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun()'| -> [{}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun();'| -> [{}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun(in)'| -> [{'in'}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun(in);'| -> [{'in'}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun(in1, in2)'| -> [{'in1', 'in2'}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun(in1, in2);'| -> [{'in1', 'in2'}, {'a', 'b'}, @myFun]
+%
 function [ins, outs, func] = parseFunction(call)
-
+    % Strip start, ending space:
+    call = strip(call);
+    % if end is ; get rid of it (doesn't actually affect anything, but why not)
+    call(call == ';') = '';
     % For inputs, look for starting paren. If not found, no inputs
     ins = regexp(call, '(?<=\()([^)]+)(?=\))', 'match');
     if ~isempty(ins)
         ins = ins{1};
+        ins = regexprep(ins, '\s+', '');
         ins = strsplit(ins, ',');
     end
 
@@ -340,13 +405,16 @@ function [ins, outs, func] = parseFunction(call)
     else
         % if no bracket found, only one output. Grab accordingly
         if ~contains(call, ']')
-            outs = regexp(call, '[^\=]*')
+            call(call == ' ') = '';
+            outs = regexp(call, '^[^\=]*', 'match');
         else
             % We have brackets; find in between and engage
             outs = regexp(call, '(?<=\[)([^\]]+)(?=\])', 'match');
             if ~isempty(outs)
-                outs = outs{1};
-                outs = strsplit(outs, {', ', ',', ' '});
+                outs = strip(outs{1});
+                % 'Replace all white space with commas'
+                outs = regexprep(outs, '\s+', ',');
+                outs = strsplit(outs, {','});
             end
         end
     end
@@ -361,7 +429,7 @@ function [ins, outs, func] = parseFunction(call)
         ind = strfind(call, '(');
         call(ind:end) = '';
     end
-    func = str2func(call);        
+    func = str2func(strip(call));        
 
 end
 
@@ -382,33 +450,45 @@ function cleanup(runnable, isTimeout)
     end
 end
 
-function str = primitive2Str(var)
-    % Get legal string expression for use in defining the variable
-    % 
-    %%% Unit Tests
-    %
-    % var = 'hello';
-    % str = primitive2Str(var);
-    %
-    % str => '''hello'''
-    %
-    % var = 5;
-    % str = primitive2Str(var);
-    %
-    % str => '5'
-    %
-    % var = [1 3 5];
-    % str = primitive2Str(var);
-    %
-    % str => '[1 3 5]'
-    %
-    % var = {1,     'hello';
-    %        true,  []      }
-    % str = primitive2Str(var);
-    %
-    % str => '{1, ''hello''; true, [];}'
-    
-    
-    % for temporary testing purposes
-    str = ['''' var ''''];
+
+function isRecurring = checkRecur(callInfo, main)
+    % Check if this function calls itself. If so, exit true.
+    % If not, check all functions it calls:
+    %   If the call is to a builtin, don't investigate
+    %   If the call is to something NOT builtin, investigate!
+
+    % First, check calls for itself.
+    mainCall = callInfo(strcmp({callInfo.name}, main));
+    if any(strcmp(mainCall.name, mainCall.calls.innerCalls.names))
+        % true. Exit
+        isRecurring = true;
+        return;
+    end
+
+    % look at all functions in callInfo that aren't us
+    calls = callInfo(~strcmp({callInfo.name}, main));
+    for i = 1:numel(calls)
+        if checkRecur(calls(i), calls(i).name)
+            isRecurring = true;
+            return;
+        end
+    end
+
+    % Iterate over external calls.
+    external = mainCall.calls.fcnCalls.names;
+    % check local directory for filenames. If not there, builtin!
+    possCalls = dir('**/*.m');
+    possCalls = cellfun(@(n)(n(1:(end-2))), {possCalls.name}, 'uni', false);
+    for i = 1:numel(external)
+        % if external isn't found anywhere in possCalls, don't engage
+        if any(strcmp(external{i}, possCalls))
+            extCallInfo = getcallinfo([external{i} '.m']);
+            if checkRecur(extCallInfo, external{i})
+                isRecurring = true;
+                return;
+            end
+        end
+    end
+
+    isRecurring = false;
 end
