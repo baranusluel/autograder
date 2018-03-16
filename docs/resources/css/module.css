@@ -1,7 +1,16 @@
-html {
+html,
+body {
     font-family: 'Open Sans';
     font-weight: 400;
-    background-color: #FFF6E3;
+}
+
+.navbar-logo {
+    width: 32px;
+    height: 32px;
+}
+
+.navbar-brand {
+    font-weight: 300;
 }
 
 .thin {

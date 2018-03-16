@@ -26,7 +26,7 @@ function generateDocs()
         mkdir(module.name);
         sources = dir(['..' filesep 'modules' filesep module.name filesep '*.m']);
         options.outputDir = [pwd filesep module.name filesep];
-        for s = sources(1:end)
+        for s = sources'
             publish([s.folder filesep s.name], options);
         end
         % Generate HTML index for this module
@@ -47,8 +47,8 @@ function generateDocs()
                 line = strrep(line, '<!-- MODULE_DESCRIPTION -->', 'Hello world');
             elseif contains(line, '<!-- MODULE_FUNCTIONS')
                 % Write all functions in divs
-                for s = sources(1:end)
-                    fprintf(fid, '<div data-link="%s">%s</div>', [s.name(1:end-2) '.html'], camel2normal(s.name(1:end-2)));
+                for s = sources'
+                    fprintf(fid, '<div data-link="%s">%s</div>', [s.name(1:end-2) '.html'], s.name(1:end-2));
                 end
                 line = '';
             end
@@ -66,7 +66,7 @@ function generateDocs()
         % Look for MODULES
         if contains(line, '<!-- MODULES -->')
             line = '';
-            for m = mods(1:end);
+            for m = mods'
                 fprintf(fid, '<div data-link="%s">%s</div>', [m.name '/index.html'], camel2normal(m.name));
             end
         end
