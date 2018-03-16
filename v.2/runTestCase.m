@@ -107,8 +107,18 @@ function [output] = runTestCase(functionHandle, testCase, inputs, varargin)
                 delete(poolobj);
                 error(messages.errors.infiniteLoop);
             end
+            fclose('all');
         catch ME
             output.errors = ME;
+            if ~isempty(ME.cause) && strcmp(ME.cause{1}.identifier,'parallel:fevalqueue:InvalidExecutionResult')
+                try
+                    messages = getMessages();
+                    error(messages.errors.unknownError)
+                catch ME
+                    output.errors = ME;
+                end
+                delete(gcp('nocreate'))
+            end
         end
     end
 
