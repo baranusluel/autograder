@@ -1,0 +1,282 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>generateFeedback: Generate HTML feedback for primitives</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-16"><meta name="DC.source" content="generateFeedback.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>generateFeedback: Generate HTML feedback for primitives</h1><!--introduction--><p><tt>generateFeedback</tt> makes presentation-ready HTML that depicts how the student's primitive result compares to the solution's primitive result.</p><p>HTML = generateFeedback(SOLN, STUD) will generate HTML encoded feedback, given the student's result and the solution's result. Both must be given, but empty is a valid input for either.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>generateFeedback deals only with "primitive" values. This means the type of the given values must be one of the following:</p><div><ul><li><tt>double</tt></li></ul></div><div><ul><li><tt>single</tt></li></ul></div><div><ul><li><tt>uint8</tt>, <tt>uint16</tt>, <tt>uint32</tt>, <tt>uint64</tt></li></ul></div><div><ul><li><tt>int8</tt>, <tt>int16</tt>, <tt>int32</tt>, <tt>int64</tt></li></ul></div><div><ul><li><tt>char</tt></li></ul></div><div><ul><li><tt>string</tt></li></ul></div><div><ul><li><tt>cell</tt></li></ul></div><div><ul><li><tt>struct</tt></li></ul></div><div><ul><li><tt>logical</tt></li></ul></div><p>Note that <tt>NaN</tt> is considered equal to <tt>NaN</tt>; ie, <tt>NaN == NaN = true</tt>. This is different from isequal, and instead follows isequaln.</p><p><tt>generateFeedback</tt> first checks to see they are <tt>isequaln</tt>. If they are, <tt>PASSING</tt> is returned. Otherwise, generateFeedback will first check each value's class. If they differ, a <tt>DIFF_CLASS</tt> is returned. Otherwise, depending on the class, a visualization of the difference between the given arguments is returned. The return value will always have the check mark (<tt>PASSING</tt>) or the red x (<tt>INCORRECT</tt>).</p><p>For values of type <tt>cell</tt> or <tt>struct</tt>, the first difference is shown. To show this difference, generateFeedback uses that type's default comparison method. If it's a primitive, it returns the difference representation by using generateFeedback; otherwise, it uses the type's comparison method.</p><h2 id="2">Exceptions</h2><p>generateFeedback is guarunteed to never throw an exception, as long as two arguments are given.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">S = [];
+P = [];
+HTML = generateFeedback(S, P);
+</pre><pre class="language-matlab">HTML <span class="string">-&gt;</span> <span class="string">'&lt;span class="fas fa-check"&gt;&lt;/span&gt;'</span>
+</pre><pre class="language-matlab">S = NaN;
+P = NaN;
+HTML = generateFeedback(S, P);
+</pre><pre class="language-matlab">HTML <span class="string">-&gt;</span> <span class="string">'&lt;span class="fas fa-check"&gt;&lt;/span&gt;'</span>
+</pre><pre class="language-matlab">S = 1;
+P = S;
+HTML = generateFeedback(S, P);
+</pre><pre class="language-matlab">HTML <span class="string">-&gt;</span> <span class="string">'&lt;span class="fas fa-check"&gt;&lt;/span&gt;'</span>
+</pre><pre class="language-matlab">S = <span class="string">'Hello world'</span>;
+P = 1;
+HTML = generateFeedback(S, P);
+</pre><pre class="language-matlab">HTML <span class="string">-&gt;</span> <span class="string">'&lt;p&gt;&lt;span class="fas fa-times"&gt;&lt;/span&gt; char class expected; double class given.&lt;/p&gt;'</span>
+</pre><pre class="language-matlab">S = uint8(1);
+P = double(1);
+HTML = generateFeedback(S, P);
+</pre><pre class="language-matlab">HTML <span class="string">-&gt;</span> <span class="string">'&lt;p&gt;&lt;span class="fas fa-times"&gt;&lt;/span&gt; uint8 class expected; double class given.&lt;/p&gt;'</span>
+</pre><pre class="language-matlab">S = 1;
+P = 2;
+HTML = generateFeedback(S, P);
+</pre><pre class="language-matlab">HTML <span class="string">-&gt;</span> <span class="string">'&lt;p&gt;&lt;span class="fas fa-times"&gt;&lt;/span&gt; 1 expected; 2 given.&lt;/p&gt;'</span>
+</pre><pre class="language-matlab">S = <span class="string">"Hello World"</span>
+P = <span class="string">"Goodbye World"</span>
+HTML = generateFeedback(S, P);
+</pre><pre class="language-matlab">HTML <span class="string">-&gt;</span> <span class="string">'&lt;p&gt;&lt;span class="fas fa-times"&gt;&lt;/span&gt; "Hello World" expected; "Goodbye World" given.&lt;/p&gt;'</span>
+</pre><pre class="language-matlab">S = true;
+P = false;
+HTML = generateFeedback(S, P);
+</pre><pre class="language-matlab">HTML <span class="string">-&gt;</span> <span class="string">'&lt;p&gt;&lt;span class="fas fa-times"&gt;&lt;/span&gt; true expected; false given.&lt;/p&gt;'</span>
+</pre><pre class="language-matlab">S = [1 2 3];
+P = [1; 2; 3];
+HTML = generateFeedback(S, P);
+</pre><pre class="language-matlab">HTML <span class="string">-&gt;</span> <span class="string">'&lt;p&gt;&lt;span class="fas fa-times"&gt;&lt;/span&gt; Dimension Mismatch: Expected 1x3; 3x1 given.&lt;/p&gt;'</span>
+</pre><pre class="language-matlab">S = {1, 2, 3};
+P = {1, 3, 2};
+HTML = generateFeedback(S, P);
+</pre><pre class="language-matlab">HTML <span class="string">-&gt;</span> <span class="string">'&lt;p&gt;&lt;span class="fas fa-times"&gt;&lt;/span&gt; At index (1, 2): 2 expected; 3 given.&lt;/p&gt;'</span>
+</pre><pre class="language-matlab">S = struct(<span class="string">'hello'</span>, 1, <span class="string">'world'</span>, {1, 2, 3});
+P = struct(<span class="string">'hello'</span>, 2, <span class="string">'world'</span>, {3, 2, 1});
+HTML = generateFeedback(S, P);
+</pre><pre class="language-matlab">HTML <span class="string">-&gt;</span> <span class="string">'&lt;p&gt;&lt;span class="fas fa-times"&gt;&lt;/span&gt; In field "hello": expected 2; one given. There may be other differences.&lt;/p&gt;'</span>
+</pre><pre class="language-matlab">S = struct(<span class="string">'hello'</span>, 1, <span class="string">'world'</span>, {1, 2, 3});
+P = struct(<span class="string">'hello'</span>, 1, <span class="string">'world'</span>, {3, 2, 1});
+HTML = generateFeedback(S, P);
+</pre><pre class="language-matlab">HTML <span class="string">-&gt;</span> <span class="string">'&lt;p&gt;&lt;span class="fas fa-times"&gt;&lt;/span&gt; In field "world": At index (1): 1 expected; 3 given. There may be other differences.&lt;/p&gt;'</span>
+</pre><pre class="codeinput"><span class="comment">% Note that there are a variety of constants, which are listed below:</span>
+<span class="comment">%</span>
+<span class="comment">% * |PASSING = '&lt;span class="fas fa-check&gt;&lt;/span&gt;'|</span>
+<span class="comment">% * |INCORRECT = '&lt;span class="fas fa-times"&gt;&lt;/span&gt;'|</span>
+<span class="comment">% * |DIFF_CLASS =</span>
+<span class="comment">% ['&lt;p&gt;' INCORRECT ' %s class expected; %s class given.&lt;/p&gt;']|</span>
+<span class="comment">% * |DIFF_DIM =</span>
+<span class="comment">% ['&lt;p&gt;' INCORRECT ' Dimension Mismatch: %s expected; %s given.&lt;/p&gt;']|</span>
+<span class="comment">% * |DIFF_NUM_VALUE =</span>
+<span class="comment">% ['&lt;p&gt;' INCORRECT ' %g expected; %g given.&lt;/p&gt;']|</span>
+<span class="comment">% * |DIFF_STR_VALUE =</span>
+<span class="comment">% ['&lt;p&gt;' INCORRECT ' "%s" expected; "%s" given.&lt;/p&gt;']|</span>
+<span class="comment">% * |DIFF_CEL_VALUE =</span>
+<span class="comment">% ['&lt;p&gt;' INCORRECT ' %s expected at index (%s); %s given. There may be other differences.&lt;/p&gt;']|</span>
+<span class="comment">% * |DIFF_STC_VALUE =</span>
+<span class="comment">% ['&lt;p&gt;' INCORRECT ' %s expected in field "%s"; %s given. There may be other differences.&lt;/p&gt;']|</span>
+<span class="comment">% Each of these constants has flags for inserting the correct value and</span>
+<span class="comment">% the received value.</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% generateFeedback: Generate HTML feedback for primitives
+%
+% |generateFeedback| makes presentation-ready HTML that depicts how the 
+% student's primitive result compares to the solution's primitive result.
+%
+% HTML = generateFeedback(SOLN, STUD) will generate HTML encoded feedback, 
+% given the student's result and the solution's result. Both must be given, 
+% but empty is a valid input for either.
+%
+%%% Remarks
+%
+% generateFeedback deals only with "primitive" values. This means 
+% the type of the given values must be one of the following:
+%
+% * |double|
+%
+% * |single|
+%
+% * |uint8|, |uint16|, |uint32|, |uint64|
+%
+% * |int8|, |int16|, |int32|, |int64|
+%
+% * |char|
+%
+% * |string|
+%
+% * |cell|
+%
+% * |struct|
+%
+% * |logical|
+%
+% Note that |NaN| is considered equal to |NaN|; ie, |NaN == NaN = true|.
+% This is different from isequal, and instead follows isequaln.
+%
+% |generateFeedback| first checks to see they are |isequaln|. If they are, 
+% |PASSING| is returned. Otherwise, generateFeedback will first check 
+% each value's class. If they differ, a |DIFF_CLASS| is returned. Otherwise,
+% depending on the class, a visualization of the difference between the given 
+% arguments is returned. The return value will always have the check mark 
+% (|PASSING|) or the red x (|INCORRECT|).
+%
+% For values of type |cell| or |struct|, the first difference is shown. 
+% To show this difference, generateFeedback uses that type's default comparison
+% method. If it's a primitive, it returns the difference representation by 
+% using generateFeedback; otherwise, it uses the type's comparison method.
+%
+%%% Exceptions
+%
+% generateFeedback is guarunteed to never throw an exception, 
+% as long as two arguments are given.
+%
+%%% Unit Tests
+%
+%   S = [];
+%   P = [];
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<span class="fas fa-check"></span>'
+%
+%   S = NaN;
+%   P = NaN;
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<span class="fas fa-check"></span>'
+%
+%   S = 1;
+%   P = S;
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<span class="fas fa-check"></span>'
+%
+%   S = 'Hello world';
+%   P = 1;
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<p><span class="fas fa-times"></span> char class expected; double class given.</p>'
+%
+%   S = uint8(1);
+%   P = double(1);
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<p><span class="fas fa-times"></span> uint8 class expected; double class given.</p>'
+%
+%   S = 1;
+%   P = 2;
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<p><span class="fas fa-times"></span> 1 expected; 2 given.</p>'
+%
+%   S = "Hello World"
+%   P = "Goodbye World"
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<p><span class="fas fa-times"></span> "Hello World" expected; "Goodbye World" given.</p>'
+%
+%   S = true;
+%   P = false;
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<p><span class="fas fa-times"></span> true expected; false given.</p>'
+%
+%   S = [1 2 3];
+%   P = [1; 2; 3];
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<p><span class="fas fa-times"></span> Dimension Mismatch: Expected 1x3; 3x1 given.</p>'
+%
+%   S = {1, 2, 3};
+%   P = {1, 3, 2};
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<p><span class="fas fa-times"></span> At index (1, 2): 2 expected; 3 given.</p>'
+%
+%   S = struct('hello', 1, 'world', {1, 2, 3});
+%   P = struct('hello', 2, 'world', {3, 2, 1});
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<p><span class="fas fa-times"></span> In field "hello": expected 2; one given. There may be other differences.</p>'
+%
+%   S = struct('hello', 1, 'world', {1, 2, 3});
+%   P = struct('hello', 1, 'world', {3, 2, 1});
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<p><span class="fas fa-times"></span> In field "world": At index (1): 1 expected; 3 given. There may be other differences.</p>'
+
+% Note that there are a variety of constants, which are listed below:
+%
+% * |PASSING = '<span class="fas fa-check></span>'|
+% * |INCORRECT = '<span class="fas fa-times"></span>'|
+% * |DIFF_CLASS =  
+% ['<p>' INCORRECT ' %s class expected; %s class given.</p>']|
+% * |DIFF_DIM = 
+% ['<p>' INCORRECT ' Dimension Mismatch: %s expected; %s given.</p>']|
+% * |DIFF_NUM_VALUE = 
+% ['<p>' INCORRECT ' %g expected; %g given.</p>']|
+% * |DIFF_STR_VALUE = 
+% ['<p>' INCORRECT ' "%s" expected; "%s" given.</p>']|
+% * |DIFF_CEL_VALUE = 
+% ['<p>' INCORRECT ' %s expected at index (%s); %s given. There may be other differences.</p>']|
+% * |DIFF_STC_VALUE = 
+% ['<p>' INCORRECT ' %s expected in field "%s"; %s given. There may be other differences.</p>']|
+% Each of these constants has flags for inserting the correct value and
+% the received value.
+##### SOURCE END #####
+--></body></html>

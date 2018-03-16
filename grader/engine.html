@@ -1,0 +1,933 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>engine: Main Engine of the Autograder</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-16"><meta name="DC.source" content="engine.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>engine: Main Engine of the Autograder</h1><!--introduction--><p>The engine function serves as the primary runner of code.</p><p>engine(T) runs the code specified by the TestCase T, and assigns the outputs, files, and plots to the corresponding fields in T.</p><p>engine(F) runs the code specified by the TestCase found in Feedback F, and assigns the outputs, files, and plots to the corresponding fields in F. This does NOT grade the code, just runs it.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li><li><a href="#5">Setup</a></li><li><a href="#6">Running</a></li><li><a href="#7">Cleanup</a></li><li><a href="#9">parseFunction: Parse function call</a></li><li><a href="#10">Remarks</a></li><li><a href="#11">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>The engine function is the primary grading mechanism used within the the autograder. It provides a "sandboxed" environment for running code, and protects against student errors and timeouts.</p><p>Timeouts are handled using a parallel pool of workers. In essence, a student's code is limited to a certain runtime, 30 seconds by default. To change this value, you should edit the TIMEOUT field of the STudent class.</p><p>Errors in the code itself are handled differently, depending on whether a TestCase or a Feedback was passed in.</p><p>If a TestCase was received, the error is propogated; this is because a solution error is usually a fatal error.</p><p>If a Feedback was received, the error is caught and assigned to the exception field of the Feedback.</p><h2 id="2">Exceptions</h2><p>An AUTOGRADER:ENGINE:INVALIDRUNNABLE exception is thrown if the input is in an invalid state.</p><p>An AUTOGRADER:ENGINE:BADSOLUTION exception is thrown if the input is a solution AND that solution errors. The original exception is added to the causes array of the MException.</p><p>A TIMEOUT exception will never be thrown, but will be assigned to the Feedback's exception field instead, should the code timeout.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab"><span class="comment">% Assume T is a valid TestCase that does NOT error.</span>
+T = TestCase(<span class="keyword">...</span><span class="comment">);</span>
+engine(T);
+</pre><pre class="language-matlab">T <span class="string">now</span> <span class="string">has</span> <span class="string">files</span>, outputs, etc. filled in <span class="string">correctly</span>
+</pre><pre class="language-matlab"><span class="comment">% Assume T is a valid TestCase that errors</span>
+T = TestCase(<span class="keyword">...</span><span class="comment">);</span>
+engine(T);
+</pre><pre class="language-matlab">Threw <span class="string">exception</span> <span class="string">BADSOLUTION</span>, with <span class="string">the</span> <span class="string">original</span> <span class="string">error</span>
+in <span class="string">causes.</span>
+</pre><pre class="language-matlab"><span class="comment">% Assume T has not been correctly initialized</span>
+T;
+engine(T);
+</pre><pre class="language-matlab">Threw <span class="string">exception</span> <span class="string">INVALIDRUNNABLE</span>
+</pre><pre class="language-matlab"><span class="comment">% Assume F is a valid Feedback with a valid TestCase</span>
+F = Feedback(<span class="keyword">...</span><span class="comment">);</span>
+engine(F);
+</pre><pre class="language-matlab">F <span class="string">now</span> <span class="string">has</span> <span class="string">files</span>, outputs, etc. filled in <span class="string">correctly</span>
+</pre><pre class="language-matlab"><span class="comment">% Assume F is a valid Feedback that errors</span>
+F = Feedback(<span class="keyword">...</span><span class="comment">);</span>
+engine(F);
+</pre><pre class="language-matlab">F <span class="string">will</span> <span class="string">have</span> <span class="string">no</span> <span class="string">fields</span> <span class="string">filled</span> <span class="string">in</span> <span class="string">except</span> <span class="string">for</span> <span class="string">points</span> <span class="string">(0)</span> <span class="string">and</span> <span class="string">exception</span>,
+which <span class="string">will</span> <span class="string">be</span> <span class="string">the</span> <span class="string">exception</span> <span class="string">raised</span> <span class="string">by</span> <span class="string">the</span> <span class="string">student</span> <span class="string">code.</span>
+</pre><pre class="language-matlab"><span class="comment">% Assume F is a valid Feedback that goes into an infinite loop</span>
+F = Feedback(<span class="keyword">...</span><span class="comment">);</span>
+engine(F);
+</pre><pre class="language-matlab">F <span class="string">will</span> <span class="string">have</span> <span class="string">no</span> <span class="string">fields</span> <span class="string">filled</span> <span class="string">in</span> <span class="string">except</span> <span class="string">for</span> <span class="string">points</span> <span class="string">(0)</span> <span class="string">and</span> <span class="string">exception</span>,
+which <span class="string">will</span> <span class="string">be</span> <span class="string">the</span> <span class="string">TIMEOUT</span> <span class="string">exception.</span>
+</pre><pre class="language-matlab"><span class="comment">% Assume F is an invalid Feedback;</span>
+F;
+engine(F);
+</pre><pre class="language-matlab">Threw <span class="string">exception</span> <span class="string">INVALIDRUNNABLE</span>
+</pre><pre class="codeinput"><span class="keyword">function</span> engine(runnable)
+</pre><pre class="codeinput">    <span class="comment">% For banned functions, we'll need to use static checking, instead of</span>
+    <span class="comment">% overwriting it in the directory. This is because some functions</span>
+    <span class="comment">% (like length) are extremely necessary for MATLAB to even function</span>
+    <span class="comment">% correctly. I would recommend the following:</span>
+    <span class="comment">%</span>
+    <span class="comment">%   calls = getcallinfo('FunctionName.m');</span>
+    <span class="comment">%   calls = [calls.calls];</span>
+    <span class="comment">%   calls = [calls.fcnCalls];</span>
+    <span class="comment">%   calls = [calls.names];</span>
+    <span class="comment">%</span>
+    <span class="comment">%   Now, calls is cell array of called functions. For each function which</span>
+    <span class="comment">%   isn't built in, we could walk them recursively, checking for use of the</span>
+    <span class="comment">%   banned function. Personally, I think that's overkill. This cell array</span>
+    <span class="comment">%   represents all functions called by any function inside the FunctionName.m</span>
+    <span class="comment">%   file.</span>
+
+    <span class="comment">% This code is divided up into three sections:</span>
+    <span class="comment">%</span>
+    <span class="comment">%   1. Setup</span>
+    <span class="comment">%   2. Running</span>
+    <span class="comment">%   3. Cleanup</span>
+    <span class="comment">%</span>
+    <span class="comment">% Setup sets up the initial call. It cleans up the workspace,</span>
+    <span class="comment">% sets up the supporting Files.</span>
+    <span class="comment">%</span>
+    <span class="comment">% Running defines all late-bound variables and runs the function itself,</span>
+    <span class="comment">% on a parallel worker. This is done to protect against timeouts. The Feedback</span>
+    <span class="comment">% or TestCase object is populated here - EVEN IF there is a timeout exception.</span>
+    <span class="comment">% However, if the TestCase times out, engine should rethrow the timeout error.</span>
+    <span class="comment">%</span>
+    <span class="comment">% *NOTE*: Late-bound variables (defined via the initializer) are defined immediately</span>
+    <span class="comment">% before a function is run. As such, the produced error could be from an initializer.</span>
+    <span class="comment">% However, this does not cause problems with students, since this error happens</span>
+    <span class="comment">% during solution code as well.</span>
+    <span class="comment">%</span>
+    <span class="comment">% Cleanup cleans up the directory to make it look "pristine" - or at least as it</span>
+    <span class="comment">% did before. It deletes all files mentioned in the runnable's outputs, and closes</span>
+    <span class="comment">% all plots.</span>
+</pre><h2 id="5">Setup</h2><pre class="codeinput">    <span class="keyword">if</span> isa(runnable, <span class="string">'TestCase'</span>)
+        tCase = runnable;
+    <span class="keyword">else</span>
+        tCase = runnable.testCase;
+    <span class="keyword">end</span>
+
+    <span class="comment">% Copy over supporting files</span>
+    supportingFiles = tCase.supportingFiles;
+    loadFiles = tCase.loadFiles;
+    [inNames, outNames, func] = parseFunction(tCase.call);
+
+    allCalls = getcallinfo([func2str(func) <span class="string">'.m'</span>]);
+    calls = [allCalls.calls];
+    calls = [calls.fcnCalls];
+    calls = [calls.names];
+
+    <span class="comment">% Test for recursion. If any function calls itself, good to go.</span>
+    <span class="keyword">if</span> isa(runnable, <span class="string">'Feedback'</span>)
+        isRecur = checkRecur(allCalls, func2str(func));
+        runnable.isRecursive = isRecur;
+    <span class="keyword">end</span>
+
+    bannedFunctions = tCase.banned;
+    <span class="keyword">for</span> i = 1:numel(bannedFunctions)
+        <span class="keyword">if</span> any(strcmpi(calls, bannedFunctions{i}))
+            <span class="keyword">if</span> isa(runnable, <span class="string">'TestCase'</span>)
+                throw(MException(<span class="string">'AUTOGRADER:ENGINE:BADSOLUTION'</span>, <span class="string">'Solution uses banned functions'</span>));
+            <span class="keyword">else</span>
+                runnable.exception = MException(<span class="string">'AUTOGRADER:ENGINE:BANNED'</span>, <span class="string">'File used banned function %s.'</span>, bannedFunctions{i});
+                <span class="keyword">return</span>;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">for</span> i = 1:numel(supportingFiles)
+        copyfile(supportingFiles{i});
+        [~, supportingFiles{i}, ext] = fileparts(supportingFiles{i});
+        supportingFiles{i} = [supportingFiles{i}, ext];
+    <span class="keyword">end</span>
+    <span class="comment">% Record starting point</span>
+    beforeSnap = dir();
+    beforeSnap = {beforeSnap.name};
+    beforeSnap(strncmp(beforeSnap, <span class="string">'.'</span>, 1)) = [];
+
+    <span class="comment">% See how long it takes to load data. Add that time to TIMEOUT</span>
+    tic;
+    <span class="keyword">for</span> i = 1:numel(tCase.loadFiles)
+        <span class="comment">% throw away result</span>
+        S = load(tCase.loadFiles{i});
+    <span class="keyword">end</span>
+    timeToLoad = toc;
+    clear(<span class="string">'S'</span>);
+</pre><h2 id="6">Running</h2><p>Create a new job for the parallel pool</p><pre class="codeinput">    test = parfeval(@runCase, 0, runnable);
+
+    <span class="comment">% Wait until it's finished, up to 30 seconds</span>
+    isTimeout = ~wait(test, <span class="string">'finished'</span>, Student.TIMEOUT + timeToLoad);
+
+    <span class="comment">% Delete the job</span>
+    <span class="keyword">if</span> isTimeout
+        cancel(test);
+    <span class="keyword">end</span>
+    delete(test);
+
+    <span class="comment">% Populate files, plots</span>
+    afterSnap = dir();
+    afterSnap = {afterSnap.name};
+    afterSnap(strncmp(afterSnap, <span class="string">'.'</span>, 1)) = [];
+
+    addedFiles = sort(setdiff(afterSnap, beforeSnap));
+
+    populateFiles(runnable, addedFiles);
+    populatePlots(runnable);
+</pre><h2 id="7">Cleanup</h2><p>Delete all files mentioned in the files field</p><pre class="codeinput">    <span class="keyword">for</span> i = 1:numel(runnable.files)
+        <span class="comment">% Delete file with name of File</span>
+        delete([runnable.files(i).name runnable.files(i).extension]);
+    <span class="keyword">end</span>
+
+    <span class="comment">% Delete all files that were marked as supporting files</span>
+    <span class="keyword">for</span> i = 1:numel(supportingFiles)
+        delete(supportingFiles{i});
+    <span class="keyword">end</span>
+    <span class="keyword">for</span> i = 1:numel(loadFiles)
+        delete(loadFiles{i});
+    <span class="keyword">end</span>
+
+    <span class="comment">% Close all figures with visible handles?</span>
+    figs = findobj(0, <span class="string">'type'</span>, <span class="string">'figure'</span>);
+    delete(figs);
+
+    <span class="comment">% If timeout and TestCase, throw error</span>
+    <span class="keyword">if</span> isa(runnable, <span class="string">'TestCase'</span>) &amp;&amp; isTimeout
+        throw(MException(<span class="string">'MATLAB:TIMEOUT'</span>, <span class="string">'Solution Code Timed Out'</span>));
+    <span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+
+<span class="keyword">function</span> populateFiles(runnable, addedFiles)
+    <span class="comment">% Get last file first to prealloc array</span>
+    files(numel(addedFiles)) = File([pwd() filesep() addedFiles{end}]);
+    <span class="comment">% Iterate over all files (including last one again) so that _soln</span>
+    <span class="comment">% can be removed if necessary</span>
+    <span class="keyword">for</span> i = 1:numel(addedFiles)
+        files(i) = File([pwd() filesep() addedFiles{i}]);
+        <span class="keyword">if</span> isa(runnable, <span class="string">'TestCase'</span>)
+            <span class="comment">% Remove _soln from name</span>
+            files(i).name = strrep(files(i).name, <span class="string">'_soln'</span>, <span class="string">''</span>);
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    runnable.files = files;
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> populatePlots(runnable)
+    <span class="comment">% Get all handles; since the Position is captured, that can be used</span>
+    <span class="comment">% for the subplot checking</span>
+    pHandles = findobj(0, <span class="string">'type'</span>, <span class="string">'axes'</span>);
+    plots(numel(pHandles)) = Plot(pHandles(end));
+    <span class="keyword">for</span> i = 1:(numel(pHandles) - 1)
+        plots(i) = Plot(pHandles(i));
+    <span class="keyword">end</span>
+
+    runnable.plots = plots;
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> runCase(runnable)
+    <span class="comment">% Setup workspace</span>
+    timeout = Timeout();
+    <span class="comment">% is this supposed to be here?  --&gt;     cleanup();</span>
+    cleaner = onCleanup(@() cleanup(runnable, timeout));
+
+    <span class="keyword">if</span> isa(runnable, <span class="string">'TestCase'</span>)
+        tCase = runnable;
+    <span class="keyword">else</span>
+        tCase = runnable.testCase;
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> ~isempty(tCase.initializer)
+        <span class="comment">% Append initializer call to end of varDefs</span>
+        <span class="comment">% Make sure suppressed!</span>
+        <span class="keyword">if</span> tCase.initializer(end) ~= <span class="string">';'</span>
+            tCase.initializer = [tCase.initializer <span class="string">';'</span>];
+        <span class="keyword">end</span>
+        init = tCase.initializer;
+    <span class="keyword">else</span>
+        init = <span class="string">''</span>;
+    <span class="keyword">end</span>
+
+    <span class="comment">% Parse the call</span>
+    [inNames, outNames, func] = parseFunction(tCase.call);
+    outs = cell(size(outNames));
+    <span class="comment">% run the function</span>
+    <span class="comment">% create sentinel file</span>
+    fid = fopen(File.SENTINEL, <span class="string">'r'</span>);
+    [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
+    name = fopen(fid);
+    fclose(fid);
+    <span class="keyword">if</span> ~strcmp(name, File.SENTINEL)
+        <span class="comment">% Communicate that user called fclose all.</span>
+        <span class="keyword">if</span> isa(runnable, <span class="string">'TestCase'</span>)
+            throw(MException(<span class="string">'AUTOGRADER:ENGINE:FCLOSEALL'</span>, <span class="string">'The solution called fclose all'</span>));
+        <span class="keyword">else</span>
+            runnable.exception = MException(<span class="string">'AUTOGRADER:FCLOSEALL'</span>, <span class="string">'Student Code called fclose all'</span>);
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    <span class="comment">% Populate outputs</span>
+    <span class="comment">% outNames is in order of argument. For each outName, apply corresponding</span>
+    <span class="comment">% value</span>
+    <span class="keyword">for</span> i = 1:numel(outs)
+        runnable.outs.(outNames{i}) = outs{i};
+    <span class="keyword">end</span>
+    timeout.isTimeout = false;
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> varargout = runner(func____, init____, ins, loads____)
+
+    <span class="comment">% Create statement that becomes cell array of all inputs.</span>
+    <span class="comment">% No input sanitization here because all input names have already</span>
+    <span class="comment">% been checked.</span>
+    inCell____ = [<span class="string">'{'</span> strjoin(ins, <span class="string">','</span>) <span class="string">'}'</span>];
+    <span class="comment">% varargout becomes cell array of the size of number of args requested</span>
+    varargout = cell(size(nargout));
+    <span class="comment">% Load MAT files</span>
+    cellfun(@load, loads____);
+    <span class="comment">% Run initializer, if any</span>
+    <span class="keyword">if</span> ~isempty(init____)
+        eval(init____);
+    <span class="keyword">end</span>
+    <span class="comment">% Create true cell array of inputs to use in func</span>
+    ins____ = eval(inCell____);
+    <span class="comment">% Run func</span>
+    [varargout{:}] = func____(ins____{:});
+<span class="keyword">end</span>
+</pre><h2 id="9">parseFunction: Parse function call</h2><p>Parses the function call for inputs, outputs, and the function handle.</p><p>[I, O, F] = parseFunction(C) will parse the function call C and return the input names in I, the output names in O, and the function handle in F.</p><h2 id="10">Remarks</h2><p>This function is unaffected by any type of white space.</p><p>This function is case sensitive</p><h2 id="11">Unit Tests</h2><p>Unlike ordinary Unit Tests, this is a list of tests. P means passing, U means unknown.</p><div><ul><li>P <tt>'myFun'</tt> -&gt; [{}, {}, @myFun]</li><li>P <tt>'myFun;'</tt> -&gt; [{}, {}, @myFun]</li><li>P <tt>'myFun()'</tt> -&gt; [{}, {}, @myFun]</li><li>P <tt>'myFun();'</tt> -&gt; [{}, {}, @myFun]</li><li>P <tt>'myFun(in)'</tt> -&gt; [{'in'}, {}, @myFun]</li><li>P <tt>'myFun(in);'</tt> -&gt; [{'in'}, {}, @myFun]</li><li>P <tt>'myFun(in,in2)'</tt> -&gt; [{'in', 'in2'}, {}, @myFun]</li><li>P <tt>'myFun(in,In2);'</tt> -&gt; [{'in', 'In2'}, {}, @myFun]</li><li>P <tt>'[] = myFun'</tt> -&gt; [{}, {}, @myFun]</li><li>P <tt>'[] = myFun;'</tt> -&gt; [{}, {}, @myFun]</li><li>P <tt>'[] = myFun()'</tt> -&gt; [{}, {}, @myFun]</li><li>P <tt>'[] = myFun();'</tt> -&gt; [{}, {}, @myFun]</li><li>P <tt>'[] = myFun(in)'</tt> -&gt; [{'in'}, {}, @myFun]</li><li>P <tt>'[] = myFun(in);'</tt> -&gt; [{'in'}, {}, @myFun]</li><li>P <tt>'[] = myFun(in1,in2)'</tt> -&gt; [{'in1', 'in2'}, {}, @myFun]</li><li>P <tt>'[] = myFun(in1,in2);'</tt> -&gt; [{'in1', 'in2'}, {}, @myFun]</li><li>P <tt>'[a] = myFun'</tt> -&gt; [{}, {'a'}, @myFun]</li><li>P <tt>'[a] = myFun;'</tt> -&gt; [{}, {'a'}, @myFun]</li><li>P <tt>'[a] = myFun()'</tt> -&gt; [{}, {'a'}, @myFun]</li><li>P <tt>'[a] = myFun();'</tt> -&gt; [{}, {'a'}, @myFun]</li><li>P <tt>'[a] = myFun(in)'</tt> -&gt; [{'in'}, {'a'}, @myFun]</li><li>P <tt>'[a] = myFun(in);'</tt> -&gt; [{'in'}, {'a'}, @myFun]</li><li>P <tt>'[a] = myFun(in1,in2)'</tt> -&gt; [{'in1', 'in2'}, {'a'}, @myFun]</li><li>P <tt>'[a] = myFun(in1,in2);'</tt> -&gt; [{'in1', 'in2'}, {'a'}, @myFun]</li><li>P <tt>'a = myFun'</tt> -&gt; [{}, {'a'}, @myFun]</li><li>P <tt>'a = myFun;'</tt> -&gt; [{}, {'a'}, @myFun]</li><li>P <tt>'a = myFun()'</tt> -&gt; [{}, {'a'}, @myFun]</li><li>P <tt>'a = myFun();'</tt> -&gt; [{}, {'a'}, @myFun]</li><li>P <tt>'a = myFun(in)'</tt> -&gt; [{'in'}, {'a'}, @myFun]</li><li>P <tt>'a = myFun(in);'</tt> -&gt; [{'in'}, {'a'}, @myFun]</li><li>P <tt>'a = myFun(in1, in2)'</tt> -&gt; [{'in1', 'in2'}, {'a'}, @myFun]</li><li>P <tt>'a = myFun(in1, in2);'</tt> -&gt; [{'in1', 'in2'}, {'a'}, @myFun]</li><li>P <tt>'[a,b] = myFun'</tt> -&gt; [{}, {'a', 'b'}, @myFun]</li><li>P <tt>'[a,b] = myFun;'</tt> -&gt; [{}, {'a', 'b'}, @myFun]</li><li>P <tt>'[a,b] = myFun()'</tt> -&gt; [{}, {'a', 'b'}, @myFun]</li><li>P <tt>'[a,b] = myFun();'</tt> -&gt; [{}, {'a', 'b'}, @myFun]</li><li>P <tt>'[a,b] = myFun(in)'</tt> -&gt; [{'in'}, {'a', 'b'}, @myFun]</li><li>P <tt>'[a,b] = myFun(in);'</tt> -&gt; [{'in'}, {'a', 'b'}, @myFun]</li><li>P <tt>'[a,b] = myFun(in1, in2)'</tt> -&gt; [{'in1', 'in2'}, {'a', 'b'}, @myFun]</li><li>P <tt>'[a,b] = myFun(in1, in2);'</tt> -&gt; [{'in1', 'in2'}, {'a', 'b'}, @myFun]</li></ul></div><pre class="codeinput"><span class="keyword">function</span> [ins, outs, func] = parseFunction(call)
+    <span class="comment">% Strip start, ending space:</span>
+    call = strip(call);
+    <span class="comment">% if end is ; get rid of it (doesn't actually affect anything, but why not)</span>
+    call(call == <span class="string">';'</span>) = <span class="string">''</span>;
+    <span class="comment">% For inputs, look for starting paren. If not found, no inputs</span>
+    ins = regexp(call, <span class="string">'(?&lt;=\()([^)]+)(?=\))'</span>, <span class="string">'match'</span>);
+    <span class="keyword">if</span> ~isempty(ins)
+        ins = ins{1};
+        ins = regexprep(ins, <span class="string">'\s+'</span>, <span class="string">''</span>);
+        ins = strsplit(ins, <span class="string">','</span>);
+    <span class="keyword">end</span>
+
+    <span class="comment">% For outputs, look for an equal sign. No equal sign, no outputs</span>
+    <span class="keyword">if</span> ~contains(call, <span class="string">'='</span>)
+        outs = {};
+    <span class="keyword">else</span>
+        <span class="comment">% if no bracket found, only one output. Grab accordingly</span>
+        <span class="keyword">if</span> ~contains(call, <span class="string">']'</span>)
+            call(call == <span class="string">' '</span>) = <span class="string">''</span>;
+            outs = regexp(call, <span class="string">'^[^\=]*'</span>, <span class="string">'match'</span>);
+        <span class="keyword">else</span>
+            <span class="comment">% We have brackets; find in between and engage</span>
+            outs = regexp(call, <span class="string">'(?&lt;=\[)([^\]]+)(?=\])'</span>, <span class="string">'match'</span>);
+            <span class="keyword">if</span> ~isempty(outs)
+                outs = strip(outs{1});
+                <span class="comment">% 'Replace all white space with commas'</span>
+                outs = regexprep(outs, <span class="string">'\s+'</span>, <span class="string">','</span>);
+                outs = strsplit(outs, {<span class="string">','</span>});
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% For function name, strip everything before possible =, everything</span>
+    <span class="comment">% after possible (.</span>
+    <span class="keyword">if</span> contains(call, <span class="string">'='</span>)
+        ind = strfind(call, <span class="string">'='</span>);
+        call(1:ind) = <span class="string">''</span>;
+    <span class="keyword">end</span>
+    <span class="keyword">if</span> contains(call, <span class="string">'('</span>)
+        ind = strfind(call, <span class="string">'('</span>);
+        call(ind:end) = <span class="string">''</span>;
+    <span class="keyword">end</span>
+    func = str2func(strip(call));
+
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> cleanup(runnable, isTimeout)
+    <span class="comment">% check if runnable is TestCase or Feedback</span>
+    fclose(<span class="string">'all'</span>);
+
+    <span class="keyword">if</span> isa(runnable, <span class="string">'Feedback'</span>)
+        <span class="keyword">if</span> timeout.isTimeout
+            runnable.exception = MException(<span class="string">'TIMEOUT'</span>);
+            <span class="keyword">return</span>;
+        <span class="keyword">end</span>
+    <span class="keyword">else</span>
+        <span class="keyword">if</span> timeout.isTimeout
+            e = MException(<span class="string">'TIMEOUT'</span>);
+            throw(e);
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> isRecurring = checkRecur(callInfo, main)
+    <span class="comment">% Check if this function calls itself. If so, exit true.</span>
+    <span class="comment">% If not, check all functions it calls:</span>
+    <span class="comment">%   If the call is to a builtin, don't investigate</span>
+    <span class="comment">%   If the call is to something NOT builtin, investigate!</span>
+
+    <span class="comment">% First, check calls for itself.</span>
+    mainCall = callInfo(strcmp({callInfo.name}, main));
+    <span class="keyword">if</span> any(strcmp(mainCall.name, mainCall.calls.innerCalls.names))
+        <span class="comment">% true. Exit</span>
+        isRecurring = true;
+        <span class="keyword">return</span>;
+    <span class="keyword">end</span>
+
+    <span class="comment">% look at all functions in callInfo that aren't us</span>
+    calls = callInfo(~strcmp({callInfo.name}, main));
+    <span class="keyword">for</span> i = 1:numel(calls)
+        <span class="keyword">if</span> checkRecur(calls(i), calls(i).name)
+            isRecurring = true;
+            <span class="keyword">return</span>;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% Iterate over external calls.</span>
+    external = mainCall.calls.fcnCalls.names;
+    <span class="comment">% check local directory for filenames. If not there, builtin!</span>
+    possCalls = dir(<span class="string">'**/*.m'</span>);
+    possCalls = cellfun(@(n)(n(1:(end-2))), {possCalls.name}, <span class="string">'uni'</span>, false);
+    <span class="keyword">for</span> i = 1:numel(external)
+        <span class="comment">% if external isn't found anywhere in possCalls, don't engage</span>
+        <span class="keyword">if</span> any(strcmp(external{i}, possCalls))
+            extCallInfo = getcallinfo([external{i} <span class="string">'.m'</span>]);
+            <span class="keyword">if</span> checkRecur(extCallInfo, external{i})
+                isRecurring = true;
+                <span class="keyword">return</span>;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    isRecurring = false;
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% engine: Main Engine of the Autograder
+%
+% The engine function serves as the primary runner of code.
+%
+% engine(T) runs the code specified by the TestCase T, and assigns the
+% outputs, files, and plots to the corresponding fields in T.
+%
+% engine(F) runs the code specified by the TestCase found in Feedback F,
+% and assigns the outputs, files, and plots to the corresponding fields 
+% in F. This does NOT grade the code, just runs it.
+%
+%%% Remarks
+%
+% The engine function is the primary grading mechanism used within the
+% the autograder. It provides a "sandboxed" environment for running code,
+% and protects against student errors and timeouts.
+%
+% Timeouts are handled using a parallel pool of workers. In essence, a 
+% student's code is limited to a certain runtime, 30 seconds by default.
+% To change this value, you should edit the TIMEOUT field of the STudent
+% class.
+%
+% Errors in the code itself are handled differently, depending on whether 
+% a TestCase or a Feedback was passed in.
+%
+% If a TestCase was received, the error is propogated; this is because a 
+% solution error is usually a fatal error.
+%
+% If a Feedback was received, the error is caught and assigned to the 
+% exception field of the Feedback.
+%
+%%% Exceptions
+%
+% An AUTOGRADER:ENGINE:INVALIDRUNNABLE exception is thrown if the input is in an 
+% invalid state.
+%
+% An AUTOGRADER:ENGINE:BADSOLUTION exception is thrown if the input is a solution
+% AND that solution errors. The original exception is added to the 
+% causes array of the MException.
+%
+% A TIMEOUT exception will never be thrown, but will be assigned to the 
+% Feedback's exception field instead, should the code timeout.
+%
+%%% Unit Tests
+%
+%   % Assume T is a valid TestCase that does NOT error.
+%   T = TestCase(...);
+%   engine(T);
+%
+%   T now has files, outputs, etc. filled in correctly
+%
+%   % Assume T is a valid TestCase that errors
+%   T = TestCase(...);
+%   engine(T);
+%
+%   Threw exception BADSOLUTION, with the original error 
+%   in causes.
+%
+%   % Assume T has not been correctly initialized
+%   T;
+%   engine(T);
+%
+%   Threw exception INVALIDRUNNABLE
+%
+%   % Assume F is a valid Feedback with a valid TestCase
+%   F = Feedback(...);
+%   engine(F);
+%
+%   F now has files, outputs, etc. filled in correctly
+%
+%   % Assume F is a valid Feedback that errors
+%   F = Feedback(...);
+%   engine(F);
+%
+%   F will have no fields filled in except for points (0) and exception, 
+%   which will be the exception raised by the student code.
+%
+%   % Assume F is a valid Feedback that goes into an infinite loop
+%   F = Feedback(...);
+%   engine(F);
+%
+%   F will have no fields filled in except for points (0) and exception,
+%   which will be the TIMEOUT exception.
+%
+%   % Assume F is an invalid Feedback;
+%   F;
+%   engine(F);
+%
+%   Threw exception INVALIDRUNNABLE   
+%
+function engine(runnable)
+
+    % For banned functions, we'll need to use static checking, instead of 
+    % overwriting it in the directory. This is because some functions
+    % (like length) are extremely necessary for MATLAB to even function
+    % correctly. I would recommend the following:
+    %
+    %   calls = getcallinfo('FunctionName.m');
+    %   calls = [calls.calls];
+    %   calls = [calls.fcnCalls];
+    %   calls = [calls.names];
+    %
+    %   Now, calls is cell array of called functions. For each function which 
+    %   isn't built in, we could walk them recursively, checking for use of the
+    %   banned function. Personally, I think that's overkill. This cell array
+    %   represents all functions called by any function inside the FunctionName.m
+    %   file.
+
+    % This code is divided up into three sections:
+    % 
+    %   1. Setup
+    %   2. Running
+    %   3. Cleanup
+    %
+    % Setup sets up the initial call. It cleans up the workspace, 
+    % sets up the supporting Files.
+    %
+    % Running defines all late-bound variables and runs the function itself,
+    % on a parallel worker. This is done to protect against timeouts. The Feedback
+    % or TestCase object is populated here - EVEN IF there is a timeout exception.
+    % However, if the TestCase times out, engine should rethrow the timeout error.
+    %
+    % *NOTE*: Late-bound variables (defined via the initializer) are defined immediately
+    % before a function is run. As such, the produced error could be from an initializer.
+    % However, this does not cause problems with students, since this error happens 
+    % during solution code as well.
+    %
+    % Cleanup cleans up the directory to make it look "pristine" - or at least as it 
+    % did before. It deletes all files mentioned in the runnable's outputs, and closes 
+    % all plots.
+
+    %% Setup
+    if isa(runnable, 'TestCase')
+        tCase = runnable;
+    else
+        tCase = runnable.testCase;
+    end
+
+    % Copy over supporting files
+    supportingFiles = tCase.supportingFiles;
+    loadFiles = tCase.loadFiles;
+    [inNames, outNames, func] = parseFunction(tCase.call);
+
+    allCalls = getcallinfo([func2str(func) '.m']);
+    calls = [allCalls.calls];
+    calls = [calls.fcnCalls];
+    calls = [calls.names];
+
+    % Test for recursion. If any function calls itself, good to go.
+    if isa(runnable, 'Feedback')
+        isRecur = checkRecur(allCalls, func2str(func));
+        runnable.isRecursive = isRecur;
+    end
+
+    bannedFunctions = tCase.banned;
+    for i = 1:numel(bannedFunctions)
+        if any(strcmpi(calls, bannedFunctions{i}))
+            if isa(runnable, 'TestCase')
+                throw(MException('AUTOGRADER:ENGINE:BADSOLUTION', 'Solution uses banned functions'));
+            else
+                runnable.exception = MException('AUTOGRADER:ENGINE:BANNED', 'File used banned function %s.', bannedFunctions{i});
+                return;
+            end
+        end
+    end
+
+    for i = 1:numel(supportingFiles)
+        copyfile(supportingFiles{i});
+        [~, supportingFiles{i}, ext] = fileparts(supportingFiles{i});
+        supportingFiles{i} = [supportingFiles{i}, ext];
+    end
+    % Record starting point
+    beforeSnap = dir();
+    beforeSnap = {beforeSnap.name};
+    beforeSnap(strncmp(beforeSnap, '.', 1)) = [];
+
+    % See how long it takes to load data. Add that time to TIMEOUT
+    tic;
+    for i = 1:numel(tCase.loadFiles)
+        % throw away result
+        S = load(tCase.loadFiles{i});
+    end
+    timeToLoad = toc;
+    clear('S');
+    %% Running
+    % Create a new job for the parallel pool
+    test = parfeval(@runCase, 0, runnable);
+
+    % Wait until it's finished, up to 30 seconds
+    isTimeout = ~wait(test, 'finished', Student.TIMEOUT + timeToLoad);
+    
+    % Delete the job
+    if isTimeout
+        cancel(test);
+    end
+    delete(test);
+
+    % Populate files, plots
+    afterSnap = dir();
+    afterSnap = {afterSnap.name};
+    afterSnap(strncmp(afterSnap, '.', 1)) = [];
+    
+    addedFiles = sort(setdiff(afterSnap, beforeSnap));
+
+    populateFiles(runnable, addedFiles);
+    populatePlots(runnable);
+
+    %% Cleanup
+    % Delete all files mentioned in the files field
+    for i = 1:numel(runnable.files)
+        % Delete file with name of File
+        delete([runnable.files(i).name runnable.files(i).extension]);
+    end
+    
+    % Delete all files that were marked as supporting files
+    for i = 1:numel(supportingFiles)
+        delete(supportingFiles{i});
+    end
+    for i = 1:numel(loadFiles)
+        delete(loadFiles{i});
+    end
+
+    % Close all figures with visible handles?
+    figs = findobj(0, 'type', 'figure');
+    delete(figs);
+    
+    % If timeout and TestCase, throw error
+    if isa(runnable, 'TestCase') && isTimeout
+        throw(MException('MATLAB:TIMEOUT', 'Solution Code Timed Out'));
+    end
+end
+
+function populateFiles(runnable, addedFiles)
+    % Get last file first to prealloc array
+    files(numel(addedFiles)) = File([pwd() filesep() addedFiles{end}]);
+    % Iterate over all files (including last one again) so that _soln
+    % can be removed if necessary
+    for i = 1:numel(addedFiles)
+        files(i) = File([pwd() filesep() addedFiles{i}]);
+        if isa(runnable, 'TestCase')
+            % Remove _soln from name
+            files(i).name = strrep(files(i).name, '_soln', '');
+        end
+    end
+
+    runnable.files = files;
+end
+
+function populatePlots(runnable)
+    % Get all handles; since the Position is captured, that can be used 
+    % for the subplot checking
+    pHandles = findobj(0, 'type', 'axes');
+    plots(numel(pHandles)) = Plot(pHandles(end));
+    for i = 1:(numel(pHandles) - 1)
+        plots(i) = Plot(pHandles(i));
+    end
+
+    runnable.plots = plots;
+end
+
+
+function runCase(runnable)
+    % Setup workspace
+    timeout = Timeout();
+    % is this supposed to be here?  REPLACE_WITH_DASH_DASH>     cleanup();
+    cleaner = onCleanup(@() cleanup(runnable, timeout));
+
+    if isa(runnable, 'TestCase')
+        tCase = runnable;
+    else
+        tCase = runnable.testCase;
+    end
+    if ~isempty(tCase.initializer)
+        % Append initializer call to end of varDefs
+        % Make sure suppressed!
+        if tCase.initializer(end) ~= ';'
+            tCase.initializer = [tCase.initializer ';'];
+        end
+        init = tCase.initializer;
+    else
+        init = '';
+    end
+    
+    % Parse the call
+    [inNames, outNames, func] = parseFunction(tCase.call);
+    outs = cell(size(outNames));
+    % run the function
+    % create sentinel file
+    fid = fopen(File.SENTINEL, 'r');
+    [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
+    name = fopen(fid);
+    fclose(fid);
+    if ~strcmp(name, File.SENTINEL)
+        % Communicate that user called fclose all.
+        if isa(runnable, 'TestCase')
+            throw(MException('AUTOGRADER:ENGINE:FCLOSEALL', 'The solution called fclose all'));
+        else
+            runnable.exception = MException('AUTOGRADER:FCLOSEALL', 'Student Code called fclose all');
+        end
+    end
+    % Populate outputs
+    % outNames is in order of argument. For each outName, apply corresponding
+    % value
+    for i = 1:numel(outs)
+        runnable.outs.(outNames{i}) = outs{i};
+    end
+    timeout.isTimeout = false;
+end
+
+function varargout = runner(func____, init____, ins, loads____)
+    
+    % Create statement that becomes cell array of all inputs.
+    % No input sanitization here because all input names have already
+    % been checked.
+    inCell____ = ['{' strjoin(ins, ',') '}'];
+    % varargout becomes cell array of the size of number of args requested
+    varargout = cell(size(nargout));
+    % Load MAT files
+    cellfun(@load, loads____);
+    % Run initializer, if any
+    if ~isempty(init____)
+        eval(init____);
+    end
+    % Create true cell array of inputs to use in func
+    ins____ = eval(inCell____);
+    % Run func
+    [varargout{:}] = func____(ins____{:});
+end
+
+%% parseFunction: Parse function call
+%
+% Parses the function call for inputs, outputs, and the function handle.
+%
+% [I, O, F] = parseFunction(C) will parse the function call C and
+% return the input names in I, the output names in O, and the function 
+% handle in F.
+%
+%%% Remarks
+%
+% This function is unaffected by any type of white space.
+%
+% This function is case sensitive
+%
+%%% Unit Tests
+% Unlike ordinary Unit Tests, this is a list of tests. P means passing, U 
+% means unknown.
+% 
+% * P |'myFun'| -> [{}, {}, @myFun]
+% * P |'myFun;'| -> [{}, {}, @myFun]
+% * P |'myFun()'| -> [{}, {}, @myFun]
+% * P |'myFun();'| -> [{}, {}, @myFun]
+% * P |'myFun(in)'| -> [{'in'}, {}, @myFun]
+% * P |'myFun(in);'| -> [{'in'}, {}, @myFun]
+% * P |'myFun(in,in2)'| -> [{'in', 'in2'}, {}, @myFun]
+% * P |'myFun(in,In2);'| -> [{'in', 'In2'}, {}, @myFun]
+% * P |'[] = myFun'| -> [{}, {}, @myFun]
+% * P |'[] = myFun;'| -> [{}, {}, @myFun]
+% * P |'[] = myFun()'| -> [{}, {}, @myFun]
+% * P |'[] = myFun();'| -> [{}, {}, @myFun]
+% * P |'[] = myFun(in)'| -> [{'in'}, {}, @myFun]
+% * P |'[] = myFun(in);'| -> [{'in'}, {}, @myFun]
+% * P |'[] = myFun(in1,in2)'| -> [{'in1', 'in2'}, {}, @myFun]
+% * P |'[] = myFun(in1,in2);'| -> [{'in1', 'in2'}, {}, @myFun]
+% * P |'[a] = myFun'| -> [{}, {'a'}, @myFun]
+% * P |'[a] = myFun;'| -> [{}, {'a'}, @myFun]
+% * P |'[a] = myFun()'| -> [{}, {'a'}, @myFun]
+% * P |'[a] = myFun();'| -> [{}, {'a'}, @myFun]
+% * P |'[a] = myFun(in)'| -> [{'in'}, {'a'}, @myFun]
+% * P |'[a] = myFun(in);'| -> [{'in'}, {'a'}, @myFun]
+% * P |'[a] = myFun(in1,in2)'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * P |'[a] = myFun(in1,in2);'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * P |'a = myFun'| -> [{}, {'a'}, @myFun]
+% * P |'a = myFun;'| -> [{}, {'a'}, @myFun]
+% * P |'a = myFun()'| -> [{}, {'a'}, @myFun]
+% * P |'a = myFun();'| -> [{}, {'a'}, @myFun]
+% * P |'a = myFun(in)'| -> [{'in'}, {'a'}, @myFun]
+% * P |'a = myFun(in);'| -> [{'in'}, {'a'}, @myFun]
+% * P |'a = myFun(in1, in2)'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * P |'a = myFun(in1, in2);'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * P |'[a,b] = myFun'| -> [{}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun;'| -> [{}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun()'| -> [{}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun();'| -> [{}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun(in)'| -> [{'in'}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun(in);'| -> [{'in'}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun(in1, in2)'| -> [{'in1', 'in2'}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun(in1, in2);'| -> [{'in1', 'in2'}, {'a', 'b'}, @myFun]
+%
+function [ins, outs, func] = parseFunction(call)
+    % Strip start, ending space:
+    call = strip(call);
+    % if end is ; get rid of it (doesn't actually affect anything, but why not)
+    call(call == ';') = '';
+    % For inputs, look for starting paren. If not found, no inputs
+    ins = regexp(call, '(?<=\()([^)]+)(?=\))', 'match');
+    if ~isempty(ins)
+        ins = ins{1};
+        ins = regexprep(ins, '\s+', '');
+        ins = strsplit(ins, ',');
+    end
+
+    % For outputs, look for an equal sign. No equal sign, no outputs
+    if ~contains(call, '=')
+        outs = {};
+    else
+        % if no bracket found, only one output. Grab accordingly
+        if ~contains(call, ']')
+            call(call == ' ') = '';
+            outs = regexp(call, '^[^\=]*', 'match');
+        else
+            % We have brackets; find in between and engage
+            outs = regexp(call, '(?<=\[)([^\]]+)(?=\])', 'match');
+            if ~isempty(outs)
+                outs = strip(outs{1});
+                % 'Replace all white space with commas'
+                outs = regexprep(outs, '\s+', ',');
+                outs = strsplit(outs, {','});
+            end
+        end
+    end
+
+    % For function name, strip everything before possible =, everything
+    % after possible (.
+    if contains(call, '=')
+        ind = strfind(call, '=');
+        call(1:ind) = '';
+    end
+    if contains(call, '(')
+        ind = strfind(call, '(');
+        call(ind:end) = '';
+    end
+    func = str2func(strip(call));        
+
+end
+
+function cleanup(runnable, isTimeout)
+    % check if runnable is TestCase or Feedback
+    fclose('all');
+    
+    if isa(runnable, 'Feedback')
+        if timeout.isTimeout
+            runnable.exception = MException('TIMEOUT');
+            return;
+        end
+    else
+        if timeout.isTimeout
+            e = MException('TIMEOUT');
+            throw(e);
+        end
+    end
+end
+
+
+function isRecurring = checkRecur(callInfo, main)
+    % Check if this function calls itself. If so, exit true.
+    % If not, check all functions it calls:
+    %   If the call is to a builtin, don't investigate
+    %   If the call is to something NOT builtin, investigate!
+
+    % First, check calls for itself.
+    mainCall = callInfo(strcmp({callInfo.name}, main));
+    if any(strcmp(mainCall.name, mainCall.calls.innerCalls.names))
+        % true. Exit
+        isRecurring = true;
+        return;
+    end
+
+    % look at all functions in callInfo that aren't us
+    calls = callInfo(~strcmp({callInfo.name}, main));
+    for i = 1:numel(calls)
+        if checkRecur(calls(i), calls(i).name)
+            isRecurring = true;
+            return;
+        end
+    end
+
+    % Iterate over external calls.
+    external = mainCall.calls.fcnCalls.names;
+    % check local directory for filenames. If not there, builtin!
+    possCalls = dir('**/*.m');
+    possCalls = cellfun(@(n)(n(1:(end-2))), {possCalls.name}, 'uni', false);
+    for i = 1:numel(external)
+        % if external isn't found anywhere in possCalls, don't engage
+        if any(strcmp(external{i}, possCalls))
+            extCallInfo = getcallinfo([external{i} '.m']);
+            if checkRecur(extCallInfo, external{i})
+                isRecurring = true;
+                return;
+            end
+        end
+    end
+
+    isRecurring = false;
+end
+##### SOURCE END #####
+--></body></html>

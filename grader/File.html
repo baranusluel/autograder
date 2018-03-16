@@ -1,0 +1,305 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>File: Represent a file</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-16"><meta name="DC.source" content="File.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>File: Represent a file</h1><!--introduction--><p>This class helps in storing and comparing files.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Fields</a></li><li><a href="#2">Methods</a></li><li><a href="#3">Remarks</a></li><li><a href="#4">equals: Determine file equality</a></li><li><a href="#5">Remarks</a></li><li><a href="#6">Exceptions</a></li><li><a href="#7">Unit Tests</a></li><li><a href="#9">Remarks</a></li><li><a href="#10">Exceptions</a></li><li><a href="#11">Unit Tests</a></li></ul></div><h2 id="1">Fields</h2><div><ul><li>name: The filename for the file, without extension</li></ul></div><div><ul><li>extension: The file extension</li></ul></div><div><ul><li>data: One of the following:</li></ul></div><pre class="codeinput"><span class="comment">%		- MxNx3 uint8 image</span>
+<span class="comment">%		- String array of lines (without newline characters)</span>
+<span class="comment">%		- Cell array for raw Excel output</span>
+<span class="comment">%</span>
+</pre><h2 id="2">Methods</h2><div><ul><li>equals</li></ul></div><div><ul><li>generateFeedback</li></ul></div><h2 id="3">Remarks</h2><p>The File class represents all files possibly generated by a student's (or solution's) code. A File Object can be created by the constructor, which receives a path to the file to create.</p><p><b>*Once the File object is created, the original file can safely be deleted from disk.</b>* The File class holds all the information needed to compare two files internally, so there is actually no link to the original file.</p><pre class="codeinput"><span class="keyword">classdef</span> File &lt; handle
+    <span class="keyword">properties</span> (Access = public)
+        name;
+        extension;
+		data;
+    <span class="keyword">end</span>
+    <span class="keyword">methods</span>
+        <span class="keyword">function</span> this = File(path)
+
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    <span class="keyword">methods</span> (Access = public)
+</pre><h2 id="4">equals: Determine file equality</h2><p>Checks if this file object is equal to another (containing same name,</p><pre class="codeinput">		<span class="comment">% extension, and data).</span>
+        <span class="comment">%</span>
+        <span class="comment">% [ISEQUAL, MSG] = equals(OTHER) checks whether THIS is equal to</span>
+		<span class="comment">% OTHER. If THIS and OTHER have the same name, extension, and data, ISEQUAL</span>
+		<span class="comment">% will be true. If the two file objects are not the same, ISEQUAL is false,</span>
+		<span class="comment">% and MSG contains the reason why the files aren't equal.</span>
+        <span class="comment">%</span>
+</pre><h2 id="5">Remarks</h2><p>Assuming the input file is indeed a File object, this method is guaranteed to never error.</p><h2 id="6">Exceptions</h2><p>An AUTOGRADER:FILE:EQUALS:NOFILE exception will be thrown if OTHER is not of type File, or no input is given.</p><pre class="codeinput">		<span class="comment">%</span>
+</pre><h2 id="7">Unit Tests</h2><pre>  Given that F is a valid File instance that is equal to THIS:</pre><pre class="codeinput">		<span class="comment">%    [ISEQUAL, MSG] = equals(F)</span>
+		<span class="comment">%</span>
+		<span class="comment">%	 ISEQUAL -&gt; true</span>
+		<span class="comment">%	 MSG -&gt; ''</span>
+        <span class="comment">%</span>
+        <span class="comment">%    If B is a valid File instance with one or more fields not equal</span>
+		<span class="comment">%    to the fields of THIS:</span>
+		<span class="comment">%	 [ISEQUAL, MSG] = equals(B)</span>
+		<span class="comment">%</span>
+		<span class="comment">%	 ISEQUAL -&gt; false</span>
+		<span class="comment">%	 MSG contains a message describing how B differs from THIS.</span>
+        <span class="comment">%</span>
+        <span class="comment">%    If C is an invalid File instance or not type File:</span>
+		<span class="comment">%	 [ISEQUAL, MSG] = equals(C)</span>
+		<span class="comment">%</span>
+		<span class="comment">%	 equals threw AUTOGRADER:FILE:EQUALS:NOFILE exception</span>
+		<span class="comment">%</span>
+		<span class="comment">% 	 [ISEQUAL, MSG] = equals()</span>
+		<span class="comment">%</span>
+		<span class="comment">%    equals threw AUTOGRADER:FILE:EQUALS:NOFILE exception</span>
+        <span class="comment">%</span>
+        <span class="comment">%</span>
+        <span class="keyword">function</span> [isEqual, message] = equals(this, other)
+
+        <span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="comment">		%% generateFeedback: Generate HTML feedback for students</span>
+        <span class="comment">%</span>
+        <span class="comment">% Create an HTML page for the student based on the solution File object.</span>
+        <span class="comment">%</span>
+        <span class="comment">% [HTML] = generateFeedback(SOLN) creates a feedback file containing</span>
+		<span class="comment">% information the equality of THIS and SOLN, where THIS and SOLN are both</span>
+		<span class="comment">% type File. If SOLN is a text file, HTML contains a visdiff() of the two</span>
+		<span class="comment">% files. If SOLN is an image, the Image Comparison Tool will be used. If</span>
+		<span class="comment">% SOLN is an Excel file, both files will be converted to tables and visdiff()</span>
+		<span class="comment">% will be used to compare.</span>
+        <span class="comment">%</span>
+</pre><h2 id="9">Remarks</h2><p>The HTML generated by this method is used within the Student class to generate the broader Student Feedback file.</p><h2 id="10">Exceptions</h2><p>An AUTOGRADER:FILE:EQUALS:NOFILE exception will be thrown if SOLN is not of type File.</p><p>An AUTOGRADER:FILE:EQUALS:INVALIDFILE exception will be thrown if no input is given.</p><pre class="codeinput">		<span class="comment">%</span>
+</pre><h2 id="11">Unit Tests</h2><pre>  Given that F is a valid File instance that is equal to THIS:</pre><pre class="codeinput">		<span class="comment">%    [OUT] = generateFeedback(THIS, F)</span>
+		<span class="comment">%</span>
+		<span class="comment">%	 OUT will contain HTML describing that THIS and F are equal files.</span>
+        <span class="comment">%</span>
+        <span class="comment">%    Given that B is a valid File instance that is not equal to THIS:</span>
+		<span class="comment">%	 [OUT] = generateFeedback(this, B)</span>
+		<span class="comment">%</span>
+		<span class="comment">%	 OUT will contain HTML describing that THIS and B are not the same.</span>
+		<span class="comment">%</span>
+        <span class="comment">%    If C is an invalid File instance:</span>
+		<span class="comment">%	 [HTML] = generateFeedback(THIS, C)</span>
+		<span class="comment">%</span>
+		<span class="comment">%	 equals threw AUTOGRADER:FILE:EQUALS:INVALIDFILE exception</span>
+		<span class="comment">%</span>
+        <span class="comment">%    If C does not contain a vaild File path:</span>
+		<span class="comment">%	 [HTML] = generateFeedback(THIS, C)</span>
+		<span class="comment">%</span>
+		<span class="comment">%	 equals threw AUTOGRADER:FILE:EQUALS:NOFILE exception</span>
+		<span class="comment">%	 [HTML] = generateFeedback()</span>
+        <span class="comment">%</span>
+        <span class="comment">%</span>
+        <span class="keyword">function</span> [html] = generateFeedback(this, other)
+
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% File: Represent a file
+%
+% This class helps in storing and comparing files.
+%
+%%% Fields
+%
+% * name: The filename for the file, without extension
+%
+% * extension: The file extension
+%
+% * data: One of the following:
+%		- MxNx3 uint8 image
+%		- String array of lines (without newline characters)
+%		- Cell array for raw Excel output
+% 
+%%% Methods
+%
+% * equals
+%
+% * generateFeedback
+%
+%%% Remarks
+%
+% The File class represents all files possibly generated by a student's 
+% (or solution's) code. A File Object can be created by the constructor, 
+% which receives a path to the file to create. 
+%
+% **Once the File object is created, the original file can safely be 
+% deleted from disk.** The File class holds all the information needed 
+% to compare two files internally, so there is actually no link to the 
+% original file.
+%
+classdef File < handle
+    properties (Access = public)
+        name;
+        extension;
+		data;
+    end
+    methods
+        function this = File(path)
+
+        end
+    end
+    methods (Access = public)
+        %% equals: Determine file equality
+        %
+        % Checks if this file object is equal to another (containing same name,
+		% extension, and data).
+        %
+        % [ISEQUAL, MSG] = equals(OTHER) checks whether THIS is equal to 
+		% OTHER. If THIS and OTHER have the same name, extension, and data, ISEQUAL
+		% will be true. If the two file objects are not the same, ISEQUAL is false,
+		% and MSG contains the reason why the files aren't equal.
+        %
+        %%% Remarks
+        %
+        % Assuming the input file is indeed a File object, this method is 
+        % guaranteed to never error. 
+        % 
+        %%% Exceptions
+        %
+        % An AUTOGRADER:FILE:EQUALS:NOFILE exception will be thrown if OTHER
+        % is not of type File, or no input is given.
+		%
+        %%% Unit Tests
+        %
+        %    Given that F is a valid File instance that is equal to THIS:
+		%    [ISEQUAL, MSG] = equals(F)
+		%
+		%	 ISEQUAL -> true
+		%	 MSG -> ''
+        %    
+        %    If B is a valid File instance with one or more fields not equal
+		%    to the fields of THIS:
+		%	 [ISEQUAL, MSG] = equals(B)
+		%
+		%	 ISEQUAL -> false
+		%	 MSG contains a message describing how B differs from THIS.
+        %
+        %    If C is an invalid File instance or not type File:
+		%	 [ISEQUAL, MSG] = equals(C)
+		%
+		%	 equals threw AUTOGRADER:FILE:EQUALS:NOFILE exception
+		%
+		% 	 [ISEQUAL, MSG] = equals()
+		%
+		%    equals threw AUTOGRADER:FILE:EQUALS:NOFILE exception
+        %
+        %    
+        function [isEqual, message] = equals(this, other)
+            
+        end
+		
+		%% generateFeedback: Generate HTML feedback for students
+        %
+        % Create an HTML page for the student based on the solution File object.
+        %
+        % [HTML] = generateFeedback(SOLN) creates a feedback file containing
+		% information the equality of THIS and SOLN, where THIS and SOLN are both
+		% type File. If SOLN is a text file, HTML contains a visdiff() of the two
+		% files. If SOLN is an image, the Image Comparison Tool will be used. If 
+		% SOLN is an Excel file, both files will be converted to tables and visdiff()
+		% will be used to compare.
+        %
+        %%% Remarks
+        %
+        % The HTML generated by this method is used within the Student class to 
+        % generate the broader Student Feedback file.
+        %
+        %%% Exceptions
+        %
+        % An AUTOGRADER:FILE:EQUALS:NOFILE exception will be thrown if SOLN
+        % is not of type File.
+        %
+        % An AUTOGRADER:FILE:EQUALS:INVALIDFILE exception will be thrown if no 
+        % input is given.
+		%
+        %%% Unit Tests
+        %
+        %    Given that F is a valid File instance that is equal to THIS:
+		%    [OUT] = generateFeedback(THIS, F)
+		%
+		%	 OUT will contain HTML describing that THIS and F are equal files.
+        %    
+        %    Given that B is a valid File instance that is not equal to THIS:
+		%	 [OUT] = generateFeedback(this, B)
+		%
+		%	 OUT will contain HTML describing that THIS and B are not the same.
+		%   
+        %    If C is an invalid File instance:
+		%	 [HTML] = generateFeedback(THIS, C)
+		%
+		%	 equals threw AUTOGRADER:FILE:EQUALS:INVALIDFILE exception
+		%
+        %    If C does not contain a vaild File path:
+		%	 [HTML] = generateFeedback(THIS, C)
+		%
+		%	 equals threw AUTOGRADER:FILE:EQUALS:NOFILE exception
+		%	 [HTML] = generateFeedback()
+        %
+        %    
+        function [html] = generateFeedback(this, other)
+            
+        end
+    end
+end
+##### SOURCE END #####
+--></body></html>

@@ -1,5 +1,0 @@
-Function Name: lint.m
-Inputs: NONE
-Outputs: NONE
-Specific Uses: NONE
-Description: lint uses MATLAB's built-in code checker to return possible problems. Anywhere there is an orange underline or red error in the autograder code files, lint will detail why this underlining occurred, where it occurred, and any details associated with it. It is a maintenance function.

@@ -1,0 +1,160 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>autograder2Canvas: Generate Canvas files from autograder</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-16"><meta name="DC.source" content="autograder2canvas.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>autograder2Canvas: Generate Canvas files from autograder</h1><!--introduction--><p>Create the gradebook csv file used by canvas to import grades.</p><p>autograder2Canvas(S, C, H) takes the graded Student Array in S and writes it to the CSV given by the path in C in the assignment name specified by H.</p><p>This function will take in a graded student array (S), the name of the gradebook from the canvas website (C), and the name of the homework that it is grading (H). H should be selected before the autograder runs and as such should always be valid.</p><p>This function will edit the gradebook such that it has the new scores from the student array.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>If autograder2canvas is given an ungraded student in an array, it will simply pass over the student and not put a grade in the gradebook.</p><h2 id="2">Exceptions</h2><p>AUTOGRADER:AUTOGRADER2CANVAS:MISSINGGRADEBOOK exception will be thrown if the function is run without a valid gradebook file name.</p><p>AUTOGRADER:AUTOGRADER2CANVAS:MISSINGSTUDENTS exception will be thrown if the function is run without a valid student array</p><p>AUTOGRADER:AUTOGRADER2CANVAS:INVALIDGRADEBOOK exception will be thrown if the function is run with an invalid gradebook file name.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">S = [<span class="keyword">...</span><span class="comment">]; % Assume valid graded Student Array</span>
+G = <span class="string">'C:\Users\...\grades.csv'</span>; <span class="comment">% Valid grades.csv</span>
+H = <span class="string">'Homework 1'</span>;
+autograder2canvas(S, G, H);
+</pre><pre class="language-matlab">CSV <span class="string">found</span> <span class="string">in</span> <span class="string">path</span> <span class="string">G</span> <span class="string">is</span> <span class="string">now</span> <span class="string">correctly</span> <span class="string">formatted</span> <span class="string">for</span> <span class="string">Canvas</span>
+</pre><pre class="language-matlab">S = [<span class="keyword">...</span><span class="comment">]; % Assume valid graded Student Array</span>
+G = <span class="string">'C:\Users\...\grades.csv'</span>; <span class="comment">% Valid path, but invalid format!</span>
+H = <span class="string">'Homework 1'</span>;
+autograder2canvas(S, G, H);
+</pre><pre class="language-matlab">Threw <span class="string">INVALIDGRADEBOOK</span> <span class="string">exception</span>
+</pre><pre class="language-matlab">S = [<span class="keyword">...</span><span class="comment">]; % Assume valid UNGRADED Student Array</span>
+G = <span class="string">'C:\Users\...\grades.csv'</span>; <span class="comment">% Valid grades.csv</span>
+H = <span class="string">'Homework 1'</span>;
+autograder2canvas(S, G, H);
+</pre><pre class="language-matlab">No <span class="string">changes</span> <span class="string">were</span> <span class="string">made</span>, since <span class="string">Student</span> <span class="string">is</span> <span class="string">not</span> <span class="string">graded</span>
+</pre><pre class="language-matlab">S = [<span class="keyword">...</span><span class="comment">]; % Graded Student array</span>
+G = <span class="string">''</span>; <span class="comment">% Invalid path</span>
+H = <span class="string">'Homework 1'</span>;
+autograder2canvas(S, G, H);
+</pre><pre class="language-matlab">Threw <span class="string">INVALIDGRADEBOOK</span> <span class="string">exception</span>
+</pre><pre class="codeinput"><span class="keyword">function</span> autograder2canvas(students, gradebook, homework)
+
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% autograder2Canvas: Generate Canvas files from autograder
+% 
+% Create the gradebook csv file used by canvas to import grades.
+%
+% autograder2Canvas(S, C, H) takes the graded Student Array in S and writes
+% it to the CSV given by the path in C in the assignment name specified by
+% H.
+%
+% This function will take in a graded student array (S), the name of the
+% gradebook from the canvas website (C), and the name of the homework that 
+% it is grading (H). H should be selected before the autograder runs and as
+% such should always be valid.
+%
+% This function will edit the gradebook such that it has the new scores
+% from the student array.
+%
+%%% Remarks
+%
+% If autograder2canvas is given an ungraded student in an array, it will
+% simply pass over the student and not put a grade in the gradebook.
+%
+%%% Exceptions
+%
+% AUTOGRADER:AUTOGRADER2CANVAS:MISSINGGRADEBOOK exception will be thrown if
+% the function is run without a valid gradebook file name.
+%
+% AUTOGRADER:AUTOGRADER2CANVAS:MISSINGSTUDENTS exception will be thrown if
+% the function is run without a valid student array
+% 
+% AUTOGRADER:AUTOGRADER2CANVAS:INVALIDGRADEBOOK exception will be thrown if
+% the function is run with an invalid gradebook file name.
+%
+%%% Unit Tests
+%
+%   S = [...]; % Assume valid graded Student Array
+%   G = 'C:\Users\...\grades.csv'; % Valid grades.csv
+%   H = 'Homework 1';
+%   autograder2canvas(S, G, H);
+%
+%   CSV found in path G is now correctly formatted for Canvas
+%
+%   S = [...]; % Assume valid graded Student Array
+%   G = 'C:\Users\...\grades.csv'; % Valid path, but invalid format!
+%   H = 'Homework 1';
+%   autograder2canvas(S, G, H);
+%
+%   Threw INVALIDGRADEBOOK exception
+%
+%   S = [...]; % Assume valid UNGRADED Student Array
+%   G = 'C:\Users\...\grades.csv'; % Valid grades.csv
+%   H = 'Homework 1';
+%   autograder2canvas(S, G, H);
+%
+%   No changes were made, since Student is not graded
+% 
+%   S = [...]; % Graded Student array
+%   G = ''; % Invalid path
+%   H = 'Homework 1';
+%   autograder2canvas(S, G, H);
+%
+%   Threw INVALIDGRADEBOOK exception
+%
+function autograder2canvas(students, gradebook, homework)
+
+end
+##### SOURCE END #####
+--></body></html>

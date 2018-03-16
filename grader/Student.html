@@ -1,0 +1,347 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Student: Class Representing a Student</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-16"><meta name="DC.source" content="Student.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Student: Class Representing a Student</h1><!--introduction--><p>Represents a single student in the grader.</p><p>Holds student's relevant information (identification, submissions, feedback, etc.) as fields.</p><p>Has methods to grade student's submissions and generate Feedback.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Fields</a></li><li><a href="#2">Methods</a></li><li><a href="#3">Remarks</a></li><li><a href="#4">Constructor</a></li><li><a href="#5">Remarks</a></li><li><a href="#6">Exceptions</a></li><li><a href="#7">Unit Tests</a></li><li><a href="#9">gradeProblem: Grades the given problem and records the results</a></li><li><a href="#10">Remarks</a></li><li><a href="#11">Exceptions</a></li><li><a href="#12">Unit Tests</a></li><li><a href="#13">generateFeedback: Generate HTML feedback for student</a></li><li><a href="#14">Remarks</a></li><li><a href="#15">Exceptions</a></li><li><a href="#16">Unit Tests</a></li></ul></div><h2 id="1">Fields</h2><div><ul><li>name: Full name of the student</li></ul></div><div><ul><li>id: The ID (GT username) of the student (e.g. busluel3)</li></ul></div><div><ul><li>path: The fully qualified path for this student's directory</li></ul></div><div><ul><li>submissions: A string array of file names that represent all names of submitted files.</li></ul></div><div><ul><li>feedbacks: A cell array of Feedback arrays. Each cell is a Feedback array representing all test cases for a specific problem.</li></ul></div><div><ul><li>isGraded: A logical that indicates whether a student has been graded</li></ul></div><h2 id="2">Methods</h2><div><ul><li>Student</li></ul></div><div><ul><li>gradeProblem</li></ul></div><div><ul><li>generateFeedback</li></ul></div><h2 id="3">Remarks</h2><p>The Student class represents a single student in the eyes of the autograder. Each student maps to one (and only one) folder in the submission archive.</p><p>The student is considered the center of data transfer within the autograder. Each Student is given a problem to grade at runtime, and students are finished one at a time - in other words, the first student is graded, then the second, and so on.</p><p>Grading is done via the parallel pool and parfeval.</p><pre class="codeinput"><span class="keyword">classdef</span> Student &lt; handle
+    <span class="keyword">properties</span> (Constant)
+        TIMEOUT = 30;
+    <span class="keyword">end</span>
+    <span class="keyword">properties</span> (Access = public)
+        name;
+        id;
+        path;
+        submissions;
+        feedbacks;
+        isGraded;
+    <span class="keyword">end</span>
+    <span class="keyword">methods</span>
+</pre><h2 id="4">Constructor</h2><p>Creates an instance of the Student class from the student's submission path.</p><p>this = Student(PATH, NAME) returns an instance of Student. PATH should be a character vector representing the fully qualified (absolute) path to the student's folder. NAME is a character vector or string of the full name of the student.</p><h2 id="5">Remarks</h2><p>The Student Constructor is the primary means of creating a <tt>Student</tt>. It takes in a single name and path, and creates a single <tt>Student</tt>. This constructor may implicitly call <tt>unpackStudentSubmissions</tt> when running - this is so after a <tt>Student</tt> is constructed, their directory is completely compliant with what the autograder will expect.</p><h2 id="6">Exceptions</h2><p>An AUTOGRADER:STUDENT:DIRECTORYNOTFOUND exception will be thrown if the PATH input is missing, invalid (e.g. empty or incorrect class) or the directory does not exist.</p><p>An AUTOGRADER:STUDENT:ARGUMENTEXCEPTION exception will be thrown if NAME is empty or only white space.</p><h2 id="7">Unit Tests</h2><p>Given a valid PATH to a student folder containing submissions (with filenames FILE1, FILE2, ...):</p><pre class="language-matlab">NAME = <span class="string">'Hello'</span>;
+this = Student(PATH, NAME);
+</pre><pre class="language-matlab">this.name -&gt; <span class="string">"Hello"</span>
+this.id -&gt; Student's GT <span class="string">username</span> <span class="string">(from name of folder)</span>
+this.path -&gt; PATH;
+this.submissions -&gt; [<span class="string">"FILE1"</span>, <span class="string">"FILE2"</span>, <span class="keyword">...</span><span class="comment">];</span>
+this.feedbacks -&gt; Feedback[];
+this.isGraded -&gt; false;
+</pre><p>Given a valid PATH to a student folder containing no submissions:   NAME = 'Hi';   this = Student(PATH, NAME);</p><pre class="language-matlab">this.name -&gt; <span class="string">"Hi"</span>;
+this.id -&gt; Student's GT <span class="string">username</span> <span class="string">(from name of folder)</span>;
+this.path -&gt; PATH;
+this.submissions -&gt; [<span class="string">"FILE1"</span>, <span class="string">"FILE2"</span>, <span class="keyword">...</span><span class="comment">]</span>
+this.feedbacks -&gt; Feeback[];
+this.isGraded -&gt; false;
+</pre><p>Given an invalid PATH (e.g. folder does not exist):   NAME = 'Hi';   this = Student(PATH, NAME);</p><pre class="language-matlab">Constructor <span class="string">threw</span> <span class="string">exception</span>
+AUTOGRADER:STUDENT:DIRECTORYNOTFOUND
+</pre><p>Given a valid PATH:   NAME = '';   this = Student(PATH, NAME);</p><pre class="language-matlab">Constructor <span class="string">threw</span> <span class="string">exception</span>
+AUTOGRADER:STUDENT:ARGUMENTEXCEPTION
+</pre><p>Given a valid PATH:   NAME = '    ';   this = Student(PATH, NAME);</p><pre class="language-matlab">Constructor <span class="string">threw</span> <span class="string">exception</span>
+AUTOGRADER:STUDENT:ARGUMENTEXCEPTION
+</pre><pre class="codeinput">        <span class="keyword">function</span> this = Student(path, name)
+
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+    methods (Access=public)
+</pre><h2 id="9">gradeProblem: Grades the given problem and records the results</h2><p>gradeProblem is used to evaluate the student code for a given problem and record the results in the feedbacks field.</p><p>gradeProblem(PROBLEM) takes in a valid PROBLEM class, evaluates the student code, creates a Feedback instance for each TestCase, which it adds to the feedbacks field. It finally sets the isGraded field to true.</p><h2 id="10">Remarks</h2><p>The function will return without making any changes to the class if the isGraded field is already true.</p><p>The feedback field should always be populated, even if the submissions field is empty.</p><p>If MATLAB throws an exception, this function will catch the exception and output it to the reason field in Feedback. If the reason field already has content in it, the exception ID will be concatenated to the data already found in reason.</p><p>If the student code contains an infinite loop, gradeProblem will detect it and add a statement to the reason field of Feedback.</p><h2 id="11">Exceptions</h2><p>An AUTOGRADER:STUDENT:GRADEPROBLEM:INVALIDPROBLEM exception will be thrown if PROBLEM is invalid (i.e. if it is empty or if name or testcases fields of PROBLEM are empty).</p><h2 id="12">Unit Tests</h2><p>Given a student who had submitted all files: The student code is evaluated and a Feedback instance is created. The Feedback class will then be added to the feedbacks field.</p><p>Given a student who had only partially submitted files: The student code is evaluated normally for non-empty submissions and Feedback instances are created. Empty submissions will give appropritate score and reason values in the Feedback class. The Feedback classes will then be added to the feedbacks field.</p><p>Given a student who had no submitted files: Empty submissions will give appropritate score and reason values in the Feedback class. The Feedback classes will then be added to the feedbacks field.</p><pre class="codeinput">        <span class="keyword">function</span> gradeProblem(this, problem)
+
+        <span class="keyword">end</span>
+</pre><h2 id="13">generateFeedback: Generate HTML feedback for student</h2><p>generateFeedback is used to create an HTML file containing the homework feedback for a student.</p><p>HTML = generateFeedback() will return a char vector HTML containing the markup representing the student's feedback.</p><h2 id="14">Remarks</h2><p>Calls the generateFeedback method of the Feedback class, for each Feedback in Student's feedbacks cell array, to get the HTML feedback for individual TestCase's. Puts together a complete, personalized HTML webpage for the student using this data and the name and id fields.</p><h2 id="15">Exceptions</h2><p>An AUTOGRADER:STUDENT:GENERATEFEEDBACK:MISSINGFEEDBACK exception will be thrown if the feedbacks field of the Student is empty (i.e. if gradeProblem wasn't invoked first).</p><h2 id="16">Unit Tests</h2><p>When invoked in a Student class containing a valid (non-empty) feedbacks field, generateFeedback will generate an HTML page with: * A header, containing the name of the homework as the title, and the student's name and ID. * A table with the student's points on each problem and total score. * A section for each individual problem, where every test case and the result (including points received, reason for losing points, visual comparison of file outputs) is listed.</p><pre class="codeinput">        <span class="keyword">function</span> html = generateFeedback(this)
+
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Student: Class Representing a Student
+%
+% Represents a single student in the grader.
+% 
+% Holds student's relevant information (identification, submissions,
+% feedback, etc.) as fields.
+%
+% Has methods to grade student's submissions and generate Feedback.
+%
+%%% Fields
+%
+% * name: Full name of the student
+%
+% * id: The ID (GT username) of the student (e.g. busluel3)
+%
+% * path: The fully qualified path for this student's directory
+%
+% * submissions: A string array of file names that represent all names
+% of submitted files.
+%
+% * feedbacks: A cell array of Feedback arrays. Each cell is a Feedback
+% array representing all test cases for a specific problem.
+%
+% * isGraded: A logical that indicates whether a student has been graded
+%
+%%% Methods
+%
+% * Student
+% 
+% * gradeProblem
+%
+% * generateFeedback
+%
+%%% Remarks
+%
+% The Student class represents a single student in the eyes of the
+% autograder. Each student maps to one (and only one) folder in the
+% submission archive.
+%
+% The student is considered the center of data transfer within the 
+% autograder. Each Student is given a problem to grade at runtime, and
+% students are finished one at a time - in other words, the first student
+% is graded, then the second, and so on.
+%
+% Grading is done via the parallel pool and parfeval.
+classdef Student < handle
+    properties (Constant)
+        TIMEOUT = 30;
+    end
+    properties (Access = public)
+        name;
+        id;
+        path;
+        submissions;
+        feedbacks;
+        isGraded;
+    end
+    methods
+        %% Constructor
+        %
+        % Creates an instance of the Student class from the student's
+        % submission path.
+        %
+        % this = Student(PATH, NAME) returns an instance of Student.
+        % PATH should be a character vector representing the fully
+        % qualified (absolute) path to the student's folder. NAME is a 
+        % character vector or string of the full name of the student.
+        %
+        %%% Remarks
+        %
+        % The Student Constructor is the primary means of creating a
+        % |Student|. It takes in a single name and path, and creates a
+        % single |Student|. This constructor may implicitly call
+        % |unpackStudentSubmissions| when running - this is so after a
+        % |Student| is constructed, their directory is completely compliant
+        % with what the autograder will expect.
+        % 
+        %%% Exceptions
+        %
+        % An AUTOGRADER:STUDENT:DIRECTORYNOTFOUND exception will be thrown
+        % if the PATH input is missing, invalid (e.g. empty or
+        % incorrect class) or the directory does not exist.
+        %
+        % An AUTOGRADER:STUDENT:ARGUMENTEXCEPTION exception will be thrown
+        % if NAME is empty or only white space.
+        %
+        %%% Unit Tests
+        %
+        % Given a valid PATH to a student folder containing submissions
+        % (with filenames FILE1, FILE2, ...):
+        %
+        %   NAME = 'Hello';
+        %   this = Student(PATH, NAME);
+        % 
+        %   this.name -> "Hello"
+        %   this.id -> Student's GT username (from name of folder)
+        %   this.path -> PATH;
+        %   this.submissions -> ["FILE1", "FILE2", ...];
+        %   this.feedbacks -> Feedback[];
+        %   this.isGraded -> false;
+        %
+        % Given a valid PATH to a student folder containing no submissions:
+        %   NAME = 'Hi';
+        %   this = Student(PATH, NAME);
+        %
+        %   this.name -> "Hi";
+        %   this.id -> Student's GT username (from name of folder);
+        %   this.path -> PATH;
+        %   this.submissions -> ["FILE1", "FILE2", ...]
+        %   this.feedbacks -> Feeback[];
+        %   this.isGraded -> false;
+        %
+        % Given an invalid PATH (e.g. folder does not exist):
+        %   NAME = 'Hi';
+        %   this = Student(PATH, NAME);
+        %
+        %   Constructor threw exception 
+        %   AUTOGRADER:STUDENT:DIRECTORYNOTFOUND
+        %
+        % Given a valid PATH:
+        %   NAME = '';
+        %   this = Student(PATH, NAME);
+        %
+        %   Constructor threw exception
+        %   AUTOGRADER:STUDENT:ARGUMENTEXCEPTION
+        %
+        % Given a valid PATH:
+        %   NAME = '    ';
+        %   this = Student(PATH, NAME);
+        %
+        %   Constructor threw exception
+        %   AUTOGRADER:STUDENT:ARGUMENTEXCEPTION
+        %
+        function this = Student(path, name)
+            
+        end
+    end
+    methods (Access=public)
+        %% gradeProblem: Grades the given problem and records the results
+        %   
+        % gradeProblem is used to evaluate the student code for a given
+        % problem and record the results in the feedbacks field.
+        %
+        % gradeProblem(PROBLEM) takes in a valid PROBLEM class,
+        % evaluates the student code, creates a Feedback instance for each
+        % TestCase, which it adds to the feedbacks field. It finally
+        % sets the isGraded field to true.
+        %
+        %%% Remarks
+        %
+        % The function will return without making any changes to the class
+        % if the isGraded field is already true.
+        % 
+        % The feedback field should always be populated, even if
+        % the submissions field is empty.
+        %
+        % If MATLAB throws an exception, this function will catch the
+        % exception and output it to the reason field in Feedback. If the
+        % reason field already has content in it, the exception ID will be
+        % concatenated to the data already found in reason.
+        %
+        % If the student code contains an infinite loop, gradeProblem will
+        % detect it and add a statement to the reason field of Feedback.
+        %
+        %%% Exceptions
+        %
+        % An AUTOGRADER:STUDENT:GRADEPROBLEM:INVALIDPROBLEM exception will
+        % be thrown if PROBLEM is invalid (i.e. if it is empty or
+        % if name or testcases fields of PROBLEM are empty).
+        %
+        %%% Unit Tests
+        %
+        % Given a student who had submitted all files:
+        % The student code is evaluated and a Feedback instance is created.
+        % The Feedback class will then be added to the feedbacks field.
+        %
+        % Given a student who had only partially submitted files:
+        % The student code is evaluated normally for non-empty submissions
+        % and Feedback instances are created. Empty submissions will
+        % give appropritate score and reason values in the Feedback class. 
+        % The Feedback classes will then be added to the feedbacks field.
+        %
+        % Given a student who had no submitted files:
+        % Empty submissions will give appropritate score and reason values
+        % in the Feedback class.
+        % The Feedback classes will then be added to the feedbacks field.
+        function gradeProblem(this, problem)
+            
+        end
+        
+        %% generateFeedback: Generate HTML feedback for student
+        %
+        % generateFeedback is used to create an HTML file containing the
+        % homework feedback for a student.
+        %
+        % HTML = generateFeedback() will return a char vector HTML
+        % containing the markup representing the student's feedback.
+        %
+        %%% Remarks
+        %
+        % Calls the generateFeedback method of the Feedback class, for each
+        % Feedback in Student's feedbacks cell array, to get the HTML
+        % feedback for individual TestCase's. Puts together a complete,
+        % personalized HTML webpage for the student using this data and the
+        % name and id fields.
+        %
+        %%% Exceptions
+        %
+        % An AUTOGRADER:STUDENT:GENERATEFEEDBACK:MISSINGFEEDBACK exception
+        % will be thrown if the feedbacks field of the Student is empty
+        % (i.e. if gradeProblem wasn't invoked first).
+        %
+        %%% Unit Tests
+        %
+        % When invoked in a Student class containing a valid (non-empty)
+        % feedbacks field, generateFeedback will generate an HTML page
+        % with:
+        % * A header, containing the name of the homework as the title, and
+        % the student's name and ID.
+        % * A table with the student's points on each problem and total
+        % score.
+        % * A section for each individual problem, where every test case
+        % and the result (including points received, reason for losing
+        % points, visual comparison of file outputs) is listed.
+        function html = generateFeedback(this)
+            
+        end
+    end
+end
+##### SOURCE END #####
+--></body></html>

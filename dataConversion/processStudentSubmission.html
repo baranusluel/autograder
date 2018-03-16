@@ -1,0 +1,221 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>processStuentSubmission: Processes a student's sumissions</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-16"><meta name="DC.source" content="processStudentSubmission.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>processStuentSubmission: Processes a student's sumissions</h1><!--introduction--><p>processStudentSubmission will unpack a student's submissions into their same folder.</p><p>processStudentSubmission(P) will unpack any ZIP files, and generally prepare the student folder for the autograder.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>If the student submitted each file separately, this function will not change the folder at all.</p><p>processStudentSubmission won't recursively unzip archives. In other words, suppose the student submits a ZIP archive that has, inside of it, another ZIP archive. That second archive will not be unzipped!</p><p>Additionally, folder structure within the ZIP archive will remain intact, with the exception of the case where inside the ZIP archive is a single folder. In that case, the contents of that single folder will be considered to be the contents of the ZIP archive.</p><p>In the event of a name collision (i.e., suppose the ZIP archive has a file with the same name as an existing file), the existing file will always win. Note that in the case of having multiple archives present, there is no guarantee as to which file will survive if both archives have the same file.</p><h2 id="2">Exceptions</h2><p>An AUTOGRADER:PROCESSSTUDENTSUBMISSION:INVALIDPATH exception will be thrown if the given path is not a valid folder.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab"><span class="comment">% Assume P points to a student folder, and the student folder</span>
+<span class="comment">% contains several files.</span>
+P = <span class="string">'C:\Users\...\'</span>;
+processStudentSubmission(P);
+</pre><pre class="language-matlab">The <span class="string">folder</span> <span class="string">referenced</span> <span class="string">in</span> <span class="string">P</span> <span class="string">is</span> <span class="string">unchanged</span>
+</pre><pre class="language-matlab"><span class="comment">% Assume P points to student folder, and the student folder</span>
+<span class="comment">% contains only a ZIP archive. This ZIP archive contains only</span>
+<span class="comment">% files</span>
+P = <span class="string">'C:\Users\...\'</span>;
+processStudentSubmission(P);
+</pre><pre class="language-matlab"><span class="comment">% Whereas before, the student folder only had a ZIP archive, it now</span>
+<span class="comment">% only has the files contained within that ZIP archive.</span>
+</pre><pre class="language-matlab"><span class="comment">% Assume P points to a student folder, and the student folder</span>
+<span class="comment">% contains a single ZIP archive. However, this ZIP archive itself</span>
+<span class="comment">% contains a single folder, which then just has files.</span>
+P = <span class="string">'C:\Users\...\'</span>;
+processStudentSubmission(P);
+</pre><pre class="language-matlab"><span class="comment">% The student folder now has all the files contained within the single</span>
+<span class="comment">% folder of the ZIP archive.</span>
+</pre><pre class="language-matlab"><span class="comment">% Assume P points to a student folder, and the student folder</span>
+<span class="comment">% contains multiple files, including a ZIP archive.</span>
+P = <span class="string">'C:\Users\...\'</span>;
+processStudentSubmission(P);
+</pre><pre class="language-matlab"><span class="comment">% Now the student's folder only contains files; the ZIP archive has been</span>
+<span class="comment">% removed. Furthermore, the structure within the ZIP archive has been</span>
+<span class="comment">% preserved.</span>
+</pre><pre class="language-matlab"><span class="comment">% Assume P points to a student folder, and the student folder</span>
+<span class="comment">% contains multiple files, including a ZIP archive. Furthermore,</span>
+<span class="comment">% assume a single file in the submission is called 'myFun.m',</span>
+<span class="comment">% and that a file named 'myFun.m' exists in the ZIP archive.</span>
+P = <span class="string">'C:\Users\...\'</span>;
+processStudentSubmission(P);
+</pre><pre class="language-matlab"><span class="comment">% Now the folder contains only files. Note that 'myFun.m' is</span>
+<span class="comment">% the one from the original submission; NOT the one inside the</span>
+<span class="comment">% ZIP archive!</span>
+</pre><pre class="language-matlab"><span class="comment">% Assume P points to a student folder, which contains multiple ZIPs.</span>
+P = <span class="string">'C:\Users\...\'</span>;
+processStudentSubmission(P);
+</pre><pre class="language-matlab"><span class="comment">% Now there are only the files and folders that were inside the ZIP archive(s).</span>
+<span class="comment">% Note that, if two of them had a file or folder with the same name, then</span>
+<span class="comment">% which one "survives" is indeterminant.</span>
+</pre><pre class="language-matlab"><span class="comment">% Assume P points to a student folder, which contains one ZIP archive. This</span>
+<span class="comment">% ZIP archive contains another ZIP archive!</span>
+P = <span class="string">'C:\Users\...\'</span>;
+processStudentSubmission(P);
+</pre><pre class="language-matlab"><span class="comment">% The folder now contains the archive that was inside the original submssion's</span>
+<span class="comment">% archive. It does NOT recursively unzip!</span>
+</pre><pre class="language-matlab">P = <span class="string">''</span>; <span class="comment">% Invalid Path</span>
+processStudentSubmission(P);
+</pre><pre class="language-matlab">Threw <span class="string">INVALIDPATH</span> <span class="string">exception</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% processStuentSubmission: Processes a student's sumissions
+%   
+% processStudentSubmission will unpack a student's submissions into their same 
+% folder.
+%
+% processStudentSubmission(P) will unpack any ZIP files, and generally prepare
+% the student folder for the autograder.
+%
+%%% Remarks
+%
+% If the student submitted each file separately, this function will not
+% change the folder at all.
+%
+% processStudentSubmission won't recursively unzip archives. In other words,
+% suppose the student submits a ZIP archive that has, inside of it, another 
+% ZIP archive. That second archive will not be unzipped!
+%
+% Additionally, folder structure within the ZIP archive will remain intact, 
+% with the exception of the case where inside the ZIP archive is a single folder. 
+% In that case, the contents of that single folder will be considered to be the 
+% contents of the ZIP archive.
+%
+% In the event of a name collision (i.e., suppose the ZIP archive has a file
+% with the same name as an existing file), the existing file will always win.
+% Note that in the case of having multiple archives present, there is no 
+% guarantee as to which file will survive if both archives have the same file.
+%
+%%% Exceptions
+%
+% An AUTOGRADER:PROCESSSTUDENTSUBMISSION:INVALIDPATH exception will be 
+% thrown if the given path is not a valid folder.
+%
+%%% Unit Tests
+%
+%   % Assume P points to a student folder, and the student folder 
+%   % contains several files.
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
+%
+%   The folder referenced in P is unchanged
+%
+%   % Assume P points to student folder, and the student folder
+%   % contains only a ZIP archive. This ZIP archive contains only 
+%   % files
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
+%
+%   % Whereas before, the student folder only had a ZIP archive, it now 
+%   % only has the files contained within that ZIP archive.
+%
+%   % Assume P points to a student folder, and the student folder
+%   % contains a single ZIP archive. However, this ZIP archive itself 
+%   % contains a single folder, which then just has files.
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
+%
+%   % The student folder now has all the files contained within the single
+%   % folder of the ZIP archive.
+%
+%   % Assume P points to a student folder, and the student folder
+%   % contains multiple files, including a ZIP archive.
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
+%
+%   % Now the student's folder only contains files; the ZIP archive has been 
+%   % removed. Furthermore, the structure within the ZIP archive has been 
+%   % preserved.
+%
+%   % Assume P points to a student folder, and the student folder
+%   % contains multiple files, including a ZIP archive. Furthermore,
+%   % assume a single file in the submission is called 'myFun.m', 
+%   % and that a file named 'myFun.m' exists in the ZIP archive.
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
+%
+%   % Now the folder contains only files. Note that 'myFun.m' is 
+%   % the one from the original submission; NOT the one inside the 
+%   % ZIP archive!
+%
+%   % Assume P points to a student folder, which contains multiple ZIPs.
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
+%
+%   % Now there are only the files and folders that were inside the ZIP archive(s).
+%   % Note that, if two of them had a file or folder with the same name, then 
+%   % which one "survives" is indeterminant.
+%
+%   % Assume P points to a student folder, which contains one ZIP archive. This 
+%   % ZIP archive contains another ZIP archive!
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
+%
+%   % The folder now contains the archive that was inside the original submssion's 
+%   % archive. It does NOT recursively unzip!
+%
+%   P = ''; % Invalid Path
+%   processStudentSubmission(P);
+%
+%   Threw INVALIDPATH exception
+##### SOURCE END #####
+--></body></html>
