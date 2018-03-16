@@ -147,16 +147,8 @@ function engine(runnable)
     calls = [calls.names];
 
     % Test for recursion. If any function calls itself, good to go.
-    isRecur = false;
-    for i = 1:numel(allCalls)
-        call = allCalls(i);
-        % Don't check builtin functions!
-        if ~exist(call.name, 'builtin') && any(strcmp(call.name, call.calls.innerCalls.names))
-            isRecur = true;
-            break;
-        end
-    end
     if isa(runnable, 'Feedback')
+        isRecur = checkRecur(allCalls, func2str(func));
         runnable.isRecursive = isRecur;
     end
 
@@ -324,17 +316,75 @@ function varargout = runner(func____, init____, ins, loads____)
     [varargout{:}] = func____(ins____{:});
 end
 
-function defs = buildVariableDefs(tCase)
-    % Run any initializers
-
-end
-
+%% parseFunction: Parse function call
+%
+% Parses the function call for inputs, outputs, and the function handle.
+%
+% [I, O, F] = parseFunction(C) will parse the function call C and
+% return the input names in I, the output names in O, and the function 
+% handle in F.
+%
+%%% Remarks
+%
+% This function is unaffected by any type of white space.
+%
+% This function is case sensitive
+%
+%%% Unit Tests
+% Unlike ordinary Unit Tests, this is a list of tests. P means passing, U 
+% means unknown.
+% 
+% * U |'myFun'| -> [{}, {}, @myFun]
+% * U |'myFun;'| -> [{}, {}, @myFun]
+% * U |'myFun()'| -> [{}, {}, @myFun]
+% * U |'myFun();'| -> [{}, {}, @myFun]
+% * U |'myFun(in)'| -> [{'in'}, {}, @myFun]
+% * U |'myFun(in);'| -> [{'in'}, {}, @myFun]
+% * U |'myFun(in,in2)'| -> [{'in', 'in2'}, {}, @myFun]
+% * U |'myFun(in,In2);'| -> [{'in', 'In2'}, {}, @myFun]
+% * U |'[] = myFun'| -> [{}, {}, @myFun]
+% * U |'[] = myFun;'| -> [{}, {}, @myFun]
+% * U |'[] = myFun()'| -> [{}, {}, @myFun]
+% * U |'[] = myFun();'| -> [{}, {}, @myFun]
+% * U |'[] = myFun(in)'| -> [{'in'}, {}, @myFun]
+% * U |'[] = myFun(in);'| -> [{'in'}, {}, @myFun]
+% * U |'[] = myFun(in1,in2)'| -> [{'in', 'in2'}, {}, @myFun]
+% * U |'[] = myFun(in1,in2);'| -> [{'in', 'in2'}, {}, @myFun]
+% * U |'[a] = myFun'| -> [{}, {'a'}, @myFun]
+% * U |'[a] = myFun;'| -> [{}, {'a'}, @myFun]
+% * U |'[a] = myFun()'| -> [{}, {'a'}, @myFun]
+% * U |'[a] = myFun();'| -> [{}, {'a'}, @myFun]
+% * U |'[a] = myFun(in)'| -> [{'in'}, {'a'}, @myFun]
+% * U |'[a] = myFun(in);'| -> [{'in'}, {'a'}, @myFun]
+% * U |'[a] = myFun(in1,in2)'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * U |'[a] = myFun(in1,in2);'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * U |'a = myFun'| -> [{}, {'a'}, @myFun]
+% * U |'a = myFun;'| -> [{}, {'a'}, @myFun]
+% * U |'a = myFun()'| -> [{}, {'a'}, @myFun]
+% * U |'a = myFun();'| -> [{}, {'a'}, @myFun]
+% * U |'a = myFun(in)'| -> [{'in'}, {'a'}, @myFun]
+% * U |'a = myFun(in);'| -> [{'in'}, {'a'}, @myFun]
+% * U |'a = myFun(in1, in2)'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * U |'a = myFun(in1, in2);'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * U |'[a,b] = myFun'| -> [{}, {'a', 'b'}, @myFun]
+% * U |'[a,b] = myFun;'| -> [{}, {'a', 'b'}, @myFun]
+% * U |'[a,b] = myFun()'| -> [{}, {'a', 'b'}, @myFun]
+% * U |'[a,b] = myFun();'| -> [{}, {'a', 'b'}, @myFun]
+% * U |'[a,b] = myFun(in)'| -> [{'in'}, {'a', 'b'}, @myFun]
+% * U |'[a,b] = myFun(in);'| -> [{'in'}, {'a', 'b'}, @myFun]
+% * U |'[a,b] = myFun(in1, in2)'| -> [{'in1', 'in2'}, {'a', 'b'}, @myFun]
+% * U |'[a,b] = myFun(in1, in2);'| -> [{'in1', 'in2'}, {'a', 'b'}, @myFun]
+%
 function [ins, outs, func] = parseFunction(call)
-
+    % Strip start, ending space:
+    call = strip(call);
+    % if end is ; get rid of it (doesn't actually affect anything, but why not)
+    call(call == ';') = '';
     % For inputs, look for starting paren. If not found, no inputs
     ins = regexp(call, '(?<=\()([^)]+)(?=\))', 'match');
     if ~isempty(ins)
         ins = ins{1};
+        ins = regexprep(ins, '\s+', '');
         ins = strsplit(ins, ',');
     end
 
@@ -344,13 +394,15 @@ function [ins, outs, func] = parseFunction(call)
     else
         % if no bracket found, only one output. Grab accordingly
         if ~contains(call, ']')
-            outs = regexp(call, '[^\=]*')
+            outs = regexp(call, '[^\=]*');
         else
             % We have brackets; find in between and engage
             outs = regexp(call, '(?<=\[)([^\]]+)(?=\])', 'match');
             if ~isempty(outs)
-                outs = outs{1};
-                outs = strsplit(outs, {', ', ',', ' '});
+                outs = strip(outs{1});
+                % Replace all white space with commas
+                outs = regexprep(outs, '\s+', ',');
+                outs = strsplit(outs, {','});
             end
         end
     end
@@ -384,4 +436,47 @@ function cleanup(runnable, isTimeout)
             throw(e);
         end
     end
+end
+
+
+function isRecurring = checkRecur(callInfo, main)
+    % Check if this function calls itself. If so, exit true.
+    % If not, check all functions it calls:
+    %   If the call is to a builtin, don't investigate
+    %   If the call is to something NOT builtin, investigate!
+
+    % First, check calls for itself.
+    mainCall = callInfo(strcmp({callInfo.name}, main));
+    if any(strcmp(mainCall.name, mainCall.calls.innerCalls.names))
+        % true. Exit
+        isRecurring = true;
+        return;
+    end
+
+    % look at all functions in callInfo that aren't us
+    calls = callInfo(~strcmp({callInfo.name}, main));
+    for i = 1:numel(calls)
+        if checkRecur(calls(i), calls(i).name)
+            isRecurring = true;
+            return;
+        end
+    end
+
+    % Iterate over external calls.
+    external = mainCall.calls.fcnCalls.names;
+    % check local directory for filenames. If not there, builtin!
+    possCalls = dir('**/*.m');
+    possCalls = cellfun(@(n)(n(1:(end-2))), {possCalls.name}, 'uni', false);
+    for i = 1:numel(external)
+        % if external isn't found anywhere in possCalls, don't engage
+        if any(strcmp(external{i}, possCalls))
+            extCallInfo = getcallinfo([external{i} '.m']);
+            if checkRecur(extCallInfo, external{i})
+                isRecurring = true;
+                return;
+            end
+        end
+    end
+
+    isRecurring = false;
 end
