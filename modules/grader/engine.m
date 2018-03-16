@@ -334,46 +334,46 @@ end
 % Unlike ordinary Unit Tests, this is a list of tests. P means passing, U 
 % means unknown.
 % 
-% * U |'myFun'| -> [{}, {}, @myFun]
-% * U |'myFun;'| -> [{}, {}, @myFun]
-% * U |'myFun()'| -> [{}, {}, @myFun]
-% * U |'myFun();'| -> [{}, {}, @myFun]
-% * U |'myFun(in)'| -> [{'in'}, {}, @myFun]
-% * U |'myFun(in);'| -> [{'in'}, {}, @myFun]
-% * U |'myFun(in,in2)'| -> [{'in', 'in2'}, {}, @myFun]
-% * U |'myFun(in,In2);'| -> [{'in', 'In2'}, {}, @myFun]
-% * U |'[] = myFun'| -> [{}, {}, @myFun]
-% * U |'[] = myFun;'| -> [{}, {}, @myFun]
-% * U |'[] = myFun()'| -> [{}, {}, @myFun]
-% * U |'[] = myFun();'| -> [{}, {}, @myFun]
-% * U |'[] = myFun(in)'| -> [{'in'}, {}, @myFun]
-% * U |'[] = myFun(in);'| -> [{'in'}, {}, @myFun]
-% * U |'[] = myFun(in1,in2)'| -> [{'in', 'in2'}, {}, @myFun]
-% * U |'[] = myFun(in1,in2);'| -> [{'in', 'in2'}, {}, @myFun]
-% * U |'[a] = myFun'| -> [{}, {'a'}, @myFun]
-% * U |'[a] = myFun;'| -> [{}, {'a'}, @myFun]
-% * U |'[a] = myFun()'| -> [{}, {'a'}, @myFun]
-% * U |'[a] = myFun();'| -> [{}, {'a'}, @myFun]
-% * U |'[a] = myFun(in)'| -> [{'in'}, {'a'}, @myFun]
-% * U |'[a] = myFun(in);'| -> [{'in'}, {'a'}, @myFun]
-% * U |'[a] = myFun(in1,in2)'| -> [{'in1', 'in2'}, {'a'}, @myFun]
-% * U |'[a] = myFun(in1,in2);'| -> [{'in1', 'in2'}, {'a'}, @myFun]
-% * U |'a = myFun'| -> [{}, {'a'}, @myFun]
-% * U |'a = myFun;'| -> [{}, {'a'}, @myFun]
-% * U |'a = myFun()'| -> [{}, {'a'}, @myFun]
-% * U |'a = myFun();'| -> [{}, {'a'}, @myFun]
-% * U |'a = myFun(in)'| -> [{'in'}, {'a'}, @myFun]
-% * U |'a = myFun(in);'| -> [{'in'}, {'a'}, @myFun]
-% * U |'a = myFun(in1, in2)'| -> [{'in1', 'in2'}, {'a'}, @myFun]
-% * U |'a = myFun(in1, in2);'| -> [{'in1', 'in2'}, {'a'}, @myFun]
-% * U |'[a,b] = myFun'| -> [{}, {'a', 'b'}, @myFun]
-% * U |'[a,b] = myFun;'| -> [{}, {'a', 'b'}, @myFun]
-% * U |'[a,b] = myFun()'| -> [{}, {'a', 'b'}, @myFun]
-% * U |'[a,b] = myFun();'| -> [{}, {'a', 'b'}, @myFun]
-% * U |'[a,b] = myFun(in)'| -> [{'in'}, {'a', 'b'}, @myFun]
-% * U |'[a,b] = myFun(in);'| -> [{'in'}, {'a', 'b'}, @myFun]
-% * U |'[a,b] = myFun(in1, in2)'| -> [{'in1', 'in2'}, {'a', 'b'}, @myFun]
-% * U |'[a,b] = myFun(in1, in2);'| -> [{'in1', 'in2'}, {'a', 'b'}, @myFun]
+% * P |'myFun'| -> [{}, {}, @myFun]
+% * P |'myFun;'| -> [{}, {}, @myFun]
+% * P |'myFun()'| -> [{}, {}, @myFun]
+% * P |'myFun();'| -> [{}, {}, @myFun]
+% * P |'myFun(in)'| -> [{'in'}, {}, @myFun]
+% * P |'myFun(in);'| -> [{'in'}, {}, @myFun]
+% * P |'myFun(in,in2)'| -> [{'in', 'in2'}, {}, @myFun]
+% * P |'myFun(in,In2);'| -> [{'in', 'In2'}, {}, @myFun]
+% * P |'[] = myFun'| -> [{}, {}, @myFun]
+% * P |'[] = myFun;'| -> [{}, {}, @myFun]
+% * P |'[] = myFun()'| -> [{}, {}, @myFun]
+% * P |'[] = myFun();'| -> [{}, {}, @myFun]
+% * P |'[] = myFun(in)'| -> [{'in'}, {}, @myFun]
+% * P |'[] = myFun(in);'| -> [{'in'}, {}, @myFun]
+% * P |'[] = myFun(in1,in2)'| -> [{'in1', 'in2'}, {}, @myFun]
+% * P |'[] = myFun(in1,in2);'| -> [{'in1', 'in2'}, {}, @myFun]
+% * P |'[a] = myFun'| -> [{}, {'a'}, @myFun]
+% * P |'[a] = myFun;'| -> [{}, {'a'}, @myFun]
+% * P |'[a] = myFun()'| -> [{}, {'a'}, @myFun]
+% * P |'[a] = myFun();'| -> [{}, {'a'}, @myFun]
+% * P |'[a] = myFun(in)'| -> [{'in'}, {'a'}, @myFun]
+% * P |'[a] = myFun(in);'| -> [{'in'}, {'a'}, @myFun]
+% * P |'[a] = myFun(in1,in2)'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * P |'[a] = myFun(in1,in2);'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * P |'a = myFun'| -> [{}, {'a'}, @myFun]
+% * P |'a = myFun;'| -> [{}, {'a'}, @myFun]
+% * P |'a = myFun()'| -> [{}, {'a'}, @myFun]
+% * P |'a = myFun();'| -> [{}, {'a'}, @myFun]
+% * P |'a = myFun(in)'| -> [{'in'}, {'a'}, @myFun]
+% * P |'a = myFun(in);'| -> [{'in'}, {'a'}, @myFun]
+% * P |'a = myFun(in1, in2)'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * P |'a = myFun(in1, in2);'| -> [{'in1', 'in2'}, {'a'}, @myFun]
+% * P |'[a,b] = myFun'| -> [{}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun;'| -> [{}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun()'| -> [{}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun();'| -> [{}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun(in)'| -> [{'in'}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun(in);'| -> [{'in'}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun(in1, in2)'| -> [{'in1', 'in2'}, {'a', 'b'}, @myFun]
+% * P |'[a,b] = myFun(in1, in2);'| -> [{'in1', 'in2'}, {'a', 'b'}, @myFun]
 %
 function [ins, outs, func] = parseFunction(call)
     % Strip start, ending space:
@@ -394,13 +394,14 @@ function [ins, outs, func] = parseFunction(call)
     else
         % if no bracket found, only one output. Grab accordingly
         if ~contains(call, ']')
-            outs = regexp(call, '[^\=]*');
+            call(call == ' ') = '';
+            outs = regexp(call, '^[^\=]*', 'match');
         else
             % We have brackets; find in between and engage
             outs = regexp(call, '(?<=\[)([^\]]+)(?=\])', 'match');
             if ~isempty(outs)
                 outs = strip(outs{1});
-                % Replace all white space with commas
+                % 'Replace all white space with commas'
                 outs = regexprep(outs, '\s+', ',');
                 outs = strsplit(outs, {','});
             end
@@ -417,7 +418,7 @@ function [ins, outs, func] = parseFunction(call)
         ind = strfind(call, '(');
         call(ind:end) = '';
     end
-    func = str2func(call);        
+    func = str2func(strip(call));        
 
 end
 
