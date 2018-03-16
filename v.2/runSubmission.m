@@ -101,23 +101,23 @@ function student = runSubmission(rubric, student, timeoutLogH)
     delete('*.mat');
     delete('*.p');
     %log timed out test cases into file -> timeoutLogH
-    if any(studentTimeoutMatrix)
-        r = size(studentTimeoutMatrix, 1);
-        fprintf(timeoutLogH, ['\n' student.ID '\n']);
-        for i = 1:r
-            [timedOutTestCases] = find(studentTimeoutMatrix(i,:));
-            if ~isempty(timedOutTestCases)
-                fprintf(timeoutLogH, '\t%s test cases: %s', rubric.problems(ndxProblem).name, ...
-                    strjoin(arrayfun(@num2str, timedOutTestCases, 'uni', false), ', '));
-                % This is widely inefficient!
-%                timedOutTestCases(1) = [];
-%                 for caseInd = timedOutTestCases
-%                     fprintf(timeoutLogH, ' ,%d', caseInd);
-%                 end
-                fprintf(timeoutLogH,'\n');
-            end
-        end
-    end
+%     if any(studentTimeoutMatrix)
+%         r = size(studentTimeoutMatrix, 1);
+%         fprintf(timeoutLogH, ['\n' student.ID '\n']);
+%         for i = 1:r
+%             [timedOutTestCases] = find(studentTimeoutMatrix(i,:));
+%             if ~isempty(timedOutTestCases)
+%                 fprintf(timeoutLogH, '\t%s test cases: %s', rubric.problems(ndxProblem).name, ...
+%                     strjoin(arrayfun(@num2str, timedOutTestCases, 'uni', false), ', '));
+%                 % This is widely inefficient!
+% %                timedOutTestCases(1) = [];
+% %                 for caseInd = timedOutTestCases
+% %                     fprintf(timeoutLogH, ' ,%d', caseInd);
+% %                 end
+%                 fprintf(timeoutLogH,'\n');
+%             end
+%         end
+%     end
 
 
 
