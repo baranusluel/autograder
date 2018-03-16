@@ -8,7 +8,7 @@
 
 %#ok<*NASGU>
 function generateDocs(email)
-    [thisDir, ~, ~] = mfilename('fullpath');
+    thisDir = pwd;
     % Create temp dir for cloning repo
     tDir = [tempdir 'autograderDocs' filesep];
     mkdir(tDir);
