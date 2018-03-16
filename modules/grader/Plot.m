@@ -124,52 +124,59 @@ classdef Plot < handle
         %
         function this = Plot(pHandle)
             
-            % input validation needed (axes handle)
-            
-            this.Title = pHandle.Title.String;
-            this.XLabel = pHandle.XLabel.String;
-            this.YLabel = pHandle.YLabel.String;
-            this.ZLabel = pHandle.ZLabel.String;
-            
-            this.Position = pHandle.Position;
-            
-            lines = allchild(pHandle);
-            
-            xcell = {};
-            ycell = {};
-            zcell = {};
-            color = {};
-            marker = {};
-            linestyle = {};
-            
-            for line = lines
-                xcell = [xcell {line.XData}];
-                ycell = [ycell {line.YData}];
-                zcell = [zcell {line.ZData}];
+            if ~strcmp(class(pHandle),'matlab.graphics.axis.Axes')
+                ME = MException('AUTOGRADER:PLOT:NOAXISDATA',...
+                    'Given input to Plot Constructor is not Axes Handle');
+                throw(ME)
+            else
+                this.Title = pHandle.Title.String;
+                this.XLabel = pHandle.XLabel.String;
+                this.YLabel = pHandle.YLabel.String;
+                this.ZLabel = pHandle.ZLabel.String;
                 
-                color = [color {line.Color}];
+                fig = ancestor(pHandle,'Figure');
+                imgstruct = getframe(fig);
+                this.Image = imgstruct.cdata;
                 
-                if strcmp(line.Marker,'none')
-                    marker = [marker {[]}];
-                else 
-                    marker = [marker {line.Marker}];
+                this.Position = pHandle.Position;
+                
+                lines = allchild(pHandle);
+                
+                xcell = {};
+                ycell = {};
+                zcell = {};
+                color = {};
+                marker = {};
+                linestyle = {};
+                
+                for line = lines
+                    xcell = [xcell {line.XData}];
+                    ycell = [ycell {line.YData}];
+                    zcell = [zcell {line.ZData}];
+                    
+                    color = [color {line.Color}];
+                    
+                    if strcmp(line.Marker,'none')
+                        marker = [marker {[]}];
+                    else
+                        marker = [marker {line.Marker}];
+                    end
+                    
+                    if strcmp(line.LineStyle,'none')
+                        linestyle = [linestyle {[]}];
+                    else
+                        linestyle = [linestyle {line.LineStyle}];
+                    end
+                    
                 end
                 
-                if strcmp(line.LineStyle,'none')
-                    linestyle = [linestyle {[]}];
-                else 
-                    linestyle = [linestyle {line.LineStyle}];
-                end
-                
+                this.XData = xcell;
+                this.YData = ycell;
+                this.ZData = zcell;
+                this.Color = color;
+                this.Marker = marker;
+                this.LineStyle = linestyle; 
             end
-            
-            this.XData = xcell;
-            this.YData = ycell;
-            this.ZData = zcell;
-            this.Color = color;
-            this.Marker = marker;
-            this.LineStyle = linestyle;
-            
             
         end
     end
@@ -252,7 +259,7 @@ classdef Plot < handle
         % with only one or no input Plots. 
         %
         function [html] = generateFeedback(this, that)
-
+            
         end
     end
 end
