@@ -19,6 +19,7 @@ function messages = getMessages()
     
     messages.errors.timeout            = 'TIMEOUT';
     messages.errors.infiniteLoop       = 'INFINITE LOOP';
+    messages.errors.unknownError       = 'AN ERROR OCCURED IN YOUR FUNCTION';
 
     messages.files.outputFileNotFound  = 'OUTPUT FILE NOT FOUND';
 
