@@ -22,7 +22,7 @@ function generateDocs()
     % For each directory, for each file, publish into mirror directory.
     for i = 1:numel(mods)
         module = mods(i);
-        rmdir(module.name, 's');
+        status = rmdir(module.name, 's');
         mkdir(module.name);
         sources = dir(['..' filesep 'modules' filesep module.name filesep '*.m']);
         options.outputDir = [pwd filesep module.name filesep];
@@ -33,6 +33,7 @@ function generateDocs()
         fid = fopen(['resources' filesep 'module.html'], 'r');
         lines = textscan(fid, '%s', 'Delimiter', {'\n'});
         fclose(fid);
+        lines = lines{1};
         fid = fopen([module.name filesep 'index.html'], 'w');
         for i = 1:numel(lines)
             % look for:
@@ -41,19 +42,37 @@ function generateDocs()
             %   MODULE_DESCRIPTION
             line = lines{i};
             if contains(line, '<!-- MODULE_NAME -->')
-                line = strrep(line, '<!-- MODULE_NAME -->', module.name);
+                line = strrep(line, '<!-- MODULE_NAME -->', camel2normal(module.name));
             elseif contains(line, '<!-- MODULE_DESCRIPTION -->')
                 line = strrep(line, '<!-- MODULE_DESCRIPTION -->', 'Hello world');
             elseif contains(line, '<!-- MODULE_FUNCTIONS')
                 % Write all functions in divs
                 for s = sources(1:end)
-                    fprintf(fid, '<div>%s</div>', s.name(1:end-2));
+                    fprintf(fid, '<div data-link="%s">%s</div>', [s.name(1:end-2) '.html'], camel2normal(s.name(1:end-2)));
                 end
                 line = '';
             end
             fprintf(fid, '%s\n', line);
         end
+        fclose(fid);
     end
+    fid = fopen(['resources' filesep 'index.html']);
+    lines = textscan(fid, '%s', 'Delimiter', {'\n'});
+    fclose(fid);
+    lines = lines{1};
+    fid = fopen('index.html', 'w');
+    for i = 1:numel(lines)
+        line = lines{i};
+        % Look for MODULES
+        if contains(line, '<!-- MODULES -->')
+            line = '';
+            for m = mods(1:end);
+                fprintf(fid, '<div data-link="%s">%s</div>', [m.name '/index.html'], camel2normal(m.name));
+            end
+        end
+        fprintf(fid, '%s\n', line);
+    end
+    fclose(fid);
     % Generate HTML index for documentation
 end
 
@@ -62,7 +81,7 @@ function str = camel2normal(str)
     mask = str >= 'A' & str <= 'Z';
     % splice in space
     inds = find(mask);
-    for i = ends(end:-1:1)
+    for i = inds(end:-1:1)
         str = [str(1:(i - 1)) ' ' str(i:end)];
     end
     str(1) = upper(str(1));
