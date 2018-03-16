@@ -285,8 +285,19 @@ function runCase(runnable)
     [inNames, outNames, func] = parseFunction(tCase.call);
     outs = cell(size(outNames));
     % run the function
+    % create sentinel file
+    fid = fopen(File.SENTINEL, 'r');
     [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
-
+    name = fopen(fid);
+    fclose(fid);
+    if ~strcmp(name, File.SENTINEL)
+        % Communicate that user called fclose all.
+        if isa(runnable, 'TestCase')
+            throw(MException('AUTOGRADER:ENGINE:FCLOSEALL', 'The solution called fclose all'));
+        else
+            runnable.exception = MException('AUTOGRADER:FCLOSEALL', 'Student Code called fclose all');
+        end
+    end
     % Populate outputs
     % outNames is in order of argument. For each outName, apply corresponding
     % value
