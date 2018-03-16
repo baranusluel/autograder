@@ -159,7 +159,7 @@ function [] = runAutograder(homeworkZipFilePath, rubricZipFilePath, destinationF
             addpath(rubric.addpath.overridenFunctionsFolderPath);
             fprintf(timeoutLogH, 'Student Function Timeouts:\n\n');
             gradebook = gradeStudentSubmissions(gradebook, rubric, timeoutLogH);
-            fclose(timeoutLogH);
+            fclose('all'); % fclose(timeoutLogH);
             rmpath(rubric.addpath.overridenFunctionsFolderPath);
 
 %             % handle timeout
