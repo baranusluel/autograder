@@ -113,7 +113,8 @@ function generateDocs(email)
     [~, ~] = system('git add *');
     [~, ~] = system('git commit -m "Update Documentation"');
     [~, ~] = system('git push');
-    % Generate HTML index for documentation
+    cd(thisDir);
+    status = rmdir([tDir '..' filesep], 's');
 end
 
 function str = camel2normal(str)
