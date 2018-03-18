@@ -1,27 +1,25 @@
-%% readmeParser: Parse a README into valid HTML
+%% parseReadme: Parse a README into valid HTML
 %
 % Given a README file path, create valid HTML
 %
-% readmeParser(P) will create a valid HTML file from the given README in 
+% parseReadme(P) will create a valid HTML file from the given README in 
 % the same place. readmeParser will overwrite any data already there,
 % though the original README file is unchanged.
 %
-% H = readmeParser(L) will create a valid HTML string from the given cell
+% H = parseReadme(L) will create a valid HTML string from the given cell
 % array or string array of lines from the README.
 %
-% H = readmeParser(P) will do the exact same thing as H = readmeParser(L),
+% H = parseReadme(P) will do the exact same thing as H = readmeParser(L),
 % but will instead read from the given path
 %
-% H = readmeParser(___, B) will include the boilerplate, like the html and
+% H = parseReadme(___, B) will include the boilerplate, like the html and
 % body tags, if B is true - otherwise, just the body is returned.
 %
-% H = readmeParser(___, U) will use U as the base URL. If U is not given,
+% H = parseReadme(___, U) will use U as the base URL. If U is not given,
 % then 'https://github.gatech.edu/CS1371/autograder/wiki/' is used as a
 % default.
-%
-% This function is under construction, but may not actually ever be
-% finished...
-function html = readmeParser(var, includeBoiler, baseUrl)
+
+function html = parseReadme(var, includeBoiler, baseUrl)
     if ~exist('baseUrl', 'var')
         baseUrl = 'https://github.gatech.edu/CS1371/autograder/wiki/';
     end
