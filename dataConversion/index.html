@@ -49,7 +49,80 @@ Data Conversion
 </div>
 <div class="col-md-10 text-left">
 <p class="module-description">
-Hello world
+<div>
+<h1>
+Data Conversion
+</h1>
+<p>
+ This module is responsible for converting data into necessary forms. This does <em>not</em> actually change the data itself; only the format it is in.
+</p>
+<h2>
+Functions
+</h2>
+<p>
+ This module shall have the following functions:
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[string unzipPath] = unzipArchive(string path, *optional* bool isTemp=true, *optional* bool deleteOriginal=false);</code>
+</p>
+</li>
+</ul>
+<p>
+ Unzips the ZIP archive defined in <code class="bg-light">path</code>. If <code class="bg-light">isTemp</code> is <code class="bg-light">true</code>, then <code class="bg-light">unzipArchive</code> will unzip the archive into a temporary folder; otherwise, it will unzip into the same folder the ZIP archive was found. If <code class="bg-light">deleteOriginal</code> is <code class="bg-light">true</code>, then <code class="bg-light">unzipArchive</code> will delete the original ZIP archive after unzipping. Regardless, the path of the unzipped archive (including the zipped folder name) will be returned. 
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[string convertedPath] = canvas2Autograder(string path, *optional* string outPath=void);</code>
+</p>
+</li>
+</ul>
+<p>
+ Takes in a path to the ZIP archive downloaded from Canvas of all the student's submissions. This will reformat this data to be fed into the main autograder. If <code class="bg-light">outPath</code> is given, then <code class="bg-light">canvas2Autograder</code> will unzip the given archive into that path. Regardless, <code class="bg-light">convertedPath</code> will be a path to the resulting folder (including that folder name) will be returned.
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[string convertedPath] = autograder2Canvas(string path, *optional* string outPath=void);</code>
+</p>
+</li>
+</ul>
+<p>
+ Takes in a path to the autograder's working folder, and converts the data to be compatible with Canvas. If <code class="bg-light">outPath</code> is given, then it will store these results into the path given by <code class="bg-light">outPath</code>; otherwise, it will use a temporary folder. Regardless, this function returns the path to the resulting Canvas compatible archive.
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[string convertedPath] = autograder2Website(string path, *optional* string outPath=void);</code>
+</p>
+</li>
+</ul>
+<p>
+ Takes in a path to the autograder's working folder, and converts the data to be compatible with the CS 1371 Website. If <code class="bg-light">outPath</code> is given, then it will store the results into the path given by <code class="bg-light">outPath</code>; otherwise, it will use a temporary folder. Regardless, this function returns the path to the resulting Website-compliant data.
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[Problem[] problems] = generateSolutions(string path);</code>
+</p>
+</li>
+</ul>
+<p>
+ This will generate the solution values, given a path to the solution ZIP archive. These solutions are held in a <code class="bg-light">Problem</code> array, which is detailed below.
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[void] = unpackStudentSubmission(string startPath);</code>
+</p>
+</li>
+</ul>
+<p>
+ Unpacks a student's submissions into their same folder. If a student submitted a ZIP archive as their attachment, this will unzip that archive <em>and</em> move the files so that they are directly beneath the student's folder. If the student submitted each file separately, this function does nothing.
+</p>
+</div>
 </p>
 </div>
 </div>

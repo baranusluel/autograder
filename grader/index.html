@@ -49,7 +49,172 @@ Grader
 </div>
 <div class="col-md-10 text-left">
 <p class="module-description">
-Hello world
+<div>
+<h1>
+Grader
+</h1>
+<p>
+ This module handles the actual "grading" of the students. It has no functions directly; only classes (but these classes have methods).
+</p>
+<h2>
+Functions
+</h2>
+<p>
+ The <code class="bg-light">grader</code> module has the following functions:
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[string html] = generateFeedback(var studentSubmission, var solnSubmission);</code>
+</p>
+</li>
+</ul>
+<p>
+ Generate feedback for the given submissions. This is only for <em>primitives</em> - values that are "built in" to MATLAB. <code class="bg-light">var</code> can be any of the following:
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">char</code>
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">cell</code>
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">numeric</code> (<code class="bg-light">double</code>, <code class="bg-light">float</code>, <code class="bg-light">int*</code>, <code class="bg-light">uint*</code>, etc.)
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">string</code>
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">struct</code>
+</p>
+</li>
+</ul>
+<h2>
+Classes
+</h2>
+<p>
+ The <code class="bg-light">grader</code> module has the following classes:
+</p>
+<h3>
+<code class="bg-light">Student</code>
+</h3>
+<p>
+ Represents a single student in the grader.
+</p>
+<p>
+ Has the following fields: - <code class="bg-light">name</code>: The name of the student - <code class="bg-light">id</code>: The ID of the student - <code class="bg-light">path</code>: The fully qualified path for this student's directory - <code class="bg-light">submissions</code>: A string array of file names that represent all names of submitted files - <code class="bg-light">feedbacks</code>: A cell array of <code class="bg-light">Feedback</code> arrays. Each cell in feedbacks is a <code class="bg-light">Feedback</code> array representing all test cases for a specific problem - <code class="bg-light">isgraded</code>: A logical stating if a student object has been graded
+</p>
+<p>
+ Has the following methods: - <code class="bg-light">void gradeProblem(Problem)</code> - Grades the given problem (copying over the TestCases) and records the results. Does *not* write the HTML feedback - <code class="bg-light">string generateResponse()</code> - Generates complete HTML markup for this student
+</p>
+<h3>
+<code class="bg-light">Problem</code>
+</h3>
+<p>
+ Represents a single problem set
+</p>
+<p>
+ Has the following fields: - <code class="bg-light">name</code>: The name of the problem (function name without <code class="bg-light">.m</code>) - <code class="bg-light">testCases</code>: An array of <code class="bg-light">TestCase</code> for this problem - <code class="bg-light">banned</code>: A cell array of names of banned functions for this problem
+</p>
+<h3>
+<code class="bg-light">TestCase</code> class
+</h3>
+<p>
+ A single test case for a given problem
+</p>
+<p>
+ Has the following fields: - <code class="bg-light">call</code>: The complete function call (i.e., <code class="bg-light">[out1, out2] = myFunction(in1, in2);</code>) - <code class="bg-light">initializer</code>: The complete function call for a function to be run immediately before testing the student's code.     - This is useful if a variable's value cannot be determined until right before the function call.     - Each output's name must exactly match the name of an input.     - The values for the outputs overwrite the value for its corresponding input.     - For example, suppose <code class="bg-light">inputs</code> looked like this:         - <code class="bg-light">struct('fid', 0, 'outputName', 'helloWorld.txt');</code>     - And suppose you wanted to populate <code class="bg-light">fid</code> with a valid file handle. In that case, your <code class="bg-light">initializer</code> would look like:         - <code class="bg-light">[fid] = fopen('myInput.txt');</code>     - Now suppose fid is now 3. This will <em>overwrite</em> the previous value of <code class="bg-light">fid</code> (0) found in <code class="bg-light">inputs</code>.     - If you want a custom function to run instead, include it as a supporting file and call it. - <code class="bg-light">points</code>: The points possible for this specific test case - <code class="bg-light">supportingFiles</code>: A string array of complete file paths that will need to be copied to the student's directory - <code class="bg-light">loadFiles</code>: A string array of complete file paths of MAT files to load - <code class="bg-light">banned</code>: A string array of names of banned functions for this problem - <code class="bg-light">path</code>: The fully qualified path to the solution code directory - <code class="bg-light">outputs</code>: A structure where the field name is the name of the output, and the field value is the value of the output - <code class="bg-light">files</code>: A <code class="bg-light">File</code> array that represents all the files produced as outputs - <code class="bg-light">plots</code>: A <code class="bg-light">Plot</code> array that represents the data about all the plots generated
+</p>
+<h3>
+<code class="bg-light">Feedback</code>
+</h3>
+<p>
+ Represents feedback for a specific <code class="bg-light">TestCase</code>
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">testCase</code>: The <code class="bg-light">TestCase</code> for this feedback
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">problem</code>: The problem name for this feedback
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">isPassed</code>: True if the student passed this test completely
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">path</code>: The fully qualified path for this student's directory
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">files</code>: A <code class="bg-light">File</code> array that represents all the files produced by the student
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">plots</code>: A <code class="bg-light">Plot</code> array that represents all the plots generated by the student
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">reason</code>: A string that represents the reason the student did not get full credit
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">points</code>: The number of points earned for this test case
+</p>
+</li>
+</ul>
+<h3>
+<code class="bg-light">File</code>
+</h3>
+<p>
+ This class helps in storing and comparing files. It has the following fields: - <code class="bg-light">name</code>: The filename for this file, without the extension - <code class="bg-light">extension</code>: The file extension - <code class="bg-light">data</code>: One of the following:     - Image: <code class="bg-light">MxNx3 uint8</code>     - Text: String array of lines (without newline character)     - Excel: Cell array for raw output
+</p>
+<p>
+ And has the following methods: - <code class="bg-light">[bool isEqual, string message] = equals(File other)</code>: Checks if the given file is considered equal to this file, which means:     - Names are the same     - Extensions are the same     - Data is the same     - If <code class="bg-light">isEqual</code> is <code class="bg-light">false</code>, <code class="bg-light">message</code> contains a reason they aren't equal - <code class="bg-light">[string HTML] = generateFeedback(File solution)</code>: Generates HTML feedback that will be shown to the student. Note that the input is the solution's File.     - If the File is text, it shows a <code class="bg-light">visdiff</code> of the two files (as produced by MATLAB)     - If the File is an image, it will use the default Image Comparison tool.     - If the File is an Excel file, it will convert the cell array into a "table", and then use <code class="bg-light">visdiff</code> to compare.
+</p>
+<h3>
+<code class="bg-light">Plot</code>
+</h3>
+<p>
+ This class contains all pertinent data for a plot.
+</p>
+<p>
+ It has the following fields: - <code class="bg-light">title</code>: The title used for the plot - <code class="bg-light">xData</code>: A cell array of vectors that represents all <code class="bg-light">XData</code> points plotted for this plot - <code class="bg-light">yData</code>: A cell array of vectors that represents all <code class="bg-light">YData</code> points plotted for this plot - <code class="bg-light">zData</code>: A cell array of vectors that represents all <code class="bg-light">ZData</code> points plotted for this plot - <code class="bg-light">image</code>: An image taken of the plot, as an <code class="bg-light">MxNx3 uint8</code> array. - <code class="bg-light">legend</code>: A string array of all the names in the legend - <code class="bg-light">colors</code>: A string array that represents the color used for every line
+</p>
+<p>
+ It has the following methods: - <code class="bg-light">[bool isEqual, string message] = equals(Plot other)</code>: Checks if the given plot is considered equal to this plot.
+</p>
+<p>
+ If <code class="bg-light">isEqual</code> is <code class="bg-light">false</code>, <code class="bg-light">message</code> contains a reason they aren't equal
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[string HTML] = generateFeedback(Plot solution)</code>: Generates HTML feedback for the two plots (where the input plot is the solution plot)
+</p>
+</li>
+</ul>
+</div>
 </p>
 </div>
 </div>
