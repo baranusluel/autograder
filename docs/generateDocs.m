@@ -42,6 +42,9 @@ function generateDocs(email)
             publish([s.folder filesep s.name], options);
         end
         % Generate HTML index for this module
+        description = parseReadme([tDir module.name filesep 'README.md'], ...
+            false, 'https://github.gatech.edu/CS1371/autograder/wiki/');
+        
         fid = fopen(['resources' filesep 'module.html'], 'r');
         lines = textscan(fid, '%s', 'Delimiter', {'\n'});
         fclose(fid);

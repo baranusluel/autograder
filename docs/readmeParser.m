@@ -12,14 +12,24 @@
 % H = readmeParser(P) will do the exact same thing as H = readmeParser(L),
 % but will instead read from the given path
 %
+% H = readmeParser(___, B) will include the boilerplate, like the html and
+% body tags, if B is true - otherwise, just the body is returned.
+%
+% H = readmeParser(___, U) will use U as the base URL. If U is not given,
+% then 'https://github.gatech.edu/CS1371/autograder/wiki/' is used as a
+% default.
+%
 % This function is under construction, but may not actually ever be
 % finished...
-function html = readmeParser(var, baseUrl)
-if ~exist('baseUrl', 'var');
-    baseUrl = 'https://github.gatech.edu/CS1371/autograder/wiki/';
-end
+function html = readmeParser(var, includeBoiler, baseUrl)
+    if ~exist('baseUrl', 'var')
+        baseUrl = 'https://github.gatech.edu/CS1371/autograder/wiki/';
+    end
+    if ~exist('includeBoiler', 'var')
+        includeBoiler = true;
+    end
     if iscell(var)
-        html = parser(var, baseUrl);
+        html = parser(var, includeBoiler, baseUrl);
         if nargout == 0
             clear('html');
         end
@@ -28,7 +38,7 @@ end
         lines = textscan(fid, '%s', 'Delimiter', {'\n'}, 'Whitespace', '');
         fclose(fid);
         lines = lines{1};
-        html = parser(lines, baseUrl);
+        html = parser(lines, includeBoiler, baseUrl);
         if nargout == 0
             [path, name, ~] = fileparts(var);
             fid = fopen([path name '.html'], 'w+');
@@ -38,7 +48,7 @@ end
         end
     end
 end
-function html = parser(lines, baseUrl)
+function html = parser(lines, includeBoiler, baseUrl)
     % if line starts with any number of #, turn into h1-6
     % if line starts with -, turn into ul
     % if line starts with *, BUT NO ENDING * AND NOT **, turn into ul
@@ -48,19 +58,23 @@ function html = parser(lines, baseUrl)
     % if `stuff`, then it's pre (?)
     % if line ```, then all lines until ``` are pre (?)
     % if line isn't blank, read to next until blank line for innards of p
-    
-    html = {'<!DOCTYPE html>', '<html>', '<head>', '<meta charset="utf-8">', ...
-        '<meta name="viewport" content="width=device-width, initial-scale=1">', '</head>', '<body>', ...
-        '</body>', '</html>'};
-    % Add scripts, etc.
-    scripts = {'<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>', ...
-        '<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>', ...
-        '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>'};
-    links = {'<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">'};
-    style = {'<style>', 'pre.bg-light {', '    border-radius: 5%;', '}', ...
-        'pre.bg-light {', '    padding-left: 15px;', '}', '</style>'};
-    html = [html(1:findHead(html)) scripts links style html((findHead(html)+1):end)];
-    body = {'<div class="container-fluid">', '<div class="row">', '<div class="col-12">'};
+    if includeBoiler
+        html = {'<!DOCTYPE html>', '<html>', '<head>', '<meta charset="utf-8">', ...
+            '<meta name="viewport" content="width=device-width, initial-scale=1">', '</head>', '<body>', ...
+            '</body>', '</html>'};
+        % Add scripts, etc.
+        scripts = {'<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>', ...
+            '<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>', ...
+            '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>'};
+        links = {'<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">'};
+        style = {'<style>', 'pre.bg-light {', '    border-radius: 5%;', '}', ...
+            'pre.bg-light {', '    padding-left: 15px;', '}', '</style>'};
+        html = [html(1:findHead(html)) scripts links style html((findHead(html)+1):end)];
+        body = {'<div class="container-fluid">', '<div class="row">', '<div class="col-12">'};
+    else
+        html = {};
+        body = {'<div>'};
+    end
     setTitle = false;
     i = 1;
     while i <= numel(lines)
@@ -80,7 +94,7 @@ function html = parser(lines, baseUrl)
                 heading = regexp(line, '^#{1,6}(?!#)', 'match');
                 heading = heading{1};
                 line = line((length(heading)+2):end);
-                if ~setTitle && length(heading) == 1
+                if includeBoiler && ~setTitle && length(heading) == 1
                     % set title
                     t = {'<title>' line '</title>'};
                     html = [html(1:findHead(html)) t html((findHead(html)+1):end)];
@@ -209,7 +223,12 @@ function html = parser(lines, baseUrl)
         end
         i = i + 1;
     end
-    html = [html(1:findBody(html)) body html((findBody(html)+1):end)];
+    if includeBoiler
+        html = [html(1:findBody(html)) body {'</div>'}, {'</div>'}, ...
+            {'</div>'}, html((findBody(html)+1):end)];
+    else
+        html = [body {'</div>'}];
+    end
 end
 
 function ind = findHead(lines)
