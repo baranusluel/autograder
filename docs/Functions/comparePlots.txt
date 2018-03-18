@@ -1,6 +1,0 @@
-Function Name: comparePlots.m
-Inputs: studentPlot - a structure of the student plot.
-        solutionPlot - a structure of the solution plot.
-Outputs: plotComparisonResult - a structure representing the results.
-Specific Uses:  gradeSubmission.m
-Description: comparePlots compares two plots. These plots are given as structures, with a variable amount of fields representing XData, YData, etc. The result has the same fields as the two input plots; if these fields differ, comparePlots might throw an error. This is considered a bug, not a feature, and will be fixed in a future version.

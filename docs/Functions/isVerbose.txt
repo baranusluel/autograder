@@ -1,6 +1,0 @@
-Function Name: isVerbose.m
-Inputs:
-Outputs: is_verbose - a logical true.
-Specific Uses: gradeStudentSubmissions.m
-               uploadStudentFilesToServer.m
-Description: This should tell whether or not to print status updates to the console. It's broken now and only returns true.
