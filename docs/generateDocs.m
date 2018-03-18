@@ -90,7 +90,7 @@ function generateDocs(email)
         fprintf(fid, '%s\n', line);
     end
     fclose(fid);
-    thisDir = cd(tDir);
+    cd(tDir);
     % commit our changes, create commit, push
     if exist('email', 'var')
         [~, ~] = system(['git config user.email ' email]);
