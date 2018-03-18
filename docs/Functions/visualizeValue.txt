@@ -1,5 +1,0 @@
-Function Name: visualizeValue.m
-Inputs: value - a variable value representing what needs to be visualized.
-Outputs: formattedValue - a string that represents the HTML representation of the variable.
-Specific Uses: getProblemFeedback.m
-Description: Given a variable, visualizeValue will generate an HTML-ready visualization of said value. A notable exception is files - Files are not visualized explicitly, but instead via visDiff (that is, the file itself is not important; only how it compares to the solution file.)

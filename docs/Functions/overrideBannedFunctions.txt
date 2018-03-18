@@ -1,8 +1,0 @@
-Function Name: overideBannedFunctions.m
-Inputs: parentFolderPath - a string representing the folder where the banned functions folders will be.
-        bannedFunctions - a cell vector of all the banned functions. Can be a string IF it is only one banned function.
-        problemNumber - a double representing the current homework problem number.
-        problemName - a string representing the function name for the homework (ie, the corresponding function name for the problem number.)
-Outputs: bannedFunctionsFolderPath - a string representing the path to the banned functions for a specific problem.
-Specific Uses: runSolutions.m
-Description: Given a set of banned functions and the immediate folder, overrideBannedFunctions will create empty .m files for each of these banned functions. Since MATLAB first looks in the current folder for a function definition, this effectively eliminates the specified functions. There is currently talk of adding getMostRecentFiles.p as a permanent banned function.

@@ -44,6 +44,9 @@
 %
 % Grading is done via the parallel pool and parfeval.
 classdef Student < handle
+    properties (Constant)
+        TIMEOUT = 30;
+    end
     properties (Access = public)
         name;
         id;

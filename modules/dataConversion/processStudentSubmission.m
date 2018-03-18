@@ -3,19 +3,22 @@
 % processStudentSubmission will unpack a student's submissions into their same 
 % folder.
 %
-% processStudentSubmission(P) will try and unpack
-% the data located at the given pathway into a single folder. P is a 
-% string or character vector that represents the path to the student's 
-% folder.
+% processStudentSubmission(P) will unpack any ZIP files, and generally prepare
+% the student folder for the autograder.
 %
 %%% Remarks
 %
-% If the student submitted each file seperately, this function will do
-% nothing.
+% If the student submitted each file separately, this function will not
+% change the folder at all.
 %
-% processStudentSubmission won't _recursively_ unzip archives. In other words,
-% suppose the student submits a ZIP archive that has, inside of it, _another_ 
+% processStudentSubmission won't recursively unzip archives. In other words,
+% suppose the student submits a ZIP archive that has, inside of it, another 
 % ZIP archive. That second archive will not be unzipped!
+%
+% Additionally, folder structure within the ZIP archive will remain intact, 
+% with the exception of the case where inside the ZIP archive is a single folder. 
+% In that case, the contents of that single folder will be considered to be the 
+% contents of the ZIP archive.
 %
 % In the event of a name collision (i.e., suppose the ZIP archive has a file
 % with the same name as an existing file), the existing file will always win.
@@ -24,23 +27,73 @@
 %
 %%% Exceptions
 %
-% An AUTOGRADER:ISEMPTY:INVALIDPATH exception will be thrown if 
-% the pathway is invalid
+% An AUTOGRADER:PROCESSSTUDENTSUBMISSION:INVALIDPATH exception will be 
+% thrown if the given path is not a valid folder.
 %
 %%% Unit Tests
 %
-%   Given there is only files found on the pathway, the files will be moved
-%   to the student's labeled folder.
+%   % Assume P points to a student folder, and the student folder 
+%   % contains several files.
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
 %
-%   Given a pathway with one or more ZIP archive, the function will open the ZIP
-%   archive and move its contents to the student's folder.
+%   The folder referenced in P is unchanged
 %
-%   Given both ZIP archives and files found on the given pathway, the files
-%   found will be moved to the student's labeled folder and then the ZIP
-%   archives will be opened and their contents moved to the student's
-%   folder.
+%   % Assume P points to student folder, and the student folder
+%   % contains only a ZIP archive. This ZIP archive contains only 
+%   % files
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
+%
+%   % Whereas before, the student folder only had a ZIP archive, it now 
+%   % only has the files contained within that ZIP archive.
+%
+%   % Assume P points to a student folder, and the student folder
+%   % contains a single ZIP archive. However, this ZIP archive itself 
+%   % contains a single folder, which then just has files.
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
+%
+%   % The student folder now has all the files contained within the single
+%   % folder of the ZIP archive.
+%
+%   % Assume P points to a student folder, and the student folder
+%   % contains multiple files, including a ZIP archive.
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
+%
+%   % Now the student's folder only contains files; the ZIP archive has been 
+%   % removed. Furthermore, the structure within the ZIP archive has been 
+%   % preserved.
+%
+%   % Assume P points to a student folder, and the student folder
+%   % contains multiple files, including a ZIP archive. Furthermore,
+%   % assume a single file in the submission is called 'myFun.m', 
+%   % and that a file named 'myFun.m' exists in the ZIP archive.
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
+%
+%   % Now the folder contains only files. Note that 'myFun.m' is 
+%   % the one from the original submission; NOT the one inside the 
+%   % ZIP archive!
+%
+%   % Assume P points to a student folder, which contains multiple ZIPs.
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
+%
+%   % Now there are only the files and folders that were inside the ZIP archive(s).
+%   % Note that, if two of them had a file or folder with the same name, then 
+%   % which one "survives" is indeterminant.
+%
+%   % Assume P points to a student folder, which contains one ZIP archive. This 
+%   % ZIP archive contains another ZIP archive!
+%   P = 'C:\Users\...\';
+%   processStudentSubmission(P);
+%
+%   % The folder now contains the archive that was inside the original submssion's 
+%   % archive. It does NOT recursively unzip!
 %
 %   P = ''; % Invalid Path
-%   processStudentSubmissions(P);
+%   processStudentSubmission(P);
 %
 %   Threw INVALIDPATH exception

@@ -1,5 +1,0 @@
-Function Name: loadRubric.m
-Inputs: rubricJSONFilePath - a string representing the file path to the rubric .json file.
-Outputs: rubric - a structure that represents the rubric (see this object's documentation)
-Specific Uses: getRubric.m
-Description: Given the JSON file for the solutions, loadRubric will generate the initial structure for the rubric. This is the starting point of the rubric object, though it is not the end point. See the rubric documentation for more information.

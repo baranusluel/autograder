@@ -1,5 +1,0 @@
-Function Name: img2mat.m
-Inputs: filename_img - a string representing the name of the image file.
-Outputs: filename_mat - a string representing the name of the .mat file.
-Specific Uses:  convertSupportingFiles.m
-Description: This creates and returns a link to a .mat file that has the image data stored. This uses lossless conversion; all the original data is still there, just in a .mat format.

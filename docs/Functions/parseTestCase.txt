@@ -1,8 +1,0 @@
-Function Name: parseTestCase.m
-Inputs: testCase - a string representing the call for the specific test case.
-Outputs: inputVariables - a cell array containing the input variables.
-        outputVariables - a cell array containing the output variables.
-        variableInitialization - a string that happens before the function call.
-        numberOfOutputs - a double representing the number of outputs
-Specific Uses: runSolutions.m
-Description: Given a function call as a string, parseTestCase will extract the right input and output variable names, as well as initialization information and the total number of outputs. Note that the first two cell array outputs are cell arrays of STRINGS, not the actual variable.
