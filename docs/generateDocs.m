@@ -9,6 +9,7 @@
 %#ok<*NASGU>
 function generateDocs(email)
     thisDir = pwd;
+    [genFolder, ~, ~] = fileparts(mfilename('fullpath'));
     % Create temp dir for cloning repo
     tDir = [tempdir 'autograderDocs' filesep];
     % remove if already exists
@@ -18,7 +19,7 @@ function generateDocs(email)
     cd(tDir);
     [~, ~] = system('git clone https://github.gatech.edu/CS1371/autograder.git --branch gh-pages --single-branch');
     tDir = [tDir 'autograder' filesep];
-    cd(thisDir);
+    cd(genFolder);
     options.format = 'html';
     % options.stylesheet = [pwd filesep 'resources' filesep 'stylesheet.xls'];
     options.createThumbnail = false;
