@@ -53,7 +53,8 @@ classdef Student < handle
         path;
         submissions;
         feedbacks;
-        isGraded;
+        % why is this necessary?
+        isGraded = false;
     end
     methods
         %% Constructor
@@ -132,7 +133,28 @@ classdef Student < handle
         %   AUTOGRADER:STUDENT:ARGUMENTEXCEPTION
         %
         function this = Student(path, name)
+            this.path = path;
+            this.name = name;
+            % We can safely assume that student has been processed (zip
+            % unpacked, etc.)
             
+            % Sanitize path to use correct file separator
+            
+            path(path == '/' | path == '\') = filesep;
+            
+            % Path should always have last file separator
+            
+            if path(end) ~= filesep
+                path = [path filesep];
+            end
+            
+            % Get all submissions
+            subs = dir([path '*.m']);
+            this.submissions = string({subs.name});
+            
+            % ID is folder name:
+            this.id = regexp(path, '[A-Za-z0-9_]+(?=\\$)', 'match');
+            this.id = string(this.id{1});
         end
     end
     methods (Access=public)
