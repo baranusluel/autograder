@@ -11,6 +11,8 @@ function generateDocs(email)
     thisDir = pwd;
     % Create temp dir for cloning repo
     tDir = [tempdir 'autograderDocs' filesep];
+    % remove if already exists
+    status = rmdir(tDir, 's');
     mkdir(tDir);
     cleaner = onCleanup(@() cleanup(thisDir));
     cd(tDir);
@@ -42,7 +44,7 @@ function generateDocs(email)
             publish([s.folder filesep s.name], options);
         end
         % Generate HTML index for this module
-        description = parseReadme([tDir module.name filesep 'README.md'], ...
+        description = parseReadme(['..' filesep 'modules' filesep module.name  filesep 'README.md'], ...
             false, 'https://github.gatech.edu/CS1371/autograder/wiki/');
         
         fid = fopen(['resources' filesep 'module.html'], 'r');
@@ -59,7 +61,7 @@ function generateDocs(email)
             if contains(line, '<!-- MODULE_NAME -->')
                 line = strrep(line, '<!-- MODULE_NAME -->', camel2normal(module.name));
             elseif contains(line, '<!-- MODULE_DESCRIPTION -->')
-                line = strrep(line, '<!-- MODULE_DESCRIPTION -->', 'Hello world');
+                line = strrep(line, '<!-- MODULE_DESCRIPTION -->', strjoin(description, '\n'));
             elseif contains(line, '<!-- MODULE_FUNCTIONS')
                 % Write all functions in divs
                 for s = sources'
