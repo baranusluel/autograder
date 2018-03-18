@@ -14,9 +14,12 @@
 %
 % This function is under construction, but may not actually ever be
 % finished...
-function html = readmeParser(var)
+function html = readmeParser(var, baseUrl)
+if ~exist('baseUrl', 'var');
+    baseUrl = 'https://github.gatech.edu/CS1371/autograder/wiki/';
+end
     if iscell(var)
-        html = parser(var);
+        html = parser(var, baseUrl);
         if nargout == 0
             clear('html');
         end
@@ -25,7 +28,7 @@ function html = readmeParser(var)
         lines = textscan(fid, '%s', 'Delimiter', {'\n'}, 'Whitespace', '');
         fclose(fid);
         lines = lines{1};
-        html = parser(lines);
+        html = parser(lines, baseUrl);
         if nargout == 0
             [path, name, ~] = fileparts(var);
             fid = fopen([path name '.html'], 'w+');
@@ -35,7 +38,7 @@ function html = readmeParser(var)
         end
     end
 end
-function html = parser(lines)
+function html = parser(lines, baseUrl)
     % if line starts with any number of #, turn into h1-6
     % if line starts with -, turn into ul
     % if line starts with *, BUT NO ENDING * AND NOT **, turn into ul
@@ -83,13 +86,13 @@ function html = parser(lines)
                     html = [html(1:findHead(html)) t html((findHead(html)+1):end)];
                     setTitle = true;
                 end
-                line = parseLine(line);
+                line = parseLine(line, baseUrl);
                 body = [body {['<h' num2str(length(heading)) '>']}, {line}, {['</h' num2str(length(heading)) '>']}];
                 i = i + 1;
             elseif (line(1) == '*' || line(1) == '-') && line(2) == ' '
                 body = [body {'<ul>'}];
                 line = regexprep(line, '^^([-*])\s+', '');
-                line = parseLine(line);
+                line = parseLine(line, baseUrl);
                 body = [body {'<li>'}, {'<p>'}, {line}, {'</p>'}];
                 indLevel = 0;
                 % look at line below. If at higher indentation than our own,
@@ -120,12 +123,12 @@ function html = parser(lines)
                         if thisLevel == indLevel
                             % end li, begin new li with next li
                             line = regexprep(line, '^\s*[-*]\s+', '');
-                            line = parseLine(line);
+                            line = parseLine(line, baseUrl);
                             body = [body {'</li>'}, {'<li>'}, {'<p>'}, {line}, {'</p>'}];
                         elseif thisLevel > indLevel
                             % Add ul to this li
                             line = regexprep(line, '^\s*[-*]\s+', '');
-                            line = parseLine(line);
+                            line = parseLine(line, baseUrl);
                             body = [body {'<ul>'}, {'<li>'}, {'<p>'}, {line}, {'</p>'}];
                             indLevel = thisLevel;
                         elseif thisLevel < indLevel
@@ -135,7 +138,7 @@ function html = parser(lines)
                                 body = [body {'</ul>'} {'</li>'}];
                             end
                             line = regexprep(line, '^\s*[-*]\s+', '');
-                            line = parseLine(line);
+                            line = parseLine(line, baseUrl);
                             body = [body {'<li>', '<p>', {line}, '</p>'}];
                             indLevel = thisLevel;
                         end
@@ -153,7 +156,7 @@ function html = parser(lines)
                     end
                     body = [body {'</ul>'}];
                 end
-            elseif strncmp(strip(line), '```', 3)
+            elseif strncmp(line, '```', 3)
                 % Preformatted block. Start pre tag and engage, doing NO
                 % parsing of lines.
                 body = [body {'<pre class="bg-light">'}];
@@ -165,7 +168,25 @@ function html = parser(lines)
                     line = lines{i};
                 end
                 body = [body , {'</pre>'}];
-            elseif ~isempty(regexp(strip(line), '^[-_*=]{3,}\s*$', 'once'))
+            elseif length(line) > 1 && line(1) == '>' && line(2) == ' '
+                % Block quote. Start a block quote, and end it when line no
+                % longer begins with >
+                line = parseLine(line(3:end));
+                body = [body {'<blockquote class="blockquote">'}];
+                qContents = line;
+                i = i + 1;
+                line = lines{i};
+                while i <= numel(lines) && length(line) > 1 && line(1) == '>' && line(2) == ' '
+                    line = parseLine(line(3:end), baseUrl);
+                    qContents = [qContents ' ' qContents];
+                    if i == numel(lines)
+                        break;
+                    end
+                    i = i + 1;
+                    line = lines{i};
+                end
+                body = [body {qContents} {'</blockquote>'}];
+            elseif ~isempty(regexp(line, '^[-_*=]{3,}\s*$', 'once'))
                 body = [body {'<hr />'}];
             else
                 % We are at block. Loop through until next blank line, then let go
@@ -174,8 +195,8 @@ function html = parser(lines)
                 line = lines{i};
                 checker = strip(line);
                 while ~isempty(checker)
-                    line = parseLine(line);
-                    pContents = [pContents line];
+                    line = parseLine(line, baseUrl);
+                    pContents = [pContents ' ' line];
                     if i == numel(lines)
                         break;
                     end
@@ -199,7 +220,7 @@ function ind = findBody(lines)
     ind = find(strncmpi(lines, '<body', 5), 1);
 end
 
-function line = parseLine(line)
+function line = parseLine(line, baseUrl)
     % Only need to look for __, ****, ``, [](), and replace accordingly
     inds = regexp(line, '^[_]{1}|(?<=[^\\])[_]{1}');
     for i = inds((end - 1):-2:1)
@@ -228,7 +249,7 @@ function line = parseLine(line)
         line = [line(1:(i - 1)) '</code>' line((i + 1):end)];
     end
     
-    [links, lStart, lEnd] = regexp(line, '[\[]([a-zA-Z0-9\s]+)[\]]\(([a-zA-Z0-9\s]+)\)', 'tokens', 'start', 'end');
+    [links, lStart, lEnd] = regexp(line, '[\[]([^\]]+)[\]]\(([A-Za-z0-9\-._~%:/?#\[\]@!$&''()*+,;=]+)\)', 'tokens', 'start', 'end');
     % for each link, create it
     for i = numel(links):-1:1
         link = links{i};
@@ -236,6 +257,16 @@ function line = parseLine(line)
         label = link{1};
         tag = ['<a href="' href '">', parseLine(label), '</a>'];
         % replace from lStart to lEnd
-        line = [line(1:(lStart(i) - 1)) tag line((lEnd(i)+1):end)];
+        line = [line(1:(lStart(i)-1)) tag line((lEnd(i)+1):end)];
+    end
+    
+    [links, lStart, lEnd] = regexp(line, '[\[]{2}([^\]]+)[|]([a-zA-Z0-9_-]+)[\]]{2}', 'tokens', 'start', 'end');
+    % for each internal link, create it
+    for i = numel(links):-1:1
+        link = links{i};
+        href = [baseUrl link{2}];
+        label = link{1};
+        tag = ['<a href="' href '">', parseLine(label), '</a>'];
+        line = [line(1:(lStart(i)-1)) tag line((lEnd(i)+1):end)];
     end
 end
