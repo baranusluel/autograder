@@ -8,7 +8,7 @@ This module shall have the following functions:
 
 - `[string unzipPath] = unzipArchive(string path, *optional* bool isTemp=true, *optional* bool deleteOriginal=false);`
 
-Unzips the ZIP archive defined in `path`. If `isTemp` is `true`, then `unzipArchive` will unzip the archive into a temporary folder; otherwise, it will unzip into the same folder the ZIP archive was found. If `deleteOriginal` is `true`, then `unzipArchive` will delete the original ZIP archive after unzipping. Regardless, the path of the unzipped archive (including the zipped folder name) will be returned. 
+Unzips the ZIP archive defined in `path`. If `isTemp` is `true`, then `unzipArchive` will unzip the archive into a temporary folder; otherwise, it will unzip into the same folder the ZIP archive was found. If `deleteOriginal` is `true`, then `unzipArchive` will delete the original ZIP archive after unzipping. Regardless, the path of the unzipped archive (including the zipped folder name) will be returned.
 
 - `[string convertedPath] = canvas2Autograder(string path, *optional* string outPath=void);`
 
