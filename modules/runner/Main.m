@@ -6,7 +6,8 @@
 % Implementation notes:
 % Start the parpool if isempty(gcp) parpool;
 % Create and assign the SENTINEL file of File.m
-% Remove documents folder from path (
+% factory default path: origPath = path(); restoredefaultpath();
+% path(origPath, '');
 % After running, close the parallel pool (delete(gcp('nocreate'));
 % After running, delete the sentinel file (fclose('all'),
 % delete(File.SENTINEL);)
