@@ -156,11 +156,11 @@ classdef Student < handle
             
             % Get all submissions
             subs = dir([path '*.m']);
-            this.submissions = string({subs.name});
+            this.submissions = {subs.name};
             
             % ID is folder name:
             this.id = regexp(path, '[A-Za-z0-9_]+(?=\\$)', 'match');
-            this.id = string(this.id{1});
+            this.id = this.id{1};
         end
     end
     methods (Access=public)
@@ -225,7 +225,14 @@ classdef Student < handle
             this.problems = [this.problems problem];
             for i = numel(problem.testCases):-1:1
                 feeds(i) = Feedback(problem.testCases(i));
-                engine(feeds(i));
+                % check if even submitted
+                % assume name is problem name
+                if any(strncmp(problem.name, this.submissions, length(problem.name)))
+                    engine(feeds(i));
+                else
+                    feeds(i).exception = MEXCEPTION('AUTOGRADER:STUDENT:FILENOTSUBMITTED', ...
+                        'File %s wasn''t submitted, so the engine was not run.', [problem.name '.m']);
+                end
             end
             this.feedbacks = [this.feedbacks {feeds}];
         end
