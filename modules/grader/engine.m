@@ -138,8 +138,8 @@ function engine(runnable)
 
     % Copy over supporting files
     supportingFiles = tCase.supportingFiles;
-    loadFiles = tCase.loadFiles;
-    [inNames, outNames, func] = parseFunction(tCase.call);
+
+    [~, ~, func] = parseFunction(tCase.call);
 
     allCalls = getcallinfo([func2str(func) '.m']);
     calls = [allCalls.calls];
@@ -156,9 +156,11 @@ function engine(runnable)
     for i = 1:numel(bannedFunctions)
         if any(strcmpi(calls, bannedFunctions{i}))
             if isa(runnable, 'TestCase')
-                throw(MException('AUTOGRADER:ENGINE:BADSOLUTION', 'Solution uses banned functions'));
+                throw(MException('AUTOGRADER:ENGINE:BADSOLUTION', ...
+                    'Solution uses banned functions'));
             else
-                runnable.exception = MException('AUTOGRADER:ENGINE:BANNED', 'File used banned function %s.', bannedFunctions{i});
+                runnable.exception = MException('AUTOGRADER:ENGINE:BANNED', ...
+                    'File used banned function %s.', bannedFunctions{i});
                 return;
             end
         end
@@ -174,20 +176,37 @@ function engine(runnable)
     beforeSnap = {beforeSnap.name};
     beforeSnap(strncmp(beforeSnap, '.', 1)) = [];
 
-    % See how long it takes to load data. Add that time to TIMEOUT
-    tic;
+    % Load data, load into cell
+    loads = cell(size(tCase.loadFiles));
     for i = 1:numel(tCase.loadFiles)
         % throw away result
-        S = load(tCase.loadFiles{i});
+        loads{i} = load(tCase.loadFiles{i});
     end
-    timeToLoad = toc;
-    clear('S');
+    % Collapse into cell array of names and cell array of values
+    numVars = 0;
+    for i = 1:numel(loads)
+        numVars = numVars + numel(fieldnames(loads{i}));
+    end
+    varNames = cell(1, sum(numVars));
+    varValues = cell(1, sum(numVars));
+    counter = 1;
+    for i = 1:numel(loads)
+        valNames = fieldnames(loads{i});
+        for val = 1:numel(valNames)
+            varNames{counter} = valNames{val};
+            varValues{counter} = loads{i}.(valNames{val});
+            counter = counter + 1;
+        end
+    end
+    % Save original loadFile names and assign vars to loadFiles field
+    origFileNames = tCase.loadFiles;
+    tCase.loadFiles = [varNames; varValues];
     %% Running
     % Create a new job for the parallel pool
     test = parfeval(@runCase, 0, runnable);
 
     % Wait until it's finished, up to 30 seconds
-    isTimeout = ~wait(test, 'finished', Student.TIMEOUT + timeToLoad);
+    isTimeout = ~wait(test, 'finished', Student.TIMEOUT);
     
     % Delete the job
     if isTimeout
@@ -216,14 +235,11 @@ function engine(runnable)
     for i = 1:numel(supportingFiles)
         delete(supportingFiles{i});
     end
-    for i = 1:numel(loadFiles)
-        delete(loadFiles{i});
-    end
 
     % Close all figures with visible handles?
     figs = findobj(0, 'type', 'figure');
     delete(figs);
-    
+    tCase.loadFiles = origFileNames;
     % If timeout and TestCase, throw error
     if isa(runnable, 'TestCase') && isTimeout
         throw(MException('MATLAB:TIMEOUT', 'Solution Code Timed Out'));
@@ -232,30 +248,34 @@ end
 
 function populateFiles(runnable, addedFiles)
     % Get last file first to prealloc array
-    files(numel(addedFiles)) = File([pwd() filesep() addedFiles{end}]);
-    % Iterate over all files (including last one again) so that _soln
-    % can be removed if necessary
-    for i = 1:numel(addedFiles)
-        files(i) = File([pwd() filesep() addedFiles{i}]);
-        if isa(runnable, 'TestCase')
-            % Remove _soln from name
-            files(i).name = strrep(files(i).name, '_soln', '');
+    if numel(addedFiles) ~= 0
+        files(numel(addedFiles)) = File([pwd() filesep() addedFiles{end}]);
+        % Iterate over all files (including last one again) so that _soln
+        % can be removed if necessary
+        for i = 1:numel(addedFiles)
+            files(i) = File([pwd() filesep() addedFiles{i}]);
+            if isa(runnable, 'TestCase')
+                % Remove _soln from name
+                files(i).name = strrep(files(i).name, '_soln', '');
+            end
         end
-    end
 
-    runnable.files = files;
+        runnable.files = files;
+    end
 end
 
 function populatePlots(runnable)
     % Get all handles; since the Position is captured, that can be used 
     % for the subplot checking
     pHandles = findobj(0, 'type', 'axes');
-    plots(numel(pHandles)) = Plot(pHandles(end));
-    for i = 1:(numel(pHandles) - 1)
-        plots(i) = Plot(pHandles(i));
-    end
+    if numel(pHandles) ~= 0
+        plots(numel(pHandles)) = Plot(pHandles(end));
+        for i = 1:(numel(pHandles) - 1)
+            plots(i) = Plot(pHandles(i));
+        end
 
-    runnable.plots = plots;
+        runnable.plots = plots;
+    end
 end
 
 
@@ -292,9 +312,7 @@ function runCase(runnable)
     fclose(fid);
     if ~strcmp(name, File.SENTINEL)
         % Communicate that user called fclose all.
-        if isa(runnable, 'TestCase')
-            throw(MException('AUTOGRADER:ENGINE:FCLOSEALL', 'The solution called fclose all'));
-        else
+        if isa(runnable, 'Feedback')
             runnable.exception = MException('AUTOGRADER:FCLOSEALL', 'Student Code called fclose all');
         end
     end
@@ -302,7 +320,7 @@ function runCase(runnable)
     % outNames is in order of argument. For each outName, apply corresponding
     % value
     for i = 1:numel(outs)
-        runnable.outs.(outNames{i}) = outs{i};
+        runnable.outputs.(outNames{i}) = outs{i};
     end
     timeout.isTimeout = false;
 end
@@ -314,9 +332,11 @@ function varargout = runner(func____, init____, ins, loads____)
     % been checked.
     inCell____ = ['{' strjoin(ins, ',') '}'];
     % varargout becomes cell array of the size of number of args requested
-    varargout = cell(size(nargout));
+    varargout = cell(1, nargout);
     % Load MAT files
-    cellfun(@load, loads____);
+    for i____ = 1:length(loads____)
+        eval([loads____{1, i____} ' = loads____{2, ' num2str(i____) '};']);
+    end
     % Run initializer, if any
     if ~isempty(init____)
         eval(init____);
@@ -433,20 +453,12 @@ function [ins, outs, func] = parseFunction(call)
 
 end
 
-function cleanup(runnable, isTimeout)
+function cleanup(runnable, timeout)
     % check if runnable is TestCase or Feedback
     fclose('all');
     
-    if isa(runnable, 'Feedback')
-        if timeout.isTimeout
-            runnable.exception = MException('TIMEOUT');
-            return;
-        end
-    else
-        if timeout.isTimeout
-            e = MException('TIMEOUT');
-            throw(e);
-        end
+    if timeout.isTimeout && isa(runnable, 'Feedback')
+        runnable.exception = MException('AUTOGRADER:TIMEOUT', 'Timeout occurred');
     end
 end
 
