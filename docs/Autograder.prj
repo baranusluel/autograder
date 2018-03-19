@@ -10,8 +10,15 @@
       <file>${PROJECT_ROOT}\Autograder_resources\icon_24.png</file>
       <file>${PROJECT_ROOT}\Autograder_resources\icon_16.png</file>
     </param.icons>
-    <param.summary>Automatically Grade Homework Submissions</param.summary>
-    <param.description>Hello, World!</param.description>
+    <param.summary>Automatically Grade Homework Submissions for CS 1371</param.summary>
+    <param.description>&lt;b&gt;Autograder&lt;/b&gt;
+
+The autograder will automatically grade submissions and provide meaningful feedback to students. It takes in the student submissions, solution files, rubrics, and any supporting files, and will return the feedback. In many cases, uploading files is also taken care of, meaning that the user only needs to start it up!
+
+If you're looking for documentation, click &lt;a href="https://github.gatech.edu/pages/CS1371/autograder/"&gt;here&lt;/a&gt;
+
+&lt;b&gt;Acknowledgements&lt;/b&gt;
+This product was a labor of love from the CS 1371 Software Development Team. You can check us out &lt;a href="https://github.gatech.edu/pages/CS1371/software-development/"&gt;here&lt;/a&gt;. Want to contribute? Fork us on &lt;a href="https://github.gatech.edu/CS1371/autograder"&gt;GitHub&lt;/a&gt;</param.description>
     <param.screenshot>${PROJECT_ROOT}\resources\images\brand.jpg</param.screenshot>
     <param.version>0.1.0</param.version>
     <param.products.name>
