@@ -54,7 +54,7 @@ function problems = build(opts)
         opts.generateDocs = true;
         opts.installerPath = ['..' filesep 'bin' filesep];
         opts.checkSuppressed = false;
-        opts.lint = true;
+        opts.lint = false;
     end
     [path, ~, ~] = fileparts(mfilename('fullpath'));
     thisFolder = cd(path);

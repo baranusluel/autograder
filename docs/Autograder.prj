@@ -12,7 +12,7 @@
     </param.icons>
     <param.summary>Automatically Grade Homework Submissions</param.summary>
     <param.description>Hello, World!</param.description>
-    <param.screenshot />
+    <param.screenshot>${PROJECT_ROOT}\resources\images\brand.jpg</param.screenshot>
     <param.version>0.1.0</param.version>
     <param.products.name>
       <item>MATLAB</item>
@@ -30,8 +30,8 @@
     <param.output>${PROJECT_ROOT}\bin</param.output>
     <param.guid>f89e3d97-7398-4d50-8d2b-9641bdb05318</param.guid>
     <unset>
-      <param.screenshot />
       <param.platforms />
+      <param.output />
     </unset>
     <fileset.main>
       <file>${PROJECT_ROOT}\modules\runner\Main.m</file>
@@ -46,7 +46,7 @@
     </fileset.resources>
     <fileset.package />
     <build-deliverables>
-      <file location="loc" name="name" optional="false">loc+name</file>
+      <file location="loc" name="bin" optional="false">name</file>
     </build-deliverables>
     <workflow />
     <matlab>
