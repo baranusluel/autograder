@@ -54,7 +54,7 @@ function problems = build(opts)
         opts.generateDocs = true;
         opts.installerPath = ['..' filesep 'bin' filesep];
         opts.checkSuppressed = false;
-        opts.lint = false;
+        opts.lint = true;
     end
     [path, ~, ~] = fileparts(mfilename('fullpath'));
     thisFolder = cd(path);
@@ -165,8 +165,20 @@ function problems = build(opts)
         % Create app
         matlab.apputil.package(['..' filesep 'Autograder.prj']);
 
+        % will default to current directory (which isn't what we want).
+        % Move the mlappinstall to the bin
+        try
+            movefile(['..' filesep '*.mlappinstall'], ['..' filesep 'bin'])
+        catch
+            %OK not to catch, since it means it did it correctly (it being
+            %.package();
+        end
         % Delete root .prj
-        delete(['..' filesep 'Autograder.prj']);
+        cd('..');
+        % wait for .4 seconds because...windows? Without this pause, delete
+        % does not delete the .prj files...
+        pause(0.4);
+        delete('*.prj');
     end
     
     if opts.generateDocs
