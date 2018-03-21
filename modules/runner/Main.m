@@ -74,6 +74,9 @@ function Main(students, solutions)
         % throw exception?
         throw(MException('AUTOGRADER:INVALIDPATH', ...
             'Expected solution path since given student path; got nothing'));
+    elseif ~isdir(students) || ~isdir(solutions)
+        throw(MException('AUTOGRADER:INVALIDPATH', ...
+            'Invalid Path given for students and/or solutions'));
     end
     
     % Start up parallel pool
