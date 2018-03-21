@@ -153,7 +153,7 @@ function html = parser(lines, includeBoiler, baseUrl)
                             end
                             line = regexprep(line, '^\s*[-*]\s+', '');
                             line = parseLine(line, baseUrl);
-                            body = [body {'<li>', '<p>', {line}, '</p>'}];
+                            body = [body {'<li>', '<p>', line, '</p>'}];
                             indLevel = thisLevel;
                         end
                         if i == numel(lines)
