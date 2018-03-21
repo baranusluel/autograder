@@ -9,6 +9,15 @@
 %#ok<*NASGU>
 function generateDocs(email)
     thisDir = pwd;
+    % if the email doesn't exist, try to get it from the current folder...
+    if ~exist('email', 'var')
+        [status, email] = system('git config --get user.email');
+        if status == 0
+            email = strtok(b, newline);
+        else
+            clear('email');
+        end
+    end
     [genFolder, ~, ~] = fileparts(mfilename('fullpath'));
     % Create temp dir for cloning repo
     tDir = [tempdir 'autograderDocs' filesep];
@@ -26,7 +35,7 @@ function generateDocs(email)
     options.imageFormat = 'png';
     options.evalCode = false;
     options.catchError = false;
-    options.showCode = true;
+    options.showCode = false;
 
     % each directory is a module. Create a new directory in for it
     mods = dir(['..' filesep 'modules']);
