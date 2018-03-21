@@ -2,7 +2,7 @@
 %
 % generateStudents turns a set of Student Folders into a vector of Students
 %
-% [S] = generateStudents(P) will convert all the student folders found in path P
+% [S] = generateStudents(P) will convert all the student folders found in ZIP P
 % into Students, and will return a vector in alphabetical order (case insensitive)
 % of the Students, where alphabetical order is based on their ID.
 %
@@ -18,7 +18,7 @@
 %
 %%% Unit Tests
 %
-%   P = 'C:\Users\...\students\'; % Valid path to student folders
+%   P = 'C:\Users\...\students.zip'; % Valid path to student folders
 %   S = generateStudents(P);
 %
 %   S -> A vector of students in alphabetical order, by their GT Username

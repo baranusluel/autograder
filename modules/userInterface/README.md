@@ -24,4 +24,4 @@ Change the information for the student we are grading (Name, ID, etc.)
 
 - `[string studentPath, string solut ionPath] = getInputs(*optional* bool failed=false);`
 
-Get the paths for the student submissions and the solutions. If `failed` is given and true, `getInputs` will notify the user that it did receive inputs, _but_, those inputs were invalid. 
+Get the paths for the student submissions and the solutions. If `failed` is given and true, `getInputs` will notify the user that it did receive inputs, _but_, those inputs were invalid.
