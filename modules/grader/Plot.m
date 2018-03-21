@@ -224,8 +224,36 @@ classdef Plot < handle
         %   equals threw an exception
         %   AUTOGRADER:PLOT:EQUALS:NOPLOT
         %
-        function [areEqual, message] = equals(this, that)
+        function [areEqual, message] = equals(this,that)
+            TitleCheck = strcmp(this.Title,that.Title)... 
+                | (isempty(this.Title) & isempty(that.Title));
+            XLabelCheck = strcmp(this.XLabel,that.XLabel)... 
+                | (isempty(this.XLabel) & isempty(that.XLabel));
+            YLabelCheck = strcmp(this.YLabel,that.YLabel)... 
+                | (isempty(this.YLabel) & isempty(that.YLabel));
+            ZLabelCheck = strcmp(this.ZLabel,that.ZLabel)... 
+                | (isempty(this.ZLabel) & isempty(that.ZLabel));
+            PositionCheck = isequal(this.Position,that.Position);
+            ImageCheck = isequal(this.Image,that.Image);
+%             LegendCheck = ;
+            XDataCheck = isequal(this.XData,that.XData);
+            YDataCheck = isequal(this.YData,that.YData);
+            ZDataCheck = isequal(this.ZData,that.ZData);
+            ColorCheck = isequal(this.Color,that.Color);
+            MarkerCheck = strcmp(this.Marker,that.Marker)... 
+                | (isempty(this.Marker{1}) & isempty(that.Marker{1}));
+            LineStyleCheck = strcmp(this.LineStyle,that.LineStyle)... 
+                | (isempty(this.LineStyle{1}) & isempty(that.LineStyle{1}));
             
+            
+            
+            areEqual = TitleCheck & XLabelCheck & YLabelCheck &...
+                ZLabelCheck & PositionCheck & ImageCheck &... % LegendCheck &...
+                XDataCheck & YDataCheck & ZDataCheck & ColorCheck & ...
+                MarkerCheck & LineStyleCheck;
+            
+            
+            message = '';
         end
         %% generateFeedback: Generates HTML feedback for the student and solution Plot.
         %
