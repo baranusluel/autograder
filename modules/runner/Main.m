@@ -55,6 +55,26 @@ function Main(students, solutions)
     % * Copy any necessary data back from temp folder (?)
     % * Reapply user's settings for figures
     
+    % Check if given params.
+    if ~exist('students', 'var')
+        % uigetfile
+        [studName, studPath, ~] = uigetfile('*.zip', 'Select the Student ZIP Archive');
+        if isequal(studName, 0) || isequal(studPath, 0)
+            return; % (user cancelled)
+        else
+            students = fullfile(studPath, studName);
+        end
+        [solnName, solnPath, ~] = uigetfile('*.zip', 'Select the Solutions ZIP Archive');
+        if isequal(solnName, 0) || isequal(solnPath, 0)
+            return; % (user cancelled)
+        else
+            solutions = fullfile(solnPath, solnName);
+        end
+    elseif ~exist('solutions', 'var')
+        % throw exception?
+        throw(MException('AUTOGRADER:INVALIDPATH', ...
+            'Expected solution path since given student path; got nothing'));
+    end
     
     % Start up parallel pool
     if isempty(gcp)
