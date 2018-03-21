@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>generateStudents: Generate Student array</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-21"><meta name="DC.source" content="generateStudents.m"><style type="text/css">
+      --><title>uploadToWebiste</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-21"><meta name="DC.source" content="uploadToWebiste.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -66,51 +66,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>generateStudents: Generate Student array</h1><!--introduction--><p>generateStudents turns a set of Student Folders into a vector of Students</p><p>[S] = generateStudents(P) will convert all the student folders found in ZIP P into Students, and will return a vector in alphabetical order (case insensitive) of the Students, where alphabetical order is based on their ID.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>generateStudents will always expect a correctly-structured archive, and also always assumes that all students have been previously unpacked.</p><h2 id="2">Exceptions</h2><p>An AUTOGRADER:GENERATESTUDENTS:INVALIDPATH exception will be thrown if the path is invalid or if no student folders are found.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">P = <span class="string">'C:\Users\...\students.zip'</span>; <span class="comment">% Valid path to student folders</span>
-S = generateStudents(P);
-</pre><pre class="language-matlab">S <span class="string">-&gt;</span> <span class="string">A</span> <span class="string">vector</span> <span class="string">of</span> <span class="string">students</span> <span class="string">in</span> <span class="string">alphabetical</span> <span class="string">order</span>, by <span class="string">their</span> <span class="string">GT</span> <span class="string">Username</span>
-</pre><pre class="language-matlab">P = <span class="string">''</span>; <span class="comment">% Invalid Path</span>
-S = generateStudents(P);
-</pre><pre class="language-matlab">Threw <span class="string">INVALIDPATH</span> <span class="string">exception</span>
-</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div><!--
+  </style></head><body><div class="content"><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
-%% generateStudents: Generate Student array
-%
-% generateStudents turns a set of Student Folders into a vector of Students
-%
-% [S] = generateStudents(P) will convert all the student folders found in ZIP P
-% into Students, and will return a vector in alphabetical order (case insensitive)
-% of the Students, where alphabetical order is based on their ID.
-%
-%%% Remarks
-%
-% generateStudents will always expect a correctly-structured archive, and also
-% always assumes that all students have been previously unpacked.
-%
-%%% Exceptions
-%
-% An AUTOGRADER:GENERATESTUDENTS:INVALIDPATH exception will be thrown if the path is
-% invalid or if no student folders are found.
-%
-%%% Unit Tests
-%
-%   P = 'C:\Users\...\students.zip'; % Valid path to student folders
-%   S = generateStudents(P);
-%
-%   S -> A vector of students in alphabetical order, by their GT Username
-%
-%   P = ''; % Invalid Path
-%   S = generateStudents(P);
-%
-%   Threw INVALIDPATH exception
-%
 
-% Notes for implementation:
-% Initializing an array of Student is weird. You have to start with the END first. 
-% In other words, say you have 1000 students. You should START with the one thousandth student:
-%
-%   students(1000) = Student(inputs);
-%
-% And then work your way down to 1 from there.
 ##### SOURCE END #####
 --></body></html>

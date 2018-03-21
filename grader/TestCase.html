@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>TestCase: A single test for a homework submission</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-18"><meta name="DC.source" content="TestCase.m"><style type="text/css">
+      --><title>TestCase: A single test for a homework submission</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-21"><meta name="DC.source" content="TestCase.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,21 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
   </style></head><body><div class="content"><h1>TestCase: A single test for a homework submission</h1><!--introduction--><p>This class defines a complete test case for a specific problem</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Fields</a></li><li><a href="#2">Methods</a></li><li><a href="#3">Remarks</a></li><li><a href="#4">Constructor</a></li><li><a href="#5">Remarks</a></li><li><a href="#6">Exceptions</a></li><li><a href="#7">Unit Tests</a></li></ul></div><h2 id="1">Fields</h2><div><ul><li><tt>call</tt>: The complete function call (i.e., <tt>[out1, out2] = myFunction(in1, in2);</tt>)</li></ul></div><div><ul><li><tt>initializer</tt>: The complete function call for a function to be run immediately before testing the student's code</li></ul></div><div><ul><li><tt>points</tt>: The points possible for this specific test case</li></ul></div><div><ul><li><tt>path</tt>: The fully qualified path to the solution code directory</li></ul></div><div><ul><li><tt>supportingFiles</tt>: A string array of complete file paths that will need to be copied to the student's directory</li></ul></div><div><ul><li><tt>loadFiles</tt>: A string array of complete file paths of MAT files to load</li></ul></div><div><ul><li><tt>banned</tt>: A string array of names of banned functions for this problem</li></ul></div><div><ul><li><tt>outputs</tt>: A structure where the field name is the name of the output, and the field value is the value of the output</li></ul></div><div><ul><li><tt>files</tt>: A <tt>File</tt> array that represents all the files produced as outputs</li></ul></div><div><ul><li><tt>plots</tt>: A <tt>Plot</tt> array that represents the plots generated</li></ul></div><h2 id="2">Methods</h2><div><ul><li><tt>TestCase(struct info, string path)</tt></li></ul></div><h2 id="3">Remarks</h2><p>The <tt>TestCase</tt> class defines all the necessary settings and conditions to run a single test of a student's function. The <tt>TestCase</tt> class stores the instructions for running the test case, and includes the solution's outputs for comparison.</p><p>The input arguments referenced in <tt>call</tt> should either be defined in <tt>loadFiles</tt> (the MAT files to be loaded), or in the <tt>initializer</tt>:</p><p>The <tt>initializer</tt> is useful if a variable's value cannot be determined until right before the function call. If <tt>initializer</tt> has outputs that will be used as inputs when calling the student's function, the names of the outputs must match the expected input names in <tt>call</tt> exactly. Such inputs that are generated at runtime don't need to appear in the MAT files, and should be overwritten if they do exist.</p><p>For example, suppose you wanted to populate input <tt>fid</tt> with a file handle. In that case, your <tt>initializer</tt> would look like:</p><pre class="language-matlab">[fid] = fopen(<span class="string">'myInput.txt'</span>);
-</pre><p>Now suppose <tt>fid</tt> is now 3. This will pass in 3 as an input to the function.</p><p>The initializer function can also be used to load a MAT-file, from the <tt>supportingFiles</tt> that are copied into the student's directory. Again, the variable names inside the MAT-file should match the input names in <tt>call</tt>.</p><pre class="codeinput"><span class="keyword">classdef</span> TestCase &lt; handle
-    <span class="keyword">properties</span> (Access = public)
-        call;
-        initializer;
-        points;
-        supportingFiles;
-        loadFiles;
-        banned;
-        path;
-        outputs;
-        files;
-        plots;
-    <span class="keyword">end</span>
-    <span class="keyword">methods</span>
-</pre><h2 id="4">Constructor</h2><p>The <tt>TestCase</tt> constructor creates a new <tt>TestCase</tt> from a structure representing parsed JSON.</p><p>T = TestCase(INFO, PATH) will create a new <tt>TestCase</tt> with all the fields filled with values from the solution. INFO should be a structure with the fields <tt>call</tt>, <tt>initializer</tt>, <tt>points</tt>, <tt>supportingFiles</tt>, <tt>banned</tt>. PATH is a fully qualified path to the student's directory.</p><h2 id="5">Remarks</h2><p>The format that the structure <tt>INFO</tt> should follow is shown by the JSON example below:</p><pre class="language-matlab">{
+</pre><p>Now suppose <tt>fid</tt> is now 3. This will pass in 3 as an input to the function.</p><p>The initializer function can also be used to load a MAT-file, from the <tt>supportingFiles</tt> that are copied into the student's directory. Again, the variable names inside the MAT-file should match the input names in <tt>call</tt>.</p><h2 id="4">Constructor</h2><p>The <tt>TestCase</tt> constructor creates a new <tt>TestCase</tt> from a structure representing parsed JSON.</p><p>T = TestCase(INFO, PATH) will create a new <tt>TestCase</tt> with all the fields filled with values from the solution. INFO should be a structure with the fields <tt>call</tt>, <tt>initializer</tt>, <tt>points</tt>, <tt>supportingFiles</tt>, <tt>banned</tt>. PATH is a fully qualified path to the student's directory.</p><h2 id="5">Remarks</h2><p>The format that the structure <tt>INFO</tt> should follow is shown by the JSON example below:</p><pre class="language-matlab">{
     <span class="string">"call"</span>: <span class="string">"[out1, out2] = myFun(in1, in2);"</span>,
     <span class="string">"initializer"</span>: <span class="string">""</span>,
     <span class="string">"points"</span>: 3,
@@ -146,37 +132,6 @@ T.plots -&gt; Plot[1];
 AUTOGRADER:TESTCASE:CTOR:BADINFO
 </pre><p>Assume J is valid structure, but the solution code errors.</p><p>Running the constructor:   T = TestCase(J, P);</p><pre class="language-matlab">The <span class="string">constructor</span> <span class="string">threw</span> <span class="string">exception</span>
 AUTOGRADER:TESTCASE:CTOR:BADSOLUTION
-</pre><pre class="codeinput">        <span class="keyword">function</span> this = TestCase(info, path)
-            <span class="keyword">try</span>
-                this.path = path;
-
-                <span class="comment">% Copy values from struct to TestCase. Do one-by-one</span>
-                <span class="comment">% instead of iterating in case fields are wrong/missing.</span>
-                <span class="comment">% If a field is missing, exception is caught and</span>
-                <span class="comment">% re-thrown as a parse error.</span>
-                this.call = info.call;
-                this.initializer = info.initializer;
-                this.points = info.points;
-                this.banned = info.banned;
-
-                <span class="comment">% contains() errors if supportingFiles is empty</span>
-                <span class="keyword">if</span> ~isempty(info.supportingFiles)
-                    toLoad = contains(info.supportingFiles, <span class="string">'.mat'</span>);
-                    this.loadFiles = info.supportingFiles(toLoad);
-                    this.supportingFiles = info.supportingFiles(~toLoad);
-                <span class="keyword">end</span>
-            <span class="keyword">catch</span>
-                throw(MException(<span class="string">'AUTOGRADER:TESTCASE:CTOR:BADINFO'</span>, <span class="keyword">...</span>
-                    <span class="string">'Problem with INFO struct fields'</span>));
-            <span class="keyword">end</span>
-
-            <span class="comment">% Engine can throw parse exceptions for bad |call| or</span>
-            <span class="comment">% |initializer|, and bad solution exception. Don't catch,</span>
-            <span class="comment">% let it propagate instead</span>
-            engine(this);
-        <span class="keyword">end</span>
-</pre><pre class="codeinput">    <span class="keyword">end</span>
-<span class="keyword">end</span>
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% TestCase: A single test for a homework submission

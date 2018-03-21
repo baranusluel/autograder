@@ -1,0 +1,267 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Main: Run the autograder</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-21"><meta name="DC.source" content="Main.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Main: Run the autograder</h1><!--introduction--><p>Main runs the autograder completely, cleaning up after itself and generally ensuring nothing is changed in the host environment</p><p>Main() Will prompt the user for the student ZIP file, the solution ZIP file, and will proceed to run the autograder.</p><p>Main(S, N) will run the autograder for the given student and solution zip archive paths. If the paths are invalid, it will error.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>Main is the entry point for the Autograder. Main will handle any exceptions, and will always clean up after itself - the user's folder will not be changed!</p><p>Documentation is available. Please go the the autograder's website, at</p><p><a href="https://github.gatech.edu/pages/CS1371/autograder">Documentation</a></p><h2 id="2">Exceptions</h2><p>An AUTOGRADER:INVALIDPATH exception will be thrown if either input paths are invalid.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">S = <span class="string">''</span>; <span class="comment">% invalid path</span>
+N = <span class="string">''</span>; <span class="comment">% invalid path</span>
+Main(S, N);
+</pre><pre class="language-matlab">Threw <span class="string">AUTOGRADER:INVALIDPATH</span> <span class="string">exception</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Main: Run the autograder
+%
+% Main runs the autograder completely, cleaning up after itself and
+% generally ensuring nothing is changed in the host environment
+%
+% Main() Will prompt the user for the student ZIP file, the solution ZIP
+% file, and will proceed to run the autograder.
+%
+% Main(S, N) will run the autograder for the given student and solution zip
+% archive paths. If the paths are invalid, it will error.
+%
+%%% Remarks
+%
+% Main is the entry point for the Autograder. Main will handle any
+% exceptions, and will always clean up after itself - the user's folder
+% will not be changed!
+%
+% Documentation is available. Please go the the autograder's website, at
+%
+% <https://github.gatech.edu/pages/CS1371/autograder Documentation>
+%
+%%% Exceptions
+%
+% An AUTOGRADER:INVALIDPATH exception will be thrown if either input paths
+% are invalid.
+%
+%%% Unit Tests
+%
+%   S = ''; % invalid path
+%   N = ''; % invalid path
+%   Main(S, N);
+%
+%   Threw AUTOGRADER:INVALIDPATH exception
+%
+function Main(students, solutions)
+    % Implementation Notes:
+    % 
+    % Main() will provide initial checking, and set up all necessary
+    % processes and environment settings:
+    %
+    % *Startup*
+    % 
+    % * Start the Parallel Pool
+    % * Create the SENTINEL file; assign to the File class
+    % * Apply the factory default path, and remove the user's MATLAB path
+    % * Create a temporary folder, and copy the student and solution zip
+    % files there
+    % * Ensure figures don't become visible
+    %
+    % *Cleanup*
+    %
+    % * Shut down the parallel pool
+    % * Close and delete the SENTINEL file
+    % * Reapply the path of the original user
+    % * Copy any necessary data back from temp folder (?)
+    % * Reapply user's settings for figures
+    
+    % Check if given params.
+    if ~exist('students', 'var')
+        % uigetfile
+        [studName, studPath, ~] = uigetfile('*.zip', 'Select the Student ZIP Archive');
+        if isequal(studName, 0) || isequal(studPath, 0)
+            return; % (user cancelled)
+        else
+            students = fullfile(studPath, studName);
+        end
+        [solnName, solnPath, ~] = uigetfile('*.zip', 'Select the Solutions ZIP Archive');
+        if isequal(solnName, 0) || isequal(solnPath, 0)
+            return; % (user cancelled)
+        else
+            solutions = fullfile(solnPath, solnName);
+        end
+    elseif ~exist('solutions', 'var')
+        % throw exception?
+        throw(MException('AUTOGRADER:INVALIDPATH', ...
+            'Expected solution path since given student path; got nothing'));
+    elseif ~isfolder(students) || ~isfolder(solutions)
+        throw(MException('AUTOGRADER:INVALIDPATH', ...
+            'Invalid Path given for students and/or solutions'));
+    end
+    
+    % Start up parallel pool
+    if isempty(gcp)
+        parpool(2);
+    end
+    
+    % Get temporary directory
+    settings.workingDir = [tempname filesep];
+    mkdir(settings.workingDir);
+    settings.userDir = cd(settings.workingDir);
+    % Create SENTINEL file
+    fid = fopen('SENTINEL.lock', 'wt');
+    fwrite(fid, 'SENTINEL');
+    fclose(fid);
+    % File.SENTINEL = [pwd filesep 'SENTINEL.lock'];
+    
+    % Copy zip files
+    % rename appropriately (students -> students, solutions -> solutions)
+    copyfile(students, [workingDir 'students.zip']);
+    copyfile(solutions, [workingDir 'solutions.zip']);
+    studPath = [workingDir 'students.zip'];
+    solnPath = [workingDir 'solutions.zip'];
+    % Remove user's PATH, instate factory default instead:
+    settings.userPath = path();
+    restoredefaultpath();
+    userpath('reset');
+    userpath('clear');
+    
+    % Make sure figure's don't show
+    settings.figures = get(0, 'DefaultFigureVisible');
+    set(0, 'DefaultFigureVisible', 'off');
+    
+    % Set on cleanup
+    cleaner = onCleanup(@() cleanup(settings));
+    
+    % Generate solutions
+    try
+        solutions = generateSolutions(solnPath);
+    catch e
+        % Display to user that we failed
+        alert('Problem generation failed. Error %s: %s', e.identifier, ...
+            e.message);
+        return;
+    end
+    
+    % Generate students
+    try
+        students = generateStudents(studPath);
+    catch e
+        alert('Student generation failed. Error %s: %s', e.identifier, ...
+            e.message);
+        return;
+    end
+    
+    % Grade students
+    %
+    % There are a couple of ways to do this. I've listed them below:
+    %
+    % * For each student, for each problem, grade the problem and provide
+    % feedback
+    % * For each student, for each problem, grade the problem. For each
+    % student, generate the feedback
+    % * For each problem for each student, grade the problem. For each
+    % student, generate the feedback
+    %
+    % I am going to choose option one. I think this will have a better
+    % performance measure, but that's just a gut decision. If anyone has
+    % any better ideas, I'm all ears!
+    %
+    % Also, if we grade and provide feedback all at once, then if either
+    % step will fail, it will fail fast (at the first student) rather than
+    % after all grading has been done.
+    for s = 1:numel(students)
+        student = students(s);
+        for p = 1:numel(solutions)
+            problem = problems(p);
+            student.gradeProblem(problem);
+            student.generateFeedback();
+        end
+    end
+end
+
+function alert(msg, params)
+    if ~exist('params', 'var') || isempty(params)
+        fprintf(2, '%s\n', msg);
+    else
+        fprintf(2, [msg '\n'], params{:});
+    end
+end
+
+function cleanup(settings)
+    % Cleanup
+    % Delete the parallel pool
+    if ~isempty(gcp('nocreate'))
+        delete(gcp);
+    end
+    
+    % Restore user's path
+    path(settings.userPath, '');
+    
+    % Copy over any files (?)
+    
+    % cd to user's dir
+    cd(settings.userDir);
+    
+    % Delete our working directory
+    rmdir(settings.workingDir, 's');
+    
+    % Restore figure settings
+    set(0, 'DefaultFigureVisible', settings.figures);
+end
+##### SOURCE END #####
+--></body></html>

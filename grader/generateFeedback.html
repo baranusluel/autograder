@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>generateFeedback: Generate HTML feedback for primitives</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-18"><meta name="DC.source" content="generateFeedback.m"><style type="text/css">
+      --><title>generateFeedback: Generate HTML feedback for primitives</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-21"><meta name="DC.source" content="generateFeedback.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -114,24 +114,6 @@ HTML = generateFeedback(S, P);
 P = struct(<span class="string">'hello'</span>, 1, <span class="string">'world'</span>, {3, 2, 1});
 HTML = generateFeedback(S, P);
 </pre><pre class="language-matlab">HTML <span class="string">-&gt;</span> <span class="string">'&lt;p&gt;&lt;span class="fas fa-times"&gt;&lt;/span&gt; In field "world": At index (1): 1 expected; 3 given. There may be other differences.&lt;/p&gt;'</span>
-</pre><pre class="codeinput"><span class="comment">% Note that there are a variety of constants, which are listed below:</span>
-<span class="comment">%</span>
-<span class="comment">% * |PASSING = '&lt;span class="fas fa-check&gt;&lt;/span&gt;'|</span>
-<span class="comment">% * |INCORRECT = '&lt;span class="fas fa-times"&gt;&lt;/span&gt;'|</span>
-<span class="comment">% * |DIFF_CLASS =</span>
-<span class="comment">% ['&lt;p&gt;' INCORRECT ' %s class expected; %s class given.&lt;/p&gt;']|</span>
-<span class="comment">% * |DIFF_DIM =</span>
-<span class="comment">% ['&lt;p&gt;' INCORRECT ' Dimension Mismatch: %s expected; %s given.&lt;/p&gt;']|</span>
-<span class="comment">% * |DIFF_NUM_VALUE =</span>
-<span class="comment">% ['&lt;p&gt;' INCORRECT ' %g expected; %g given.&lt;/p&gt;']|</span>
-<span class="comment">% * |DIFF_STR_VALUE =</span>
-<span class="comment">% ['&lt;p&gt;' INCORRECT ' "%s" expected; "%s" given.&lt;/p&gt;']|</span>
-<span class="comment">% * |DIFF_CEL_VALUE =</span>
-<span class="comment">% ['&lt;p&gt;' INCORRECT ' %s expected at index (%s); %s given. There may be other differences.&lt;/p&gt;']|</span>
-<span class="comment">% * |DIFF_STC_VALUE =</span>
-<span class="comment">% ['&lt;p&gt;' INCORRECT ' %s expected in field "%s"; %s given. There may be other differences.&lt;/p&gt;']|</span>
-<span class="comment">% Each of these constants has flags for inserting the correct value and</span>
-<span class="comment">% the received value.</span>
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% generateFeedback: Generate HTML feedback for primitives
