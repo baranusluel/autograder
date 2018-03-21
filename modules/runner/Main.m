@@ -92,6 +92,7 @@ function Main(students, solutions)
     fid = fopen('SENTINEL.lock', 'wt');
     fwrite(fid, 'SENTINEL');
     fclose(fid);
+    % File.SENTINEL = [pwd filesep 'SENTINEL.lock'];
     
     % Copy zip files
     % rename appropriately (students -> students, solutions -> solutions)
