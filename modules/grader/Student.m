@@ -164,7 +164,8 @@ classdef Student < handle
         end
     end
     methods (Access=public)
-        %% gradeProblem: Grades the given problem and records the results
+        function gradeProblem(this, problem)
+            %% gradeProblem: Grades the given problem and records the results
         %   
         % gradeProblem is used to evaluate the student code for a given
         % problem and record the results in the feedbacks field.
@@ -212,7 +213,7 @@ classdef Student < handle
         % Empty submissions will give appropritate score and reason values
         % in the Feedback class.
         % The Feedback classes will then be added to the feedbacks field.
-        function gradeProblem(this, problem)
+        
             % For each testCase, create Feedback, run engine.
             if ~isvalid(problem)
                 throw(MException('AUTOGRADER:STUDENT:GRADEPROBLEM:INVALIDPROBLEM', ...
@@ -236,7 +237,7 @@ classdef Student < handle
             end
             this.feedbacks = [this.feedbacks {feeds}];
         end
-        
+        function generateFeedback(this)
         %% generateFeedback: Generate HTML feedback for student
         %
         % generateFeedback is used to create an HTML file containing the
@@ -275,7 +276,6 @@ classdef Student < handle
         % * A section for each individual problem, where every test case
         % and the result (including points received, reason for losing
         % points, visual comparison of file outputs) is listed.
-        function generateFeedback(this)
             % Check feedbacks is correct
             if isempty(this.feedbacks)
                 throw(MException('AUTOGRADER:STUDENT:GENERATEFEEDBACK:MISSINGFEEDBACK', ...
