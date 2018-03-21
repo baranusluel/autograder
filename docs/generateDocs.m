@@ -13,7 +13,7 @@ function generateDocs(email)
     if ~exist('email', 'var')
         [status, email] = system('git config --get user.email');
         if status == 0
-            email = strtok(b, newline);
+            email = strtok(email, newline);
         else
             clear('email');
         end
