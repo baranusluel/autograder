@@ -123,5 +123,51 @@
 %   Threw INVALIDPATH exception
 %
 function problems = generateSolutions(path)
-
+%first check if the path contains .zip at all. 
+if contains(path,'.zip')
+    %try-catch block to check catch if the path is invalid at all. 
+    try
+        
+        %Find the path without the archive name.
+        [dir, rest] = strtok(path,'\');
+        while ~strcmp(dir,'.zip')
+            [dir, rest] = strtok(rest,'\');
+        end
+        dir = [dir, '\'];
+        unzip(path,dir);
+        %Navigate to that directory to work with files there.
+        oldFolder = cd(dir);
+        
+        %Decode the JSON
+        fh = fopen('rubric.json');
+        if fh==(-1)
+            %Invalid archive.
+            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH')
+        else
+            raw = fread(fh,inf);
+            str = char(raw'); 
+            fclose(fid); 
+            val = jsondecode(str);
+        end
+        
+    catch ME
+        if strcmp(ME.identifier,'MATLAB:checkfilename:invalidFilename')
+            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH','Threw INVALIDPATH exception.')
+        %Error message for valid path, but invalid archive.
+        elseif strcmp(ME.identifier,'AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH')
+            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH', 'Threw INVALIDPATH exception.')
+        elseif strcmp(ME.identifier,'MATLAB:json:ExpectedLiteral')
+            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH', 'Threw INVALIDPATH exception. JSON formatting is not correct.')
+        else
+            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH', 'Threw INVALIDPATH exception.')
+        end
+    end
+    
+        rubric = jsondecode()
+        
+    
+else
+    %Invalid Path
+    error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH')
+end
 end
