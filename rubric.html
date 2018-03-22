@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>Rubric Specification</title>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400&amp;subset=latin-ext" rel="stylesheet">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+        <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+        <link rel="stylesheet" href="resources/css/index.css" />
+        <link rel='shortcut icon' type='image/x-icon' href='resources/favicon.ico' />
+        <script src="resources/js/index.js"></script>
+        <style>
+            #goBack {
+                color: white;
+            }
+            .nav-pills {
+                margin-bottom: 30px;
+            }
+            pre {
+                background-color: #EFEFEF;
+                padding: 30px;
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+            <a id="goBack" class="nav-link" href="index.html">
+                <i class="fas fa-arrow-left"></i> Go Back
+            </a>
+            <a class="navbar-brand" href="index.html">
+                <img src="resources/brand.jpg" class="rounded navbar-logo">
+                Autograder Docs
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+                    
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav">
+                </ul>
+            </div>
+        </nav>
+        <div class="container-fluid">
+            <div class="jumbotron text-center">
+                <h1 class="display-4">Rubric Specification</h1>
+                <hr />
+                <p class="lead">
+                    This is the specification for both the <strong>contents</strong> and the <strong>structure</strong> of the rubric archive to be used for grading.
+                </p>
+                <p>
+                    If you aren't familiar with JSON, you'll need to learn that first...
+                </p>
+            </div>
+
+            <div class="row text-center">
+                <div class="col-12 text-center">
+                    <ul class="nav nav-pills nav-fill" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="pill" href="#files">What to Include</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="pill" href="#structure">How to Organize it</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="pill" href="#json">JSON Specification</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="tab-content">
+                <div id="files" class="tab-pane active">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h2>Quick Reference:</h2>
+                            <hr />
+                            <p class="lead">You'll need all of the following files:</p>
+                            <ul class="list-group">
+                                <li class="list-group-item">Solution Files (<code>.m</code> format)</li>
+                                <li class="list-group-item">JSON file (<code>rubric.json</code>)</li>
+                                <li class="list-group-item">Variable files (<code>.mat</code> files)</li>
+                                <li class="list-group-item">Initializer files (<code>.m</code> files containing an initializer function definition)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-8">
+                            <h2>What You'll Need</h2>
+                            <hr />
+                            <div class="row">
+                                <div class="col-12">
+                                    <h3>Solution Files</h3>
+                                    <p>
+                                        These files represent the homework solutions. They must be named <em>without</em> the <code>_soln</code> suffix, and must be the original <code>.m</code> file.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h3>JSON Rubric</h3>
+                                    <p>
+                                        This file must be called <code>rubric.json</code>, and contains the JSON (specified later) for this homework set.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h3>Variable Files</h3>
+                                    <p>
+                                        These files contain all the variables needed by a specific function (as specified in the rubric).
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h3>Initializer Files</h3>
+                                    <p>
+                                        If your code uses any <code>initializers</code>, be sure to include the function file in the solutions archive.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h3>Supporting Files</h3>
+                                    <p>
+                                        If your code needs external file resources (i.e., a <code>text file</code> or <code>image file</code>) include these as well.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div id="structure" class="tab-pane fade">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h3>Quick Reference</h3>
+                            <hr />
+                            <ul>
+                                <li>Each problem should have its own folder</li>
+                                <li>JSON rubric file should be at the top level</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-8">
+                            <h3>Detailed Structure</h3>
+                            <hr />
+                            <p class="lead">
+                                The organization of the archive is simple and intuitive.
+                            </p>
+                            <p>
+                                At the top level of the archive, you should have:
+                            </p>
+                            <ul>
+                                <li>
+                                    <p>A folder for each problem</p>
+                                    <ul>
+                                        <li>Folder name must exactly match the problem name</li>
+                                        <li>
+                                            <p>Each folder contains:</p>
+                                            <ul>
+                                                <li>The Solution File</li>
+                                                <li>All necessary Variable Files</li>
+                                                <li>All necessary Initializer Files</li>
+                                                <li>All necessary Supporting Files</li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>The JSON specifying the rubric, called <code>rubric.json</code></li>
+                            </ul>
+                            <p>
+                                A visual rendering of this format is shown below:
+                            </p>
+                            <ul class="list-group">
+                                <li class="list-group-item"><code>rubric.json</code></li>
+                                <li class="list-group-item">
+                                    <i class="far fa-folder-open"></i>
+                                    <code>problemOne</code>
+                                    <ul class="list-group">
+                                        <li class="list-group-item">
+                                                <i class="far fa-file"></i>
+                                            <code>problemOne.m</code><br>
+                                            <i class="far fa-file-code"></i>
+                                            <code>problemOneSupport____.m</code><br>
+                                            <i class="far fa-file"></i>
+                                            <code>problemOneInputs.mat</code><br>
+                                            <i class="far fa-file-alt"></i>
+                                            <code>problemOneText.txt</code><br>
+                                            <i class="far fa-file-image"></i>
+                                            <code>problemOneImg.png</code>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="far fa-folder-open"></i>
+                                    <code>nextProblem</code>
+                                    <ul class="list-group">
+                                        <li class="list-group-item">
+                                            <i class="far fa-file-code"></i>
+                                            <code>nextProblem.m</code><br>
+                                            <i class="far fa-file"></i>
+                                            <code>nextProblemInputs.mat</code>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li class="list-group-item">
+                                    <p>...</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="json" class="tab-pane fade">
+                    <div class="container">
+                        <div class="col-12 text-left">
+                            <h3>The Rubric JSON</h3>
+                            <p>
+                                All fields must be present, though their value can be empty. Values can <strong>not</strong> be <code>null</code>
+                            </p>
+                            <p class="lead">
+                                Below is an example of what the JSON could possibly look like...
+                            </p>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="col-12 text-left">
+                            <pre>
+{
+    "Problems": [
+        {
+            "name": "myFun",
+            "banned": [
+                "fopen",
+                "fclose",
+                "fseek",
+                "frewind"
+            ],
+            "TestCases": [
+                {
+                    "call": "[out1, out2] = myFun(in1, in2);",
+                    "initializer": "",
+                    "points": 3,
+                    "supportingFiles": [
+                        "myFile.txt",
+                        "myInputImage.png",
+                        "ins.mat"
+                    ]
+                },
+                {
+                    "call": "[out1, out2] = myFun(in1, in2);",
+                    "initializer": "in2 = supportFunction__;",
+                    "points": 3,
+                    "supportingFiles": [
+                        "myFile.txt",
+                        "myInputImage.png",
+                        "supportFunction__.m",
+                        "myFun.mat"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "example2",
+            "banned": [
+                "size",
+                "parpool"
+            ],
+            "TestCases": [
+                {
+                    "call": "[out1, out2] = example2(in1, in2);",
+                    "initializer": "",
+                    "points": 3.4,
+                    "supportingFiles": [
+                        "myFile.txt",
+                        "myInputImage.png",
+                        "inputs.mat"
+                    ]
+                },
+                {
+                    "call": "[out1, out2] = example2(in3, in4);",
+                    "initializer": "in4 = supportFunction__;",
+                    "points": 3,
+                    "supportingFiles": [
+                        "myFile.txt",
+                        "myInputImage.png",
+                        "supportFunction__.m",
+                        "example2.mat"
+                    ]
+                }
+            ]
+        }
+    ]
+}
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
