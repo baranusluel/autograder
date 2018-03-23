@@ -118,7 +118,7 @@ function Main(varargin)
     fid = fopen('SENTINEL.lock', 'wt');
     fwrite(fid, 'SENTINEL');
     fclose(fid);
-    File.SENTINEL = [pwd filesep 'SENTINEL.lock'];
+    File.SENTINEL = [pwd filesep 'SENTINEL.lock']; %#ok<STRNU>
     
     % Copy zip files
     % rename appropriately (students -> students, solutions -> solutions)
@@ -126,6 +126,7 @@ function Main(varargin)
     copyfile(settings.solutions, [settings.workingDir 'solutions.zip']);
     studPath = [settings.workingDir 'students.zip'];
     solnPath = [settings.workingDir 'solutions.zip'];
+    
     % Remove user's PATH, instate factory default instead:
     settings.userPath = path();
     Student.resetPath();
