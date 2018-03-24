@@ -62,6 +62,7 @@
 %
 function autograder2canvas(studentArr,canvasGradebook,homeworkName)
     
+    % Input Validation
     if ~exist('studentArr','var') || isa(studentArr,'Student')
         error('INVALIDSTUDENTS')
     end
@@ -74,6 +75,22 @@ function autograder2canvas(studentArr,canvasGradebook,homeworkName)
     if ~exist('homeworkName','var') || isValidHwName(homeworkName,gradebook)
         error('INVALIDHOMEWORKNAME')
     end
+    
+    % Mask to get the assignment
+    hwMask = strcmp(gradebook(1,:),homeworkName); 
+    
+    % Edit grades
+    for i = 1:length(studentArr)
+        if studentArr.isgraded
+            id = studentArr(i).id;
+            sdntMask = [false; false; strcmp(gradebook(3:end,4),id)];
+            grade = sum([studentArr(i).feedbacks.points]);
+            gradebook{sdntMask,hwMask} = grade;
+        end
+    end
+    
+    % Rewrite gradebook
+    writeCsv(gradebook,canvasGradebook)
     
 end
 
