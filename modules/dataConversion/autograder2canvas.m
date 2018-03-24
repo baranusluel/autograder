@@ -21,14 +21,14 @@
 %
 %%% Exceptions
 %
-% AUTOGRADER:AUTOGRADER2CANVAS:MISSINGGRADEBOOK exception will be thrown if
-% the function is run without a valid gradebook file name.
-%
-% AUTOGRADER:AUTOGRADER2CANVAS:MISSINGSTUDENTS exception will be thrown if
+% AUTOGRADER:AUTOGRADER2CANVAS:INVALIDSTUDENTS exception will be thrown if
 % the function is run without a valid student array
 % 
 % AUTOGRADER:AUTOGRADER2CANVAS:INVALIDGRADEBOOK exception will be thrown if
 % the function is run with an invalid gradebook file name.
+%
+% AUTOGRADER:AUTOGRADER2CANVAS:INVALIDHOMEWORKNAME exception will be thrown
+% if the function is run with a hw name that is not in the gradebook.
 %
 %%% Unit Tests
 %
@@ -60,6 +60,33 @@
 %
 %   Threw INVALIDGRADEBOOK exception
 %
-function autograder2canvas(students, gradebook, homework)
-
+function autograder2canvas(studentArr,canvasGradebook,homeworkName)
+    
+    if ~exist('canvasGradebook','var') || ~contains(canvasGradebook,'.csv')
+        error('INVALIDGRADEBOOK')
+    end
+    [~,~,gradebook] = xlsread(canvasGradebook);
+    
+    
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
