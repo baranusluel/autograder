@@ -77,10 +77,22 @@ function autograder2canvas(studentArr,canvasGradebook,homeworkName)
     
 end
 
-function writecsv(cellArr,fileName)
-    
-    
-    
+function writeCsv(cellArr,fileName)
+    fh = fopen(fileName,'w');
+    for r = 1:canvasDimvec(1)
+        fprintf(fh,'"%s"',cellArr{r,1});
+        for c = 2:canvasDimvec(2)
+            if isnan(cellArr{r,c})
+                fprintf(fh,',');
+            elseif isnumeric(cellArr{r,c})
+                fprintf(fh,',%.1f',cellArr{r,c});
+            elseif ischar(cellArr{r,c})
+                fprintf(fh,',%s',cellArr{r,c});
+            end
+        end
+        fprintf(fh,'\n');
+    end
+    fclose(fh);
 end
 
 function log = isValidHwName(hwName,gradebook)
