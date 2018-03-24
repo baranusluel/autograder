@@ -62,22 +62,32 @@
 %
 function autograder2canvas(studentArr,canvasGradebook,homeworkName)
     
+    if ~exist('studentArr','var') || isa(studentArr,'Student')
+        error('INVALIDSTUDENTS')
+    end
+    
     if ~exist('canvasGradebook','var') || ~contains(canvasGradebook,'.csv')
         error('INVALIDGRADEBOOK')
     end
     [~,~,gradebook] = xlsread(canvasGradebook);
     
+    if ~exist('homeworkName','var') || isValidHwName(homeworkName,gradebook)
+        error('INVALIDHOMEWORKNAME')
+    end
     
 end
 
+function writecsv(cellArr,fileName)
+    
+    
+    
+end
 
-
-
-
-
-
-
-
+function log = isValidHwName(hwName,gradebook)
+    names = gradebook(1,6:end);
+    names(~cellfun(@ischar,names)) = {''};
+    log = any(strcmp(hwName,names));
+end
 
 
 
