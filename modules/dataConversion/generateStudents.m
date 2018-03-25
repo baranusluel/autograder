@@ -40,9 +40,9 @@
 function students = generateStudents(path)
 
 % check that path exists
-check = exist(path)
-% exist returns 7 if path is a folder or 0 if it doesn't exist
-% if folder doesn't exist, throw exception
+check = isfolder(path)
+% isfolder returns 1 if folder is in path or in current folder or 0 if it 
+% is not. If folder doesn't exist, throw exception
 if check == 0
     msgID = 'AUTOGRADER:GENERATESTUDENTS:INVALIDPATH'
     msg = 'path is invalid or no student folders were found'
