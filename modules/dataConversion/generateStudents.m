@@ -36,3 +36,25 @@
 %   students(1000) = Student(inputs);
 %
 % And then work your way down to 1 from there.
+
+function students = generateStudents(path)
+
+% check that input is valid (that path leads to an existing folder)
+check = isfolder(path);
+% isfolder returns 1 if folder is in path or in current folder, 0 if not
+% if folder doesn't exist, throw exception
+if ~check
+    msgID = 'AUTOGRADER:GENERATESTUDENTS:INVALIDPATH';
+    msg = 'path is invalid or no student folders were found';
+    % make different messages for 2 separate cases?
+    ME = MException(msgID, msgtext);
+    throw(ME);
+    % (if folder exists, should also check if folder contains individual
+    % student folders?)
+else
+    % extract archived contents of path into the current folder
+    unzip(path);
+end
+
+
+end
