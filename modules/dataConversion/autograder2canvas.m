@@ -63,17 +63,34 @@
 function autograder2canvas(studentArr,canvasGradebook,homeworkName)
     
     % Input Validation
-    if ~exist('studentArr','var') || isa(studentArr,'Student')
-        error('INVALIDSTUDENTS')
+    if isa(studentArr,'Student')
+        ME = MException('AUTOGRADER:AUTOGRADER2CANVAS:INVALIDSTUDENTS',...
+                        'The first input is not a student array');
     end
     
-    if ~exist('canvasGradebook','var') || ~contains(canvasGradebook,'.csv')
-        error('INVALIDGRADEBOOK')
+    if ~contains(canvasGradebook,'.csv')
+        if exist('ME','var')
+            ME = addCause(ME,MException('AUTOGRADER:AUTOGRADER2CANVAS:INVALIDGRADEBOOK',...
+                                        'The second input is not a .csv file'));
+        else
+            ME = MException('AUTOGRADER:AUTOGRADER2CANVAS:INVALIDGRADEBOOK',...
+                            'The second input is not a .csv file');
+        end
+    else
+        [~,~,gradebook] = xlsread(canvasGradebook);
+        if isValidHwName(homeworkName,gradebook)
+            if exist('ME','var')
+                ME = addCause(ME,MException('AUTOGRADER:AUTOGRADER2CANVAS:INVALIDHOMEWORKNAME',...
+                                            'The given Homework Name is not in the given Gradebook'));
+            else
+                ME = MException('AUTOGRADER:AUTOGRADER2CANVAS:INVALIDHOMEWORKNAME',...
+                                'The given Homework Name is not in the given Gradebook');
+            end
+        end
     end
-    [~,~,gradebook] = xlsread(canvasGradebook);
     
-    if ~exist('homeworkName','var') || isValidHwName(homeworkName,gradebook)
-        error('INVALIDHOMEWORKNAME')
+    if exist('ME','var')
+        throw(ME);
     end
     
     % Mask to get the assignment
