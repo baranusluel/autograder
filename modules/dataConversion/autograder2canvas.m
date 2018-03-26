@@ -84,7 +84,7 @@ function autograder2canvas(studentArr,canvasGradebook,homeworkName)
         if studentArr.isgraded
             id = studentArr(i).id;
             sdntMask = [false; false; strcmp(gradebook(3:end,4),id)];
-            grade = sum([studentArr(i).feedbacks.points]);
+            grade = cellfun(@(x) sum([x.points]),studentArr(i).feedbacks);
             gradebook{sdntMask,hwMask} = grade;
         end
     end
