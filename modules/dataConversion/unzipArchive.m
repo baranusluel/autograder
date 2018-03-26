@@ -51,8 +51,8 @@
 %   folder. The original archive test.zip is deleted.
 %
 
-function test = unzipArchive(varargin)
-    if (nargin == 1)
+function outPath = unzipArchive(originPath, varargin)
+    if (nargin == 0)
         
     
->>>>>>> unzipArchive
+

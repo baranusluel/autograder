@@ -142,3 +142,7 @@
 % ['<p>' INCORRECT ' %s expected in field "%s"; %s given. There may be other differences.</p>']|
 % Each of these constants has flags for inserting the correct value and
 % the received value.
+
+function htmlFeedBack = generateFeedback(soln, stud)
+
+end
