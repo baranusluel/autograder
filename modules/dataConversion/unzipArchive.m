@@ -54,5 +54,3 @@
 function test = unzipArchive(varargin)
     if (nargin == 1)
         
-    
->>>>>>> unzipArchive
