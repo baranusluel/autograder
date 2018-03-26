@@ -65,7 +65,6 @@ classdef Student < handle
     methods (Static)
         function resetPath()
             restoredefaultpath();
-            userpath('reset');
             userpath('clear');
             % Add ourselves to path (at beginning
             addpath(genpath(fileparts(fileparts(mfilename('fullname')))));
