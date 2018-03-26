@@ -42,6 +42,7 @@ classdef Feedback < handle
         plots;
         reason;
         points;
+        isRecursive;
     end
     methods (Access = public)
         %% Constructor
@@ -75,8 +76,9 @@ classdef Feedback < handle
         % an AUTOGRADER:FEEDBACK:INVALIDTESTCASE exception will be thrown
         %
         %
-        function [this] = Feedback(testCase)
-            
+        function [this] = Feedback(aTestCase)
+            this.testCase = aTestCase;
+            this.isRecursive = false;
         end
         %% generateFeedback: Generates HTML feedback 
         %
