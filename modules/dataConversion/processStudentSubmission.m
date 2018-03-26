@@ -99,7 +99,12 @@
 %   Threw INVALIDPATH exception
 function processStudentSubmission(startPath)
     currentDir = cd();
-    cd(startPath);
+    try
+        cd(startPath);
+    catch
+       throw(MException('AUTOGRADER:PROCESSSTUDENTSUBMISSION:INVALIDPATH', ...
+                    'Problem with INFO struct fields'));
+    end
     files = dir();
     zipFiles = cellfun(@(x)(~isempty(x)), strfind({files.name}, '.zip'), 'UniformOutput', false);
     zipFiles = [zipFiles{:}];
