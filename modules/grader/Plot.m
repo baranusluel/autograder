@@ -6,19 +6,38 @@
 % give feedback for the student plot. 
 %
 %%% Fields
-% * title: The title used for the plot
+% * Title: A String of the title used for the plot
+% 
+% * XLabel: A String of the xLabel used for the plot
 %
-% * xData: A cell array of vectors that represents all XData points plotted for this plot
+% * YLabel: A String of the yLabel used for the plot
 %
-% * yData: A cell array of vectors that represents all YData points plotted for this plot
+% * ZLabel: A String of the zLabel used for the plot
 %
-% * zData: A cell array of vectors that represents all ZData points plotted for this plot
+% * Position: A 1X4 double vector of the position of the axes in the figure
+% window
 %
-% * image: An image taken of the plot, as an MxNx3 uint8 array.
+% * Image: An image taken of the plot, as an MxNx3 uint8 array.
 %
-% * legend: A string array of all the names in the legend
+% * Legend: A string array of all the names in the legend
 %
-% * colors: A string array that represents the color used for every line
+% * XData: A cell array of vectors that represents all XData points plotted
+% for this plot
+%
+% * XData: A cell array of vectors that represents all YData points plotted
+% for this plot
+%
+% * ZData: A cell array of vectors that represents all ZData points plotted
+% for this plot
+% 
+% * Color: A cell array containing the normalized 1X3 double vector of the
+% color used for each line
+%
+% * Marker: A cell array containing the character uses as a marker in the
+% line
+%
+% * LineStyle: A cell array containing the character uses as a marker in
+% the line
 %
 %%% Methods
 %
@@ -35,15 +54,22 @@
 % class copies over any data necessary to recreate the plot entirely; as 
 % such, the plot can be deleted once a Plot object is created!
 %
+%
 classdef Plot < handle
     properties (Access = public)
-        title;
-        xData;
-        yData;
-        zData;
-        image;
-        legend;
-        colors;
+        Title;
+        XLabel;
+        YLabel;
+        ZLabel;
+        Position;
+        Image;
+        Legend;
+        XData;
+        YData;
+        ZData;
+        Color;
+        Marker;
+        LineStyle;
     end
     methods
         %% Constructor
@@ -59,27 +85,37 @@ classdef Plot < handle
         % the solution plot information to return feedback for each
         % student.
         %
-        % Note that xDdata, yData, and zData will all be cell arrays of the same size.
-        % If the plot had data in that dimension, that entry of the cell array will have a vector;
-        % otherwise, it will be empty.
+        % If the plot does not have a title, xlabel, ylabel, or zlabel, the
+        % appropriate field will contain an empty string.
+        %
+        % Note that XDdata, YData, ZData, Color, LineStyle, and Marker will
+        % all be cell arrays of the same size. If the plot had data or
+        % specification in that dimension, that entry of the cell array
+        % will have a vector or character; otherwise, it will be empty.
+        % (Note that color should never be empty)
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:PLOT:NOAXISDATA exception will be thrown if no input axis are
-        % provided
+        % An AUTOGRADER:PLOT:NOAXISDATA exception will be thrown if no
+        % input axis are provided
         %
         %%% Unit Tests
         %
         % Given valid axes handle
         %   this = Plot(pHandle)
         %
-        %   this.title -> 'My Plot'
-        %   this.xData -> XDATA (a cell array of vectors)
-        %   this.yData -> YDATA (a cell array of vectors)
-        %   this.zData -> ZDATA (a cell array of vectors)
-        %   this.image -> IMAGE (a uint8 array)
-        %   this.legend -> ["name1", "name2", ...]
-        %   this.colors -> ["color1", "color2", ...]
+        %   this.Title -> 'My Plot'
+        %   this.XLabel -> 'X-Axis'
+        %   this.YLabel -> 'Y-Axis'
+        %   this.ZLabel -> ''
+        %   this.Image -> IMAGE (a uint8 array)
+        %   this.Legend -> ["name1", "name2", ...]
+        %   this.XData -> XDATA (a cell array of vectors)
+        %   this.YData -> YDATA (a cell array of vectors)
+        %   this.ZData -> ZDATA (a cell array of vectors)
+        %   this.Color -> COLOR (a cell array of vectors)
+        %   this.Marker -> MARKER (a cell array of charactors)
+        %   this.LineStyle -> LINESTYLE (a cell array of charactors) 
         %
         % Given invalid axes handle
         %
@@ -87,6 +123,60 @@ classdef Plot < handle
         % AUTOGRADER:PLOT:NOAXISDATA
         %
         function this = Plot(pHandle)
+            
+            if ~isa(pHandle,'matlab.graphics.axis.Axes')
+                ME = MException('AUTOGRADER:PLOT:NOAXISDATA',...
+                    'Given input to Plot Constructor is not Axes Handle');
+                throw(ME)
+            else
+                this.Title = pHandle.Title.String;
+                this.XLabel = pHandle.XLabel.String;
+                this.YLabel = pHandle.YLabel.String;
+                this.ZLabel = pHandle.ZLabel.String;
+                
+                fig = ancestor(pHandle,'Figure');
+                imgstruct = getframe(fig);
+                this.Image = imgstruct.cdata;
+                
+                this.Position = pHandle.Position;
+                
+                lines = allchild(pHandle);
+                
+                xcell = cell(1,length(lines));
+                ycell = cell(1,length(lines));
+                zcell = cell(1,length(lines));
+                color = cell(1,length(lines));
+                marker = cell(1,length(lines));
+                linestyle = cell(1,length(lines));
+                
+                for i = 1:length(lines)
+                    line = lines(i);
+                    xcell(i) = {line.XData};
+                    ycell(i) = {line.YData};
+                    zcell(i) = {line.ZData};
+                    
+                    color(i) = {line.Color};
+                    
+                    if strcmp(line.Marker,'none')
+                        marker(i) = {[]};
+                    else
+                        marker(i) = {line.Marker};
+                    end
+                    
+                    if strcmp(line.LineStyle,'none')
+                        linestyle(i) = {[]};
+                    else
+                        linestyle(i) = {line.LineStyle};
+                    end
+                end
+                
+                this.XData = xcell;
+                this.YData = ycell;
+                this.ZData = zcell;
+                this.Color = color;
+                this.Marker = marker;
+                this.LineStyle = linestyle; 
+            end
             
         end
     end
@@ -134,8 +224,44 @@ classdef Plot < handle
         %   equals threw an exception
         %   AUTOGRADER:PLOT:EQUALS:NOPLOT
         %
-        function [areEqual, message] = equals(this, that)
+        function [areEqual, message] = equals(this,that)
+            TitleCheck = strcmp(this.Title,that.Title)... 
+                | (isempty(this.Title) & isempty(that.Title));
+            XLabelCheck = strcmp(this.XLabel,that.XLabel)... 
+                | (isempty(this.XLabel) & isempty(that.XLabel));
+            YLabelCheck = strcmp(this.YLabel,that.YLabel)... 
+                | (isempty(this.YLabel) & isempty(that.YLabel));
+            ZLabelCheck = strcmp(this.ZLabel,that.ZLabel)... 
+                | (isempty(this.ZLabel) & isempty(that.ZLabel));
             
+            
+            PositionCheck = isequal(this.Position,that.Position);
+            
+            ImageCheck = isequal(this.Image,that.Image);
+%             LegendCheck = ;
+            
+            XDataCheck = isequal(this.XData,that.XData);
+            
+            YDataCheck = isequal(this.YData,that.YData);
+            
+            ZDataCheck = isequal(this.ZData,that.ZData);
+            
+            
+            ColorCheck = isequal(this.Color,that.Color);
+            MarkerCheck = strcmp(this.Marker,that.Marker)... 
+                | (isempty(this.Marker{1}) & isempty(that.Marker{1}));
+            LineStyleCheck = strcmp(this.LineStyle,that.LineStyle)... 
+                | (isempty(this.LineStyle{1}) & isempty(that.LineStyle{1}));
+            
+            
+            
+            areEqual = TitleCheck & XLabelCheck & YLabelCheck &...
+                ZLabelCheck & PositionCheck & ImageCheck &... % LegendCheck &...
+                XDataCheck & YDataCheck & ZDataCheck & ColorCheck & ...
+                MarkerCheck & LineStyleCheck;
+            
+            
+            message = '';
         end
         %% generateFeedback: Generates HTML feedback for the student and solution Plot.
         %
@@ -169,7 +295,7 @@ classdef Plot < handle
         % with only one or no input Plots. 
         %
         function [html] = generateFeedback(this, that)
-
+            
         end
     end
 end

@@ -9,6 +9,12 @@
 % Main(S, N) will run the autograder for the given student and solution zip
 % archive paths. If the paths are invalid, it will error.
 %
+% Main(___, O) will run the autograder with the given options in O, which
+% is a structure that holds settings for the autograder.
+%
+% Main(___, P1, V1, ...) will run the autograder with the given name-value
+% pairs, detailed in the Remarks section
+%
 %%% Remarks
 %
 % Main is the entry point for the Autograder. Main will handle any
@@ -18,6 +24,21 @@
 % Documentation is available. Please go the the autograder's website, at
 %
 % <https://github.gatech.edu/pages/CS1371/autograder Documentation>
+%
+% The options can be one of the following. If in a structure, the field
+% name must match the option. All options are case insensitive.
+%
+% * inputFormat: The format of the input ZIP student archive. Can be one of
+% the following: 'canvas' or 'tsqaure'. Default is 'canvas'
+%
+% * outputFormat: The format of the output to write. Can be one of the
+% following: 'canvas' or 'tsquare'. Default is 'canvas'
+%
+% * upload: A string. If 'website', then it will only upload to the CS 1371
+% website. If 'all', then it will upload to the CS 1371 website & the given
+% format - if the outputFormat is 'canvas', it will upload to the canvas
+% website, for example. If upload is empty, then no uploads take
+% place.
 %
 %%% Exceptions
 %
@@ -32,7 +53,7 @@
 %
 %   Threw AUTOGRADER:INVALIDPATH exception
 %
-function Main(students, solutions)
+function Main(varargin)
     % Implementation Notes:
     % 
     % Main() will provide initial checking, and set up all necessary
@@ -55,28 +76,33 @@ function Main(students, solutions)
     % * Copy any necessary data back from temp folder (?)
     % * Reapply user's settings for figures
     
+    % Parse inputs
+    [
+        settings.students, ...
+        settings.solutions, ...
+        settings.inputFormat, ...
+        settings.outputFormat, ...
+        settings.upload ...
+    ] = parser(varargin);
+        
+
     % Check if given params.
-    if ~exist('students', 'var')
+    if isempty(settings.students)
         % uigetfile
         [studName, studPath, ~] = uigetfile('*.zip', 'Select the Student ZIP Archive');
         if isequal(studName, 0) || isequal(studPath, 0)
             return; % (user cancelled)
         else
-            students = fullfile(studPath, studName);
+            settings.students = fullfile(studPath, studName);
         end
+    elseif isempty(settings.solutions)
+        % throw exception?
         [solnName, solnPath, ~] = uigetfile('*.zip', 'Select the Solutions ZIP Archive');
         if isequal(solnName, 0) || isequal(solnPath, 0)
             return; % (user cancelled)
         else
-            solutions = fullfile(solnPath, solnName);
+            settings.solutions = fullfile(solnPath, solnName);
         end
-    elseif ~exist('solutions', 'var')
-        % throw exception?
-        throw(MException('AUTOGRADER:INVALIDPATH', ...
-            'Expected solution path since given student path; got nothing'));
-    elseif ~isfolder(students) || ~isfolder(solutions)
-        throw(MException('AUTOGRADER:INVALIDPATH', ...
-            'Invalid Path given for students and/or solutions'));
     end
     
     % Start up parallel pool
@@ -92,19 +118,18 @@ function Main(students, solutions)
     fid = fopen('SENTINEL.lock', 'wt');
     fwrite(fid, 'SENTINEL');
     fclose(fid);
-    % File.SENTINEL = [pwd filesep 'SENTINEL.lock'];
+    File.SENTINEL = [pwd filesep 'SENTINEL.lock']; %#ok<STRNU>
     
     % Copy zip files
     % rename appropriately (students -> students, solutions -> solutions)
-    copyfile(students, [workingDir 'students.zip']);
-    copyfile(solutions, [workingDir 'solutions.zip']);
-    studPath = [workingDir 'students.zip'];
-    solnPath = [workingDir 'solutions.zip'];
+    copyfile(settings.students, [settings.workingDir 'students.zip']);
+    copyfile(settings.solutions, [settings.workingDir 'solutions.zip']);
+    studPath = [settings.workingDir 'students.zip'];
+    solnPath = [settings.workingDir 'solutions.zip'];
+    
     % Remove user's PATH, instate factory default instead:
     settings.userPath = path();
-    restoredefaultpath();
-    userpath('reset');
-    userpath('clear');
+    Student.resetPath();
     
     % Make sure figure's don't show
     settings.figures = get(0, 'DefaultFigureVisible');
@@ -125,6 +150,9 @@ function Main(students, solutions)
     
     % Generate students
     try
+        if strcmpi(inputFormat, 'canvas')
+            studPath = canvas2autograder(studPath, settings.workingDir);
+        end
         students = generateStudents(studPath);
     catch e
         alert('Student generation failed. Error %s: %s', e.identifier, ...
@@ -158,6 +186,28 @@ function Main(students, solutions)
             student.generateFeedback();
         end
     end
+    
+    % Formatting
+    % format the output
+    if strcmpi(outputFormat, 'canvas')
+        autograder2canvas(studPath);
+    end
+    % Uploading
+    switch upload
+        case {'website'}
+            % upload to the website
+        case {'canvas'}
+            % upload to canvas
+        case {'tsquare'}
+            % upload to TSquare
+    end
+    % Save .MAT file
+    % Where to save it?
+    % Save in pwd for now
+    save([settings.userDir filesep 'autograder.mat'], ...
+        'students', 'solutions', 'inputFormat', ...
+        'outputFormat', 'upload', 'settings');
+    
 end
 
 function alert(msg, params)
@@ -184,8 +234,63 @@ function cleanup(settings)
     cd(settings.userDir);
     
     % Delete our working directory
-    rmdir(settings.workingDir, 's');
-    
+    try
+        rmdir(settings.workingDir, 's');
+    catch
+        
+    end
     % Restore figure settings
     set(0, 'DefaultFigureVisible', settings.figures);
+end
+
+function varargout = parser(args)
+    function formatValidator(param)
+        formats = {'canvas', 'tsquare', 'autograder'};
+        if (isstring(param) && numel(param) ~= 1)
+            e = MException('AUTOGRADER:MAIN', ...
+                'Input given must be a scalar string or character vector');
+            throw(e);
+        elseif ~ischar(param) && ~isstring(param)
+            e = MException('AUTOGRADER:MAIN', ...
+                'Input given must be a scalar string or character vector');
+            throw(e);
+        elseif ~any(strcmpi(formats, param))
+            e = MException('AUTOGRADER:MAIN', ...
+                'Unkown input %s; must be one of the following: ''%s''', ...
+                param, strjoin(formats, ''', '''));
+            throw(e);
+        end
+    end
+
+    function validator(param)
+        if isstring(param) && numel(param) ~= 1
+            e = MException('AUTOGRADER:MAIN', ...
+                'Input given must be a scalar string or character vector');
+            throw(e);
+        elseif isstring(param)
+            param = char(param);
+        end
+        if ~ischar(param)
+            e = MException('AUTOGRADER:MAIN', ...
+                'Input given must be a scalar string or character vector');
+            throw(e);
+        elseif ~isempty(param)
+            formatValidator(param);
+        end
+    end
+
+    inputs = inputParser();
+    inputs.CaseSensitive = false;
+    inputs.FunctionName = 'Autograder';
+    inputs.addOptional("students", '', @isfile);
+    inputs.addOptional("solutions", '', @isfile);
+    inputs.addParameter("inputFormat", 'canvas', @formatValidator);
+    inputs.addParameter("outputFormat", 'canvas', @formatValidator);
+    inputs.addParameter("upload", '', @validator);
+    inputs.parse(args{:});
+    varargout{1} = inputs.Results.students;
+    varargout{2} = inputs.Results.solutions;
+    varargout{3} = inputs.Results.inputFormat;
+    varargout{4} = inputs.Results.outputFormat;
+    varargout{5} = inputs.Results.upload;
 end
