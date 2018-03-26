@@ -21,14 +21,14 @@
 %
 %%% Exceptions
 %
-% AUTOGRADER:AUTOGRADER2CANVAS:MISSINGGRADEBOOK exception will be thrown if
-% the function is run without a valid gradebook file name.
-%
-% AUTOGRADER:AUTOGRADER2CANVAS:MISSINGSTUDENTS exception will be thrown if
+% AUTOGRADER:AUTOGRADER2CANVAS:INVALIDSTUDENTS exception will be thrown if
 % the function is run without a valid student array
 % 
 % AUTOGRADER:AUTOGRADER2CANVAS:INVALIDGRADEBOOK exception will be thrown if
 % the function is run with an invalid gradebook file name.
+%
+% AUTOGRADER:AUTOGRADER2CANVAS:INVALIDHOMEWORKNAME exception will be thrown
+% if the function is run with a hw name that is not in the gradebook.
 %
 %%% Unit Tests
 %
@@ -60,6 +60,72 @@
 %
 %   Threw INVALIDGRADEBOOK exception
 %
-function autograder2canvas(students, gradebook, homework)
-
+function autograder2canvas(studentArr,canvasGradebook,homeworkName)
+    
+    % Input Validation
+    if ~exist('studentArr','var') || isa(studentArr,'Student')
+        error('INVALIDSTUDENTS')
+    end
+    
+    if ~exist('canvasGradebook','var') || ~contains(canvasGradebook,'.csv')
+        error('INVALIDGRADEBOOK')
+    end
+    [~,~,gradebook] = xlsread(canvasGradebook);
+    
+    if ~exist('homeworkName','var') || isValidHwName(homeworkName,gradebook)
+        error('INVALIDHOMEWORKNAME')
+    end
+    
+    % Mask to get the assignment
+    hwMask = strcmp(gradebook(1,:),homeworkName); 
+    
+    % Edit grades
+    for i = 1:length(studentArr)
+        if studentArr.isgraded
+            id = studentArr(i).id;
+            sdntMask = [false; false; strcmp(gradebook(3:end,4),id)];
+            grade = sum([studentArr(i).feedbacks.points]);
+            gradebook{sdntMask,hwMask} = grade;
+        end
+    end
+    
+    % Rewrite gradebook
+    writeCsv(gradebook,canvasGradebook)
+    
 end
+
+function writeCsv(cellArr,fileName)
+    fh = fopen(fileName,'w');
+    for r = 1:canvasDimvec(1)
+        fprintf(fh,'"%s"',cellArr{r,1});
+        for c = 2:canvasDimvec(2)
+            if isnan(cellArr{r,c})
+                fprintf(fh,',');
+            elseif isnumeric(cellArr{r,c})
+                fprintf(fh,',%.1f',cellArr{r,c});
+            elseif ischar(cellArr{r,c})
+                fprintf(fh,',%s',cellArr{r,c});
+            end
+        end
+        fprintf(fh,'\n');
+    end
+    fclose(fh);
+end
+
+function log = isValidHwName(hwName,gradebook)
+    names = gradebook(1,6:end);
+    names(~cellfun(@ischar,names)) = {''};
+    log = any(strcmp(hwName,names));
+end
+
+
+
+
+
+
+
+
+
+
+
+

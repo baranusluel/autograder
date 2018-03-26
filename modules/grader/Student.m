@@ -62,6 +62,15 @@ classdef Student < handle
         problems = [];
         html = {};
     end
+    methods (Static)
+        function resetPath()
+            restoredefaultpath();
+            userpath('reset');
+            userpath('clear');
+            % Add ourselves to path (at beginning
+            addpath(genpath(fileparts(fileparts(mfilename('fullname')))));
+        end
+    end
     methods
         %% Constructor
         %
@@ -230,6 +239,7 @@ classdef Student < handle
                 % assume name is problem name
                 if any(strncmp(problem.name, this.submissions, length(problem.name)))
                     engine(feeds(i));
+                    this.resetPath();
                 else
                     feeds(i).exception = MEXCEPTION('AUTOGRADER:STUDENT:FILENOTSUBMITTED', ...
                         'File %s wasn''t submitted, so the engine was not run.', [problem.name '.m']);
