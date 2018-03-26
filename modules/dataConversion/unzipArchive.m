@@ -4,8 +4,8 @@
 % folder or unzipping into the current folder. Returns the path of the
 % unzipped archive.
 %
-% UNZIPPATH = unzipArchive(PATH) unzips the arhive at PATH into the current 
-% folder.
+% UNZIPPATH = unzipArchive(PATH) unzips the arhive at PATH into a temp
+% directory and returns the path to its contents.
 %
 % UNZIPPATH = unzipArchive(PATH, DESTINATION) unzips the archive at PATH to
 % a folder specified by DESTINATION. If DESTINATION is a folder path, the
@@ -53,6 +53,13 @@
 
 function outPath = unzipArchive(originPath, varargin)
     if (nargin == 0)
+        unzip(originPath);
+    elseif (nargin == 1) 
+        unzip(originPath, varagin{1});
+    elseif (nargin == 2)
+        if islogical(varagin{2}) && ~varargin{2}
+            % need to delete the original folder
+            
         
     
 
