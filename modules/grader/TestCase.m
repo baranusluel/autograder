@@ -83,7 +83,7 @@ classdef TestCase < handle
         % filled with values from the solution. INFO should be a structure with
         % the fields |call|, |initializer|, |points|, |supportingFiles|,
         % |banned|. PATH is a fully qualified path to the
-        % student's directory.
+        % solution code directory.
         %
         %%% Remarks
         %
@@ -262,9 +262,11 @@ classdef TestCase < handle
                     this.loadFiles = info.supportingFiles(toLoad);
                     this.supportingFiles = info.supportingFiles(~toLoad);
                 end
-            catch
-                throw(MException('AUTOGRADER:TESTCASE:CTOR:BADINFO', ...
-                    'Problem with INFO struct fields'));
+            catch e
+                ME = MException('AUTOGRADER:TESTCASE:CTOR:BADINFO', ...
+                    'Problem with INFO struct fields');
+                ME.addCause(e);
+                throw(ME);
             end
             
             % Engine can throw parse exceptions for bad |call| or
