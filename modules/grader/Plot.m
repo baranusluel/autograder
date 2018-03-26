@@ -128,55 +128,55 @@ classdef Plot < handle
                 ME = MException('AUTOGRADER:PLOT:NOAXISDATA',...
                     'Given input to Plot Constructor is not Axes Handle');
                 throw(ME)
-            else
-                this.Title = pHandle.Title.String;
-                this.XLabel = pHandle.XLabel.String;
-                this.YLabel = pHandle.YLabel.String;
-                this.ZLabel = pHandle.ZLabel.String;
+            end
+            this.Title = pHandle.Title.String;
+            this.XLabel = pHandle.XLabel.String;
+            this.YLabel = pHandle.YLabel.String;
+            this.ZLabel = pHandle.ZLabel.String;
+            
+            fig = ancestor(pHandle,'Figure');
+            imgstruct = getframe(fig);
+            this.Image = imgstruct.cdata;
+            
+            this.Position = pHandle.Position;
+            
+            lines = allchild(pHandle);
+            
+            xcell = cell(1,length(lines));
+            ycell = cell(1,length(lines));
+            zcell = cell(1,length(lines));
+            color = cell(1,length(lines));
+            marker = cell(1,length(lines));
+            linestyle = cell(1,length(lines));
+            
+            for i = 1:length(lines)
+                line = lines(i);
+                xcell(i) = {line.XData};
+                ycell(i) = {line.YData};
+                zcell(i) = {line.ZData};
                 
-                fig = ancestor(pHandle,'Figure');
-                imgstruct = getframe(fig);
-                this.Image = imgstruct.cdata;
+                color(i) = {line.Color};
                 
-                this.Position = pHandle.Position;
-                
-                lines = allchild(pHandle);
-                
-                xcell = cell(1,length(lines));
-                ycell = cell(1,length(lines));
-                zcell = cell(1,length(lines));
-                color = cell(1,length(lines));
-                marker = cell(1,length(lines));
-                linestyle = cell(1,length(lines));
-                
-                for i = 1:length(lines)
-                    line = lines(i);
-                    xcell(i) = {line.XData};
-                    ycell(i) = {line.YData};
-                    zcell(i) = {line.ZData};
-                    
-                    color(i) = {line.Color};
-                    
-                    if strcmp(line.Marker,'none')
-                        marker(i) = {[]};
-                    else
-                        marker(i) = {line.Marker};
-                    end
-                    
-                    if strcmp(line.LineStyle,'none')
-                        linestyle(i) = {[]};
-                    else
-                        linestyle(i) = {line.LineStyle};
-                    end
+                if strcmp(line.Marker,'none')
+                    marker(i) = {[]};
+                else
+                    marker(i) = {line.Marker};
                 end
                 
-                this.XData = xcell;
-                this.YData = ycell;
-                this.ZData = zcell;
-                this.Color = color;
-                this.Marker = marker;
-                this.LineStyle = linestyle; 
+                if strcmp(line.LineStyle,'none')
+                    linestyle(i) = {[]};
+                else
+                    linestyle(i) = {line.LineStyle};
+                end
             end
+            
+            this.XData = xcell;
+            this.YData = ycell;
+            this.ZData = zcell;
+            this.Color = color;
+            this.Marker = marker;
+            this.LineStyle = linestyle;
+  
             
         end
     end
