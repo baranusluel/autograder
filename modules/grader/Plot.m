@@ -124,7 +124,7 @@ classdef Plot < handle
         %
         function this = Plot(pHandle)
             
-            if ~strcmp(class(pHandle),'matlab.graphics.axis.Axes')
+            if ~isa(pHandle,'matlab.graphics.axis.Axes')
                 ME = MException('AUTOGRADER:PLOT:NOAXISDATA',...
                     'Given input to Plot Constructor is not Axes Handle');
                 throw(ME)
@@ -142,32 +142,32 @@ classdef Plot < handle
                 
                 lines = allchild(pHandle);
                 
-                xcell = {};
-                ycell = {};
-                zcell = {};
-                color = {};
-                marker = {};
-                linestyle = {};
+                xcell = cell(1,length(lines));
+                ycell = cell(1,length(lines));
+                zcell = cell(1,length(lines));
+                color = cell(1,length(lines));
+                marker = cell(1,length(lines));
+                linestyle = cell(1,length(lines));
                 
-                for line = lines
-                    xcell = [xcell {line.XData}];
-                    ycell = [ycell {line.YData}];
-                    zcell = [zcell {line.ZData}];
+                for i = 1:length(lines)
+                    line = lines(i);
+                    xcell(i) = {line.XData};
+                    ycell(i) = {line.YData};
+                    zcell(i) = {line.ZData};
                     
-                    color = [color {line.Color}];
+                    color(i) = {line.Color};
                     
                     if strcmp(line.Marker,'none')
-                        marker = [marker {[]}];
+                        marker(i) = {[]};
                     else
-                        marker = [marker {line.Marker}];
+                        marker(i) = {line.Marker};
                     end
                     
                     if strcmp(line.LineStyle,'none')
-                        linestyle = [linestyle {[]}];
+                        linestyle(i) = {[]};
                     else
-                        linestyle = [linestyle {line.LineStyle}];
+                        linestyle(i) = {line.LineStyle};
                     end
-                    
                 end
                 
                 this.XData = xcell;
@@ -233,12 +233,20 @@ classdef Plot < handle
                 | (isempty(this.YLabel) & isempty(that.YLabel));
             ZLabelCheck = strcmp(this.ZLabel,that.ZLabel)... 
                 | (isempty(this.ZLabel) & isempty(that.ZLabel));
+            
+            
             PositionCheck = isequal(this.Position,that.Position);
+            
             ImageCheck = isequal(this.Image,that.Image);
 %             LegendCheck = ;
+            
             XDataCheck = isequal(this.XData,that.XData);
+            
             YDataCheck = isequal(this.YData,that.YData);
+            
             ZDataCheck = isequal(this.ZData,that.ZData);
+            
+            
             ColorCheck = isequal(this.Color,that.Color);
             MarkerCheck = strcmp(this.Marker,that.Marker)... 
                 | (isempty(this.Marker{1}) & isempty(that.Marker{1}));
