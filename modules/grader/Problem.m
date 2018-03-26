@@ -75,7 +75,7 @@ classdef Problem < handle
                 this.testCases = info.testCases;
                 this.banned = info.banned;
             catch 
-                throw(MException('AUTOGRADER:TESTCASE:PROBLEM:INVALIDINFO', ...
+                throw(MException('AUTOGRADER:PROBLEM:PROBLEM:INVALIDINFO', ...
                     'Problem with INFO struct fields'));
             end
         end
