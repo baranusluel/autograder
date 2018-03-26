@@ -43,14 +43,33 @@
 % is graded, then the second, and so on.
 %
 % Grading is done via the parallel pool and parfeval.
+
+ %#ok<*PROP>
 classdef Student < handle
+    properties (Constant)
+        TIMEOUT = 30;
+    end
     properties (Access = public)
         name;
         id;
         path;
         submissions;
-        feedbacks;
-        isGraded;
+        feedbacks = {};
+        % why is this necessary?
+        isGraded = false;
+    end
+    properties (Access=private)
+        problems = [];
+        html = {};
+    end
+    methods (Static)
+        function resetPath()
+            restoredefaultpath();
+            userpath('reset');
+            userpath('clear');
+            % Add ourselves to path (at beginning
+            addpath(genpath(fileparts(fileparts(mfilename('fullname')))));
+        end
     end
     methods
         %% Constructor
@@ -129,11 +148,33 @@ classdef Student < handle
         %   AUTOGRADER:STUDENT:ARGUMENTEXCEPTION
         %
         function this = Student(path, name)
+            this.path = path;
+            this.name = name;
+            % We can safely assume that student has been processed (zip
+            % unpacked, etc.)
             
+            % Sanitize path to use correct file separator
+            
+            path(path == '/' | path == '\') = filesep;
+            
+            % Path should always have last file separator
+            
+            if path(end) ~= filesep
+                path = [path filesep];
+            end
+            
+            % Get all submissions
+            subs = dir([path '*.m']);
+            this.submissions = {subs.name};
+            
+            % ID is folder name:
+            this.id = regexp(path, '[A-Za-z0-9_]+(?=\\$)', 'match');
+            this.id = this.id{1};
         end
     end
     methods (Access=public)
-        %% gradeProblem: Grades the given problem and records the results
+        function gradeProblem(this, problem)
+            %% gradeProblem: Grades the given problem and records the results
         %   
         % gradeProblem is used to evaluate the student code for a given
         % problem and record the results in the feedbacks field.
@@ -181,16 +222,38 @@ classdef Student < handle
         % Empty submissions will give appropritate score and reason values
         % in the Feedback class.
         % The Feedback classes will then be added to the feedbacks field.
-        function gradeProblem(this, problem)
-            
-        end
         
+            % For each testCase, create Feedback, run engine.
+            if ~isvalid(problem)
+                throw(MException('AUTOGRADER:STUDENT:GRADEPROBLEM:INVALIDPROBLEM', ...
+                    'Given problem was not a valid Problem object'));
+            elseif numel(problem.testCases) == 0
+                throw(MException('AUTOGRADER:STUDENT:GRADEPROBLEM:INVALIDPROBLEM', ...
+                    'Expected non-zero number of Test Cases; got 0'));
+            end
+            % Add problem to end of our list
+            this.problems = [this.problems problem];
+            for i = numel(problem.testCases):-1:1
+                feeds(i) = Feedback(problem.testCases(i));
+                % check if even submitted
+                % assume name is problem name
+                if any(strncmp(problem.name, this.submissions, length(problem.name)))
+                    engine(feeds(i));
+                    this.resetPath();
+                else
+                    feeds(i).exception = MEXCEPTION('AUTOGRADER:STUDENT:FILENOTSUBMITTED', ...
+                        'File %s wasn''t submitted, so the engine was not run.', [problem.name '.m']);
+                end
+            end
+            this.feedbacks = [this.feedbacks {feeds}];
+        end
+        function generateFeedback(this)
         %% generateFeedback: Generate HTML feedback for student
         %
         % generateFeedback is used to create an HTML file containing the
         % homework feedback for a student.
         %
-        % HTML = generateFeedback() will return a char vector HTML
+        % generateFeedback() will write the 
         % containing the markup representing the student's feedback.
         %
         %%% Remarks
@@ -207,6 +270,10 @@ classdef Student < handle
         % will be thrown if the feedbacks field of the Student is empty
         % (i.e. if gradeProblem wasn't invoked first).
         %
+        % An AUTOGRADER:STUDENT:GENERATEFEEDBACK:FILEIO exception will be
+        % thrown if there is an error when opening the student's feedback
+        % file for writing
+        %
         %%% Unit Tests
         %
         % When invoked in a Student class containing a valid (non-empty)
@@ -219,8 +286,156 @@ classdef Student < handle
         % * A section for each individual problem, where every test case
         % and the result (including points received, reason for losing
         % points, visual comparison of file outputs) is listed.
-        function html = generateFeedback(this)
+            % Check feedbacks is correct
+            if isempty(this.feedbacks)
+                throw(MException('AUTOGRADER:STUDENT:GENERATEFEEDBACK:MISSINGFEEDBACK', ...
+                    'No feedbacks present (did you forget to invoke gradeProblem?)'));
+            end
+            % Header info
+            this.html = {'<!DOCTYPE html>', '<html>', '<head>', '</head>', ...
+                '<body>', '</body>', '</html>'};
+            resources = {
+                '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">', ...
+                '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>', ...
+                '<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>', ...
+                '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>', ...
+                '<script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>'
+                };
+            styles = {
+                '<style>', ...
+                '</style>'
+                };
+            scripts = {
+                '<script>', ...
+                '</script>'
+                };
+            % Splice recs, styles, and scripts:
+            spliceHead(resources, styles, scripts);
             
+            % Add Student's name
+            name = {'<div class="row text-left">', '<div class="col-12">', ...
+                '<h1 class="display-1">', ...
+                ['Feedback for ' this.name ' (' this.id ')'], '</h1>', ...
+                '</div>', '</div>'};
+            this.appendRow(name);
+
+            % Generate Table
+            generateTable();
+            
+            % For each problem, gen feedback
+            for i = 1:numel(this.problems)
+                generateProblem(this.problems(i), this.feedbacks{i});
+            end
+            
+            % Join with new lines and write to feedback.html
+            [fid, msg] = fopen([this.path 'feedback.html'], 'wt');
+            if fid == -1
+                % throw error
+                throw(MException('AUTOGRADER:STUDENT:GENERATEFEEDBACK:FILEIO', ...
+                    'Unable to create the feedback file. Received message %s', msg));
+            end
+            html = strjoin(this.html, newline);
+            fwrite(fid, html);
+            fclose(fid);
+            
+        end
+    end
+    methods (Access=private)
+        % Splice elements to the end of HEAD
+        function spliceHead(this, varargin)
+            % Find the header
+            ind = find(strcmpi(this.html, '</head>'));
+            this.html = [this.html(1:(ind-1)) varargin{:} this.html(ind:end)];
+        end
+        % Splice elements to the end of BODY
+        function appendRow(this, varargin)
+            % Find the end of container
+            ind = find(strcmpi(this.html, '</div>'), 1, 'last');
+            this.html = [this.html(1:(ind-1)) varargin{:} this.html(ind:end)];
+        end
+        
+        function generateTable(this)
+            % Table will have following columns:
+            %   Problem #
+            %   Problem Name
+            %   Pts Possible
+            %   Pts Earned
+            table = {'<table>', '<thead>', '<tr>' '<th>', '', '</th>', ...
+                '<th>', 'Problem', '</th>', '<th>', 'Points Possible', ...
+                '</th>', '<th>', 'Points Earned', '</th>', '</tr>', ...
+                '</thead>', '</table>'};
+            
+            totalPts = 0;
+            totalEarn = 0;
+            % For each problem, list:
+            for i = 1:numel(this.problems)
+                tCases = [this.problems(i).testCases];
+                feeds = this.feedbacks(i);
+                num = {'<td>', '<p>', num2str(i), '</p>', '</td>'};
+                name = {'<td>', '<p>', this.problems(i).name, '</p>', '</td>'};
+                poss = {'<td>', '<p>', num2str(sum([tCases.points])), '</p>', '</td>'};
+                earn = {'<td>', '<p>', num2str(sum([feeds.points])), '</p>', '</td>'};
+                
+                row = [{'<tr>'}, num, name, poss, earn, {'</tr>'}];
+                appendRow(row);
+                
+                totalPts = totalPts + sum([tCases.points]);
+                totalEarn = totalEarn + sum([feeds.points]);
+            end
+            
+            % Add totals row
+            totals = {'<tr>', '<td>', '</td>', '<td>', '</td>', '<td>', ...
+                '<p>', num2str(totalPts), '</p>', '</td>', '<td>', ...
+                '<p>', num2str(totalEarn), '</p>', '</td>', '</tr>'};
+            appendRow(totals);
+            
+            % Splice table into body
+            table = [{'<div class="row text-center">', '<div class="col-12">'}, ...
+                table, {'</div>', '</div>'}];
+            this.appendRow(table);
+            % Appends a row
+            function appendRow(row)
+                % Always insert right before </table>, which is at end
+                table = [table(1:(end-1)) row table(end)];
+            end
+        end
+        
+        % Create feedback for specific problem
+        function generateProblem(this, problem, feedbacks)
+            prob = {'<div class="problem col-12">', '<h2>', problem.name, ...
+                '</h2>', '<div class="tests">', '</div>', '</div>'};
+            
+            for i = 1:numel(feedbacks)
+                feed = feedbacks(i);
+               
+                % if passed, marker is green
+                if feed.isPassed
+                    marker = {'<div class="col-1">', ...
+                        Feedback.CORRECT_MARK, '</div>'};
+                else
+                    marker = {'<div class="col-1">', ...
+                        Feedback.INCORRECT_MARK, '</div>'};
+                end
+                
+                % Show call
+                call = [marker {'<div class="col-md-4">', '<pre class="call">', ...
+                    feed.testCase.call, '</pre>', '</div>'}];
+                headerRow = [{'<div class="row test-header">'}, call, {'</div>'}];
+                
+                % Get feedback message
+                msg = {feed.generateFeedback()};
+                test = [{'<div class="row test-case">'}, headerRow, msg, {'</div>'}];
+                appendTest(test);
+            end
+            
+            % Append this problem to end of html
+            prob = [{'<div class="row">'}, prob, {'</div>'}];
+            this.appendRow(prob);
+            
+            function appendTest(test)
+                % Append to end
+                prob = [prob(1:(end-2)) test prob((end-1):end)];
+            end
         end
     end
 end

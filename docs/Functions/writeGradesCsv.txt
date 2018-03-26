@@ -1,6 +1,0 @@
-Function Name: writeGradesCsv.m
-Inputs: gradebook - the gradebook object
-        gradesCsv* - a cell array representing the content to write to grades.csv
-Outputs:
-Specific Uses:  runAutograder.m
-Description: This writes the grades to the grades.csv file provided in the bulk download from T-Square. gradesCsv is not required; if it is not given, it will read the grades from the original grades.csv to get the values to write. Regardless of whether or not the gradesCsv is given, if a gradebook is given, then the fifth column is overwritten with the grades from the gradebook. If the gradebook is empty, the original gradesCsv cell data is used instead. Note that gradebook is not optional; you MUST include a gradebook. However, this gradebook can be empty. This function is deprecated, however, and needs to be updated sometime in the near future.

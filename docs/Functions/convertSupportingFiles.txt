@@ -1,5 +1,0 @@
-Function Name: convertSupportingFiles.m
-Inputs: folderPath - a path to the supporting files folder
-Outputs: None
-Specific Uses: getRubric.m
-Description: Given a supporting file (of either excel format or image format), convertSupportingFiles will generate the corresponding .mat file (so that, when test cases are run, they can always load a .mat regardless of original data storage type).

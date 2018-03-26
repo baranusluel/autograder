@@ -1,6 +1,0 @@
-Function Name: getGradebook.m
-Inputs: homeworkZipFilePath - A string representing the path to homework .zip file. This is the file downloaded from T-Square.
-        destinationFolderPath - A string representing the path to the working directory.
-Outputs: gradebook - a structure containing information on all of the students.
-Specific Uses: runAutograder.m
-Description: Given the zip file path and your working directory folder path, getGradebook will unzip the file and returns the gradebook (see this object's documentation).

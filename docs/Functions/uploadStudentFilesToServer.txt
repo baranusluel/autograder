@@ -1,6 +1,0 @@
-Function Name: uploadStudentFilesToServer.m
-Inputs: gradebook (struct) - structure representing the gradebook 
-Outputs: None
-Specific Uses: uploadFilesToServer.m
-Dependencies: uploadFile.m
-Description: Uploads the structure containing the file paths of student submissions and feedback
