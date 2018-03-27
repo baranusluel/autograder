@@ -46,6 +46,14 @@
 % A logical - if true, linting is done before building. If linting returns
 % errors, the build is stopped - no installer or documentation is created.
 %
+% * version
+%
+% A character vector - if blank or not defined, the current version is
+% unchanged. Version numbers follow the SemVer convention:
+% vMAJOR.MINOR.PATH. For more information refer to Semantic Versioning
+% Documentation at <https://semver.org SemVer.org>. Do not include leading
+% 'v'.
+
 function problems = build(opts)
     if ~exist('opts', 'var')
         % Default correctly
@@ -55,6 +63,7 @@ function problems = build(opts)
         opts.installerPath = ['..' filesep 'bin' filesep];
         opts.checkSuppressed = false;
         opts.lint = true;
+        opts.version = '';
     end
     [path, ~, ~] = fileparts(mfilename('fullpath'));
     thisFolder = cd(path);
@@ -105,6 +114,27 @@ function problems = build(opts)
     % if given installer path, create installer
     if ~isempty(opts.installerPath)
         % Read lines
+        % First read and change version, if applicable. Then save this to
+        % ORIGINAL prj and close
+        if isfield(opts, 'version') && ~isempty(opts.version)
+            % Check if version is correct first
+            % MAJOR.MINOR.PATH
+            components = strsplit(opts.version, '.');
+            if numel(components) == 3 ...
+                    && all(cellfun(@(n)(~isnan(str2double(n))), ...
+                    components, 'uni', false))
+                % Check that all three are numbers
+                % should we check if increased? Allow ability to check
+                fid = fopen('Autograder.prj', 'rt');
+                content = fread(fid)';
+                fclose(fid);
+                content = regexprep(content, ...
+                    '(?<=\<param.version\>).*?(?=\<\/param\.version\>', opts.version);
+                fid = fopen('Autograder.prj', 'wt');
+                fwrite(fid, content);
+                fclose(fid);
+            end
+        end
         fid = fopen('Autograder.prj', 'rt');
         lines = strsplit(char(fread(fid)'), newline);
         fclose(fid);
