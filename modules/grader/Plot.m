@@ -133,18 +133,19 @@ classdef Plot < handle
             this.XLabel = pHandle.XLabel.String;
             this.YLabel = pHandle.YLabel.String;
             this.ZLabel = pHandle.ZLabel.String;
+            this.Position = pHandle.Position;
             
             fig = ancestor(pHandle,'Figure');
             imgstruct = getframe(fig);
             this.Image = imgstruct.cdata;
             
-            this.Position = pHandle.Position;
             
             lines = allchild(pHandle);
             
             xcell = cell(1,length(lines));
             ycell = cell(1,length(lines));
             zcell = cell(1,length(lines));
+            legend = cell(1,length(lines));
             color = cell(1,length(lines));
             marker = cell(1,length(lines));
             linestyle = cell(1,length(lines));
@@ -154,6 +155,8 @@ classdef Plot < handle
                 xcell(i) = {line.XData};
                 ycell(i) = {line.YData};
                 zcell(i) = {line.ZData};
+                
+                legend(i) = {line.DisplayName};
                 
                 color(i) = {line.Color};
                 
@@ -173,6 +176,7 @@ classdef Plot < handle
             this.XData = xcell;
             this.YData = ycell;
             this.ZData = zcell;
+            this.Legend = legend;
             this.Color = color;
             this.Marker = marker;
             this.LineStyle = linestyle;
@@ -238,7 +242,6 @@ classdef Plot < handle
             PositionCheck = isequal(this.Position,that.Position);
             
             ImageCheck = isequal(this.Image,that.Image);
-%             LegendCheck = ;
             
             XDataCheck = isequal(this.XData,that.XData);
             
@@ -246,8 +249,10 @@ classdef Plot < handle
             
             ZDataCheck = isequal(this.ZData,that.ZData);
             
-            
             ColorCheck = isequal(this.Color,that.Color);
+            
+            LegendCheck = strcmp(this.Legend,that.Legend)... 
+                | (isempty(this.Legend{1}) & isempty(that.Legend{1}));
             MarkerCheck = strcmp(this.Marker,that.Marker)... 
                 | (isempty(this.Marker{1}) & isempty(that.Marker{1}));
             LineStyleCheck = strcmp(this.LineStyle,that.LineStyle)... 
@@ -256,7 +261,7 @@ classdef Plot < handle
             
             
             areEqual = TitleCheck & XLabelCheck & YLabelCheck &...
-                ZLabelCheck & PositionCheck & ImageCheck &... % LegendCheck &...
+                ZLabelCheck & PositionCheck & ImageCheck & LegendCheck &...
                 XDataCheck & YDataCheck & ZDataCheck & ColorCheck & ...
                 MarkerCheck & LineStyleCheck;
             
