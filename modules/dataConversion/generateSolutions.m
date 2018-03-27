@@ -129,15 +129,9 @@ if contains(path,'.zip')
     try
         
         %Find the path without the archive name.
-        [dir, rest] = strtok(path,'\');
-        while ~strcmp(dir,'.zip')
-            [dir, rest] = strtok(rest,'\');
-        end
-        dir = [dir, '\'];
-        unzip(path,dir);
-        %Navigate to that directory to work with files there.
-        oldFolder = cd(dir);
-        
+        [filepath, name, ext] = fileparts(path)
+        %Unzip the archive to the current folder.
+        unzipArchive(path);
         %Decode the JSON
         fh = fopen('rubric.json');
         if fh==(-1)
