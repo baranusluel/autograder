@@ -52,6 +52,5 @@
 %
 function test = unzipArchive(unzipPath, varargin)
     if (nargin == 0)
-        
-        
-    
+    end
+end
