@@ -72,6 +72,7 @@ classdef Plot < handle
         LineStyle;
     end
     methods
+        function this = Plot(pHandle)
         %% Constructor
         %
         % Creates an instance of the Plot class from a student's plot
@@ -122,7 +123,6 @@ classdef Plot < handle
         % Constructor threw exception
         % AUTOGRADER:PLOT:NOAXISDATA
         %
-        function this = Plot(pHandle)
             
             if ~isa(pHandle,'matlab.graphics.axis.Axes')
                 ME = MException('AUTOGRADER:PLOT:NOAXISDATA',...
@@ -181,6 +181,7 @@ classdef Plot < handle
         end
     end
     methods (Access=public)
+        function [areEqual, message] = equals(this,that)
         %% equals: Checks if the given plot is equal to this plot
         %
         % equals is used to check a student plot against the solution plot.
@@ -224,7 +225,6 @@ classdef Plot < handle
         %   equals threw an exception
         %   AUTOGRADER:PLOT:EQUALS:NOPLOT
         %
-        function [areEqual, message] = equals(this,that)
             TitleCheck = strcmp(this.Title,that.Title)... 
                 | (isempty(this.Title) & isempty(that.Title));
             XLabelCheck = strcmp(this.XLabel,that.XLabel)... 
@@ -263,6 +263,7 @@ classdef Plot < handle
             
             message = '';
         end
+        function [html] = generateFeedback(this, that)
         %% generateFeedback: Generates HTML feedback for the student and solution Plot.
         %
         % generateFeedback will return the feedback for the student's plot. 
@@ -294,7 +295,6 @@ classdef Plot < handle
         % An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be thrown if generateFeedback is called
         % with only one or no input Plots. 
         %
-        function [html] = generateFeedback(this, that)
             
         end
     end
