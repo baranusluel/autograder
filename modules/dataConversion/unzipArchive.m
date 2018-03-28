@@ -50,18 +50,7 @@
 %   and the contents of test.zip are unzipped into the newly created test\ 
 %   folder. The original archive test.zip is deleted.
 %
-function pName = unzipArchive(zipPath,dest,delOriginal)
-    if ~exist(zipPath,'var')
-        error('Requires a first Input')
-    elseif isempty(which(zipPath))
-        error('Archive does not exist')
+function test = unzipArchive(unzipPath, varargin)
+    if (nargin == 0)
     end
-    if ~exist('dest','var')
-        dest = pwd;
-    end
-    if ~exist('delOriginal','var')
-        delOriginal = false;
-    end
-
-
 end
