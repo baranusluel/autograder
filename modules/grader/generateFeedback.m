@@ -47,7 +47,7 @@
 %
 %%% Exceptions
 %
-% generateFeedback is guarunteed to never throw an exception, 
+% generateFeedback is guaranteed to never throw an exception, 
 % as long as two arguments are given.
 %
 %%% Unit Tests
@@ -143,6 +143,45 @@
 % Each of these constants has flags for inserting the correct value and
 % the received value.
 
-function htmlFeedBack = generateFeedback(soln, stud)
-
+function htmlFeedback = generateFeedback(soln, stud)
+    PASSING = '<span class="fas fa-check></span>';
+    INCORRECT = '<span class="fas fa-times"></span>';
+    DIFF_CLASS = ['<p>' INCORRECT ' %s class expected; %s class given.</p>'];
+    DIFF_DIM = ['<p>' INCORRECT ' Dimension Mismatch: %s expected; %s given.</p>'];
+    DIFF_NUM_VALUE = ['<p>' INCORRECT ' %g expected; %g given.</p>'];
+    DIFF_STR_VALUE = ['<p>' INCORRECT ' "%s" expected; "%s" given.</p>'];
+    DIFF_CEL_VALUE = ['<p>' INCORRECT ' %s expected at index (%s); %s given. There may be other differences.</p>'];
+    DIFF_STC_VALUE = ['<p>' INCORRECT ' %s expected in field "%s"; %s given. There may be other differences.</p>'];
+    
+    % check if equal
+    if isequaln(soln, stud)
+        htmlFeedback = PASSING;
+    % check if same class
+    elseif ~isequal(class(soln), class(stud))
+        htmlFeedback = sprintf(DIFF_CLASS, class(soln), class(stud));
+    % check if same size
+    elseif ~isequal(size(soln), size(stud))
+        soln_size = num2str(size(soln), '%dx');
+        soln_size = soln_size(1:end-1);
+        stud_size = num2str(size(stud), '%dx');
+        stud_size = stud_size(1:end-1);
+        htmlFeedback = sprintf(DIFF_DIM, soln_size, stud_size);
+    % class-specific visual diffs
+    elseif isfloat(stud) || isinteger(stud)
+        htmlFeedback = sprintf(DIFF_NUM_VALUE, soln, stud);
+    elseif ischar(stud) || isstring(stud)
+        htmlFeedback = sprintf(DIFF_STR_VALUE, soln, stud);
+    elseif isstruct(stud)
+        
+    elseif iscell(stud)
+        
+    elseif islogical(stud)
+        bools = {'false', 'true'};
+        htmlFeedback = sprintf(DIFF_STR_VALUE, bools{soln+1}, bools{stud+1});
+    % class we didn't account for -> fallback message
+    else
+        htmlFeedback = sprintf(DIFF_STR_VALUE, ...
+            matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(soln), ...
+            matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(stud));
+    end
 end
