@@ -29,6 +29,40 @@
 % If a Feedback was received, the error is caught and assigned to the 
 % exception field of the Feedback.
 %
+% engine uses static checking to check if the function is recursive. 
+% Calls are traced to the first instance of a call to a built in function.
+% For each call to a user-supplied function, that function is checked to see
+% if it ever calls itself. Note that it's possible to circumvent this checking
+% by having the recursive call within an if statement, like so:
+%
+%   function notRecurse()
+%       if false
+%           notRecurse();
+%       end
+%   end
+%
+% engine cannot tell that this isn't actually recursive.
+%
+% Additionally, banned function usage is also statically checked. Calls are 
+% traced to the first instance of a call to a built in function, just like 
+% checking for recursion. Each call to a user-defined function results in a
+% check for use of banned functions. Note that, just as with recursion checking,
+% a "false positive" is possible if code that is unreachable uses a banned function.
+%
+%   function notBanned()
+%       if false
+%           bannedFunction();
+%       end
+%   end
+%
+% Note that for both recursion and banned functions, comments do not count.
+%
+% If user created their own version of a banned function, and included it in the file,
+% then that is considered to be OK.
+%
+% Even if the student uses a banned function, the code is still run, and outputs 
+% still produced.
+%
 %%% Exceptions
 %
 % An AUTOGRADER:ENGINE:INVALIDRUNNABLE exception is thrown if the input is in an 
