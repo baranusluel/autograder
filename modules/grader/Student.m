@@ -173,7 +173,7 @@ classdef Student < handle
     end
     methods (Access=public)
         function gradeProblem(this, problem)
-            %% gradeProblem: Grades the given problem and records the results
+        %% gradeProblem: Grades the given problem and records the results
         %   
         % gradeProblem is used to evaluate the student code for a given
         % problem and record the results in the feedbacks field.
@@ -309,7 +309,7 @@ classdef Student < handle
                 '</script>'
                 };
             % Splice recs, styles, and scripts:
-            spliceHead(resources, styles, scripts);
+            this.spliceHead(resources, styles, scripts);
             
             % Add Student's name
             name = {'<div class="row text-left">', '<div class="col-12">', ...
@@ -319,11 +319,11 @@ classdef Student < handle
             this.appendRow(name);
 
             % Generate Table
-            generateTable();
+            this.generateTable();
             
             % For each problem, gen feedback
             for i = 1:numel(this.problems)
-                generateProblem(this.problems(i), this.feedbacks{i});
+                this.generateProblem(this.problems(i), this.feedbacks{i});
             end
             
             % Join with new lines and write to feedback.html
@@ -408,7 +408,7 @@ classdef Student < handle
                 feed = feedbacks(i);
                
                 % if passed, marker is green
-                if feed.isPassed
+                if feed.hasPassed
                     marker = {'<div class="col-1">', ...
                         Feedback.CORRECT_MARK, '</div>'};
                 else
