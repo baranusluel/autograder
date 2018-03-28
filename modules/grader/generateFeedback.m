@@ -33,17 +33,20 @@
 % Note that |NaN| is considered equal to |NaN|; ie, |NaN == NaN = true|.
 % This is different from isequal, and instead follows isequaln.
 %
-% |generateFeedback| first checks to see they are |isequaln|. If they are, 
-% |PASSING| is returned. Otherwise, generateFeedback will first check 
-% each value's class. If they differ, a |DIFF_CLASS| is returned. Otherwise,
+% |generateFeedback| first checks each value's class. If they differ,
+% a |DIFF_CLASS| is returned. Otherwise, |generateFeedback| checks to see
+% if they are |isequaln|. If they are, |PASSING| is returned. The class
+% types are checked for before equality because isequaln(double(1),uint8(1))
+% returns true. Next, |generateFeedback| checks if the two inputs differ in
+% size. If so, |DIFF_DIM| is returned. If not, |generateFeedback| then checks
+% if the inputs are non-scalar (excluding char row vectors), and if so,
+% recursively calls itself on the elements within the arrays. Otherwise,
 % depending on the class, a visualization of the difference between the given 
 % arguments is returned. The return value will always have the check mark 
 % (|PASSING|) or the red x (|INCORRECT|).
 %
-% For values of type |cell| or |struct|, the first difference is shown. 
-% To show this difference, generateFeedback uses that type's default comparison
-% method. If it's a primitive, it returns the difference representation by 
-% using generateFeedback; otherwise, it uses the type's comparison method.
+% For values of type |cell| or |struct|, all differences are listed
+% individually.
 %
 %%% Exceptions
 %
@@ -110,20 +113,43 @@
 %   P = {1, 3, 2};
 %   HTML = generateFeedback(S, P);
 %
-%   HTML -> '<p><span class="fas fa-times"></span> At index (1, 2): 2 expected; 3 given.</p>'
+%   HTML -> '<p><span class="fas fa-times"></span> At index (1x2): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 2 expected; 3 given.</p></div></p>
+%            <p><span class="fas fa-times"></span> At index (1x3): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 3 expected; 2 given.</p></div></p>'
+%
+%   S = [1, 2, 3];
+%   P = [1, 3, 2];
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<p><span class="fas fa-times"></span> At index (1x2): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 2 expected; 3 given.</p></div></p>
+%            <p><span class="fas fa-times"></span> At index (1x3): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 3 expected; 2 given.</p></div></p>'
 %
 %   S = struct('hello', 1, 'world', {1, 2, 3});
 %   P = struct('hello', 2, 'world', {3, 2, 1});
 %   HTML = generateFeedback(S, P);
 %
-%   HTML -> '<p><span class="fas fa-times"></span> In field "hello": expected 2; one given. There may be other differences.</p>'
+%   HTML -> '<p><span class="fas fa-times"></span> At index (1x1): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> In field "hello": <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 1 expected; 2 given.</p></div></p><p><span class="fas fa-times"></span> In field "world": <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 1 expected; 3 given.</p></div></p></div></p>
+%            <p><span class="fas fa-times"></span> At index (1x2): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> In field "hello": <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 1 expected; 2 given.</p></div></p></div></p>
+%            <p><span class="fas fa-times"></span> At index (1x3): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> In field "hello": <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 1 expected; 2 given.</p></div></p><p><span class="fas fa-times"></span> In field "world": <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 3 expected; 1 given.</p></div></p></div></p>'
 %
-%   S = struct('hello', 1, 'world', {1, 2, 3});
-%   P = struct('hello', 1, 'world', {3, 2, 1});
+%   S = struct('a', 1, 'b', 0);
+%   P = struct('a', 2, 'c', 10);
 %   HTML = generateFeedback(S, P);
 %
-%   HTML -> '<p><span class="fas fa-times"></span> In field "world": At index (1): 1 expected; 3 given. There may be other differences.</p>'
-
+%   HTML -> '<p><span class="fas fa-times"></span> a,b fields expected; a,c fields given.</p>'
+%
+%   S = {1, struct('a',1)};
+%   P = {{1}, struct('a',2)};
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<p><span class="fas fa-times"></span> At index (1x1): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> double class expected; cell class given.</p></div></p>
+%            <p><span class="fas fa-times"></span> At index (1x2): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> In field "a": <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 1 expected; 2 given.</p></div></p></div></p>'
+%
+%   S is a handle
+%   P is a different handle
+%   HTML = generateFeedback(S, P);
+%
+%   HTML -> '<p><span class="fas fa-times"></span>(Disp of S)<br>expected;<br>(Disp of P)<br>given.</p>'
+%
 % Note that there are a variety of constants, which are listed below:
 %
 % * |PASSING = '<span class="fas fa-check></span>'|
@@ -136,12 +162,17 @@
 % ['<p>' INCORRECT ' %g expected; %g given.</p>']|
 % * |DIFF_STR_VALUE = 
 % ['<p>' INCORRECT ' "%s" expected; "%s" given.</p>']|
-% * |DIFF_CEL_VALUE = 
-% ['<p>' INCORRECT ' %s expected at index (%s); %s given. There may be other differences.</p>']|
+% * |DIFF_BOOL_VALUE = 
+% ['<p>' INCORRECT ' %s expected; %s given.</p>']|
+% * |DIFF_MISC_VALUE = 
+% ['<p>' INCORRECT ' %s<br>expected;<br>%s<br>given.</p>']|
+% * |DIFF_ARR_VALUE = 
+% ['<p>' INCORRECT ' At index (%s): %s</p>']|
 % * |DIFF_STC_VALUE = 
-% ['<p>' INCORRECT ' %s expected in field "%s"; %s given. There may be other differences.</p>']|
+% ['<p>' INCORRECT ' In field "%s"; %s</p>']|
 % * |DIFF_STC_FIELD =
 % ['<p>' INCORRECT ' %s fields expected; %s fields given.</p>']|
+% * |INDENT_BLOCK = '<div style="margin-left: 10px;">%s</div>'|
 % Each of these constants has flags for inserting the correct value and
 % the received value.
 
@@ -152,6 +183,8 @@ function htmlFeedback = generateFeedback(soln, stud)
     DIFF_DIM = ['<p>' INCORRECT ' Dimension Mismatch: %s expected; %s given.</p>'];
     DIFF_NUM_VALUE = ['<p>' INCORRECT ' %g expected; %g given.</p>'];
     DIFF_STR_VALUE = ['<p>' INCORRECT ' "%s" expected; "%s" given.</p>'];
+    DIFF_BOOL_VALUE = ['<p>' INCORRECT ' %s expected; %s given.</p>'];
+    DIFF_MISC_VALUE = ['<p>' INCORRECT ' %s<br>expected;<br>%s<br>given.</p>'];
     DIFF_ARR_VALUE = ['<p>' INCORRECT ' At index (%s): %s</p>'];
     DIFF_STC_VALUE = ['<p>' INCORRECT ' In field "%s": %s</p>'];
     DIFF_STC_FIELD = ['<p>' INCORRECT ' %s fields expected; %s fields given.</p>'];
@@ -251,11 +284,11 @@ function htmlFeedback = generateFeedback(soln, stud)
         
     elseif islogical(stud)
         bools = {'false', 'true'};
-        htmlFeedback = sprintf(DIFF_STR_VALUE, bools{soln+1}, bools{stud+1});
+        htmlFeedback = sprintf(DIFF_BOOL_VALUE, bools{soln+1}, bools{stud+1});
         
     % case we didn't account for -> fallback message
     else
-        htmlFeedback = sprintf(DIFF_STR_VALUE, ...
+        htmlFeedback = sprintf(DIFF_MISC_VALUE, ...
             matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(soln), ...
             matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(stud));
     end
