@@ -152,10 +152,10 @@ function htmlFeedback = generateFeedback(soln, stud)
     DIFF_DIM = ['<p>' INCORRECT ' Dimension Mismatch: %s expected; %s given.</p>'];
     DIFF_NUM_VALUE = ['<p>' INCORRECT ' %g expected; %g given.</p>'];
     DIFF_STR_VALUE = ['<p>' INCORRECT ' "%s" expected; "%s" given.</p>'];
-    DIFF_CEL_VALUE = ['<p>' INCORRECT ' At index (%s): %s</p>'];
+    DIFF_ARR_VALUE = ['<p>' INCORRECT ' At index (%s): %s</p>'];
     DIFF_STC_VALUE = ['<p>' INCORRECT ' In field "%s": %s</p>'];
     DIFF_STC_FIELD = ['<p>' INCORRECT ' %s fields expected; %s fields given.</p>'];
-    INDENT_BLOCK = '<div style="text-indent: 1.0em">%s</div>';
+    INDENT_BLOCK = '<div style="margin-left: 10px;">%s</div>';
     
     % check if different class
     if ~isequal(class(soln), class(stud))
@@ -171,6 +171,42 @@ function htmlFeedback = generateFeedback(soln, stud)
         soln_size = strrep(num2str(size(soln)), '  ', 'x');
         stud_size = strrep(num2str(size(stud)), '  ', 'x');
         htmlFeedback = sprintf(DIFF_DIM, soln_size, stud_size);
+        
+    % check if not scalar (but excluding row vector of chars, i.e. strings)
+    % if so, compare elements in the vector/array individually
+    % because visual diff code for primitives expects scalars (apart from
+    % row vectors of chars, which are easy to display)
+    elseif numel(stud) > 1 && ...
+        ~(ischar(stud) && ndims(stud) == 2 && size(stud, 1) == 1)
+        htmlFeedback = [];
+        % iterate over indices, call generateFeedback recursively to find
+        % differences at each position
+        % use linear indexing because number of dimensions is unknown;
+        % subscripts are reconstructed from index below
+        for i = 1:numel(stud)
+            stud_inner = stud(i);
+            soln_inner = soln(i);
+            feedback_inner = generateFeedback(soln_inner, stud_inner);
+            % if found a difference
+            if ~isequal(feedback_inner, PASSING)
+                % cell array to store subscript indices for each dimension,
+                % so that we can get all of ind2sub's vararg outputs
+                % without knowing number of dimensions beforehand
+                idx = cell(1,ndims(stud));
+                [idx{:}] = ind2sub(size(stud),i);
+                % convert indices to x separated string
+                idx = strrep(num2str(cell2mat(idx)), '  ', 'x');
+                % indent feedback_inner for improved readability
+                feedback_inner = sprintf(INDENT_BLOCK, feedback_inner);
+                % add to htmlFeedback
+                msg = sprintf(DIFF_ARR_VALUE, idx, feedback_inner);
+                if isempty(htmlFeedback)
+                    htmlFeedback = msg;
+                else
+                    htmlFeedback = [htmlFeedback msg];
+                end
+            end
+        end
         
     % class-specific visual diffs
     elseif isfloat(stud) || isinteger(stud)
@@ -211,43 +247,14 @@ function htmlFeedback = generateFeedback(soln, stud)
         end
         
     elseif iscell(stud)
-        htmlFeedback = [];
-        % iterate over cells, call generateFeedback recursively to find
-        % difference in contents of cells.
-        % use linear indexing because number of dimensions is unknown;
-        % subscripts are reconstructed from index below
-        for i = 1:numel(stud)
-            stud_inner = stud{i};
-            soln_inner = soln{i};
-            feedback_inner = generateFeedback(soln_inner, stud_inner);
-            % if found a difference
-            if ~isequal(feedback_inner, PASSING)
-                % cell array to store subscript indices for each dimension,
-                % so that we can get all of ind2sub's vararg outputs
-                % without knowing number of dimensions beforehand
-                idx = cell(1,ndims(stud));
-                [idx{:}] = ind2sub(size(stud),i);
-                % convert indices to x separated string
-                idx = strrep(num2str(cell2mat(idx)), '  ', 'x');
-                % indent feedback_inner for improved readability
-                feedback_inner = sprintf(INDENT_BLOCK, feedback_inner);
-                % add to htmlFeedback
-                msg = sprintf(DIFF_CEL_VALUE, idx, feedback_inner);
-                if isempty(htmlFeedback)
-                    htmlFeedback = msg;
-                else
-                    htmlFeedback = [htmlFeedback '<br>' msg];
-                end
-            end
-        end
+        htmlFeedback = generateFeedback(soln{1},stud{1});
         
     elseif islogical(stud)
         bools = {'false', 'true'};
         htmlFeedback = sprintf(DIFF_STR_VALUE, bools{soln+1}, bools{stud+1});
         
-    % class we didn't account for -> fallback message
+    % case we didn't account for -> fallback message
     else
-        % NOTE: disp might be preferable to below?
         htmlFeedback = sprintf(DIFF_STR_VALUE, ...
             matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(soln), ...
             matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(stud));
