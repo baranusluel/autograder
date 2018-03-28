@@ -155,6 +155,7 @@ function htmlFeedback = generateFeedback(soln, stud)
     DIFF_CEL_VALUE = ['<p>' INCORRECT ' At index (%s): %s</p>'];
     DIFF_STC_VALUE = ['<p>' INCORRECT ' In field "%s": %s</p>'];
     DIFF_STC_FIELD = ['<p>' INCORRECT ' %s fields expected; %s fields given.</p>'];
+    INDENT_BLOCK = '<div style="text-indent: 1.0em">%s</div>';
     
     % check if different class
     if ~isequal(class(soln), class(stud))
@@ -196,6 +197,8 @@ function htmlFeedback = generateFeedback(soln, stud)
                 feedback_inner = generateFeedback(soln_inner, stud_inner);
                 % if found a difference
                 if ~isequal(feedback_inner, PASSING)
+                    % indent feedback_inner for improved readability
+                    feedback_inner = sprintf(INDENT_BLOCK, feedback_inner);
                     % add to htmlFeedback
                     msg = sprintf(DIFF_STC_VALUE, field, feedback_inner);
                     if isempty(htmlFeedback)
@@ -226,6 +229,8 @@ function htmlFeedback = generateFeedback(soln, stud)
                 [idx{:}] = ind2sub(size(stud),i);
                 % convert indices to x separated string
                 idx = strrep(num2str(cell2mat(idx)), '  ', 'x');
+                % indent feedback_inner for improved readability
+                feedback_inner = sprintf(INDENT_BLOCK, feedback_inner);
                 % add to htmlFeedback
                 msg = sprintf(DIFF_CEL_VALUE, idx, feedback_inner);
                 if isempty(htmlFeedback)
