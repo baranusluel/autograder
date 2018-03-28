@@ -140,6 +140,8 @@
 % ['<p>' INCORRECT ' %s expected at index (%s); %s given. There may be other differences.</p>']|
 % * |DIFF_STC_VALUE = 
 % ['<p>' INCORRECT ' %s expected in field "%s"; %s given. There may be other differences.</p>']|
+% * |DIFF_STC_FIELD =
+% ['<p>' INCORRECT ' %s fields expected; %s fields given.</p>']|
 % Each of these constants has flags for inserting the correct value and
 % the received value.
 
@@ -151,7 +153,8 @@ function htmlFeedback = generateFeedback(soln, stud)
     DIFF_NUM_VALUE = ['<p>' INCORRECT ' %g expected; %g given.</p>'];
     DIFF_STR_VALUE = ['<p>' INCORRECT ' "%s" expected; "%s" given.</p>'];
     DIFF_CEL_VALUE = ['<p>' INCORRECT ' At index (%s): %s</p>'];
-    DIFF_STC_VALUE = ['<p>' INCORRECT ' %s expected in field "%s"; %s given. There may be other differences.</p>'];
+    DIFF_STC_VALUE = ['<p>' INCORRECT ' In field "%s": %s</p>'];
+    DIFF_STC_FIELD = ['<p>' INCORRECT ' %s fields expected; %s fields given.</p>'];
     
     % check if different class
     if ~isequal(class(soln), class(stud))
@@ -176,7 +179,33 @@ function htmlFeedback = generateFeedback(soln, stud)
         htmlFeedback = sprintf(DIFF_STR_VALUE, soln, stud);
         
     elseif isstruct(stud)
-        
+        % check if both structs have same fields
+        soln_fields = fieldnames(soln);
+        stud_fields = fieldnames(stud);
+        if ~isequal(sort(soln_fields), sort(stud_fields))
+            htmlFeedback = sprintf(DIFF_STC_FIELD, strjoin(soln_fields, ','), ...
+                strjoin(stud_fields, ','));
+        else
+            htmlFeedback = [];
+            % iterate over fields, call generateFeedback recursively on
+            % values to find differences, even if nested
+            for i = 1:length(stud_fields)
+                field = stud_fields{i};
+                stud_inner = stud.(field);
+                soln_inner = soln.(field);
+                feedback_inner = generateFeedback(soln_inner, stud_inner);
+                % if found a difference
+                if ~isequal(feedback_inner, PASSING)
+                    % add to htmlFeedback
+                    msg = sprintf(DIFF_STC_VALUE, field, feedback_inner);
+                    if isempty(htmlFeedback)
+                        htmlFeedback = msg;
+                    else
+                        htmlFeedback = [htmlFeedback msg];
+                    end
+                end
+            end
+        end
         
     elseif iscell(stud)
         htmlFeedback = [];
@@ -198,11 +227,11 @@ function htmlFeedback = generateFeedback(soln, stud)
                 % convert indices to x separated string
                 idx = strrep(num2str(cell2mat(idx)), '  ', 'x');
                 % add to htmlFeedback
+                msg = sprintf(DIFF_CEL_VALUE, idx, feedback_inner);
                 if isempty(htmlFeedback)
-                    htmlFeedback = sprintf(DIFF_CEL_VALUE, idx, feedback_inner);
+                    htmlFeedback = msg;
                 else
-                    htmlFeedback = [htmlFeedback '<br>' ...
-                        sprintf(DIFF_CEL_VALUE, idx, feedback_inner)];
+                    htmlFeedback = [htmlFeedback '<br>' msg];
                 end
             end
         end
