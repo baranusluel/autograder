@@ -171,8 +171,12 @@ function engine(runnable)
     end
     if isa(runnable, 'TestCase')
         tCase = runnable;
-    else
+    elseif isa(runnable, 'Feedback')
         tCase = runnable.testCase;
+    else
+        e = MException('AUTOGRADER:engine:invalidRunnable', ...
+        'Input was not of class Runnable');
+        throw(e);
     end
 
     % Copy over supporting files
@@ -187,8 +191,7 @@ function engine(runnable)
 
     % Test for recursion. If any function calls itself, good to go.
     if isa(runnable, 'Feedback')
-        isRecur = checkRecur(allCalls, func2str(func));
-        runnable.isRecursive = isRecur;
+        runnable.isRecursive = checkRecur(allCalls, func2str(func));
     end
 
     bannedFunctions = tCase.banned;
