@@ -1,7 +1,7 @@
 %% Student: Class Representing a Student
 %
 % Represents a single student in the grader.
-% 
+%
 % Holds student's relevant information (identification, submissions,
 % feedback, etc.) as fields.
 %
@@ -26,7 +26,7 @@
 %%% Methods
 %
 % * Student
-% 
+%
 % * gradeProblem
 %
 % * generateFeedback
@@ -37,7 +37,7 @@
 % autograder. Each student maps to one (and only one) folder in the
 % submission archive.
 %
-% The student is considered the center of data transfer within the 
+% The student is considered the center of data transfer within the
 % autograder. Each Student is given a problem to grade at runtime, and
 % students are finished one at a time - in other words, the first student
 % is graded, then the second, and so on.
@@ -71,6 +71,7 @@ classdef Student < handle
         end
     end
     methods
+        function this = Student(path, name)
         %% Constructor
         %
         % Creates an instance of the Student class from the student's
@@ -78,7 +79,7 @@ classdef Student < handle
         %
         % this = Student(PATH, NAME) returns an instance of Student.
         % PATH should be a character vector representing the fully
-        % qualified (absolute) path to the student's folder. NAME is a 
+        % qualified (absolute) path to the student's folder. NAME is a
         % character vector or string of the full name of the student.
         %
         %%% Remarks
@@ -89,15 +90,12 @@ classdef Student < handle
         % |unpackStudentSubmissions| when running - this is so after a
         % |Student| is constructed, their directory is completely compliant
         % with what the autograder will expect.
-        % 
+        %
         %%% Exceptions
         %
-        % An AUTOGRADER:STUDENT:DIRECTORYNOTFOUND exception will be thrown
+        % An AUTOGRADER:Student:invalidPath exception will be thrown
         % if the PATH input is missing, invalid (e.g. empty or
         % incorrect class) or the directory does not exist.
-        %
-        % An AUTOGRADER:STUDENT:ARGUMENTEXCEPTION exception will be thrown
-        % if NAME is empty or only white space.
         %
         %%% Unit Tests
         %
@@ -106,7 +104,7 @@ classdef Student < handle
         %
         %   NAME = 'Hello';
         %   this = Student(PATH, NAME);
-        % 
+        %
         %   this.name -> "Hello"
         %   this.id -> Student's GT username (from name of folder)
         %   this.path -> PATH;
@@ -129,43 +127,33 @@ classdef Student < handle
         %   NAME = 'Hi';
         %   this = Student(PATH, NAME);
         %
-        %   Constructor threw exception 
-        %   AUTOGRADER:STUDENT:DIRECTORYNOTFOUND
-        %
-        % Given a valid PATH:
-        %   NAME = '';
-        %   this = Student(PATH, NAME);
-        %
         %   Constructor threw exception
-        %   AUTOGRADER:STUDENT:ARGUMENTEXCEPTION
+        %   AUTOGRADER:Student:invalidPath
         %
-        % Given a valid PATH:
-        %   NAME = '    ';
-        %   this = Student(PATH, NAME);
-        %
-        %   Constructor threw exception
-        %   AUTOGRADER:STUDENT:ARGUMENTEXCEPTION
-        %
-        function this = Student(path, name)
+            if ~isfolder(path)
+                e = MException('AUTOGRADER:Student:invalidPath', ...
+                'Path %s is not a valid path', path);
+                throw(e);
+            end
             this.path = path;
             this.name = name;
             % We can safely assume that student has been processed (zip
             % unpacked, etc.)
-            
+
             % Sanitize path to use correct file separator
-            
+
             path(path == '/' | path == '\') = filesep;
-            
+
             % Path should always have last file separator
-            
+
             if path(end) ~= filesep
                 path = [path filesep];
             end
-            
+
             % Get all submissions
             subs = dir([path '*.m']);
             this.submissions = {subs.name};
-            
+
             % ID is folder name:
             this.id = regexp(path, '[A-Za-z0-9_]+(?=\\$)', 'match');
             this.id = this.id{1};
@@ -174,7 +162,7 @@ classdef Student < handle
     methods (Access=public)
         function gradeProblem(this, problem)
         %% gradeProblem: Grades the given problem and records the results
-        %   
+        %
         % gradeProblem is used to evaluate the student code for a given
         % problem and record the results in the feedbacks field.
         %
@@ -187,7 +175,7 @@ classdef Student < handle
         %
         % The function will return without making any changes to the class
         % if the isGraded field is already true.
-        % 
+        %
         % The feedback field should always be populated, even if
         % the submissions field is empty.
         %
@@ -201,7 +189,7 @@ classdef Student < handle
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:STUDENT:GRADEPROBLEM:INVALIDPROBLEM exception will
+        % An AUTOGRADER:Student:gradeProblem:invalidProblem exception will
         % be thrown if PROBLEM is invalid (i.e. if it is empty or
         % if name or testcases fields of PROBLEM are empty).
         %
@@ -214,20 +202,20 @@ classdef Student < handle
         % Given a student who had only partially submitted files:
         % The student code is evaluated normally for non-empty submissions
         % and Feedback instances are created. Empty submissions will
-        % give appropritate score and reason values in the Feedback class. 
+        % give appropritate score and reason values in the Feedback class.
         % The Feedback classes will then be added to the feedbacks field.
         %
         % Given a student who had no submitted files:
         % Empty submissions will give appropritate score and reason values
         % in the Feedback class.
         % The Feedback classes will then be added to the feedbacks field.
-        
+
             % For each testCase, create Feedback, run engine.
             if ~isvalid(problem)
-                throw(MException('AUTOGRADER:STUDENT:GRADEPROBLEM:INVALIDPROBLEM', ...
+                throw(MException('AUTOGRADER:Student:gradeProblem:invalidProblem', ...
                     'Given problem was not a valid Problem object'));
             elseif numel(problem.testCases) == 0
-                throw(MException('AUTOGRADER:STUDENT:GRADEPROBLEM:INVALIDPROBLEM', ...
+                throw(MException('AUTOGRADER:Student:gradeProblem:invalidProblem', ...
                     'Expected non-zero number of Test Cases; got 0'));
             end
             % Add problem to end of our list
@@ -240,7 +228,7 @@ classdef Student < handle
                     engine(feeds(i));
                     this.resetPath();
                 else
-                    feeds(i).exception = MEXCEPTION('AUTOGRADER:STUDENT:FILENOTSUBMITTED', ...
+                    feeds(i).exception = MEXCEPTION('AUTOGRADER:Student:fileNotSubmitted', ...
                         'File %s wasn''t submitted, so the engine was not run.', [problem.name '.m']);
                 end
             end
@@ -252,7 +240,7 @@ classdef Student < handle
         % generateFeedback is used to create an HTML file containing the
         % homework feedback for a student.
         %
-        % generateFeedback() will write the 
+        % generateFeedback() will write the
         % containing the markup representing the student's feedback.
         %
         %%% Remarks
@@ -265,11 +253,11 @@ classdef Student < handle
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:STUDENT:GENERATEFEEDBACK:MISSINGFEEDBACK exception
+        % An AUTOGRADER:Student:generateFeedback:missingFeedback exception
         % will be thrown if the feedbacks field of the Student is empty
         % (i.e. if gradeProblem wasn't invoked first).
         %
-        % An AUTOGRADER:STUDENT:GENERATEFEEDBACK:FILEIO exception will be
+        % An AUTOGRADER:Student:generateFeedback:fileIO exception will be
         % thrown if there is an error when opening the student's feedback
         % file for writing
         %
@@ -287,7 +275,7 @@ classdef Student < handle
         % points, visual comparison of file outputs) is listed.
             % Check feedbacks is correct
             if isempty(this.feedbacks)
-                throw(MException('AUTOGRADER:STUDENT:GENERATEFEEDBACK:MISSINGFEEDBACK', ...
+                throw(MException('AUTOGRADER:Student:generateFeedback:missingFeedback', ...
                     'No feedbacks present (did you forget to invoke gradeProblem?)'));
             end
             % Header info
@@ -309,8 +297,8 @@ classdef Student < handle
                 '</script>'
                 };
             % Splice recs, styles, and scripts:
-            this.spliceHead(resources, styles, scripts);
-            
+            spliceHead(resources, styles, scripts);
+
             % Add Student's name
             name = {'<div class="row text-left">', '<div class="col-12">', ...
                 '<h1 class="display-1">', ...
@@ -319,24 +307,24 @@ classdef Student < handle
             this.appendRow(name);
 
             % Generate Table
-            this.generateTable();
-            
+            generateTable();
+
             % For each problem, gen feedback
             for i = 1:numel(this.problems)
-                this.generateProblem(this.problems(i), this.feedbacks{i});
+                generateProblem(this.problems(i), this.feedbacks{i});
             end
-            
+
             % Join with new lines and write to feedback.html
             [fid, msg] = fopen([this.path 'feedback.html'], 'wt');
             if fid == -1
                 % throw error
-                throw(MException('AUTOGRADER:STUDENT:GENERATEFEEDBACK:FILEIO', ...
+                throw(MException('AUTOGRADER:Student:generateFeedback:fileIO', ...
                     'Unable to create the feedback file. Received message %s', msg));
             end
             html = strjoin(this.html, newline);
             fwrite(fid, html);
             fclose(fid);
-            
+
         end
     end
     methods (Access=private)
@@ -352,7 +340,7 @@ classdef Student < handle
             ind = find(strcmpi(this.html, '</div>'), 1, 'last');
             this.html = [this.html(1:(ind-1)) varargin{:} this.html(ind:end)];
         end
-        
+
         function generateTable(this)
             % Table will have following columns:
             %   Problem #
@@ -363,7 +351,7 @@ classdef Student < handle
                 '<th>', 'Problem', '</th>', '<th>', 'Points Possible', ...
                 '</th>', '<th>', 'Points Earned', '</th>', '</tr>', ...
                 '</thead>', '</table>'};
-            
+
             totalPts = 0;
             totalEarn = 0;
             % For each problem, list:
@@ -374,20 +362,20 @@ classdef Student < handle
                 name = {'<td>', '<p>', this.problems(i).name, '</p>', '</td>'};
                 poss = {'<td>', '<p>', num2str(sum([tCases.points])), '</p>', '</td>'};
                 earn = {'<td>', '<p>', num2str(sum([feeds.points])), '</p>', '</td>'};
-                
+
                 row = [{'<tr>'}, num, name, poss, earn, {'</tr>'}];
                 appendRow(row);
-                
+
                 totalPts = totalPts + sum([tCases.points]);
                 totalEarn = totalEarn + sum([feeds.points]);
             end
-            
+
             % Add totals row
             totals = {'<tr>', '<td>', '</td>', '<td>', '</td>', '<td>', ...
                 '<p>', num2str(totalPts), '</p>', '</td>', '<td>', ...
                 '<p>', num2str(totalEarn), '</p>', '</td>', '</tr>'};
             appendRow(totals);
-            
+
             % Splice table into body
             table = [{'<div class="row text-center">', '<div class="col-12">'}, ...
                 table, {'</div>', '</div>'}];
@@ -398,39 +386,39 @@ classdef Student < handle
                 table = [table(1:(end-1)) row table(end)];
             end
         end
-        
+
         % Create feedback for specific problem
         function generateProblem(this, problem, feedbacks)
             prob = {'<div class="problem col-12">', '<h2>', problem.name, ...
                 '</h2>', '<div class="tests">', '</div>', '</div>'};
-            
+
             for i = 1:numel(feedbacks)
                 feed = feedbacks(i);
-               
+
                 % if passed, marker is green
-                if feed.hasPassed
+                if feed.isPassed
                     marker = {'<div class="col-1">', ...
                         Feedback.CORRECT_MARK, '</div>'};
                 else
                     marker = {'<div class="col-1">', ...
                         Feedback.INCORRECT_MARK, '</div>'};
                 end
-                
+
                 % Show call
                 call = [marker {'<div class="col-md-4">', '<pre class="call">', ...
                     feed.testCase.call, '</pre>', '</div>'}];
                 headerRow = [{'<div class="row test-header">'}, call, {'</div>'}];
-                
+
                 % Get feedback message
                 msg = {feed.generateFeedback()};
                 test = [{'<div class="row test-case">'}, headerRow, msg, {'</div>'}];
                 appendTest(test);
             end
-            
+
             % Append this problem to end of html
             prob = [{'<div class="row">'}, prob, {'</div>'}];
             this.appendRow(prob);
-            
+
             function appendTest(test)
                 % Append to end
                 prob = [prob(1:(end-2)) test prob((end-1):end)];
