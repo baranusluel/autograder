@@ -30,7 +30,7 @@ function generateDocs(email)
     tDir = [tDir 'autograder' filesep];
     cd(genFolder);
     options.format = 'html';
-    % options.stylesheet = [pwd filesep 'resources' filesep 'stylesheet.xls'];
+    options.stylesheet = [pwd filesep 'resources' filesep 'stylesheet.xls'];
     options.createThumbnail = false;
     options.imageFormat = 'png';
     options.evalCode = false;
