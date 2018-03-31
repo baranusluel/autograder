@@ -376,7 +376,7 @@ function varargout = runner(func____, init____, ins, loads____)
     % varargout becomes cell array of the size of number of args requested
     varargout = cell(1, nargout);
     % Load MAT files
-    for i____ = 1:length(loads____)
+    for i____ = 1:size(loads____, 2)
         eval([loads____{1, i____} ' = loads____{2, ' num2str(i____) '};']);
     end
     % Run initializer, if any
