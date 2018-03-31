@@ -3,7 +3,7 @@
 % |generateFeedback| makes presentation-ready HTML that depicts how the 
 % student's primitive result compares to the solution's primitive result.
 %
-% HTML = generateFeedback(SOLN, STUD) will generate HTML encoded feedback, 
+% HTML = generateFeedback(STUD, SOLN) will generate HTML encoded feedback, 
 % given the student's result and the solution's result. Both must be given, 
 % but empty is a valid input for either.
 %
@@ -57,75 +57,75 @@
 %
 %   S = [];
 %   P = [];
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<span class="fas fa-check"></span>'
 %
 %   S = NaN;
 %   P = NaN;
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<span class="fas fa-check"></span>'
 %
 %   S = 1;
 %   P = S;
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<span class="fas fa-check"></span>'
 %
 %   S = 'Hello world';
 %   P = 1;
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<p><span class="fas fa-times"></span> char class expected; double class given.</p>'
 %
 %   S = uint8(1);
 %   P = double(1);
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<p><span class="fas fa-times"></span> uint8 class expected; double class given.</p>'
 %
 %   S = 1;
 %   P = 2;
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<p><span class="fas fa-times"></span> 1 expected; 2 given.</p>'
 %
 %   S = "Hello World"
 %   P = "Goodbye World"
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<p><span class="fas fa-times"></span> "Hello World" expected; "Goodbye World" given.</p>'
 %
 %   S = true;
 %   P = false;
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<p><span class="fas fa-times"></span> true expected; false given.</p>'
 %
 %   S = [1 2 3];
 %   P = [1; 2; 3];
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<p><span class="fas fa-times"></span> Dimension Mismatch: Expected 1x3; 3x1 given.</p>'
 %
 %   S = {1, 2, 3};
 %   P = {1, 3, 2};
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<p><span class="fas fa-times"></span> At index (1x2): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 2 expected; 3 given.</p></div></p>
 %            <p><span class="fas fa-times"></span> At index (1x3): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 3 expected; 2 given.</p></div></p>'
 %
 %   S = [1, 2, 3];
 %   P = [1, 3, 2];
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<p><span class="fas fa-times"></span> At index (1x2): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 2 expected; 3 given.</p></div></p>
 %            <p><span class="fas fa-times"></span> At index (1x3): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 3 expected; 2 given.</p></div></p>'
 %
 %   S = struct('hello', 1, 'world', {1, 2, 3});
 %   P = struct('hello', 2, 'world', {3, 2, 1});
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<p><span class="fas fa-times"></span> At index (1x1): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> In field "hello": <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 1 expected; 2 given.</p></div></p><p><span class="fas fa-times"></span> In field "world": <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 1 expected; 3 given.</p></div></p></div></p>
 %            <p><span class="fas fa-times"></span> At index (1x2): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> In field "hello": <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 1 expected; 2 given.</p></div></p></div></p>
@@ -133,20 +133,20 @@
 %
 %   S = struct('a', 1, 'b', 0);
 %   P = struct('a', 2, 'c', 10);
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<p><span class="fas fa-times"></span> a,b fields expected; a,c fields given.</p>'
 %
 %   S = {1, struct('a',1)};
 %   P = {{1}, struct('a',2)};
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<p><span class="fas fa-times"></span> At index (1x1): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> double class expected; cell class given.</p></div></p>
 %            <p><span class="fas fa-times"></span> At index (1x2): <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> In field "a": <div style="margin-left: 10px;"><p><span class="fas fa-times"></span> 1 expected; 2 given.</p></div></p></div></p>'
 %
 %   S is a handle
 %   P is a different handle
-%   HTML = generateFeedback(S, P);
+%   HTML = generateFeedback(P, S);
 %
 %   HTML -> '<p><span class="fas fa-times"></span>(Disp of S)<br>expected;<br>(Disp of P)<br>given.</p>'
 %
@@ -176,7 +176,7 @@
 % Each of these constants has flags for inserting the correct value and
 % the received value.
 
-function htmlFeedback = generateFeedback(soln, stud)
+function htmlFeedback = generateFeedback(stud, soln)
     PASSING = '<span class="fas fa-check></span>';
     INCORRECT = '<span class="fas fa-times"></span>';
     DIFF_CLASS = ['<p>' INCORRECT ' %s class expected; %s class given.</p>'];
@@ -219,7 +219,7 @@ function htmlFeedback = generateFeedback(soln, stud)
         for i = 1:numel(stud)
             stud_inner = stud(i);
             soln_inner = soln(i);
-            feedback_inner = generateFeedback(soln_inner, stud_inner);
+            feedback_inner = generateFeedback(stud_inner, soln_inner);
             % if found a difference
             if ~isequal(feedback_inner, PASSING)
                 % cell array to store subscript indices for each dimension,
@@ -263,7 +263,7 @@ function htmlFeedback = generateFeedback(soln, stud)
                 field = stud_fields{i};
                 stud_inner = stud.(field);
                 soln_inner = soln.(field);
-                feedback_inner = generateFeedback(soln_inner, stud_inner);
+                feedback_inner = generateFeedback(stud_inner, soln_inner);
                 % if found a difference
                 if ~isequal(feedback_inner, PASSING)
                     % indent feedback_inner for improved readability
@@ -280,7 +280,7 @@ function htmlFeedback = generateFeedback(soln, stud)
         end
         
     elseif iscell(stud)
-        htmlFeedback = generateFeedback(soln{1},stud{1});
+        htmlFeedback = generateFeedback(stud{1}, soln{1});
         
     elseif islogical(stud)
         bools = {'false', 'true'};
