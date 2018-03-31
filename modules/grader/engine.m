@@ -122,7 +122,7 @@
 %
 %   Threw exception invalidRunnable
 %
-function engine(runnable)
+function runnable = engine(runnable)
 
     % For banned functions, we'll need to use static checking, instead of
     % overwriting it in the directory. This is because some functions
@@ -245,14 +245,19 @@ function engine(runnable)
     tCase.loadFiles = [varNames; varValues];
     %% Running
     % Create a new job for the parallel pool
-    test = parfeval(@runCase, 0, runnable);
+    test = parfeval(@runCase, 1, runnable);
 
     % Wait until it's finished, up to 30 seconds
     isTimeout = ~wait(test, 'finished', Student.TIMEOUT);
-
     % Delete the job
     if isTimeout
         cancel(test);
+    end
+    runnable = fetchOutputs(test);
+    if isa(runnable, 'TestCase')
+        tCase = runnable;
+    else
+        tCase = runnable.testCase;
     end
     delete(test);
 
@@ -321,7 +326,7 @@ function populatePlots(runnable)
 end
 
 
-function runCase(runnable)
+function runnable = runCase(runnable)
     % Setup workspace
     timeout = Timeout();
     % is this supposed to be here?  -->     cleanup();
