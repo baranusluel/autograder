@@ -134,10 +134,10 @@ classdef Student < handle
         %   this = Student(PATH, NAME);
         %
         %   Constructor threw exception
-        %   AUTOGRADER:Student:invalidPath
+        %   AUTOGRADER:Student:ctor:invalidPath
         %
             if ~isfolder(path)
-                e = MException('AUTOGRADER:Student:invalidPath', ...
+                e = MException('AUTOGRADER:Student:ctor:invalidPath', ...
                 'Path %s is not a valid path', path);
                 throw(e);
             end
