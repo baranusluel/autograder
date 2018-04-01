@@ -253,6 +253,7 @@ function runnable = engine(runnable)
     if isTimeout
         cancel(test);
     end
+    tCase.loadFiles = origFileNames;
     runnable = fetchOutputs(test);
     if isa(runnable, 'TestCase')
         tCase = runnable;
