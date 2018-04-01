@@ -38,8 +38,46 @@ classdef File < handle
     end
     methods
         function this = File(path)
-
+        %Given the path, will find all the files in the path
+        fnst = dir(path)
+        %For each file, extract the filename and extension to File class,
+        %and extract the data contained in file
+        for i = length(fnst)
+           %grab the filename, parse by period, and store info in File
+           name = fnst(i).name
+           [nname filetype] = strtok(name, '.')
+           File.name = [File.name {nname}]
+           File.extension = [File.extension {filetype}]
+           %depending on the filetype, extract the information
+           switch filetype
+               case '.txt' %read data in and create a vertical string vector
+                   fh = fopen(name)
+                   line = string(fgetl(fh))
+                   data = string('')
+                   while ischar(line)
+                       data = [data; line]
+                       line = string(fgetl(fh))
+                   end
+                   fclose(fh)
+                   File.data = [File.data {data}]
+               case {'.png', '.jpeg', '.jpg'} 
+                   %read in image array and store in File class
+                   data = imread(name)
+                   File.data = [File.data {data}]
+               case {'.xls', '.xlsx', '.xlsm'}
+                   %should I be able to read in .csv?
+                   [~,~,data] = xlsread(name)
+                   File.data = [File.data {data}]
+           end
         end
+        %Then I need to use equals() to compare the files? I don't think I'm
+        %grading, I should just compare the data I get from the student to
+        %the solution code? Where does the solution code come from?
+        
+        %Once I get back the solution and the messages needed (perhaps just
+        %say that it was correct if there was no error message to give), I
+        %need to use generateFeedback to create an html that will neatly
+        %display the feedback to the student. Time to learn html baby.
     end
     methods (Access = public)
         %% equals: Determine file equality
