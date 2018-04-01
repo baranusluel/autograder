@@ -10,7 +10,7 @@
 %
 % * data: One of the following:
 %		- MxNx3 uint8 image
-%		- String array of lines (without newline characters)
+%		- Cell array of lines (without newline characters)
 %		- Cell array for raw Excel output
 % 
 %%% Methods
@@ -36,51 +36,118 @@ classdef File < handle
         extension;
 		data;
     end
+    properties (Constant)
+        SENTINEL = [tempfile '.lock'];
+    end
     methods
         function this = File(path)
-        %Given the path, will find all the files in the path
-        fnst = dir(path)
-        %For each file, extract the filename and extension to File class,
-        %and extract the data contained in file
-        for i = length(fnst)
-           %grab the filename, parse by period, and store info in File
-           name = fnst(i).name
-           [nname filetype] = strtok(name, '.')
-           File.name = [File.name {nname}]
-           File.extension = [File.extension {filetype}]
-           %depending on the filetype, extract the information
-           switch filetype
-               case '.txt' %read data in and create a vertical string vector
-                   fh = fopen(name)
-                   line = string(fgetl(fh))
-                   data = string('')
-                   while ischar(line)
-                       data = [data; line]
-                       line = string(fgetl(fh))
-                   end
-                   fclose(fh)
-                   File.data = [File.data {data}]
-               case {'.png', '.jpeg', '.jpg'} 
-                   %read in image array and store in File class
-                   data = imread(name)
-                   File.data = [File.data {data}]
-               case {'.xls', '.xlsx', '.xlsm'}
-                   %should I be able to read in .csv?
-                   [~,~,data] = xlsread(name)
-                   File.data = [File.data {data}]
-           end
-        end
-        %Then I need to use equals() to compare the files? I don't think I'm
-        %grading, I should just compare the data I get from the student to
-        %the solution code? Where does the solution code come from?
+        %% Constructor: Create a File object from a path
+        %
+        % Represents a generated file and it's contents
+        %
+        % this = File(P) where P is a path for a specific file, will
+        % generate a new File object with that file's data, name, and
+        % extension.
+        %
+        %%% Remarks
+        %
+        % This function uses imformats. If you've changed it, it might not
+        % work.
+        %
+        %%% Exceptions
+        %
+        % An AUTOGRADER:File:ctor:invalidPath exception will be thrown if
+        % the given path isn't a valid file.
+        %
+        % An AUTOGRADER:File:ctor:invalidExtension exception will be thrown
+        % if the extension isn't readable.
+        %
+        %%% Unit Tests
+        %
+        %   P = 'C:\Users\...\test.txt'; % valid path
+        %   this = File(P);
+        %
+        %   File.name -> 'test'
+        %   File.extension -> '.txt'
+        %   File.data -> data (a string array with no newline characters)
+        %
+        %   P = ''; % invalid path
+        %   this = File(P);
+        %
+        %   threw invalidPath exception
+        %
+        %   P = 'C:\test.fdasfdsa'; % invalid file extension
+        %   this = File(P);
+        %   
+        %   threw invalidExtension exception
+        %
+        %   P = 'C:\test\e.xls'; % valid file
+        %   this = File(P);
+        %
+        %   this.name -> 'e';
+        %   this.extension -> '.xls'
+        %   this.data -> cell array of raw output
+        %
+        %   P = 'C:\test\img.png'; % valid file
+        %   this = File(P);
+        %
+        %   this.name -> 'img'
+        %   this.extension -> '.png'
+        %   this.data -> UINT MxNx3 array
+        %
         
-        %Once I get back the solution and the messages needed (perhaps just
-        %say that it was correct if there was no error message to give), I
-        %need to use generateFeedback to create an html that will neatly
-        %display the feedback to the student. Time to learn html baby.
+        % reading text file:
+        % fid = fopen(name, 'rt');
+        % lines = fread(fid)';
+        % fclose(fid);
+        % lines = char(lines);
+        % lines = strsplit(lines, newline, 'CollapseDelimiters', false);
+        % this.data = lines;
+        
+            %Given the path, will find all the files in the path
+            fnst = dir(path)
+            %For each file, extract the filename and extension to File class,
+            %and extract the data contained in file
+            for i = length(fnst)
+               %grab the filename, parse by period, and store info in File
+               name = fnst(i).name
+               [nname filetype] = strtok(name, '.')
+               File.name = [File.name {nname}]
+               File.extension = [File.extension {filetype}]
+               %depending on the filetype, extract the information
+               switch filetype
+                   case '.txt' %read data in and create a vertical string vector
+                       fh = fopen(name)
+                       line = string(fgetl(fh))
+                       data = string('')
+                       while ischar(line)
+                           data = [data; line]
+                           line = string(fgetl(fh))
+                       end
+                       fclose(fh)
+                       File.data = [File.data {data}]
+                   case {'.png', '.jpeg', '.jpg'} 
+                       %read in image array and store in File class
+                       data = imread(name)
+                       File.data = [File.data {data}]
+                   case {'.xls', '.xlsx', '.xlsm'}
+                       %should I be able to read in .csv?
+                       [~,~,data] = xlsread(name)
+                       File.data = [File.data {data}]
+               end
+            end
+            %Then I need to use equals() to compare the files? I don't think I'm
+            %grading, I should just compare the data I get from the student to
+            %the solution code? Where does the solution code come from?
+
+            %Once I get back the solution and the messages needed (perhaps just
+            %say that it was correct if there was no error message to give), I
+            %need to use generateFeedback to create an html that will neatly
+            %display the feedback to the student. Time to learn html baby.
         end
     end
     methods (Access = public)
+        function [isEqual, message] = equals(this, soln)
         %% equals: Determine file equality
         %
         % Checks if this file object is equal to another (containing same name,
@@ -98,7 +165,7 @@ classdef File < handle
         % 
         %%% Exceptions
         %
-        % An AUTOGRADER:FILE:EQUALS:NOFILE exception will be thrown if OTHER
+        % An AUTOGRADER:File:equals:noFile exception will be thrown if OTHER
         % is not of type File, or no input is given.
 		%
         %%% Unit Tests
@@ -119,18 +186,17 @@ classdef File < handle
         %    If C is an invalid File instance or not type File:
 		%	 [ISEQUAL, MSG] = equals(C)
 		%
-		%	 equals threw AUTOGRADER:FILE:EQUALS:NOFILE exception
+		%	 equals threw AUTOGRADER:File:equals:noFile exception
 		%
 		% 	 [ISEQUAL, MSG] = equals()
 		%
-		%    equals threw AUTOGRADER:FILE:EQUALS:NOFILE exception
+		%    equals threw AUTOGRADER:File:equals:noFile exception
         %
         %    
-        function [isEqual, message] = equals(this, other)
-            
+        
         end
-		
-		%% generateFeedback: Generate HTML feedback for students
+        function [html] = generateFeedback(this, soln)
+        %% generateFeedback: Generate HTML feedback for students
         %
         % Create an HTML page for the student based on the solution File object.
         %
@@ -148,10 +214,10 @@ classdef File < handle
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:FILE:EQUALS:NOFILE exception will be thrown if SOLN
+        % An AUTOGRADER:File:equals:noFile exception will be thrown if SOLN
         % is not of type File.
         %
-        % An AUTOGRADER:FILE:EQUALS:INVALIDFILE exception will be thrown if no 
+        % An AUTOGRADER:File:equals:invalidFile exception will be thrown if no 
         % input is given.
 		%
         %%% Unit Tests
@@ -169,17 +235,15 @@ classdef File < handle
         %    If C is an invalid File instance:
 		%	 [HTML] = generateFeedback(THIS, C)
 		%
-		%	 equals threw AUTOGRADER:FILE:EQUALS:INVALIDFILE exception
+		%	 equals threw AUTOGRADER:File:equals:invalidFile exception
 		%
         %    If C does not contain a vaild File path:
 		%	 [HTML] = generateFeedback(THIS, C)
 		%
-		%	 equals threw AUTOGRADER:FILE:EQUALS:NOFILE exception
+		%	 equals threw AUTOGRADER:File:equals:noFile exception
 		%	 [HTML] = generateFeedback()
         %
         %    
-        function [html] = generateFeedback(this, other)
-            
         end
     end
 end
