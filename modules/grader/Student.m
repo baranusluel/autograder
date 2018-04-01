@@ -61,13 +61,19 @@ classdef Student < handle
     properties (Access=private)
         problems = [];
         html = {};
+        
     end
     methods (Static)
         function resetPath()
-            restoredefaultpath();
-            userpath('clear');
-            % Add ourselves to path (at beginning
-            addpath(genpath(fileparts(fileparts(mfilename('fullname')))));
+            persistent PATH;
+            if isempty(PATH)
+                restoredefaultpath();
+                userpath('clear');
+                addpath(genpath(fileparts(fileparts(mfilename('fullname')))));
+                PATH = path();
+            else
+                path(PATH, '');
+            end
         end
     end
     methods
