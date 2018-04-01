@@ -78,6 +78,7 @@ classdef File < handle
         %say that it was correct if there was no error message to give), I
         %need to use generateFeedback to create an html that will neatly
         %display the feedback to the student. Time to learn html baby.
+        end
     end
     methods (Access = public)
         %% equals: Determine file equality
