@@ -166,13 +166,13 @@ classdef Plot < handle
                 color(i) = {line.Color};
                 
                 if strcmp(line.Marker,'none')
-                    marker(i) = {[]};
+                    marker(i) = {''};
                 else
                     marker(i) = {line.Marker};
                 end
                 
                 if strcmp(line.LineStyle,'none')
-                    linestyle(i) = {[]};
+                    linestyle(i) = {''};
                 else
                     linestyle(i) = {line.LineStyle};
                 end
@@ -235,46 +235,46 @@ classdef Plot < handle
         %   equals threw an exception
         %   AUTOGRADER:PLOT:EQUALS:NOPLOT
         %
-            TitleCheck = strcmp(this.Title,that.Title)... 
-                | (isempty(this.Title) & isempty(that.Title));
-            XLabelCheck = strcmp(this.XLabel,that.XLabel)... 
-                | (isempty(this.XLabel) & isempty(that.XLabel));
-            YLabelCheck = strcmp(this.YLabel,that.YLabel)... 
-                | (isempty(this.YLabel) & isempty(that.YLabel));
-            ZLabelCheck = strcmp(this.ZLabel,that.ZLabel)... 
-                | (isempty(this.ZLabel) & isempty(that.ZLabel));
-            
-            
-            PositionCheck = isequal(this.Position,that.Position);
-            
-            PlotBoxCheck = isequal(this.PlotBox,that.PlotBox);
-            
-            ImageCheck = isequal(this.Image,that.Image);
-            
-            XDataCheck = isequal(this.XData,that.XData);
-            
-            YDataCheck = isequal(this.YData,that.YData);
-            
-            ZDataCheck = isequal(this.ZData,that.ZData);
-            
-            ColorCheck = isequal(this.Color,that.Color);
-            
-            LegendCheck = strcmp(this.Legend,that.Legend)... 
-                | (isempty(this.Legend{1}) & isempty(that.Legend{1}));
-            MarkerCheck = strcmp(this.Marker,that.Marker)... 
-                | (isempty(this.Marker{1}) & isempty(that.Marker{1}));
-            LineStyleCheck = strcmp(this.LineStyle,that.LineStyle)... 
-                | (isempty(this.LineStyle{1}) & isempty(that.LineStyle{1}));
-            
-            
-            
-            areEqual = TitleCheck & XLabelCheck & YLabelCheck &...
-                ZLabelCheck & PositionCheck & PlotBoxCheck & ImageCheck &... 
-                LegendCheck & XDataCheck & YDataCheck & ZDataCheck &...
-                ColorCheck & MarkerCheck & LineStyleCheck;
-            
-            
-            message = '';
+        message = '';
+        
+        TitleCheck = strcmp(this.Title,that.Title)...
+            | (isempty(this.Title) & isempty(that.Title)); 
+        XLabelCheck = strcmp(this.XLabel,that.XLabel)...
+            | (isempty(this.XLabel) & isempty(that.XLabel));
+        YLabelCheck = strcmp(this.YLabel,that.YLabel)...
+            | (isempty(this.YLabel) & isempty(that.YLabel));
+        ZLabelCheck = strcmp(this.ZLabel,that.ZLabel)...
+            | (isempty(this.ZLabel) & isempty(that.ZLabel));
+        
+        
+        PositionCheck = isequal(this.Position,that.Position);
+        
+        PlotBoxCheck = isequal(this.PlotBox,that.PlotBox);
+        
+        ImageCheck = isequal(this.Image,that.Image);
+        
+        thisStruct = struct('XData', this.XData, 'YData', this.YData,...
+            'ZData', this.ZData, 'Color', this.Color, 'Legend', this.Legend,...
+            'Marker', this.Marker, 'LineStyle', this.LineStyle);
+        
+        thatStruct = struct('XData', that.XData, 'YData', that.YData,...
+            'ZData', that.ZData, 'Color', that.Color, 'Legend', that.Legend,...
+            'Marker', that.Marker, 'LineStyle', that.LineStyle);
+        
+        LinePropsCheck = false(1,length(thisStruct));
+        for i = 1:length(thisStruct)
+            isMatch = false;
+            for j = 1:length(thatStruct)
+                if thisStruct(i) == thatStruct(j)
+                    isMatch = true;
+                end
+            end
+            LinePropsCheck(i) = isMatch;
+        end
+
+        areEqual = TitleCheck & XLabelCheck & YLabelCheck &...
+            ZLabelCheck & PositionCheck & PlotBoxCheck & ImageCheck &...
+            all(linePropsCheck);
         end
         function [html] = generateFeedback(this, that)
         %% generateFeedback: Generates HTML feedback for the student and solution Plot.
