@@ -17,6 +17,8 @@
 % * Position: A 1X4 double vector of the position of the axes in the figure
 % window
 %
+% * PlotBox: A 1X3 vector representing the relative axis scale factors
+%
 % * Image: An image taken of the plot, as an MxNx3 uint8 array.
 %
 % * Legend: A string array of all the names in the legend
@@ -78,7 +80,8 @@ classdef Plot < handle
         % Creates an instance of the Plot class from a student's plot
         % information.
         %
-        % this = Plot(HANDLE) creates an instance of Plot from the given axes handle.
+        % this = Plot(HANDLE) creates an instance of Plot from the given
+        % axes handle.
         %
         %%% Remarks
         %
@@ -134,6 +137,7 @@ classdef Plot < handle
             this.YLabel = pHandle.YLabel.String;
             this.ZLabel = pHandle.ZLabel.String;
             this.Position = pHandle.Position;
+            this.PlotBox = pHandle.PlotBoxAspectRatio;
             
             fig = ancestor(pHandle,'Figure');
             imgstruct = getframe(fig);
@@ -190,9 +194,10 @@ classdef Plot < handle
         %
         % equals is used to check a student plot against the solution plot.
         % 
-        % [OK, MSG] = equals(PLOT) takes in a valid PLOT class and evaluates the plot
-        % against the solution file and returns a boolean true/false stored in OK and a
-        % string stored in MSG if the two plots do not match. 
+        % [OK, MSG] = equals(PLOT) takes in a valid PLOT class and
+        % evaluates the plot against the solution file and returns a
+        % boolean true/false stored in OK and a string stored in MSG if the
+        % two plots do not match.
         %
         %%% Remarks
         %
@@ -203,8 +208,8 @@ classdef Plot < handle
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:PLOT:EQUALS:NOPLOT exception will be thrown if inputs
-        % are not of type Plot.
+        % An AUTOGRADER:PLOT:EQUALS:NOPLOT exception will be thrown if
+        % inputs are not of type Plot.
         %
         %%% Unit Tests
         %
@@ -241,6 +246,8 @@ classdef Plot < handle
             
             PositionCheck = isequal(this.Position,that.Position);
             
+            PlotBoxCheck = isequal(this.PlotBox,that.PlotBox);
+            
             ImageCheck = isequal(this.Image,that.Image);
             
             XDataCheck = isequal(this.XData,that.XData);
@@ -261,9 +268,9 @@ classdef Plot < handle
             
             
             areEqual = TitleCheck & XLabelCheck & YLabelCheck &...
-                ZLabelCheck & PositionCheck & ImageCheck & LegendCheck &...
-                XDataCheck & YDataCheck & ZDataCheck & ColorCheck & ...
-                MarkerCheck & LineStyleCheck;
+                ZLabelCheck & PositionCheck & PlotBoxCheck & ImageCheck &... 
+                LegendCheck & XDataCheck & YDataCheck & ZDataCheck &...
+                ColorCheck & MarkerCheck & LineStyleCheck;
             
             
             message = '';
@@ -271,34 +278,40 @@ classdef Plot < handle
         function [html] = generateFeedback(this, that)
         %% generateFeedback: Generates HTML feedback for the student and solution Plot.
         %
-        % generateFeedback will return the feedback for the student's plot. 
+        % generateFeedback will return the feedback for the student's plot.
         %
-        % [HTML] = generateFeedback(PLOT) will return a character vector in HTML that contains the 
-        % markup for HTML. The contents of this vector will be the feedback associated with a student's
-        % plot.
+        % [HTML] = generateFeedback(PLOT) will return a character vector in
+        % HTML that contains the markup for HTML. The contents of this
+        % vector will be the feedback associated with a student's plot.
         %
         %%% Remarks
         %
-        % This function will output a character after calling the generateFeedback method with input as 
-        % the student plot submission and the solution plot.
+        % This function will output a character after calling the
+        % generateFeedback method with input as the student plot submission
+        % and the solution plot.
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be thrown if the student or 
-        % solution plots are missing from the generateFeedback method call. 
+        % An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be
+        % thrown if the student or solution plots are missing from the
+        % generateFeedback method call.
         %
         %%% Unit Tests
         %
-        % When called, the generateFeedback method will check the student Plot against the solution Plot.
-        % If the student plot matches the solution plot, the character HTML vector will contain both the 
-        % solution and student plot. It will also contain confirmation that the plot was correct.
+        % When called, the generateFeedback method will check the student
+        % Plot against the solution Plot. If the student plot matches the
+        % solution plot, the character HTML vector will contain both the
+        % solution and student plot. It will also contain confirmation that
+        % the plot was correct.
         %
-        % If the student plot does not matches the solution plot, the character HTML vector will contain both the 
-        % solution and student plot. It will also contain a description of why the student plot is not correct,
-        % referencing the solution plot as needed.
+        % If the student plot does not matches the solution plot, the
+        % character HTML vector will contain both the solution and student
+        % plot. It will also contain a description of why the student plot
+        % is not correct, referencing the solution plot as needed.
         %
-        % An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be thrown if generateFeedback is called
-        % with only one or no input Plots. 
+        % An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be
+        % thrown if generateFeedback is called with only one or no input
+        % Plots.
         %
             
         end
