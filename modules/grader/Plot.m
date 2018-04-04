@@ -238,18 +238,45 @@ classdef Plot < handle
         message = '';
         
         TitleCheck = strcmp(this.Title,that.Title)...
-            | (isempty(this.Title) & isempty(that.Title)); 
+            | (isempty(this.Title) & isempty(that.Title));
+        if ~TitleCheck
+            add = 'Plot Title does not match solution plot';
+            message = sprintf('%s%s\n',message,add);
+        end
+        
         XLabelCheck = strcmp(this.XLabel,that.XLabel)...
             | (isempty(this.XLabel) & isempty(that.XLabel));
+        if ~XLabelCheck
+            add = 'Plot X-Label does not match solution plot';
+            message = sprintf('%s%s\n',message,add);
+        end
+        
         YLabelCheck = strcmp(this.YLabel,that.YLabel)...
             | (isempty(this.YLabel) & isempty(that.YLabel));
+        if ~YLabelCheck
+            add = 'Plot Y-Label does not match solution plot';
+            message = sprintf('%s%s\n',message,add);
+        end
+        
         ZLabelCheck = strcmp(this.ZLabel,that.ZLabel)...
             | (isempty(this.ZLabel) & isempty(that.ZLabel));
+        if ~ZLabelCheck
+            add = 'Plot Z-Label does not match solution plot';
+            message = sprintf('%s%s\n',message,add);
+        end
         
         
         PositionCheck = isequal(this.Position,that.Position);
+        if ~PositionCheck
+            add = 'Plot is in wrong position within figure window';
+            message = sprintf('%s%s\n',message,add);
+        end
         
         PlotBoxCheck = isequal(this.PlotBox,that.PlotBox);
+        if ~PositionCheck
+            add = 'Plot has incorrect Axis ratio settings';
+            message = sprintf('%s%s\n',message,add);
+        end
         
         ImageCheck = isequal(this.Image,that.Image);
         
@@ -265,16 +292,23 @@ classdef Plot < handle
         for i = 1:length(thisStruct)
             isMatch = false;
             for j = 1:length(thatStruct)
-                if thisStruct(i) == thatStruct(j)
+                if isequal(thisStruct(i),thatStruct(j))
                     isMatch = true;
                 end
             end
             LinePropsCheck(i) = isMatch;
         end
+        if ~LinePropsCheck
+            add = 'One of the lines in plot has 1 or more incorrect properties';
+            message = sprintf('%s%s\n',message,add);
+        end
+        
 
         areEqual = TitleCheck & XLabelCheck & YLabelCheck &...
             ZLabelCheck & PositionCheck & PlotBoxCheck & ImageCheck &...
-            all(linePropsCheck);
+            all(LinePropsCheck);
+        
+        message(end) = [];
         end
         function [html] = generateFeedback(this, that)
         %% generateFeedback: Generates HTML feedback for the student and solution Plot.
