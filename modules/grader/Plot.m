@@ -139,9 +139,8 @@ classdef Plot < handle
             this.ZLabel = pHandle.ZLabel.String;
             this.Position = pHandle.Position;
             this.PlotBox = pHandle.PlotBoxAspectRatio;
-            
-            fig = ancestor(pHandle,'Figure');
-            imgstruct = getframe(fig);
+
+            imgstruct = getframe(pHandle);
             this.Image = imgstruct.cdata;
             
             
@@ -273,7 +272,7 @@ classdef Plot < handle
         end
         
         PlotBoxCheck = isequal(this.PlotBox,that.PlotBox);
-        if ~PositionCheck
+        if ~PlotBoxCheck
             add = 'Plot has incorrect Axis ratio settings';
             message = sprintf('%s%s\n',message,add);
         end
@@ -308,7 +307,9 @@ classdef Plot < handle
             ZLabelCheck & PositionCheck & PlotBoxCheck & ImageCheck &...
             all(LinePropsCheck);
         
-        message(end) = [];
+        if ~isempty(message)
+            message(end) = [];
+        end
         end
         function [html] = generateFeedback(this, that)
         %% generateFeedback: Generates HTML feedback for the student and solution Plot.
