@@ -64,6 +64,7 @@ classdef Plot < handle
         YLabel;
         ZLabel;
         Position;
+        PlotBox;
         Image;
         Legend;
         XData;
