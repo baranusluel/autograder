@@ -16,6 +16,9 @@
 % An AUTOGRADER:GENERATESTUDENTS:INVALIDPATH exception will be thrown if the path is
 % invalid or if no student folders are found.
 %
+% An AUTOGRADER:GENERATESTUDENTS:FOLDERSNOTFOUND exception will be thrown if
+% no student folders are found.
+%
 %%% Unit Tests
 %
 %   P = 'C:\Users\...\students.zip'; % Valid path to student folders
@@ -28,6 +31,11 @@
 %
 %   Threw INVALIDPATH exception
 %
+%   P = ''; % Valid path, but no student folders are found
+%   S = generateStudents(P);
+%
+%   Threw FOLDERSNOTFOUND exception
+%
 
 % Notes for implementation:
 % Initializing an array of Student is weird. You have to start with the END first. 
@@ -39,22 +47,25 @@
 
 function students = generateStudents(path)
 
-% check that input is valid (that path leads to an existing folder)
-check = isfolder(path);
-% isfolder returns 1 if folder is in path or in current folder, 0 if not
-% if folder doesn't exist, throw exception
-if ~check
+if ~isfolder(path) % if path doesn't lead to existing folder, exception
     msgID = 'AUTOGRADER:GENERATESTUDENTS:INVALIDPATH';
-    msg = 'path is invalid or no student folders were found';
-    % make different messages for 2 separate cases?
+    msgtext = 'path is invalid';
     ME = MException(msgID, msgtext);
     throw(ME);
-    % (if folder exists, should also check if folder contains individual
-    % student folders?)
-else
+else % if path leads to folder
     % extract archived contents of path into the current folder
-    unzip(path);
+    unzipArchive(path);
+    studs = dir(path);
+    studs(strncmp({studs.name}, '.', 1)) = []; % filter out '.' and '..'
+    if ~any([studs.isdir]) % if there are no student folders, exception
+        msgID = 'AUTOGRADER:GENERATESTUDENTS:FOLDERSNOTFOUND';
+        msgtext = 'no student folders were found';
+        ME = MException(msgID, msgtext);
+        throw(ME);
+    else
+        % make vector of Students! studs should contain all student folders
+        % in a structure array
+    end
 end
-
 
 end
