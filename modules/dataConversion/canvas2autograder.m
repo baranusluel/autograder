@@ -119,6 +119,14 @@ function newPath = canvas2autograder(canvasPath,canvasGradebook)
     
     % Output Variable
     newPath = fullfile(cur,'submissions');
+    
+    % Write info.csv
+    fh = fopen(fullfile(newPath,'info.csv'),'w');
+    for i = 3:size(gradebook,1)-1
+        fprintf(fh,'%s,"%s"\n',gradebook{i,4},gradebook{i,1});
+    end
+    fprintf(fh,'%s,"%s"',gradebook{end,4},gradebook{end,1});
+    fclose(fh);
 end
 
 function log = isValidGradebook(gradebook)
