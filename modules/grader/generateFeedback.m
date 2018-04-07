@@ -41,12 +41,38 @@
 % size. If so, |DIFF_DIM| is returned. If not, |generateFeedback| then checks
 % if the inputs are non-scalar (excluding char row vectors), and if so,
 % recursively calls itself on the elements within the arrays. Otherwise,
-% depending on the class, a visualization of the difference between the given 
-% arguments is returned. The return value will always have the check mark 
-% (|PASSING|) or the red x (|INCORRECT|).
+% depending on the class and the guidelines below, a visualization of the
+% difference between the given arguments is returned. The return value will
+% always have the check mark (|PASSING|) or the red x (|INCORRECT|).
 %
-% For values of type |cell| or |struct|, all differences are listed
-% individually.
+% `visualize` means the whole thing is printed out. So a visualized array
+% means we actually print out the whole array.
+% 
+% Unless noted, following items only apply to primitives, where a primitive
+% is any data type except cell or struct.
+% 
+% * Strings or character vectors are always visualized as long as they are
+% less than 1,000 elements long
+% * Vectors less than 50 elements are always visualized
+% * Scalar primitives are always visualized
+% * 2 Dimensional Arrays with less than 20 rows and less than 20 columns are visualized.
+% * 3 or more dimensional arrays are not visualized
+% * Scalar structures with less than 15 fields are visualized. Each field's
+% value is visualized according to this same rule set
+% * Structure arrays where the only difference is one of the structures is
+% visualized. The only visualization is for the single structure, and the
+% index of that structure is noted.
+% * Structure arrays where there is more than one difference are not visualized.
+% * Scalar cell arrays with less than 50 elements are visualized - it's
+% contents are visualized according to this rule set
+% * Cell arrays less than 5 rows and less than 5 columns are visualized,
+% with contents being visualized according to this rule set.
+% * Any case not covered here isn't visualized.
+%
+% Any case that is not visualized is instead `differenced`.
+% differencing means you take the first 5 differences between the two
+% variables, and visualize them. Then, you write that there were n-5 more
+% differences, where n is the total number of differences.
 %
 %%% Exceptions
 %
