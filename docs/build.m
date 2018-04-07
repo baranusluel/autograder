@@ -97,15 +97,15 @@ function problems = build(opts)
         if opts.checkSuppressed
             options = [options {'-notok'}];
         end
-        info = checkcode(files, options{:}, '-struct');
+        [info, paths] = checkcode(files, options{:}, '-struct');
         if ~all(cellfun(@isempty, info, 'uni', true))
             % if requesting output, don't error
             if nargout == 0
-                e = MException('AUTOGRADER:BUILD:LINTFAILURE', ...
+                e = MException('AUTOGRADER:build:lintFailure', ...
                     'Files failed lint test');
                 throw(e);
             else
-                problems = info;
+                problems = [paths, info];
                 return;
             end
         end
@@ -167,11 +167,6 @@ function problems = build(opts)
         outputE = find(contains(lines, '</build-deliverables>'), 1);
 
         % It should look like this:
-        %<build-deliverables>
-          %<file location="C:\Users\alexhrao\Documents\autograder" 
-          %name="bin" optional="false">
-          %C:\Users\alexhrao\Documents\autograder\bin</file>
-        %</build-deliverables>
         for i = (outputS + 1):(outputE - 1)
             % relace <file location="stuff" with path TO folder, NOT INCLUDING
             % BIN. no trailing \
@@ -200,8 +195,8 @@ function problems = build(opts)
         try
             movefile(['..' filesep '*.mlappinstall'], ['..' filesep 'bin'])
         catch
-            %OK not to catch, since it means it did it correctly (it being
-            %.package();
+            % OK not to catch, since it means it did it correctly (it being
+            % .package();
         end
         % Delete root .prj
         cd('..');
