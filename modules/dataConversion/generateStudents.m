@@ -66,14 +66,18 @@ else % if path leads to folder
     else
         % make vector of Students! studs should contain all student folders
         % in a structure array
-        CSV_NAME = 'grades.csv'; % magic variable for csv filename
+        CSV_NAME = 'info.csv'; % magic variable for csv filename
         FULLNAME_COL = 2; % magic number for col with full names
+        GT_USERNAME_COL = 1; % magic number for col with usernames
         [~, ~, raw] = xlsread(CSV_NAME);
-        names = raw(:,FULLNAME_COL);
+        names = raw(:, FULLNAME_COL);
+        users = raw(:, GT_USERNAME_COL);
         for i = length(studs):-1:1
             % Student constructor takes in path to individual student
             % folder and student's full name
-            students(i) = Student(fullfile(studs(i).folder, studs(i).name), names{i});
+            studentPath = fullfile(studs(i).folder, studs(i).name);
+            name = names(strcmp(users, studs(i).name));
+            students(i) = Student(studentPath, name);
         end
         % alphabetize vector of Students based on GT username
         [~, idx] = sort([studs.name]);
