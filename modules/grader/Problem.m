@@ -26,7 +26,8 @@ classdef Problem < handle
     methods
         %% Constructor: 
         %
-        % The constructor creates a new Problem from a JSON.
+        % The constructor creates a new Problem from a structure representing 
+		% a parsed JSON.
         %
         % P = Problem(J) will return a Problem with all the fields
         % containing the appropriate information for the Problem
@@ -35,41 +36,48 @@ classdef Problem < handle
         %
         % The Problem constructor will _not_ catch any errors thrown by
         % TestCase; these are fatal errors that generally mean something 
-        % serious is wrong with the solution JSON file.
+        % serious is wrong with the solution structure.
         %
         %%% Exceptions
         %
-        % an AUTOGRADER:PROBLEM:INVALIDJSON exception will be thrown if
-        % the JSON file is incorrectly formatted or missing information
+        % an AUTOGRADER:PROBLEM:INVALIDINFO exception will be thrown if
+        % the structure is incorrectly formatted or missing information
         %
         % Does not catch exceptions thrown by testCase
         %
         %%% Unit Tests
         %
-        % Given that the input is a complete and valid JSON:
-        %    J = '...' % Valid JSON
+        % Given that the input is a complete and valid parsed JSON:
+        %    J = '...' % Valid parsed JSON
         %    P = Problem(J)
         %
         %    P -> complete Problem with a defined name and a cell
         %    array of the names of banned functions
         %
-        % Given that the input is an invalid JSON:
-        %    J = '...' % Invalid JSON
+        % Given that the input is an invalid parsed JSON:
+        %    J = '...' % Invalid parsed JSON
         %    P = Problem(J)
         %
         %    Constructor threw exception
-        %    AUTOGRADER:PROBLEM:INVALIDJSON
+        %    AUTOGRADER:PROBLEM:INVALIDINFO
         % 
-        % Given that the input is a valid JSON that is missing
+        % Given that the input is a valid parsed JSON that is missing
         % information:
-        %    J = '...' % Valid JSON with missing information
+        %    J = '...' % Valid parsed JSON with missing information
         %    P = Problem(J)
         % 
         %    Constructor threw exception
-        %    AUTOGRADER:PROBLEM:INVALIDJSON
+        %    AUTOGRADER:PROBLEM:INVALIDINFO
         % 
-        function this = Problem(JSON)
-            
+        function this = Problem(info)
+            try
+                this.name = info.name;
+                this.testCases = info.testCases;
+                this.banned = info.banned;
+            catch 
+                throw(MException('AUTOGRADER:PROBLEM:PROBLEM:INVALIDINFO', ...
+                    'Problem with INFO struct fields'));
+            end
         end
     end
 end
