@@ -55,13 +55,11 @@ classdef Student < handle
         path;
         submissions;
         feedbacks = {};
-        % why is this necessary?
         isGraded = false;
     end
     properties (Access=private)
         problems = [];
         html = {};
-        
     end
     methods (Static)
         function resetPath()
@@ -174,13 +172,9 @@ classdef Student < handle
         %
         % gradeProblem(PROBLEM) takes in a valid PROBLEM class,
         % evaluates the student code, creates a Feedback instance for each
-        % TestCase, which it adds to the feedbacks field. It finally
-        % sets the isGraded field to true.
+        % TestCase, which it adds to the feedbacks field.
         %
         %%% Remarks
-        %
-        % The function will return without making any changes to the class
-        % if the isGraded field is already true.
         %
         % The feedback field should always be populated, even if
         % the submissions field is empty.
@@ -330,7 +324,7 @@ classdef Student < handle
             html = strjoin(this.html, newline);
             fwrite(fid, html);
             fclose(fid);
-
+            this.isGraded = true;
         end
     end
     methods (Access=private)
