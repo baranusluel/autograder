@@ -13,10 +13,10 @@
 %
 %%% Exceptions
 %
-% An AUTOGRADER:GENERATESTUDENTS:INVALIDPATH exception will be thrown if the path is
+% An AUTOGRADER:generateStudents:invalidPath exception will be thrown if the path is
 % invalid or if no student folders are found.
 %
-% An AUTOGRADER:GENERATESTUDENTS:FOLDERSNOTFOUND exception will be thrown if
+% An AUTOGRADER:generateStudents:foldersNotFound exception will be thrown if
 % no student folders are found.
 %
 %%% Unit Tests
@@ -29,12 +29,12 @@
 %   P = ''; % Invalid Path
 %   S = generateStudents(P);
 %
-%   Threw INVALIDPATH exception
+%   Threw invalidPath exception
 %
 %   P = ''; % Valid path, but no student folders are found
 %   S = generateStudents(P);
 %
-%   Threw FOLDERSNOTFOUND exception
+%   Threw foldersNotFound exception
 %
 
 % Notes for implementation:
@@ -48,7 +48,7 @@
 function students = generateStudents(path)
 
 if ~isfolder(path) % if path doesn't lead to existing folder, exception
-    msgID = 'AUTOGRADER:GENERATESTUDENTS:INVALIDPATH';
+    msgID = 'AUTOGRADER:generateStudents:invalidPath';
     msgtext = 'path is invalid';
     ME = MException(msgID, msgtext);
     throw(ME);
@@ -59,7 +59,7 @@ else % if path leads to folder
     studs(strncmp({studs.name}, '.', 1)) = []; % filter out '.' and '..'
     studs(~[studs.isdir]) = [];
     if isempty(studs) % if there are no student folders, exception
-        msgID = 'AUTOGRADER:GENERATESTUDENTS:FOLDERSNOTFOUND';
+        msgID = 'AUTOGRADER:generateStudents:foldersNotFound';
         msgtext = 'no student folders were found';
         ME = MException(msgID, msgtext);
         throw(ME);
