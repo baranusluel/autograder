@@ -57,7 +57,8 @@ else % if path leads to folder
     unzipArchive(path);
     studs = dir(path);
     studs(strncmp({studs.name}, '.', 1)) = []; % filter out '.' and '..'
-    if ~any([studs.isdir]) % if there are no student folders, exception
+    studs(~[studs.isdir]) = [];
+    if isempty(studs) % if there are no student folders, exception
         msgID = 'AUTOGRADER:GENERATESTUDENTS:FOLDERSNOTFOUND';
         msgtext = 'no student folders were found';
         ME = MException(msgID, msgtext);
@@ -65,6 +66,18 @@ else % if path leads to folder
     else
         % make vector of Students! studs should contain all student folders
         % in a structure array
+        CSV_NAME = 'grades.csv'; % magic variable for csv filename
+        FULLNAME_COL = 2; % magic number for col with full names
+        [~, ~, raw] = xlsread(CSV_NAME);
+        names = raw(:,FULLNAME_COL);
+        for i = length(studs):-1:1
+            % Student constructor takes in path to individual student
+            % folder and student's full name
+            students(i) = Student(fullfile(studs(i).folder, studs(i).name), names{i});
+        end
+        % alphabetize vector of Students based on GT username
+%         [~, idx] = sort([studs.name]);
+%         students = students(idx(end:-1:1));
     end
 end
 
