@@ -76,8 +76,8 @@ else % if path leads to folder
             students(i) = Student(fullfile(studs(i).folder, studs(i).name), names{i});
         end
         % alphabetize vector of Students based on GT username
-%         [~, idx] = sort([studs.name]);
-%         students = students(idx(end:-1:1));
+        [~, idx] = sort([studs.name]);
+        students = students(idx(end:-1:1));
     end
 end
 
