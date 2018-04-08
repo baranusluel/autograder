@@ -288,7 +288,7 @@ classdef Plot < handle
             add{6} = 'Plot has incorrect Axis ratio settings';
         end
         
-      ImageCheck = isequal(this.Image,that.Image);
+%       ImageCheck = isequal(this.Image,that.Image);
         
         thisStruct = struct('XData', this.XData, 'YData', this.YData,...
             'ZData', this.ZData, 'Color', this.Color, 'Legend', this.Legend,...
@@ -313,8 +313,8 @@ classdef Plot < handle
         end
         
 
-        areEqual = TitleCheck & XLabelCheck & YLabelCheck &...
-            ZLabelCheck & PositionCheck & PlotBoxCheck & ImageCheck &...
+        areEqual = TitleCheck && XLabelCheck && YLabelCheck &&...
+            ZLabelCheck && PositionCheck && PlotBoxCheck &&... % ImageCheck &...
             all(LinePropsCheck);
         
         add = add(~cellfun(@isempty, add));
