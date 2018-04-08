@@ -45,33 +45,33 @@
 % difference between the given arguments is returned. The return value will
 % always have the check mark (|PASSING|) or the red x (|INCORRECT|).
 %
-% `visualize` means the whole thing is printed out. So a visualized array
+% |visualize| means the whole thing is printed out. So a |visualized| array
 % means we actually print out the whole array.
 % 
 % Unless noted, following items only apply to primitives, where a primitive
 % is any data type except cell or struct.
 % 
-% * Strings or character vectors are always visualized as long as they are
+% * Scalar primitives are always |visualized|.
+% * Strings or character vectors are always |visualized| as long as they are
 % less than 1,000 elements long.
-% * Vectors of primitives less than 50 elements are always visualized.
-% * Scalar primitives are always visualized.
+% * Vectors of primitives less than 50 elements are always |visualized|.
 % * 2 dimensional arrays of primitives with less than 20 rows and less than
-% 20 columns are visualized.
-% * 3 or more dimensional arrays are not visualized.
+% 20 columns are |visualized|.
+% * 3 or more dimensional arrays are not |visualized|.
 % * Scalar structures with less than 15 fields, with primitive values in
-% all fields, are visualized.
+% all fields, are |visualized|.
 % * Structure arrays where the only difference is one of the structures is
-% visualized (if rule above is met). The only visualization is for the
+% |visualized| (if rule above is met). The only visualization is for the
 % single structure, and the index of that structure is noted.
-% * Structure arrays where there is more than one different structure are
-% not visualized.
-% * Scalar cells are visualized - its contents are visualized according
+% * Structure arrays with more than one different structure are
+% not |visualized|.
+% * Scalar cells are visualized - their contents are |visualized| according
 % to the these rules.
 % * Cell arrays with less than 5 rows and less than 5 columns, and
-% primitives inside each cell, are visualized.
-% * Any case not covered here isn't visualized.
+% primitives inside each cell, are |visualized|.
+% * Any case not covered here isn't |visualized|.
 %
-% Any case that is not visualized is instead `differenced`.
+% Any case that is not |visualized| is instead |differenced|.
 % differencing means you take the first 5 differences between the two
 % variables, and visualize them. Then, you write that there were n-5 more
 % differences, where n is the total number of differences.
@@ -207,8 +207,14 @@ function htmlFeedback = generateFeedback(stud, soln)
         {PASSING, INCORRECT, DIFF_CLASS, DIFF_DIM, TABLE, DIFF_VALUE, ...
         DIFF_ARR_VALUE, DIFF_STC_VALUE, DIFF_STC_FIELD, INDENT_BLOCK, DIFF_STC, DIFF_CELL});
     
+    MAX_STR = 1000;
+    MAX_VEC_COLS = 50;
+    MAX_ARR_SIZE = 20;
+    MAX_FIELDS = 15;
+    MAX_CELL_SIZE = 5;
+    
     % check if different class
-    if ~isequal(class(soln), class(stud))
+    if ~strcmp(class(soln), class(stud))
         htmlFeedback = sprintf(DIFF_CLASS, class(soln), class(stud));
         return
     end
@@ -229,8 +235,8 @@ function htmlFeedback = generateFeedback(stud, soln)
     end
         
     % check if char vector/string and meets visualization rule
-    if ischar(stud) && ismatrix(stud) && all(size(stud) <= [1 1000]) ...
-        || isstring(stud) && numel(strlength(stud)) == 1 && strlength(stud) <= 1000
+    if (ischar(stud) && ismatrix(stud) && all(size(stud) <= [1 MAX_STR])) ...
+        || (isstring(stud) && numel(strlength(stud)) == 1 && strlength(stud) <= MAX_STR)
         htmlFeedback = sprintf(TABLE, visualizePrimitive(soln), visualizePrimitive(stud));
         return
     end
@@ -244,11 +250,11 @@ function htmlFeedback = generateFeedback(stud, soln)
     % check if is a primitive vector of length less than 50 or array of
     % size less than 20x20
     if isPrimitive(stud) && ismatrix(stud)
-        if all(size(stud) <= [1 50])
+        if all(size(stud) <= [1 MAX_VEC_COLS])
             htmlFeedback = sprintf(TABLE, visualizeVector(soln), visualizeVector(stud));
             return
         end
-        if all(size(stud) <= [20 20])
+        if all(size(stud) <= [MAX_ARR_SIZE MAX_ARR_SIZE])
             htmlFeedback = sprintf(TABLE, visualizeArray(soln), visualizeArray(stud));
             return
         end
@@ -260,8 +266,8 @@ function htmlFeedback = generateFeedback(stud, soln)
         studFields = fieldnames(stud);
         % if different fields
         if ~isequal(sort(solnFields), sort(studFields))
-            htmlFeedback = sprintf(DIFF_STC_FIELD, strjoin(solnFields, ','), ...
-                strjoin(studFields, ','));
+            htmlFeedback = sprintf(DIFF_STC_FIELD, strjoin(solnFields, ', '), ...
+                strjoin(studFields, ', '));
             return
         end
         % indexes (linearized) of different structures in struct array
@@ -273,7 +279,7 @@ function htmlFeedback = generateFeedback(stud, soln)
         end
         diffs = find(diffs);
         % if only one difference and fewer than 15 fields
-        if length(diffs) == 1 && numel(studFields) <= 15
+        if length(diffs) == 1 && numel(studFields) <= MAX_FIELDS
             % check if all fields' values are primitives
             allPrimitives = true;
             % cell array has to be transposed for the for-each loop
@@ -282,6 +288,7 @@ function htmlFeedback = generateFeedback(stud, soln)
                 solnValIsPrimitive = isPrimitive(soln(diffs).(field{1}));
                 if ~studValIsPrimitive || ~solnValIsPrimitive
                     allPrimitives = false;
+                    break
                 end
             end
             % if visualizable
@@ -302,7 +309,7 @@ function htmlFeedback = generateFeedback(stud, soln)
             htmlFeedback = sprintf(DIFF_CELL, generateFeedback(stud{1},soln{1}));
             return
         end
-        if ismatrix(stud) && all(size(stud) <= [5 5])
+        if ismatrix(stud) && all(size(stud) <= [MAX_CELL_SIZE MAX_CELL_SIZE])
             % check if all cells' contents are primitives
             allPrimitives = true;
             for i = 1:numel(stud)
@@ -310,6 +317,7 @@ function htmlFeedback = generateFeedback(stud, soln)
                 solnValIsPrimitive = isPrimitive(soln{i});
                 if ~studValIsPrimitive || ~solnValIsPrimitive
                     allPrimitives = false;
+                    break
                 end
             end
             if allPrimitives
