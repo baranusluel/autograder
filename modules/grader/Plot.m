@@ -74,6 +74,12 @@ classdef Plot < handle
         Marker;
         LineStyle;
     end
+    properties (Access = private)
+        isTitle = false;
+        isXLabel = false;
+        isYLabel = false;
+        isZLabel = false;
+    end
     methods
         function this = Plot(pHandle)
         %% Constructor
@@ -140,7 +146,13 @@ classdef Plot < handle
             this.Position = pHandle.Position;
             this.PlotBox = pHandle.PlotBoxAspectRatio;
 
-            imgstruct = getframe(pHandle);
+            
+            pHandle.Units = 'pixels';
+            pos = pHandle.Position;
+            ti = pHandle.TightInset;
+            rect = [-ti(1), -ti(2), pos(3)+ti(1)+ti(3), pos(4)+ti(2)+ti(4)];
+            
+            imgstruct = getframe(pHandle,rect);
             this.Image = imgstruct.cdata;
             
             
@@ -236,7 +248,7 @@ classdef Plot < handle
         %
         if ~isa(that,'Plot')
             ME = MException('AUTOGRADER:PLOT:EQUALS:NOPLOT',...
-                'input is not a valid instance of plot');
+                'input is not a valid instance of Plot');
             throw(ME)
         end
         
@@ -303,8 +315,9 @@ classdef Plot < handle
             end
             LinePropsCheck(i) = isMatch;
         end
-        if ~LinePropsCheck
-            add = 'One of the lines in plot has 1 or more incorrect properties';
+        
+        if ~all(LinePropsCheck)
+            add = 'At least one line in plot has 1 or more incorrect properties';
             message = sprintf('%s%s\n',message,add);
         end
         
@@ -355,6 +368,27 @@ classdef Plot < handle
         % thrown if generateFeedback is called with only one or no input
         % Plots.
         %
+        if ~isa(that,'Plot')
+            ME = MException('AUTOGRADER:PLOT:GENERATEFEEDBACK:NOPLOT',...
+                'input is not a valid instance of Plot');
+            throw(ME)
+        end
+        
+        imwrite(this.Image,'studPlot.png');
+        imwrite(that.Image,'solnPlot.png');
+        
+        fh = fopen('studPlot.png');
+        studBytes = fread(fh);
+        fclose(fh);
+        fh = fopen('solnPlot.png');
+        solnBytes = fread(fh);
+        fclose(fh);
+        
+        encoder = org.apache.commons.codec.binary.Base64;
+        studPlot = char(encoder.encode(studBytes))';
+        solnPlot = char(encoder.encode(solnBytes))';
+
+        html = sprintf('<div class="row"><div class="col-md-6 text-center"><h2 class="text-center">Your Plot</h2><img class="img-fluid img-thumbnail" src="data:image/jpg;base64,%s"></div><div class="col-md-6 text-center"><h2 class="text-center"> Solution Plot</h2><img class="img-fluid img-thumbnail" src="data:image/jpg;base64,%s"></div></div>',studPlot,solnPlot);
             
         end
     end
