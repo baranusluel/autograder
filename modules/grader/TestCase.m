@@ -272,7 +272,7 @@ classdef TestCase < handle
             % Engine can throw parse exceptions for bad |call| or
             % |initializer|, and bad solution exception. Don't catch,
             % let it propagate instead
-            engine(this);
+            this = engine(this);
         end
     end
 end
