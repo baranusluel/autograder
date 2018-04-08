@@ -246,56 +246,49 @@ classdef Plot < handle
         %   equals threw an exception
         %   AUTOGRADER:PLOT:EQUALS:NOPLOT
         %
+        add = cell(1, 7);
         if ~isa(that,'Plot')
             ME = MException('AUTOGRADER:PLOT:EQUALS:NOPLOT',...
                 'input is not a valid instance of Plot');
             throw(ME)
         end
         
-        message = '';
-        
         TitleCheck = strcmp(this.Title,that.Title)...
             | (isempty(this.Title) & isempty(that.Title));
         if ~TitleCheck
-            add = 'Plot Title does not match solution plot';
-            message = sprintf('%s%s\n',message,add);
+            add{1} = 'Plot Title does not match solution plot';
         end
         
         XLabelCheck = strcmp(this.XLabel,that.XLabel)...
             | (isempty(this.XLabel) & isempty(that.XLabel));
         if ~XLabelCheck
-            add = 'Plot X-Label does not match solution plot';
-            message = sprintf('%s%s\n',message,add);
+            add{2} = 'Plot X-Label does not match solution plot';
         end
         
         YLabelCheck = strcmp(this.YLabel,that.YLabel)...
             | (isempty(this.YLabel) & isempty(that.YLabel));
         if ~YLabelCheck
-            add = 'Plot Y-Label does not match solution plot';
-            message = sprintf('%s%s\n',message,add);
+            add{3} = 'Plot Y-Label does not match solution plot';
         end
         
         ZLabelCheck = strcmp(this.ZLabel,that.ZLabel)...
             | (isempty(this.ZLabel) & isempty(that.ZLabel));
         if ~ZLabelCheck
-            add = 'Plot Z-Label does not match solution plot';
-            message = sprintf('%s%s\n',message,add);
+            add{4} = 'Plot Z-Label does not match solution plot';
         end
         
         
         PositionCheck = isequal(this.Position,that.Position);
         if ~PositionCheck
-            add = 'Plot is in wrong position within figure window';
-            message = sprintf('%s%s\n',message,add);
+            add{5} = 'Plot is in wrong position within figure window';
         end
         
         PlotBoxCheck = isequal(this.PlotBox,that.PlotBox);
         if ~PlotBoxCheck
-            add = 'Plot has incorrect Axis ratio settings';
-            message = sprintf('%s%s\n',message,add);
+            add{6} = 'Plot has incorrect Axis ratio settings';
         end
         
-        ImageCheck = isequal(this.Image,that.Image);
+      ImageCheck = isequal(this.Image,that.Image);
         
         thisStruct = struct('XData', this.XData, 'YData', this.YData,...
             'ZData', this.ZData, 'Color', this.Color, 'Legend', this.Legend,...
@@ -307,18 +300,16 @@ classdef Plot < handle
         
         LinePropsCheck = false(1,length(thisStruct));
         for i = 1:length(thisStruct)
-            isMatch = false;
             for j = 1:length(thatStruct)
                 if isequal(thisStruct(i),thatStruct(j))
-                    isMatch = true;
+                    LinePropsCheck(i) = true;
+                    break
                 end
             end
-            LinePropsCheck(i) = isMatch;
         end
         
         if ~all(LinePropsCheck)
-            add = 'At least one line in plot has 1 or more incorrect properties';
-            message = sprintf('%s%s\n',message,add);
+            add{7} = 'At least one line in plot has 1 or more incorrect properties';
         end
         
 
@@ -326,9 +317,11 @@ classdef Plot < handle
             ZLabelCheck & PositionCheck & PlotBoxCheck & ImageCheck &...
             all(LinePropsCheck);
         
-        if ~isempty(message)
-            message(end) = [];
-        end
+        add = add(~cellfun(@isempty, add));
+        message = strjoin(add, newline);
+        
+        
+        
         end
         function [html] = generateFeedback(this, that)
         %% generateFeedback: Generates HTML feedback for the student and solution Plot.
@@ -383,6 +376,16 @@ classdef Plot < handle
         fh = fopen('solnPlot.png');
         solnBytes = fread(fh);
         fclose(fh);
+        
+        delete studPlot.png
+        delete solnPlot.png
+        
+        %account for windows glitch where file doesn't delete bc it's stupid
+        if exist('studPlot.png','file')
+            pause(0.4)
+            delete studPlot.png
+            delete solnPlot.png
+        end
         
         encoder = org.apache.commons.codec.binary.Base64;
         studPlot = char(encoder.encode(studBytes))';
