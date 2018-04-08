@@ -112,8 +112,14 @@ if length(zipFiles) >= 1
         unzipPath = unzipArchive(zipFiles(i).name, 'curr', true);
         % check to see if there was a folder inside the zip archive
         files = dir(unzipPath);
-        if length([files.isdir]) > 2
-            % zip file contained a directory
+        if length([files.isdir]) == 3
+            % single directory inside the zip
+            singleDir = files([files.isdir] & ~strcmp({files.name}, '.') & ~strcmp({files.name}, '..'));
+            moveFiles(singleDir, startPath);
+            % now done with the unzipped folder, so safe to delete
+            rmdir(unzipPath, 's'); 
+        elseif length([files.isdir]) > 3
+            % zip file contained more than one directory
             newDirs = {files([files.isdir]).name};
             newDirs = newDirs(~strcmp(newDirs, '..') & ~strcmp(newDirs, '.'));
             
@@ -129,18 +135,15 @@ if length(zipFiles) >= 1
             moveFiles(unzipPath, startPath);
             % delete the unzipped folder (don't need it anymore)
             rmdir(unzipPath, 's');
-                        
+
         end
         
-    end % end for
-else
-    % no zip files at all
-    
+    end % end for    
 end
 
 
 
-end
+end % end processStudentSubmission
 
 % Moves files from current dir to dest without overwriting anything
 % moveFiles(FILES, DEST) moves all files from folder SRC to DEST
