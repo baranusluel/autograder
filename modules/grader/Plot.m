@@ -250,7 +250,7 @@ classdef Plot < handle
         if ~isa(that,'Plot')
             ME = MException('AUTOGRADER:Plot:equals:noPlot',...
                 'input is not a valid instance of Plot');
-            throw(ME)
+            throw(ME);
         end
         
         TitleCheck = strcmp(this.Title,that.Title)...
