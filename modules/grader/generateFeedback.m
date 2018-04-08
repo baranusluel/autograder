@@ -187,6 +187,7 @@
 % Each of these constants has flags for inserting the correct value and
 % the received value.
 
+%#ok<*AGROW>
 function htmlFeedback = generateFeedback(stud, soln)
     PASSING = '<span class="fas fa-check></span>';
     INCORRECT = '<span class="fas fa-times"></span>';
@@ -264,12 +265,13 @@ function htmlFeedback = generateFeedback(stud, soln)
             return
         end
         % indexes (linearized) of different structures in struct array
-        diffs = [];
+        diffs = false(1, numel(stud));
         for i = 1:numel(stud)
             if ~isequal(stud(i), soln(i))
-                diffs = [diffs i];
+                diffs(i) = true;
             end
         end
+        diffs = find(diffs);
         % if only one difference and fewer than 15 fields
         if length(diffs) == 1 && numel(studFields) <= 15
             % check if all fields' values are primitives
