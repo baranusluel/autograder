@@ -54,17 +54,8 @@
 % Documentation at <https://semver.org SemVer.org>. Do not include leading
 % 'v'.
 
-function problems = build(opts)
-    if ~exist('opts', 'var')
-        % Default correctly
-        % get current branch:
-        opts.branch = '';
-        opts.generateDocs = true;
-        opts.installerPath = ['..' filesep 'bin' filesep];
-        opts.checkSuppressed = false;
-        opts.lint = true;
-        opts.version = '';
-    end
+function problems = build(varargin)
+    opts = getInputs(varargin{:});
     [path, ~, ~] = fileparts(mfilename('fullpath'));
     thisFolder = cd(path);
     
@@ -108,6 +99,8 @@ function problems = build(opts)
                 problems = [paths, info];
                 return;
             end
+        else
+            fprintf(1, 'Linting finished - no problems found\n');
         end
     end
     
@@ -204,11 +197,29 @@ function problems = build(opts)
         % does not delete the .prj files...
         pause(0.4);
         delete('*.prj');
+        fprintf(1, 'Created App Installation Package\n');
     end
     
     if opts.generateDocs
         generateDocs;
+        fprintf(1, 'Generated & <a href="https://github.gatech.edu/pages/CS1371/autograder/">Published</a> documentation\n');
     end
     cd(thisFolder);
 end
 
+function res = getInputs(varargin)
+    parser = inputParser();
+    parser.addParameter('branch', '', @ischar);
+    parser.addParameter('generateDocs', true, @islogical);
+    parser.addParameter('installerPath', ['..' filesep 'bin' filesep], @(p)(isempty(p) || isfolder(p)));
+    parser.addParameter('checkSuppressed', false, @islogical);
+    parser.addParameter('lint', true, @islogical);
+    parser.addParameter('version', '', @(v)(isempty(v) || ischar(v)));
+    
+    parser.CaseSensitive = false;
+    parser.FunctionName = 'build';
+    parser.StructExpand = true;
+    
+    parser.parse(varargin{:});
+    res = parser.Results;
+end
