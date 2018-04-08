@@ -139,11 +139,10 @@ function processStudentSubmission(startPath)
 %                     end
 %                 end
 %                 newDirs = dirsAfter(inds);
-                for j = 1:length(newDirs)
-                   cd(newDirs{i});
-                   files = dir();
-                   movefile('*', currentDir);
-                end
+%                 for j = 1:length(newDirs)
+%                    cd(newDirs{i});
+%                    movefile('*', currentDir);
+%                 end
             end
         end
         
