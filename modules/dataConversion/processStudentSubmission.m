@@ -106,24 +106,48 @@ function processStudentSubmission(startPath)
                     'Invalid path'));
     end
     zipFiles = dir('*.zip');
-    dirsBefore = dir();
-    dirsBefore = {dirsBefore([dirsBefore.isdir]).name};
+%     dirsBefore = dir();
+%     dirsBefore = {dirsBefore([dirsBefore.isdir]).name};
     
     % there was >= 1 zip file
     if length(zipFiles) >= 1
         for i = 1:length(zipFiles)
-            unzipArchive(zipFiles(i).name);
+            unzipPath = unzipArchive(zipFiles(i).name, 'curr', true);
             % check to see if there was a folder inside the zip archive
-            dirsAfter = dir();
-            dirsAfter = {dirsAfter([dirsAfter.isdir]).name};
-            if length(dirsAfter) > length(dirsBefore)
-                % determine the new folder(s) created
-                inds = [];
-                for j = 1:length(dirsAfter)
-                    
+            files = dir(unzipPath);
+            if length([files.isdir]) > 2
+                % zip file contained a directory
+                newDirs = {files([files.isdir]).name};
+                newDirs = newDirs(~strcmp(newDirs, '..') & ~strcmp(newDirs, '.'));
+                
+                % move all the files from each of the new directories to
+                % the main folder
+                for j = 1:length(newDirs)
+                   movefile([unzipPath, filesep, newDirs{i}, filesep, '*'], currentDir);
+                end
+            else
+                
+            end
+%             dirsAfter = dir();
+%             dirsAfter = {dirsAfter([dirsAfter.isdir]).name};
+%             if length(dirsAfter) > length(dirsBefore)
+%                 % determine the new folder(s) created
+%                 inds = [];
+%                 for j = 1:length(dirsAfter)
+%                     if ~ismember(dirsAfter(j), dirsBefore)
+%                         inds = [inds, j];
+%                     end
+%                 end
+%                 newDirs = dirsAfter(inds);
+                for j = 1:length(newDirs)
+                   cd(newDirs{i});
+                   files = dir();
+                   movefile('*', currentDir);
                 end
             end
         end
+        
+        
         
         
     else
