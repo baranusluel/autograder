@@ -107,7 +107,7 @@ classdef Plot < handle
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:PLOT:NOAXISDATA exception will be thrown if no
+        % An AUTOGRADER:Plot:noAxisData exception will be thrown if no
         % input axis are provided
         %
         %%% Unit Tests
@@ -135,7 +135,7 @@ classdef Plot < handle
         %
             
             if ~isa(pHandle,'matlab.graphics.axis.Axes')
-                ME = MException('AUTOGRADER:PLOT:NOAXISDATA',...
+                ME = MException('AUTOGRADER:Plot:noAxisData',...
                     'Given input to Plot Constructor is not Axes Handle');
                 throw(ME)
             end
@@ -220,7 +220,7 @@ classdef Plot < handle
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:PLOT:EQUALS:NOPLOT exception will be thrown if
+        % An AUTOGRADER:Plot:equals:noPlot exception will be thrown if
         % inputs are not of type Plot.
         %
         %%% Unit Tests
@@ -244,11 +244,11 @@ classdef Plot < handle
         %   [OK, MSG] = equals(this, PLOT)
         %
         %   equals threw an exception
-        %   AUTOGRADER:PLOT:EQUALS:NOPLOT
+        %   AUTOGRADER:Plot:equals:noPlot
         %
         add = cell(1, 7);
         if ~isa(that,'Plot')
-            ME = MException('AUTOGRADER:PLOT:EQUALS:NOPLOT',...
+            ME = MException('AUTOGRADER:Plot:equals:noPlot',...
                 'input is not a valid instance of Plot');
             throw(ME)
         end
@@ -357,14 +357,14 @@ classdef Plot < handle
         % plot. It will also contain a description of why the student plot
         % is not correct, referencing the solution plot as needed.
         %
-        % An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be
+        % An AUTOGRADER:Plot:generateFeedback:noPlot exception will be
         % thrown if generateFeedback is called with only one or no input
         % Plots.
         %
         if ~isa(that,'Plot')
-            ME = MException('AUTOGRADER:PLOT:GENERATEFEEDBACK:NOPLOT',...
+            ME = MException('AUTOGRADER:Plot:generateFeedback:noPlot',...
                 'input is not a valid instance of Plot');
-            throw(ME)
+            throw(ME);
         end
         
         imwrite(this.Image,'studPlot.png');
@@ -382,7 +382,7 @@ classdef Plot < handle
         
         %account for windows glitch where file doesn't delete bc it's stupid
         if exist('studPlot.png','file')
-            pause(0.4)
+            pause(0.4);
             delete studPlot.png
             delete solnPlot.png
         end
