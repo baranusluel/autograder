@@ -318,7 +318,7 @@ function htmlFeedback = generateFeedback(stud, soln)
         end
     end
         
-    htmlFeedback = findDifference(stud, soln, constants);
+    htmlFeedback = findDifference(stud, soln, constants, true);
 end
     
 
@@ -381,7 +381,7 @@ function idx = linear2Subscript(linearIndx, arr)
     idx = cell(1, ndims(arr));
     [idx{:}] = ind2sub(size(arr), linearIndx);
     % convert indices to x separated string
-    idx = strrep(num2str(cell2mat(idx)), '  ', 'x');
+    idx = strrep(num2str(cell2mat(idx)), '  ', ',');
 end
 
 %% Check if value is a primitive
@@ -391,10 +391,19 @@ function isPrim = isPrimitive(val)
 end
 
 %% 'Difference' the student and solution values
-function htmlFeedback = findDifference(stud, soln, constants)
+function htmlFeedback = findDifference(stud, soln, constants, ~)
+    persistent diffNum
+    if nargin == 4
+        diffNum = 0;
+    elseif diffNum >= 5
+        htmlFeedback = [];
+        return
+    end
+    
     % check if different class
     if ~isequal(class(soln), class(stud))
         htmlFeedback = sprintf(constants('DIFF_CLASS'), class(soln), class(stud));
+        diffNum = diffNum + 1;
 
     % check if equal
     % do after class check because isequaln(uint8(1),double(1)) is true
@@ -406,6 +415,7 @@ function htmlFeedback = findDifference(stud, soln, constants)
         solnSize = strrep(num2str(size(soln)), '  ', 'x');
         studSize = strrep(num2str(size(stud)), '  ', 'x');
         htmlFeedback = sprintf(constants('DIFF_DIM'), solnSize, studSize);
+        diffNum = diffNum + 1;
 
     % check if not scalar (but excluding row vector of chars, i.e. strings)
     % if so, compare elements in the vector/array individually
@@ -414,23 +424,20 @@ function htmlFeedback = findDifference(stud, soln, constants)
     elseif numel(stud) > 1 && ...
         ~(ischar(stud) && ismatrix(stud) && size(stud, 1) == 1)
         htmlFeedback = [];
-        % iterate over indices, call generateFeedback recursively to find
+        % iterate over indices, call findDifference recursively to find
         % differences at each position
         % use linear indexing because number of dimensions is unknown;
         % subscripts are reconstructed from index below
         for i = 1:numel(stud)
+            if diffNum >= 5
+                break;
+            end
             stud_inner = stud(i);
             soln_inner = soln(i);
-            feedback_inner = generateFeedback(stud_inner, soln_inner);
+            feedback_inner = findDifference(stud_inner, soln_inner, constants);
             % if found a difference
             if ~isequal(feedback_inner, constants('PASSING'))
-                % cell array to store subscript indices for each dimension,
-                % so that we can get all of ind2sub's vararg outputs
-                % without knowing number of dimensions beforehand
-                idx = cell(1,ndims(stud));
-                [idx{:}] = ind2sub(size(stud),i);
-                % convert indices to x separated string
-                idx = strrep(num2str(cell2mat(idx)), '  ', 'x');
+                idx = linear2Subscript(i, stud);
                 % indent feedback_inner for improved readability
                 feedback_inner = sprintf(constants('INDENT_BLOCK'), feedback_inner);
                 % add to htmlFeedback
@@ -447,10 +454,12 @@ function htmlFeedback = findDifference(stud, soln, constants)
     elseif isfloat(stud) || isinteger(stud)
         htmlFeedback = sprintf(constants('DIFF_VALUE'), visualizePrimitive(soln), ...
             visualizePrimitive(stud));
+        diffNum = diffNum + 1;
 
     elseif ischar(stud) || isstring(stud)
         htmlFeedback = sprintf(constants('DIFF_VALUE'), visualizePrimitive(soln), ...
             visualizePrimitive(stud));
+        diffNum = diffNum + 1;
 
     elseif isstruct(stud)
         % check if both structs have same fields
@@ -459,15 +468,19 @@ function htmlFeedback = findDifference(stud, soln, constants)
         if ~isequal(sort(solnFields), sort(studFields))
             htmlFeedback = sprintf(constants('DIFF_STC_FIELD'), strjoin(solnFields, ','), ...
                 strjoin(studFields, ','));
+            diffNum = diffNum + 1;
         else
             htmlFeedback = [];
-            % iterate over fields, call generateFeedback recursively on
+            % iterate over fields, call findDifference recursively on
             % values to find differences, even if nested
             for i = 1:length(studFields)
+                if diffNum >= 5
+                    break;
+                end
                 field = studFields{i};
                 stud_inner = stud.(field);
                 soln_inner = soln.(field);
-                feedback_inner = generateFeedback(stud_inner, soln_inner);
+                feedback_inner = findDifference(stud_inner, soln_inner, constants);
                 % if found a difference
                 if ~isequal(feedback_inner, constants('PASSING'))
                     % indent feedback_inner for improved readability
@@ -484,17 +497,19 @@ function htmlFeedback = findDifference(stud, soln, constants)
         end
 
     elseif iscell(stud)
-        htmlFeedback = generateFeedback(stud{1}, soln{1});
+        htmlFeedback = findDifference(stud{1}, soln{1}, constants);
 
     elseif islogical(stud)
         bools = {'false', 'true'};
         htmlFeedback = sprintf(constants('DIFF_VALUE'), visualizePrimitive(bools{soln+1}), ...
             visualizePrimitive(bools{stud+1}));
+        diffNum = diffNum + 1;
 
     % case we didn't account for -> fallback message
     else
         htmlFeedback = sprintf(constants('TABLE'), ...
             matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(soln), ...
             matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(stud));
+        diffNum = diffNum + 1;
     end
 end
