@@ -77,6 +77,7 @@ else % if path leads to folder
             % folder and student's full name
             studentPath = fullfile(studs(i).folder, studs(i).name);
             studentName = studentNames(strcmp(users, studs(i).name));
+            processStudentSubmission(studentPath);
             students(i) = Student(studentPath, studentName);
         end
         % alphabetize vector of Students based on GT username
