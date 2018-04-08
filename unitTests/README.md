@@ -30,9 +30,9 @@ function [results, html] functionNameToTest_Test(opts, ...);
 
 `results` will be a structure array with the following fields:
 
+- `subject`: The subject of this test (i.e., the function or class name)
 - `testName`: The name of the test run, as a character vector
 - `status`: Whether or not it passed, as a logical
-- `message`: A help message, if any
 
 ### `html`
 

@@ -68,11 +68,11 @@ function [results, html] = grader_test(varargin)
         html{(t*3) + 2} = feedbacks{t+1};
         html{(t*3) + 3} = '</div>';
     end
-    html = [header html {'</div>'}];
+    html = strjoin([header html {'</div>'}], newline);
     
-    completeHtml = [generateHeader() {'<div class="container-fluid">', ...
+    completeHtml = strjoin([generateHeader() {'<div class="container-fluid">', ...
         '<div class="row">', '<div class="col-12">'}, html, ...
-        {'</div>', '</div>', '</div>', '</body>', '</html>'}];
+        {'</div>', '</div>', '</div>', '</body>', '</html>'}], newline);
     % if outs.feedbackPath ~= '', engage
     if ~isempty(outs.feedbackPath)
         % write html
