@@ -202,16 +202,18 @@ function htmlFeedback = generateFeedback(stud, soln)
     INDENT_BLOCK = '<div style="margin-left: 10px;">%s</div>';
     DIFF_STC = ['<p>struct with fields:</p>' INDENT_BLOCK];
     DIFF_CELL = '<p>In cell: %s</p>';
-    constants = containers.Map({'PASSING', 'INCORRECT', 'DIFF_CLASS', 'DIFF_DIM', 'TABLE', 'DIFF_VALUE', ...
-        'DIFF_ARR_VALUE', 'DIFF_STC_VALUE', 'DIFF_STC_FIELD', 'INDENT_BLOCK', 'DIFF_STC', 'DIFF_CELL'}, ...
-        {PASSING, INCORRECT, DIFF_CLASS, DIFF_DIM, TABLE, DIFF_VALUE, ...
-        DIFF_ARR_VALUE, DIFF_STC_VALUE, DIFF_STC_FIELD, INDENT_BLOCK, DIFF_STC, DIFF_CELL});
-    
+    NUM_DIFFS = 5;
     MAX_STR = 1000;
     MAX_VEC_COLS = 50;
     MAX_ARR_SIZE = 20;
     MAX_FIELDS = 15;
     MAX_CELL_SIZE = 5;
+    constants = containers.Map({'PASSING', 'INCORRECT', 'DIFF_CLASS', 'DIFF_DIM', 'TABLE', 'DIFF_VALUE', ...
+        'DIFF_ARR_VALUE', 'DIFF_STC_VALUE', 'DIFF_STC_FIELD', 'INDENT_BLOCK', 'DIFF_STC', 'DIFF_CELL', ...
+        'NUM_DIFFS', 'MAX_STR', 'MAX_VEC_COLS', 'MAX_ARR_SIZE', 'MAX_FIELDS', 'MAX_CELL_SIZE'}, ...
+        {PASSING, INCORRECT, DIFF_CLASS, DIFF_DIM, TABLE, DIFF_VALUE, ...
+        DIFF_ARR_VALUE, DIFF_STC_VALUE, DIFF_STC_FIELD, INDENT_BLOCK, DIFF_STC, DIFF_CELL, ...
+        NUM_DIFFS, MAX_STR, MAX_VEC_COLS, MAX_ARR_SIZE, MAX_FIELDS, MAX_CELL_SIZE});
     
     % check if different class
     if ~strcmp(class(soln), class(stud))
@@ -334,8 +336,8 @@ end
 
 %% Generate string visualization of a primitive
 function str = visualizePrimitive(val)
-    if ischar(val) && ismatrix(val) && all(size(val) <= [1 1000]) ...
-        || isstring(val) && numel(strlength(val)) == 1 && strlength(val) <= 1000
+    if (ischar(val) && ismatrix(val) && size(val, 1) <= 1) ...
+        || (isstring(val) && numel(strlength(val)) == 1)
         str = strcat('"', val, '"');
     elseif isfloat(val) || isinteger(val)
         str = sprintf('%g', val);
@@ -405,7 +407,7 @@ function htmlFeedback = findDifference(stud, soln, constants, ~)
     persistent diffNum
     if nargin == 4
         diffNum = 0;
-    elseif diffNum >= 5
+    elseif diffNum >= constants('NUM_DIFFS')
         htmlFeedback = [];
         return
     end
@@ -439,7 +441,7 @@ function htmlFeedback = findDifference(stud, soln, constants, ~)
         % use linear indexing because number of dimensions is unknown;
         % subscripts are reconstructed from index below
         for i = 1:numel(stud)
-            if diffNum >= 5
+            if diffNum >= constants('NUM_DIFFS')
                 break;
             end
             stud_inner = stud(i);
@@ -484,7 +486,7 @@ function htmlFeedback = findDifference(stud, soln, constants, ~)
             % iterate over fields, call findDifference recursively on
             % values to find differences, even if nested
             for i = 1:length(studFields)
-                if diffNum >= 5
+                if diffNum >= constants('NUM_DIFFS')
                     break;
                 end
                 field = studFields{i};
