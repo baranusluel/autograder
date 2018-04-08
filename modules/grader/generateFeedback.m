@@ -65,8 +65,8 @@
 % single structure, and the index of that structure is noted.
 % * Structure arrays where there is more than one different structure are
 % not visualized.
-% * Scalar cell arrays with less than 50 cells, and primitives inside
-% each cell, are visualized.
+% * Scalar cells are visualized - its contents are visualized according
+% to the these rules.
 % * Cell arrays with less than 5 rows and less than 5 columns, and
 % primitives inside each cell, are visualized.
 % * Any case not covered here isn't visualized.
@@ -182,25 +182,8 @@
 %
 % * |PASSING = '<span class="fas fa-check></span>'|
 % * |INCORRECT = '<span class="fas fa-times"></span>'|
-% * |DIFF_CLASS =  
-% ['<p>' INCORRECT ' %s class expected; %s class given.</p>']|
-% * |DIFF_DIM = 
-% ['<p>' INCORRECT ' Dimension Mismatch: %s expected; %s given.</p>']|
-% * |DIFF_NUM_VALUE = 
-% ['<p>' INCORRECT ' %g expected; %g given.</p>']|
-% * |DIFF_STR_VALUE = 
-% ['<p>' INCORRECT ' "%s" expected; "%s" given.</p>']|
-% * |DIFF_BOOL_VALUE = 
-% ['<p>' INCORRECT ' %s expected; %s given.</p>']|
-% * |DIFF_MISC_VALUE = 
-% ['<p>' INCORRECT ' %s<br>expected;<br>%s<br>given.</p>']|
-% * |DIFF_ARR_VALUE = 
-% ['<p>' INCORRECT ' At index (%s): %s</p>']|
-% * |DIFF_STC_VALUE = 
-% ['<p>' INCORRECT ' In field "%s"; %s</p>']|
-% * |DIFF_STC_FIELD =
-% ['<p>' INCORRECT ' %s fields expected; %s fields given.</p>']|
-% * |INDENT_BLOCK = '<div style="margin-left: 10px;">%s</div>'|
+% (See below for complete list).
+%
 % Each of these constants has flags for inserting the correct value and
 % the received value.
 
@@ -216,6 +199,7 @@ function htmlFeedback = generateFeedback(stud, soln)
     DIFF_STC_FIELD = '<p>%s fields expected; %s fields given.</p>';
     INDENT_BLOCK = '<div style="margin-left: 10px;">%s</div>';
     DIFF_STC = ['<p>struct with fields:</p>' INDENT_BLOCK];
+    DIFF_CELL = '<p>In cell: %s</p>';
     
     % check if different class
     if ~isequal(class(soln), class(stud))
@@ -251,6 +235,19 @@ function htmlFeedback = generateFeedback(stud, soln)
         return
     end
     
+    % check if is a primitive vector of length less than 50 or array of
+    % size less than 20x20
+    if isPrimitive(stud) && ismatrix(stud)
+        if all(size(stud) <= [1 50])
+            htmlFeedback = sprintf(TABLE, visualizeVector(soln), visualizeVector(stud));
+            return
+        end
+        if all(size(stud) <= [20 20])
+            htmlFeedback = sprintf(TABLE, visualizeArray(soln), visualizeArray(stud));
+            return
+        end
+    end
+    
     % check if is a structure
     if isstruct(stud)
         solnFields = fieldnames(soln);
@@ -268,8 +265,8 @@ function htmlFeedback = generateFeedback(stud, soln)
                 diffs = [diffs i];
             end
         end
-        % if only one difference
-        if length(diffs) == 1
+        % if only one difference and fewer than 15 fields
+        if length(diffs) == 1 && numel(studFields) <= 15
             % check if all fields' values are primitives
             allPrimitives = true;
             % cell array has to be transposed for the for-each loop
@@ -281,7 +278,7 @@ function htmlFeedback = generateFeedback(stud, soln)
                 end
             end
             % if visualizable
-            if allPrimitives && numel(studFields) <= 15
+            if allPrimitives
                 htmlFeedback = sprintf(TABLE, visualizeStruct(soln(diffs), DIFF_STC), ...
                     visualizeStruct(stud(diffs), DIFF_STC));
                 if ~isscalar(stud)
@@ -291,8 +288,29 @@ function htmlFeedback = generateFeedback(stud, soln)
                 return
             end
         end
-        % TODO: difference it
-        return
+    end
+    
+    if iscell(stud)
+        if isscalar(stud)
+            htmlFeedback = sprintf(DIFF_CELL, generateFeedback(stud{1},soln{1}));
+            return
+        end
+        if ismatrix(stud) && all(size(stud) <= [5 5])
+            % check if all cells' contents are primitives
+            allPrimitives = true;
+            for i = 1:numel(stud)
+                studValIsPrimitive = isPrimitive(stud{i});
+                solnValIsPrimitive = isPrimitive(soln{i});
+                if ~studValIsPrimitive || ~solnValIsPrimitive
+                    allPrimitives = false;
+                end
+            end
+            if allPrimitives
+                htmlFeedback = sprintf(TABLE, visualizeArray(soln, true), ...
+                    visualizeArray(stud, true));
+                return
+            end
+        end
     end
         
 %     if numel(stud) > 1
@@ -326,11 +344,7 @@ function htmlFeedback = generateFeedback(stud, soln)
 %             end
 %         end
         
-    % case we didn't account for -> fallback message
-    htmlFeedback = sprintf(TABLE, ...
-        matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(soln), ...
-        matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(stud));
-    
+    htmlFeedback = findDifference(stud, soln);
 end
     
 
@@ -349,8 +363,34 @@ end
 
 %% Generate string/HTML visualization of an array
 function HTML = visualizeArray(val, isCell)
-    
+    if nargin == 1
+        isCell = false;
+    end
+    [rows, cols] = size(val);
+    HTML = '<table class="table">';
+    for r = 1:rows
+        HTML = [HTML '<tr>'];
+        for c = 1:cols
+            if isCell
+                HTML = [HTML '<td>{' visualizePrimitive(val{r,c}) '}</td>'];
+            else
+                HTML = [HTML '<td>' visualizePrimitive(val(r,c)) '</td>'];
+            end
+        end
+        HTML = [HTML '</tr>'];
+    end
+    HTML = [HTML '</table>'];
 end
+
+%% Generate string/HTML visualization of a primitive vector
+function HTML = visualizeVector(val)
+    strings = cell(1,length(val));
+    for i = 1:length(val)
+        strings{i} = visualizePrimitive(val(i));
+    end
+    HTML = ['[' strjoin(strings, ', ') ']'];
+end
+
 
 %% Generate string/HTML visualization of a structure
 function HTML = visualizeStruct(val, template)
