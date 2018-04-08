@@ -137,7 +137,7 @@ classdef Plot < handle
             if ~isa(pHandle,'matlab.graphics.axis.Axes')
                 ME = MException('AUTOGRADER:Plot:noAxisData',...
                     'Given input to Plot Constructor is not Axes Handle');
-                throw(ME)
+                throw(ME);
             end
             this.Title = pHandle.Title.String;
             this.XLabel = pHandle.XLabel.String;
