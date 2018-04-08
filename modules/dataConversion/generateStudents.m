@@ -54,8 +54,9 @@ if ~isfolder(path) % if path doesn't lead to existing folder, exception
     throw(ME);
 else % if path leads to folder
     % extract archived contents of path into the current folder
-    unzipArchive(path);
-    studs = dir(path);
+    mkdir('students');
+    studPath = unzipArchive(path, [pwd filesep 'students']);
+    studs = dir(studPath);
     studs(strncmp({studs.name}, '.', 1)) = []; % filter out '.' and '..'
     studs(~[studs.isdir]) = []; % filter out any misc files
     if isempty(studs) % if there are no student folders, exception
