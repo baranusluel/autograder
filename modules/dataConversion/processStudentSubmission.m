@@ -105,11 +105,25 @@ function processStudentSubmission(startPath)
        throw(MException('AUTOGRADER:PROCESSSTUDENTSUBMISSION:INVALIDPATH', ...
                     'Invalid path'));
     end
-    files = dir('*.zip');
+    zipFiles = dir('*.zip');
+    dirsBefore = dir();
+    dirsBefore = {dirsBefore([dirsBefore.isdir]).name};
     
     % there was >= 1 zip file
-    if any(zipFiles)
-        
+    if length(zipFiles) >= 1
+        for i = 1:length(zipFiles)
+            unzipArchive(zipFiles(i).name);
+            % check to see if there was a folder inside the zip archive
+            dirsAfter = dir();
+            dirsAfter = {dirsAfter([dirsAfter.isdir]).name};
+            if length(dirsAfter) > length(dirsBefore)
+                % determine the new folder(s) created
+                inds = [];
+                for j = 1:length(dirsAfter)
+                    
+                end
+            end
+        end
         
         
     else
