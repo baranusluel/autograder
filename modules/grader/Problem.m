@@ -83,7 +83,7 @@ classdef Problem < handle
                     this.testCases(i) = TestCase(tInfo, 'path/to/solution/file');
                 end
             catch 
-                throw(MException('AUTOGRADER:PROBLEM:PROBLEM:INVALIDINFO', ...
+                throw(MException('AUTOGRADER:PROBLEM:CTOR:INVALIDINFO', ...
                     'Problem with INFO struct fields'));
             end
         end
