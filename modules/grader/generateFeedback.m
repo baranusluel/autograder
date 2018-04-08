@@ -52,21 +52,23 @@
 % is any data type except cell or struct.
 % 
 % * Strings or character vectors are always visualized as long as they are
-% less than 1,000 elements long
-% * Vectors less than 50 elements are always visualized
-% * Scalar primitives are always visualized
-% * 2 Dimensional Arrays with less than 20 rows and less than 20 columns are visualized.
-% * 3 or more dimensional arrays are not visualized
-% * Scalar structures with less than 15 fields are visualized. Each field's
-% value is visualized according to this same rule set
+% less than 1,000 elements long.
+% * Vectors of primitives less than 50 elements are always visualized.
+% * Scalar primitives are always visualized.
+% * 2 dimensional arrays of primitives with less than 20 rows and less than
+% 20 columns are visualized.
+% * 3 or more dimensional arrays are not visualized.
+% * Scalar structures with less than 15 fields, with primitive values in
+% all fields, are visualized.
 % * Structure arrays where the only difference is one of the structures is
-% visualized. The only visualization is for the single structure, and the
-% index of that structure is noted.
-% * Structure arrays where there is more than one difference are not visualized.
-% * Scalar cell arrays with less than 50 elements are visualized - it's
-% contents are visualized according to this rule set
-% * Cell arrays less than 5 rows and less than 5 columns are visualized,
-% with contents being visualized according to this rule set.
+% visualized (if rule above is met). The only visualization is for the
+% single structure, and the index of that structure is noted.
+% * Structure arrays where there is more than one different structure are
+% not visualized.
+% * Scalar cell arrays with less than 50 cells, and primitives inside
+% each cell, are visualized.
+% * Cell arrays with less than 5 rows and less than 5 columns, and
+% primitives inside each cell, are visualized.
 % * Any case not covered here isn't visualized.
 %
 % Any case that is not visualized is instead `differenced`.
@@ -207,95 +209,213 @@ function htmlFeedback = generateFeedback(stud, soln)
     INCORRECT = '<span class="fas fa-times"></span>';
     DIFF_CLASS = ['<p>' INCORRECT ' %s class expected; %s class given.</p>'];
     DIFF_DIM = ['<p>' INCORRECT ' Dimension Mismatch: %s expected; %s given.</p>'];
-    DIFF_NUM_VALUE = ['<p>' INCORRECT ' %g expected; %g given.</p>'];
-    DIFF_STR_VALUE = ['<p>' INCORRECT ' "%s" expected; "%s" given.</p>'];
-    DIFF_BOOL_VALUE = ['<p>' INCORRECT ' %s expected; %s given.</p>'];
-    DIFF_MISC_VALUE = ['<p>' INCORRECT ' %s<br>expected;<br>%s<br>given.</p>'];
-    DIFF_ARR_VALUE = ['<p>' INCORRECT ' At index (%s): %s</p>'];
-    DIFF_STC_VALUE = ['<p>' INCORRECT ' In field "%s": %s</p>'];
-    DIFF_STC_FIELD = ['<p>' INCORRECT ' %s fields expected; %s fields given.</p>'];
+    TABLE = ['<p>' INCORRECT ' Value Incorrect:</p><div class="row"><div class="col-md-6"><p>Expected:</p>%s</div><div class="col-md-6"><p>Given:</p>%s</div></div>'];
+    DIFF_VALUE = '<p>%s expected; %s given.</p>';
+    DIFF_ARR_VALUE = '<p>At index (%s): %s</p>';
+    DIFF_STC_VALUE = '<p>In field "%s": %s</p>';
+    DIFF_STC_FIELD = '<p>%s fields expected; %s fields given.</p>';
     INDENT_BLOCK = '<div style="margin-left: 10px;">%s</div>';
     
     % check if different class
     if ~isequal(class(soln), class(stud))
         htmlFeedback = sprintf(DIFF_CLASS, class(soln), class(stud));
+        return
+    end
         
     % check if equal
     % do after class check because isequaln(uint8(1),double(1)) is true
-    elseif isequaln(soln, stud)
+    if isequaln(soln, stud)
         htmlFeedback = PASSING;
+        return
+    end
         
     % check if same size
-    elseif ~isequal(size(soln), size(stud))
-        soln_size = strrep(num2str(size(soln)), '  ', 'x');
-        stud_size = strrep(num2str(size(stud)), '  ', 'x');
-        htmlFeedback = sprintf(DIFF_DIM, soln_size, stud_size);
+    if ~isequal(size(soln), size(stud))
+        solnSize = strrep(num2str(size(soln)), '  ', 'x');
+        studSize = strrep(num2str(size(stud)), '  ', 'x');
+        htmlFeedback = sprintf(DIFF_DIM, solnSize, studSize);
+        return
+    end
         
-    % check if not scalar (but excluding row vector of chars, i.e. strings)
-    % if so, compare elements in the vector/array individually
-    % because visual diff code for primitives expects scalars (apart from
-    % row vectors of chars, which are easy to display)
-    elseif numel(stud) > 1 && ...
-        ~(ischar(stud) && ndims(stud) == 2 && size(stud, 1) == 1)
-        htmlFeedback = [];
-        % iterate over indices, call generateFeedback recursively to find
-        % differences at each position
-        % use linear indexing because number of dimensions is unknown;
-        % subscripts are reconstructed from index below
+    % check if char vector/string and meets visualization rule
+    if ischar(stud) && ismatrix(stud) && all(size(stud) <= [1 1000]) ...
+        || isstring(stud) && numel(strlength(stud)) == 1 && strlength(stud) <= 1000
+        htmlFeedback = sprintf(TABLE, visualizePrimitive(soln), visualizePrimitive(stud));
+        return
+    end
+    
+    % check if is a scalar primitive
+    if isscalar(stud) && isprimitive(stud)
+        htmlFeedback = sprintf(TABLE, visualizePrimitive(soln), visualizePrimitive(stud));
+        return
+    end
+    
+    % check if is a structure
+    if isstruct(stud)
+        solnFields = fieldnames(soln);
+        studFields = fieldnames(stud);
+        % if different fields
+        if ~isequal(sort(solnFields), sort(studFields))
+            htmlFeedback = sprintf(DIFF_STC_FIELD, strjoin(solnFields, ','), ...
+                strjoin(studFields, ','));
+            return
+        end
+        % indexes (linearized) of different structures in struct array
+        diffs = [];
         for i = 1:numel(stud)
-            stud_inner = stud(i);
-            soln_inner = soln(i);
-            feedback_inner = generateFeedback(stud_inner, soln_inner);
-            % if found a difference
-            if ~isequal(feedback_inner, PASSING)
-                % cell array to store subscript indices for each dimension,
-                % so that we can get all of ind2sub's vararg outputs
-                % without knowing number of dimensions beforehand
-                idx = cell(1,ndims(stud));
-                [idx{:}] = ind2sub(size(stud),i);
-                % convert indices to x separated string
-                idx = strrep(num2str(cell2mat(idx)), '  ', 'x');
-                % indent feedback_inner for improved readability
-                feedback_inner = sprintf(INDENT_BLOCK, feedback_inner);
-                % add to htmlFeedback
-                msg = sprintf(DIFF_ARR_VALUE, idx, feedback_inner);
-                if isempty(htmlFeedback)
-                    htmlFeedback = msg;
-                else
-                    htmlFeedback = [htmlFeedback msg];
-                end
+            if ~isequal(stud(i), soln(i))
+                diffs = [diffs i];
             end
         end
+        % if only one difference
+        if length(diffs) == 1
+            % check if all fields' values are primitives
+            allPrimitives = true;
+            for field = solnFields
+                studValIsPrimitive = isPrim(stud.(field));
+                solnValIsPrimitive = isPrim(soln.(field));
+                if ~studValIsPrimitive || ~solnValIsPrimitive
+                    allPrimitives = false;
+                end
+            end
+            % if visualizable
+            if allPrimitives && numel(studFields) <= 15
+                htmlFeedback = sprintf(TABLE, visualizeStruct(soln), visualizeStruct(stud));
+                if ~isscalar(stud)
+                    htmlFeedback = sprintf(DIFF_ARR_VALUE, linear2Subscript(diffs, size(stud)), htmlFeedback);
+                end
+                return
+            end
+        end
+        % TODO: difference it
+        return
+    end
         
-    % class-specific visual diffs
-    elseif isfloat(stud) || isinteger(stud)
-        htmlFeedback = sprintf(DIFF_NUM_VALUE, soln, stud);
+%     if numel(stud) > 1
+%         htmlFeedback = [];
+%         % iterate over indices, call generateFeedback recursively to find
+%         % differences at each position
+%         % use linear indexing because number of dimensions is unknown;
+%         % subscripts are reconstructed from index below
+%         for i = 1:numel(stud)
+%             stud_inner = stud(i);
+%             soln_inner = soln(i);
+%             feedback_inner = generateFeedback(stud_inner, soln_inner);
+%             % if found a difference
+%             if ~isequal(feedback_inner, PASSING)
+%                 % cell array to store subscript indices for each dimension,
+%                 % so that we can get all of ind2sub's vararg outputs
+%                 % without knowing number of dimensions beforehand
+%                 idx = cell(1,ndims(stud));
+%                 [idx{:}] = ind2sub(size(stud),i);
+%                 % convert indices to x separated string
+%                 idx = strrep(num2str(cell2mat(idx)), '  ', 'x');
+%                 % indent feedback_inner for improved readability
+%                 feedback_inner = sprintf(INDENT_BLOCK, feedback_inner);
+%                 % add to htmlFeedback
+%                 msg = sprintf(DIFF_ARR_VALUE, idx, feedback_inner);
+%                 if isempty(htmlFeedback)
+%                     htmlFeedback = msg;
+%                 else
+%                     htmlFeedback = [htmlFeedback msg];
+%                 end
+%             end
+%         end
         
-    elseif ischar(stud) || isstring(stud)
-        htmlFeedback = sprintf(DIFF_STR_VALUE, soln, stud);
+    % case we didn't account for -> fallback message
+    else
+        htmlFeedback = sprintf(TABLE, ...
+            matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(soln), ...
+            matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(stud));
+    end
+    
+    %% Generate string visualization of a primitive
+    function str = visualizePrimitive(val)
+        if ischar(val) && ismatrix(val) && all(size(val) <= [1 1000]) ...
+            || isstring(val) && numel(strlength(val)) == 1 && strlength(val) <= 1000
+            str = strcat('"', soln, '"');
+        elseif isfloat(val) || isinteger(val)
+            str = sprintf('%g', val);
+        elseif islogical(val)
+            bools = {'false', 'true'};
+            str = bools{soln+1};
+        end
+    end
+
+    %% Generate string/HTML visualization of an array
+    function HTML = visualizeArray(val, isCell)
         
-    elseif isstruct(stud)
-        % check if both structs have same fields
-        soln_fields = fieldnames(soln);
-        stud_fields = fieldnames(stud);
-        if ~isequal(sort(soln_fields), sort(stud_fields))
-            htmlFeedback = sprintf(DIFF_STC_FIELD, strjoin(soln_fields, ','), ...
-                strjoin(stud_fields, ','));
-        else
+    end
+
+    %% Generate string/HTML visualization of a structure
+    function HTML = visualizeStruct(val)
+        fields = sort(fieldnames);
+        lines = cell(1, length(fields));
+        for i = 1:length(fields)
+            lines{i} = [fields{i} ': ' visualizePrimitive(val.(fields{i}))];
+        end
+        HTML = sprintf(['<p>struct with fields:</p>' INDENT_BLOCK], strjoin(lines, '<br>'));
+    end
+
+    %% Convert linearized index to subscript indices
+    function linear2Subscript(linearIndx, arr)
+        idx = cell(1, ndims(arr));
+        [idx{:}] = ind2sub(size(arr), linearIndx);
+        % convert indices to x separated string
+        idx = strrep(num2str(cell2mat(idx)), '  ', 'x');
+    end
+
+    %% Check if value is a primitive
+    function isPrim = isPrimitive(val)
+        isPrim = isfloat(val) || isinteger(val) || ischar(val) ...
+                    || isstring(val) || islogical(val);
+    end
+
+    %% 'Difference' the student and solution values
+    function findDifference(stud, soln)
+        % check if different class
+        if ~isequal(class(soln), class(stud))
+            htmlFeedback = sprintf(DIFF_CLASS, class(soln), class(stud));
+
+        % check if equal
+        % do after class check because isequaln(uint8(1),double(1)) is true
+        elseif isequaln(soln, stud)
+            htmlFeedback = PASSING;
+
+        % check if same size
+        elseif ~isequal(size(soln), size(stud))
+            solnSize = strrep(num2str(size(soln)), '  ', 'x');
+            studSize = strrep(num2str(size(stud)), '  ', 'x');
+            htmlFeedback = sprintf(DIFF_DIM, solnSize, studSize);
+
+        % check if not scalar (but excluding row vector of chars, i.e. strings)
+        % if so, compare elements in the vector/array individually
+        % because visual diff code for primitives expects scalars (apart from
+        % row vectors of chars, which are easy to display)
+        elseif numel(stud) > 1 && ...
+            ~(ischar(stud) && ndims(stud) == 2 && size(stud, 1) == 1)
             htmlFeedback = [];
-            % iterate over fields, call generateFeedback recursively on
-            % values to find differences, even if nested
-            for i = 1:length(stud_fields)
-                field = stud_fields{i};
-                stud_inner = stud.(field);
-                soln_inner = soln.(field);
+            % iterate over indices, call generateFeedback recursively to find
+            % differences at each position
+            % use linear indexing because number of dimensions is unknown;
+            % subscripts are reconstructed from index below
+            for i = 1:numel(stud)
+                stud_inner = stud(i);
+                soln_inner = soln(i);
                 feedback_inner = generateFeedback(stud_inner, soln_inner);
                 % if found a difference
                 if ~isequal(feedback_inner, PASSING)
+                    % cell array to store subscript indices for each dimension,
+                    % so that we can get all of ind2sub's vararg outputs
+                    % without knowing number of dimensions beforehand
+                    idx = cell(1,ndims(stud));
+                    [idx{:}] = ind2sub(size(stud),i);
+                    % convert indices to x separated string
+                    idx = strrep(num2str(cell2mat(idx)), '  ', 'x');
                     % indent feedback_inner for improved readability
                     feedback_inner = sprintf(INDENT_BLOCK, feedback_inner);
                     % add to htmlFeedback
-                    msg = sprintf(DIFF_STC_VALUE, field, feedback_inner);
+                    msg = sprintf(DIFF_ARR_VALUE, idx, feedback_inner);
                     if isempty(htmlFeedback)
                         htmlFeedback = msg;
                     else
@@ -303,19 +423,57 @@ function htmlFeedback = generateFeedback(stud, soln)
                     end
                 end
             end
+
+        % class-specific visual diffs
+        elseif isfloat(stud) || isinteger(stud)
+            htmlFeedback = sprintf(DIFF_NUM_VALUE, soln, stud);
+
+        elseif ischar(stud) || isstring(stud)
+            htmlFeedback = sprintf(DIFF_STR_VALUE, soln, stud);
+
+        elseif isstruct(stud)
+            % check if both structs have same fields
+            solnFields = fieldnames(soln);
+            studFields = fieldnames(stud);
+            if ~isequal(sort(solnFields), sort(studFields))
+                htmlFeedback = sprintf(DIFF_STC_FIELD, strjoin(solnFields, ','), ...
+                    strjoin(studFields, ','));
+            else
+                htmlFeedback = [];
+                % iterate over fields, call generateFeedback recursively on
+                % values to find differences, even if nested
+                for i = 1:length(studFields)
+                    field = studFields{i};
+                    stud_inner = stud.(field);
+                    soln_inner = soln.(field);
+                    feedback_inner = generateFeedback(stud_inner, soln_inner);
+                    % if found a difference
+                    if ~isequal(feedback_inner, PASSING)
+                        % indent feedback_inner for improved readability
+                        feedback_inner = sprintf(INDENT_BLOCK, feedback_inner);
+                        % add to htmlFeedback
+                        msg = sprintf(DIFF_STC_VALUE, field, feedback_inner);
+                        if isempty(htmlFeedback)
+                            htmlFeedback = msg;
+                        else
+                            htmlFeedback = [htmlFeedback msg];
+                        end
+                    end
+                end
+            end
+
+        elseif iscell(stud)
+            htmlFeedback = generateFeedback(stud{1}, soln{1});
+
+        elseif islogical(stud)
+            bools = {'false', 'true'};
+            htmlFeedback = sprintf(DIFF_BOOL_VALUE, bools{soln+1}, bools{stud+1});
+
+        % case we didn't account for -> fallback message
+        else
+            htmlFeedback = sprintf(DIFF_MISC_VALUE, ...
+                matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(soln), ...
+                matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(stud));
         end
-        
-    elseif iscell(stud)
-        htmlFeedback = generateFeedback(stud{1}, soln{1});
-        
-    elseif islogical(stud)
-        bools = {'false', 'true'};
-        htmlFeedback = sprintf(DIFF_BOOL_VALUE, bools{soln+1}, bools{stud+1});
-        
-    % case we didn't account for -> fallback message
-    else
-        htmlFeedback = sprintf(DIFF_MISC_VALUE, ...
-            matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(soln), ...
-            matlab.unittest.diagnostics.ConstraintDiagnostic.getDisplayableString(stud));
     end
 end
