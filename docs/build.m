@@ -53,6 +53,11 @@
 % vMAJOR.MINOR.PATH. For more information refer to Semantic Versioning
 % Documentation at <https://semver.org SemVer.org>. Do not include leading
 % 'v'.
+%
+% * test
+%
+% A logical - if true, building will fail if any unit test fails. If false,
+% testing is not done at all.
 
 function problems = build(opts)
     if ~exist('opts', 'var')
@@ -64,6 +69,7 @@ function problems = build(opts)
         opts.checkSuppressed = false;
         opts.lint = true;
         opts.version = '';
+        opts.test = true;
     end
     [path, ~, ~] = fileparts(mfilename('fullpath'));
     thisFolder = cd(path);
@@ -109,6 +115,26 @@ function problems = build(opts)
                 return;
             end
         end
+    end
+    
+    if opts.test
+        % We'll need to run the unit tests. Fortunately, this is simple -
+        % just call autograder_test
+        orig = cd(['..' filesep 'unitTests']);
+        [results, ~, isPassing] = autograder_test();
+        if ~isPassing
+            if nargout == 0
+                e = MException('AUTOGRADER:build:testFailure', ...
+                    'Files failed Unit Tests');
+                throw(e);
+            else
+                problems = results;
+                return;
+            end
+        else
+            fprintf(1, 'Unit Tests all passed\n');
+        end
+        cd(orig);
     end
     
     % if given installer path, create installer
