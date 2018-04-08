@@ -106,9 +106,6 @@ catch
         'Invalid path'));
 end
 zipFiles = dir('*.zip');
-%     dirsBefore = dir();
-%     dirsBefore = {dirsBefore([dirsBefore.isdir]).name};
-
 % there was at least one zip file
 if length(zipFiles) >= 1
     for i = 1:length(zipFiles)
@@ -123,39 +120,19 @@ if length(zipFiles) >= 1
             % move all the files from each of the new directories to
             % the main folder
             for j = 1:length(newDirs)
-                moveFiles([unzipPath, filesep, newDirs{i}], currentDir);
+                moveFiles([unzipPath, filesep, newDirs{i}], startPath);
             end
         else
             % no directory inside zip file, so just unzip the files
             unzipPath = unzipArchive(zipFiles(i).name, 'curr', true);
             % move files from unzipped folder
-            moveFiles(unzipPath, currentDir);
+            moveFiles(unzipPath, startPath);
             % delete the unzipped folder (don't need it anymore)
             rmdir(unzipPath, 's');
-            
-            
+                        
         end
-        %             dirsAfter = dir();
-        %             dirsAfter = {dirsAfter([dirsAfter.isdir]).name};
-        %             if length(dirsAfter) > length(dirsBefore)
-        %                 % determine the new folder(s) created
-        %                 inds = [];
-        %                 for j = 1:length(dirsAfter)
-        %                     if ~ismember(dirsAfter(j), dirsBefore)
-        %                         inds = [inds, j];
-        %                     end
-        %                 end
-        %                 newDirs = dirsAfter(inds);
-        %                 for j = 1:length(newDirs)
-        %                    cd(newDirs{i});
-        %                    movefile('*', currentDir);
-        %                 end
         
     end % end for
-    
-    
-    
-    
 else
     % no zip files at all
     
