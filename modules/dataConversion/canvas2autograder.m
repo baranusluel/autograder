@@ -44,23 +44,27 @@
 %   Threw INVALIDFILE exception
 %
 function newPath = canvas2autograder(canvasPath,canvasGradebook)
-
+    
     cur = pwd;
-    if ~exist('canvasPath','var') || ~contains(canvasGradebook,'.zip')
-        error('INVALIDFILE')
+    if ~contains(canvasGradebook,'.zip')
+        throw(MException('AUTOGRADER:canvas2autograder:invalidFile',...
+                         'The Path given is not a .zip file'));
     end
     unzippedCanvas = unzipArchive(canvasPath,'temp',true);
-    if ~exist('canvasGradebook','var') || ~contains(canvasGradebook,'.csv')
-        error('INVALIDGRADEBOOK')
+    if ~contains(canvasGradebook,'.csv')
+        throw(MException('AUTOGRADER:canvas2autograder:invalidGradebook',...
+                         'The Gradebook given is not a .csv file'));
     end
     [~,~,gradebook] = xlsread(canvasGradebook);
     
     % Validate Inputs
     if ~isValidCanvas(unzippedCanvas)
-        error('INVALIDFILE')
+        throw(MException('AUTOGRADER:canvas2autograder:invalidFile',...
+                         'The Path given does not contain any valid student submissions'));
     end
     if ~isValidGradebook(gradebook)
-        error('INVALIDGRADEBOOK')
+        throw(MException('AUTOGRADER:canvas2autograder:invalidGradebook',...
+                         'The Gradebook given is not a valid canvas csv'));
     end
     
     % Generate folders Map
@@ -115,6 +119,14 @@ function newPath = canvas2autograder(canvasPath,canvasGradebook)
     
     % Output Variable
     newPath = fullfile(cur,'submissions');
+    
+    % Write info.csv
+    fh = fopen(fullfile(newPath,'info.csv'),'w');
+    for i = 3:size(gradebook,1)-1
+        fprintf(fh,'%s,"%s"\n',gradebook{i,4},gradebook{i,1});
+    end
+    fprintf(fh,'%s,"%s"',gradebook{end,4},gradebook{end,1});
+    fclose(fh);
 end
 
 function log = isValidGradebook(gradebook)

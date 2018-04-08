@@ -63,17 +63,24 @@
 function autograder2canvas(studentArr,canvasGradebook,homeworkName)
     
     % Input Validation
-    if ~exist('studentArr','var') || isa(studentArr,'Student')
-        error('INVALIDSTUDENTS')
+    if isa(studentArr,'Student')
+        throw(MException('AUTOGRADER:autograder2canvas:invalidStudents',...
+                         'The first input is not a student array'));
     end
     
-    if ~exist('canvasGradebook','var') || ~contains(canvasGradebook,'.csv')
-        error('INVALIDGRADEBOOK')
+    if ~contains(canvasGradebook,'.csv')
+        throw(MException('AUTOGRADER:autograder2canvas:invalidGradebook',...
+                         'The second input is not a .csv file'));
     end
+    
     [~,~,gradebook] = xlsread(canvasGradebook);
+    if isValidHwName(homeworkName,gradebook)
+        throw(MException('AUTOGRADER:autograder2canvas:invalidHomeworkName',...
+                         'The given Homework Name is not in the given Gradebook'));
+    end
     
-    if ~exist('homeworkName','var') || isValidHwName(homeworkName,gradebook)
-        error('INVALIDHOMEWORKNAME')
+    if exist('ME','var')
+        throw(ME);
     end
     
     % Mask to get the assignment
@@ -84,7 +91,7 @@ function autograder2canvas(studentArr,canvasGradebook,homeworkName)
         if studentArr.isgraded
             id = studentArr(i).id;
             sdntMask = [false; false; strcmp(gradebook(3:end,4),id)];
-            grade = sum([studentArr(i).feedbacks.points]);
+            grade = cellfun(@(x) sum([x.points]),studentArr(i).feedbacks);
             gradebook{sdntMask,hwMask} = grade;
         end
     end

@@ -50,16 +50,7 @@
 %   and the contents of test.zip are unzipped into the newly created test\ 
 %   folder. The original archive test.zip is deleted.
 %
-
-function outPath = unzipArchive(originPath, varargin)
+function test = unzipArchive(unzipPath, varargin)
     if (nargin == 0)
-        unzip(originPath);
-    elseif (nargin == 1) 
-        unzip(originPath, varagin{1});
-    elseif (nargin == 2)
-        if islogical(varagin{2}) && ~varargin{2}
-            % need to delete the original folder
-            
-        
-    
-
+    end
+end
