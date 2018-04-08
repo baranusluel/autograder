@@ -128,7 +128,9 @@ if length(zipFiles) >= 1
         else
             % no directory inside zip file, so just unzip the files
             unzipPath = unzipArchive(zipFiles(i).name, 'curr', true);
+            % move files from unzipped folder
             moveFiles(unzipPath, currentDir);
+            % delete the unzipped folder (don't need it anymore)
             rmdir(unzipPath, 's');
             
             
