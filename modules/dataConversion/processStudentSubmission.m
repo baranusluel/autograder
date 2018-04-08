@@ -123,14 +123,13 @@ if length(zipFiles) >= 1
             % move all the files from each of the new directories to
             % the main folder
             for j = 1:length(newDirs)
-                files = dir([unzipPath, filesep, newDirs{i}, filesep, '*']);
-                files = {files.name};
-                moveFiles(files, currentDir);
+                moveFiles([unzipPath, filesep, newDirs{i}], currentDir);
             end
         else
             % no directory inside zip file, so just unzip the files
             unzipPath = unzipArchive(zipFiles(i).name, 'curr', true);
-            newFiles = dir(unzipPath);
+            moveFiles(unzipPath, currentDir);
+            rmdir(unzipPath, 's');
             
             
         end
@@ -165,13 +164,14 @@ end
 end
 
 % Moves files from current dir to dest without overwriting anything
-% moveFiles(FILES, DEST) moves all files whose filenames are in cell array
-% FILES to the folder DEST
-function moveFiles(files, dest)
+% moveFiles(FILES, DEST) moves all files from folder SRC to DEST
+function moveFiles(src, dest)
+files = dir(src);
+files = {files.name};
 destFiles = dir(dest);
 destFiles = {destFiles.name};
 for i = 1:length(files)
-    if ~contains(destFiles, files{i})
+    if ~contains(destFiles, files{i}) && ~strcmp(files{i}, '.') && ~strcmp(files{i}, '..')
         movefile(files{i}, dest);
     end
 end
