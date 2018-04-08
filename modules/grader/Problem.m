@@ -13,6 +13,8 @@
 %
 % * banned: a cell array of names of banned functions for this problem.
 %
+% * isRecursive: logical indicating whether the problem is recursive or not
+%
 %%% Methods
 % 
 % * Problem
@@ -22,6 +24,7 @@ classdef Problem < handle
         name;
         testCases;
         banned;
+        isRecursive;
     end
     methods
         %% Constructor: 
@@ -72,8 +75,13 @@ classdef Problem < handle
         function this = Problem(info)
             try
                 this.name = info.name;
-                this.testCases = info.testCases;
                 this.banned = info.banned;
+                this.isRecursive = info.isRecursive;
+                for i = length(info.testCases):-1:1
+                    tInfo = info.TestCases(i);
+                    tInfo.banned = this.banned;
+                    this.testCases(i) = TestCase(tInfo, 'path/to/solution/file');
+                end
             catch 
                 throw(MException('AUTOGRADER:PROBLEM:PROBLEM:INVALIDINFO', ...
                     'Problem with INFO struct fields'));
