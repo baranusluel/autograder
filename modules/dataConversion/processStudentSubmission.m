@@ -105,9 +105,7 @@ function processStudentSubmission(startPath)
        throw(MException('AUTOGRADER:PROCESSSTUDENTSUBMISSION:INVALIDPATH', ...
                     'Invalid path'));
     end
-    files = dir();
-    zipFiles = cellfun(@(x)(~isempty(x)), strfind({files.name}, '.zip'), 'UniformOutput', false);
-    zipFiles = [zipFiles{:}];
+    files = dir('*.zip');
     
     % there was >= 1 zip file
     if any(zipFiles)
