@@ -79,7 +79,7 @@ classdef Problem < handle
                 this.isRecursive = info.isRecursive;
                 for i = length(info.testCases):-1:1
                     tInfo = info.TestCases(i);
-                    tInfo.banned = this.banned;
+                    tInfo.banned = this.banned; 
                     this.testCases(i) = TestCase(tInfo, 'path/to/solution/file');
                 end
             catch 
