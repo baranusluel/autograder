@@ -51,7 +51,9 @@ classdef ModuleResults < handle
             end
             cd(origPath);
         end
-
+        function passed = get.passed(this)
+            passed = all([this.testResults.passed]);
+        end
     end
     methods (Access=public)
         function html = generateHtml(this)
