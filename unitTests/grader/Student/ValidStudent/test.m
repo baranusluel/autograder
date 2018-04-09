@@ -11,7 +11,7 @@
 %   this.submissions -> ["FILE1", "FILE2", ...];
 %   this.feedbacks -> Feedback[];
 %   this.isGraded -> false;
-function [passed, message] = test();
+function [passed, message] = test()
 
     name = 'Hello';
     id = 'tuser3';
@@ -20,7 +20,7 @@ function [passed, message] = test();
         S = Student(p, name);
     catch e
         passed = false;
-        message = sprintf('Exception Thrown: %s (%s)', e.identifier, e.description);
+        message = sprintf('Exception Thrown: %s (%s)', e.identifier, e.message);
         return;
     end
     % check S
