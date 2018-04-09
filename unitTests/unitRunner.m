@@ -30,3 +30,21 @@
 %
 % This code will never throw exceptions
 %
+
+function [status, html] = unitRunner(varargin)
+
+end
+
+function outs = parseInputs(varargin)
+    parser = inputParser();
+    parser.addParameter('showFeedback', false, @islogical);
+    parser.addParameter('output', '', @ischar);
+    parser.addParameter('modules', {}, @iscell);
+    parser.CaseSensitive = false;
+    parser.FunctionName = 'unitRunner';
+    parser.KeepUnmatched = false;
+    parser.PartialMatching = true;
+    parser.StructExpand = true;
+    parser.parse(varargin{:});
+    outs = parser.Results;
+end
