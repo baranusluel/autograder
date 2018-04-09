@@ -57,4 +57,6 @@ function [passed, message] = test();
             return;
         end
     end
+    message = 'Student correctly constructed';
+    passed = true;
 end
