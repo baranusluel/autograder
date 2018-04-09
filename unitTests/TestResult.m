@@ -76,7 +76,10 @@ classdef TestResult < handle
         %
         % This function is guaranteed to never throw an exception
         function html = generateHtml(this)
-
+            html = {'<div class="row result">', '<div class="col-12 text-center">'};
+            html = [html {'<h4 class="display-4 text-center test-name">', this.name, '</h4>'}];
+            html = [html {'<p class="test-message">', this.message, '</p>'}];
+            html = strjoin(html, newline);
         end
     end
 end
