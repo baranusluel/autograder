@@ -19,9 +19,24 @@ classdef UnitResults < handle
         name;
         passed;
     end
+    properties (Access=private)
+        testResults;
+    end
     methods
         function this = UnitResults(path)
-
+            this.path = path;
+            [~, this.name, ~] = fileparts(path);
+            % find all unit tests (just all directories) - then, create them
+            origPath = cd(path);
+            units = dir();
+            units(~[units.isdir]) = [];
+            units(strncmp({units.name}, '.', 1)) = [];
+            for i = numel(units):-1:1
+                this.testResults(i) = TestResult(fullfile(units.folder, units.name));
+            end
+        end
+        function passed = get.passed(this)
+            passed = all([this.testResults.passed]);
         end
     end
     methods (Access=public)
