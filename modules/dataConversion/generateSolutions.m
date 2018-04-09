@@ -136,6 +136,15 @@ try
     fclose(fid);
     rubric = jsondecode(str);
     
+    %Go through the structure array (vector) that was created from the
+    %jsondecode() call and create problem types.
+    %Store these in one vector.
+    [~ , col] = size(rubric);
+    problems = [];
+    for i = 1:col
+        problems = [problems , Problem(rubric(i))];
+    end
+    %The problems output vector should now contain all necessary problems.
     
 catch e
     %Check for the errors that could have been thrown in the try block.
@@ -157,11 +166,17 @@ catch e
         mE = MException.addCause(e);
         throw(mE);
         
-        %This checks for errors with the decoding of the JSON.
+        %This next conditional checks for the decoding of the JSON.
     elseif contains(e.identifier, 'json','IgnoreCase',true)
         mE = MException('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH','The path is valid, but the solutions are not in a valid JSON format.');
         mE = MException.addCause(e);
         throw(mE);
+        %This next conditional checks for issues with the conversion of the
+        %problems to the type Problem. 
+    elseif strcmp(e.identifier, 'AUTOGRADER:PROBLEM:INVALIDJSON')
+        mE = MException('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH','The path is valid, but the solutions are not in a valid JSON format and could not be converted to the type PROBLEM.');
+        mE = MException.addCause(e);
+        throw(mE);        
     else
         mE = MException('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH','There was an error with the generateSolutions method of the autograder.');
         mE = MException.addCause(e);
