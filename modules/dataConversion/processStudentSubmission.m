@@ -128,8 +128,6 @@ if length(zipFiles) >= 1
                 moveFiles([unzipPath, filesep(), newDirs{i}], startPath);
             end
         else
-            % no directory inside zip file, so just unzip the files
-            unzipPath = unzipArchive(zipFiles(i).name, pwd(), true);
             % move files from unzipped folder
             moveFiles(unzipPath, startPath);
             % delete the unzipped folder (don't need it anymore)
