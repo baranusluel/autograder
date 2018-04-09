@@ -37,6 +37,27 @@ classdef TestResult < handle
         %%% Exceptions
         %
         % This function is guaranteed to never throw an exception
+            % create temporary directory
+            workDir = tempname;
+            mkdir(workDir);
+            origPath = cd(path);
+            % copy over everything in the PATH directory
+            copyfile([pwd filesep '*'], workDir);
+            % copy over any FILES in parent
+            files = dir('..');
+            files([files.isdir]) = [];
+            for f = 1:numel(files)
+                copyfile([files(f).folder filesep files(f).name], workDir);
+            end
+
+            this.path = path;
+            [~, this.name, ~] = fileparts(path);
+            cd(workDir);
+            % we know test.m will exist
+            [this.passed, this.message] = test();
+            cd(origPath);
+            % completely delete folder
+            [~] = rmdir(workDir, 's');
         end
     end
     methods (Access=public)
