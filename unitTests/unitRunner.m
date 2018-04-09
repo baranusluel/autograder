@@ -23,6 +23,8 @@
 % will be written to that path, in a file called results.html. If a file path is given, that name is used
 % instead. Default: Empty character vector
 %
+% * completeFeedback: A logical. If true, _complete_ feedback is returned (including header, etc.). Default: false
+%
 % * modules: A cell array of character vectors. If given and non-empty, only modules that match the name in
 % given in the cell array are tested. If empty or not given, all modules are assumed. Default: empty cell array
 %
@@ -99,6 +101,9 @@ function [status, html] = unitRunner(varargin)
             fclose(fid);
         end
     end
+    if outs.completeFeedback
+        html = completeHtml;
+    end
     cd(origPath);
 end
 
@@ -107,6 +112,7 @@ function outs = parseInputs(ins)
     parser.addParameter('showFeedback', false, @islogical);
     parser.addParameter('output', '', @ischar);
     parser.addParameter('modules', {}, @iscell);
+    parser.addParameter('completeFeedback', false, @islogical);
     parser.CaseSensitive = false;
     parser.FunctionName = 'unitRunner';
     parser.KeepUnmatched = false;

@@ -4,7 +4,7 @@
 % and if there are no errors, will completely generate the mlappinstall
 % file and the documentation.
 %
-% build() Lints all the modules. If linting passes, build() will generate 
+% build() Lints all the modules. If linting passes, build() will generate
 % an installer (mlappinstall), and place it in the bin folder.
 % Then, it will generate new documentation
 %
@@ -73,7 +73,7 @@ function problems = build(opts)
     end
     [path, ~, ~] = fileparts(mfilename('fullpath'));
     thisFolder = cd(path);
-    
+
     % if opts.branch isn't empty, checkout branch. If unable to, say so
     if ~isempty(opts.branch)
         [status, msg] = system(['git checkout ' opts.branch]);
@@ -88,10 +88,10 @@ function problems = build(opts)
             end
         end
     end
-    
+
     if opts.lint
         % We are linting. If any errors, stop and throw
-        % lint each module. 
+        % lint each module.
         problems = [];
         % get all files to be linted (files under modules/**/*.m)
         files = dir(['..' filesep 'modules' filesep '**' filesep '*.m']);
@@ -116,27 +116,26 @@ function problems = build(opts)
             end
         end
     end
-    
+
     if opts.test
         % We'll need to run the unit tests. Fortunately, this is simple -
-        % just call autograder_test
+        % just call unitRunner()
         orig = cd(['..' filesep 'unitTests']);
-        [results, ~, isPassing] = autograder_test();
-        if ~isPassing
-            if nargout == 0
-                e = MException('AUTOGRADER:build:testFailure', ...
-                    'Files failed Unit Tests');
-                throw(e);
-            else
-                problems = results;
-                return;
-            end
+        opts.showFeedback = false;
+        opts.completeFeedback = true;
+        opts.output = '';
+        opts.modules = {};
+        [status, html] = unitRunner(opts);
+        if ~status
+            problems = html;
+            fprintf(2, 'Unit Testing failed\n');
+            return;
         else
             fprintf(1, 'Unit Tests all passed\n');
         end
         cd(orig);
     end
-    
+
     % if given installer path, create installer
     if ~isempty(opts.installerPath)
         % Read lines
@@ -194,7 +193,7 @@ function problems = build(opts)
 
         % It should look like this:
         %<build-deliverables>
-          %<file location="C:\Users\alexhrao\Documents\autograder" 
+          %<file location="C:\Users\alexhrao\Documents\autograder"
           %name="bin" optional="false">
           %C:\Users\alexhrao\Documents\autograder\bin</file>
         %</build-deliverables>
@@ -236,7 +235,7 @@ function problems = build(opts)
         pause(0.4);
         delete('*.prj');
     end
-    
+
     if opts.generateDocs
         generateDocs;
     end
