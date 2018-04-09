@@ -15,7 +15,7 @@
 %
 %%% Remarks
 %
-% This class runs all tests for the Unit - See TestResult for more information
+% This class runs all tests for the Unit - See TestResults for more information
 %
 
 classdef UnitResults < handle
@@ -37,7 +37,7 @@ classdef UnitResults < handle
             units(~[units.isdir]) = [];
             units(strncmp({units.name}, '.', 1)) = [];
             for i = numel(units):-1:1
-                this.testResults(i) = TestResult(fullfile(units.folder, units.name));
+                this.testResults(i) = TestResults(fullfile(units.folder, units.name));
             end
         end
         function passed = get.passed(this)

@@ -1,6 +1,6 @@
-%% TestResult: Run test case and record results
+%% TestResults: Run test case and record results
 %
-% TestResult class is responsible for running a single test case.
+% TestResults class is responsible for running a single test case.
 %
 %%% Fields
 %
@@ -11,14 +11,14 @@
 %
 %%% Methods
 %
-% * TestResult
+% * TestResults
 % * generateHtml
 %
 %%% Remarks
 %
 % This class represents the results of a single Unit Test - not all tests for that unit.
 %
-classdef TestResult < handle
+classdef TestResults < handle
     properties (Access=public)
         path;
         name;
@@ -29,12 +29,12 @@ classdef TestResult < handle
         PASSING_MARK = '<i class="fas fa-check"></i>';
         FAILING_MARK = '<i class="fas fa-times"></i>';
     methods
-        function this = TestResult(path)
+        function this = TestResults(path)
         %% Constructor
         %
         % Run a given single test
         %
-        % this = TestResult(P) will use the path in P to create a TestResult. The path should lead to
+        % this = TestResults(P) will use the path in P to create a TestResults. The path should lead to
         % that folder's specific unit test (the single test).
         %
         %%% Remarks
