@@ -39,6 +39,7 @@ classdef UnitResults < handle
             for i = numel(units):-1:1
                 this.testResults(i) = TestResults(fullfile(units.folder, units.name));
             end
+            cd(origPath);
         end
         function passed = get.passed(this)
             passed = all([this.testResults.passed]);
