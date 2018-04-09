@@ -8,9 +8,14 @@
 % * name: The name of this unit
 % * passed: Whether or not all the unit tests passed
 %
+%%% Methods
+%
+% * UnitResults
+% * generateHtml
+%
 %%% Remarks
 %
-% This class runs all tests for the Unit
+% This class runs all tests for the Unit - See TestResult for more information
 %
 
 classdef UnitResults < handle

@@ -9,10 +9,14 @@
 % * passed: Whether or not this test passed
 % * message: Optional message for this test case
 %
+%%% Methods
+%
+% * TestResult
+% * generateHtml
+%
 %%% Remarks
 %
 % This class represents the results of a single Unit Test - not all tests for that unit.
-%
 %
 classdef TestResult < handle
     properties (Access=public)

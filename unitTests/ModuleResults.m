@@ -15,4 +15,4 @@
 %
 %%% Remarks
 %
-% This is used by the builder to test an entire module
+% This is used by the builder to test an entire module - See UnitResults for more information.
