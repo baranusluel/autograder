@@ -27,7 +27,7 @@
 %
 %%% Exceptions
 %
-% An AUTOGRADER:PROCESSSTUDENTSUBMISSION:INVALIDPATH exception will be
+% An AUTOGRADER:processStudentSubmission:invalidPath exception will be
 % thrown if the given path is not a valid folder.
 %
 %%% Unit Tests
@@ -96,13 +96,13 @@
 %   P = ''; % Invalid Path
 %   processStudentSubmission(P);
 %
-%   Threw INVALIDPATH exception
+%   Threw invalidPath exception
 function processStudentSubmission(startPath)
 currentDir = cd();
 try
     cd(startPath);
 catch
-    throw(MException('AUTOGRADER:PROCESSSTUDENTSUBMISSION:INVALIDPATH', ...
+    throw(MException('AUTOGRADER:processStudentSubmission:invalidPath', ...
         'Invalid path'));
 end
 zipFiles = dir('*.zip');
