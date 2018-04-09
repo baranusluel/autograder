@@ -108,7 +108,7 @@ zipFiles = dir('*.zip');
 % there was at least one zip file
 if length(zipFiles) >= 1
     for i = 1:length(zipFiles)
-        unzipPath = unzipArchive(zipFiles(i).name, 'curr', true);
+        unzipPath = unzipArchive(zipFiles(i).name, pwd(), true);
         % check to see if there was a folder inside the zip archive
         files = dir(unzipPath);
         if length(find([files.isdir])) == 3
@@ -125,11 +125,11 @@ if length(zipFiles) >= 1
             % move all the files from each of the new directories to
             % the main folder
             for j = 1:length(newDirs)
-                moveFiles([unzipPath, filesep, newDirs{i}], startPath);
+                moveFiles([unzipPath, filesep(), newDirs{i}], startPath);
             end
         else
             % no directory inside zip file, so just unzip the files
-            unzipPath = unzipArchive(zipFiles(i).name, 'curr', true);
+            unzipPath = unzipArchive(zipFiles(i).name, pwd(), true);
             % move files from unzipped folder
             moveFiles(unzipPath, startPath);
             % delete the unzipped folder (don't need it anymore)
