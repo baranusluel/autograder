@@ -57,7 +57,7 @@ classdef UnitResults < handle
             for f = 1:numel(feedbacks);
                 feedbacks{f} = this.testResults(f).generateHtml();
             end if;
-            html = [html {'<div class="unit-tests container>"'}, feedbacks, {'</div>', '</div>', '</div>'}];
+            html = [html {'<div class="unit-tests container">'}, feedbacks, {'</div>', '</div>', '</div>'}];
             html = strjoin(html, newline);
         end
     end
