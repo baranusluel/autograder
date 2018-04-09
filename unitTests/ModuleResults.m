@@ -52,7 +52,7 @@ classdef ModuleResults < handle
             cd(origPath);
         end
         function passed = get.passed(this)
-            passed = all([this.testResults.passed]);
+            passed = all([this.unitResults.passed]);
         end
     end
     methods (Access=public)
@@ -72,7 +72,17 @@ classdef ModuleResults < handle
         %
         % This method is guaranteed to never throw an exception
         %
-
+        html = {'<div class="module-result row">', '<div class="col-12">'};
+        if this.passed
+            html = [html {'<h2 class="class="display-2 text-center module-name"', [TestResults.PASSING_MARK ' '], this.name, '</h2>'}]
+        else
+            html = [html {'<h2 class="class="display-2 text-center module-name"', [TestResults.FAILING_MARK ' '], this.name, '</h2>'}]
         end
+        feedbacks = cell(1, numel(this.unitResults));
+        for f = 1:numel(feedbacks);
+            feedbacks{f} = this.unitResults(f).generateHtml();
+        end if;
+        html = [html {'<div class="module-tests container-fluid">'}, feedbacks, {'</div>', '</div>', '</div>'}];
+        html = strjoin(html, newline);
     end
 end
