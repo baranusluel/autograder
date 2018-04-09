@@ -39,6 +39,21 @@ classdef ModuleResults < handle
     end
     methods (Access=public)
         function html = generateHtml(this)
+        %% generateHtml: Generate HTML feedback for this module
+        %
+        % Generate the HTML feedback that represents all the unit tests for this module
+        %
+        % H = this.generateHtml() will create HTML in variable H. This HTML has none of the necessary "boilerplate", such as a title or includes.
+        % That behavior is delegated to the caller
+        %
+        %%% Remarks
+        %
+        % This is used almost exclusively during building or generating documentation.
+        %
+        %%% Exceptions
+        %
+        % This method is guaranteed to never throw an exception
+        %
 
         end
     end
