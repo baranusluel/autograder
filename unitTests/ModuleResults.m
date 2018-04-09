@@ -23,6 +23,9 @@ classdef ModuleResults < handle
         name;
         passed;
     end
+    properties (Access=private)
+        unitResults;
+    end
     methods
         function this = ModuleResults(path)
         %% Constructor
@@ -34,8 +37,21 @@ classdef ModuleResults < handle
         %%% Exceptions
         %
         % This method is guaranteed to never throw an exception
+            this.path = path;
+            [~, this.name, ~] = fileparts(path);
 
+            % Find all units:
+            origPath = cd(path);
+            % units are directories
+            units = dir();
+            units(~[units.isdir]) = [];
+            units(strncmp({units.name}, '.', 1)) = [];
+            for u = numel(units):-1:1
+                this.unitResults(u) = UnitResults(fullfile(units(u).folder, units(u).name));
+            end
+            cd(origPath);
         end
+
     end
     methods (Access=public)
         function html = generateHtml(this)
