@@ -54,9 +54,9 @@ classdef UnitResults < handle
                 html = [html, {'<h3 class="display-3 text-center unit-name">', [TestResults.FAILING_MARK ' '], this.name, '</h3>'}];
             end
             feedbacks = cell(1, numel(this.testResults));
-            for f = 1:numel(feedbacks);
+            for f = 1:numel(feedbacks)
                 feedbacks{f} = this.testResults(f).generateHtml();
-            end if;
+            end
             html = [html {'<div class="unit-tests container">'}, feedbacks, {'</div>', '</div>', '</div>'}];
             html = strjoin(html, newline);
         end
