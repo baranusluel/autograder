@@ -16,3 +16,21 @@
 %%% Remarks
 %
 % This is used by the builder to test an entire module - See UnitResults for more information.
+
+classdef ModuleResults < handle
+    properties (Access=public)
+        path;
+        name;
+        passed;
+    end
+    methods
+        function this = ModuleResults(path)
+
+        end
+    end
+    methods (Access=public)
+        function html = generateHtml(this)
+
+        end
+    end
+end
