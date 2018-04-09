@@ -25,7 +25,7 @@ classdef TestResults < handle
         passed;
         message;
     end
-    properties (Contstant)
+    properties (Constant)
         PASSING_MARK = '<i class="fas fa-check"></i>';
         FAILING_MARK = '<i class="fas fa-times"></i>';
     methods
