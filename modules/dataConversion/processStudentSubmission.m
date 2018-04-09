@@ -99,7 +99,7 @@
 %   Threw invalidPath exception
 function processStudentSubmission(startPath)
 try
-    cd(startPath);
+    currentDir = cd(startPath);
 catch
     throw(MException('AUTOGRADER:processStudentSubmission:invalidPath', ...
         'Invalid path'));
@@ -141,7 +141,7 @@ if length(zipFiles) >= 1
 end
 
 
-
+cd(currentDir);
 end % end processStudentSubmission
 
 % Moves files from current dir to dest without overwriting anything
