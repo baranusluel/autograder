@@ -14,7 +14,7 @@
 function [passed, message] = test();
 
     name = 'Hello';
-    id = 'tuser3'
+    id = 'tuser3';
     p = [pwd filesep id];
     try
         S = Student(p, name);
@@ -39,9 +39,11 @@ function [passed, message] = test();
     elseif S.isGraded
         passed = false;
         message = 'isGraded set to true, when should be false';
+        return;
     elseif ~isempty(S.feedbacks)
         passed = false;
         message = 'feedbacks not empty, when should be empty';
+        return;
     end
     % check all files
     files = {'helloWorld.m', 'myFun.m'};
@@ -49,7 +51,7 @@ function [passed, message] = test();
         passed = false;
         message = sprintf('Submission number mismatch; expected %d, got %d', numel(files), numel(S.submissions));
         return;
-    end if
+    end
     for f = 1:numel(files)
         if sum(strcmp(files{f}, S.submissions)) ~= 1
             passed = false;
