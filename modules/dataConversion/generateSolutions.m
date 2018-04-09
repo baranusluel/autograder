@@ -123,45 +123,50 @@
 %   Threw INVALIDPATH exception
 %
 function problems = generateSolutions(path)
-%first check if the path contains .zip at all. 
-if contains(path,'.zip')
-    %try-catch block to check catch if the path is invalid at all. 
-    try
+%first check if the path contains .zip at all.
+
+%try-catch block to check if the path is invalid at all.
+try
+    %Unzip the archive to the current folder.
+    unzipArchive(path);
+    %Decode the JSON
+    fh = fopen('rubric.json');
+    raw = fread(fh,inf);
+    str = char(raw');
+    fclose(fid);
+    rubric = jsondecode(str);
+    
+    
+catch e
+    %Check for the errors that could have been thrown in the try block.
+    %The first three conditionals check for the unzipping and file status
+    %of the solution archive.
+    if strcmp(e.identifier, 'AUTOGRADER:UNZIPARCHIVE:INVALIDPATH') %This was taken from the unzipArchive specification.
+        mE = MException('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH','The path is not valid.');
+        mE = MException.addCause(e);
+        throw(mE);
         
-        %Find the path without the archive name.
-        [filepath, name, ext] = fileparts(path)
-        %Unzip the archive to the current folder.
-        unzipArchive(path);
-        %Decode the JSON
-        fh = fopen('rubric.json');
-        if fh==(-1)
-            %Invalid archive.
-            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH')
-        else
-            raw = fread(fh,inf);
-            str = char(raw'); 
-            fclose(fid); 
-            val = jsondecode(str);
-        end
+    elseif strcmp(e.identifier, 'AUTOGRADER:UNZIPARCHIVE:INVALIDFILE') %This was taken from the unzipArchive specification.
+        mE = MException('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH','The path is valid but the file is not a valid archive.');
+        mE = MException.addCause(e);
+        throw(mE);
         
-    catch ME
-        if strcmp(ME.identifier,'MATLAB:checkfilename:invalidFilename')
-            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH','Threw INVALIDPATH exception.')
-        %Error message for valid path, but invalid archive.
-        elseif strcmp(ME.identifier,'AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH')
-            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH', 'Threw INVALIDPATH exception.')
-        elseif strcmp(ME.identifier,'MATLAB:json:ExpectedLiteral')
-            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH', 'Threw INVALIDPATH exception. JSON formatting is not correct.')
-        else
-            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH', 'Threw INVALIDPATH exception.')
-        end
+        %Check if the solution file is empty or not.
+    elseif fh == -1
+        mE = MException('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH','The path is valid but the solutions are invalid, or the archive does not exist in the path.');
+        mE = MException.addCause(e);
+        throw(mE);
+        
+        %This checks for errors with the decoding of the JSON.
+    elseif contains(e.identifier, 'json','IgnoreCase',true)
+        mE = MException('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH','The path is valid, but the solutions are not in a valid JSON format.');
+        mE = MException.addCause(e);
+        throw(mE);
+    else
+        mE = MException('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH','There was an error with the generateSolutions method of the autograder.');
+        mE = MException.addCause(e);
+        throw(mE);
     end
-    
-        rubric = jsondecode()
-        
-    
-else
-    %Invalid Path
-    error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH')
 end
+
 end
