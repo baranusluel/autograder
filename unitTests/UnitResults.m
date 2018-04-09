@@ -48,9 +48,9 @@ classdef UnitResults < handle
         function html = generateHtml(this)
             html = {'<div class="unit-result row">', '<div class="col-12">'};
             if this.passed
-                html = [html, {'<h3 class="display-3 text-center unit-name">', [TestResult.PASSING_MARK ' '], this.name, '</h3>'}];
+                html = [html, {'<h3 class="display-3 text-center unit-name">', [TestResults.PASSING_MARK ' '], this.name, '</h3>'}];
             else
-                html = [html, {'<h3 class="display-3 text-center unit-name">', [TestResult.FAILING_MARK ' '], this.name, '</h3>'}];
+                html = [html, {'<h3 class="display-3 text-center unit-name">', [TestResults.FAILING_MARK ' '], this.name, '</h3>'}];
             end
             feedbacks = cell(1, numel(this.testResults));
             for f = 1:numel(feedbacks);
