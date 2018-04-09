@@ -35,9 +35,11 @@
 
 function [status, html] = unitRunner(varargin)
     outs = parseInputs(varargin);
-
+    
     % path is going to be this file's directory
     origPath = cd(mfilename('fullpath'));
+    userPath = path();
+    addpath(genpath(fileparts(mfilename('fullpath'))));
     % get all modules:
     modules = dir();
     modules(~[modules.isdir]) = [];
@@ -63,7 +65,7 @@ function [status, html] = unitRunner(varargin)
 
     feedbacks = cell(1, numel(mods));
     for f = 1:numel(feedbacks)
-        feedbacks{i} = mods(i).generateHtml();
+        feedbacks{f} = mods(f).generateHtml();
     end
 
     html = {'<div class="container-fluid">', '<div class="jumbotron">'};
@@ -105,6 +107,7 @@ function [status, html] = unitRunner(varargin)
         html = completeHtml;
     end
     cd(origPath);
+    path(userPath, '');
 end
 
 function outs = parseInputs(ins)
@@ -118,7 +121,7 @@ function outs = parseInputs(ins)
     parser.KeepUnmatched = false;
     parser.PartialMatching = true;
     parser.StructExpand = true;
-    parser.parse(varargin{:});
+    parser.parse(ins{:});
     outs = parser.Results;
 end
 
