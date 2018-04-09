@@ -25,6 +25,15 @@ classdef ModuleResults < handle
     end
     methods
         function this = ModuleResults(path)
+        %% Constructor
+        %
+        % Create a new ModuleResults from the given path
+        %
+        % this = ModuleResults(P) will use the path in P to create and run all the unit tests for that module.
+        %
+        %%% Exceptions
+        %
+        % This method is guaranteed to never throw an exception
 
         end
     end
