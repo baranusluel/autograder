@@ -98,7 +98,6 @@
 %
 %   Threw invalidPath exception
 function processStudentSubmission(startPath)
-currentDir = cd();
 try
     cd(startPath);
 catch
@@ -112,13 +111,13 @@ if length(zipFiles) >= 1
         unzipPath = unzipArchive(zipFiles(i).name, 'curr', true);
         % check to see if there was a folder inside the zip archive
         files = dir(unzipPath);
-        if length([files.isdir]) == 3
+        if length(find([files.isdir])) == 3
             % single directory inside the zip
             singleDir = files([files.isdir] & ~strcmp({files.name}, '.') & ~strcmp({files.name}, '..'));
             moveFiles(singleDir, startPath);
             % now done with the unzipped folder, so safe to delete
             rmdir(unzipPath, 's'); 
-        elseif length([files.isdir]) > 3
+        elseif length(find([files.isdir])) > 3
             % zip file contained more than one directory
             newDirs = {files([files.isdir]).name};
             newDirs = newDirs(~strcmp(newDirs, '..') & ~strcmp(newDirs, '.'));
