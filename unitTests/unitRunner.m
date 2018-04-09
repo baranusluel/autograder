@@ -32,10 +32,77 @@
 %
 
 function [status, html] = unitRunner(varargin)
+    outs = parseInputs(varargin);
 
+    % path is going to be this file's directory
+    origPath = cd(mfilename('fullpath'));
+    % get all modules:
+    modules = dir();
+    modules(~[modules.isdir]) = [];
+    modules(strncmp({modules.name}, '.', 1)) = [];
+    if isempty(outs.modules)
+        outs.modules = {modules.name};
+    end
+
+    % for each module, create ModuleResults
+    for m = numel(modules):-1:1
+        % check it's asked for
+        if ~any(strcmpi(modules(m).name, outs.modules))
+            modules(m) = [];
+        end
+    end
+
+    mods = [];
+    for m = numel(modules):-1:1
+        mods(m) = ModuleResults(fullfile(modules(m).folder, modules(m).name));
+    end
+
+    status = all([mods.passing]);
+
+    feedbacks = cell(1, numel(mods));
+    for f = 1:numel(feedbacks)
+        feedbacks{i} = mods(i).generateHtml();
+    end
+
+    html = {'<div class="container-fluid">', '<div class="jumbotron">'};
+    if status
+        html = [html {'<i class="display-1 text-center fas fa-check"></i>'}];
+        html = [html {'<h1 class="display-3 text-center">Code Passed Inspection!</h1>'}];
+    else
+        html = [html {'<i class="display-1 text-center fas fa-times"></i>'}];
+        html = [html {'<h1 class="display-3 text-center">Code Failed Inspection</h1>'}];
+    end
+    html = [html {'<hr />', '<p class="lead">Read below for a list of test results</p>', '</div>'}];
+    html = [html {'<div class="results">'}, feedbacks, {'</div>', '</div>'}];
+
+    completeHtml = [generateHeader() html '</body>', '</html>'];
+
+    html = strjoin(html, newline);
+    completeHtml = strjoin(completeHtml, newline);
+
+    if outs.showFeedback
+        file = tempname;
+        fid = fopen(file, 'wt');
+        fwrite(fid, completeHtml);
+        fclose(fid);
+        web(['file:///' file]);
+    end
+
+    if ~isempty(outs.output)
+        if isfolder(outs.output)
+            fid = fopen([outs.outputs filesep 'results.html'], 'wt');
+        else
+            fid = fopen(outs.output, 'wt');
+        end
+        if fid ~= -1
+            fwrite(fid, completeHtml);
+            fclose(fid);
+        end
+    end
+    cd(origPath);
 end
 
-function outs = parseInputs(varargin)
+function outs = parseInputs(ins)
     parser = inputParser();
     parser.addParameter('showFeedback', false, @islogical);
     parser.addParameter('output', '', @ischar);
@@ -47,4 +114,26 @@ function outs = parseInputs(varargin)
     parser.StructExpand = true;
     parser.parse(varargin{:});
     outs = parser.Results;
+end
+
+function header = generateHeader()
+    header = {'<!DOCTYPE html>', '<html lang="en">', '<head>', ...
+        '<meta charset="utf-8">', ...
+        '<title>Test Results</title>', ...
+        '<meta name="viewport" content="width=device-width, initial-scale=1">', ...
+        '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">', ...
+        '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>', ...
+        '<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>', ...
+        '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>', ...
+        '<script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js"></script>', ...
+        '<style>', ...
+        '.fa-check {', ...
+        '    color: forestgreen;', ...
+        '}', ...
+        '.fa-times {', ...
+        '    color: darkred;', ...
+        '}', ...
+        '</style>', ...
+        '</head>', ...
+        '<body>'};
 end
