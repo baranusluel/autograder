@@ -139,7 +139,6 @@ classdef Student < handle
                 'Path %s is not a valid path', path);
                 throw(e);
             end
-            this.path = path;
             this.name = name;
             % We can safely assume that student has been processed (zip
             % unpacked, etc.)
@@ -148,19 +147,19 @@ classdef Student < handle
 
             path(path == '/' | path == '\') = filesep;
 
-            % Path should always have last file separator
+            % Path should never have last file separator
 
-            if path(end) ~= filesep
-                path = [path filesep];
+            if path(end) == filesep
+                path(end) = [];
             end
 
             % Get all submissions
-            subs = dir([path '*.m']);
+            subs = dir([path filesep '*.m']);
             this.submissions = {subs.name};
 
             % ID is folder name:
-            this.id = regexp(path, '[A-Za-z0-9_]+(?=\\$)', 'match');
-            this.id = this.id{1};
+            [~, this.id, ~] = fileparts(path);
+            this.path = path;
         end
     end
     methods (Access=public)
