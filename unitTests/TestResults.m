@@ -99,13 +99,13 @@ classdef TestResults < handle
         %
         % This function is guaranteed to never throw an exception
         function html = generateHtml(this)
-            html = {'<div class="row result">', '<div class="col-12 text-center">'};
+            html = {'<div class="row result">', '<div class="col-12">'};
             if this.passed
-                html = [html {'<h4 class="display-4 text-center test-name">', this.PASSING_MARK, this.name, '</h4>'}];
+                html = [html {'<h4 class="display-4 test-name">', this.PASSING_MARK, this.name, '</h4>'}];
             else
-                html = [html {'<h4 class="display-4 text-center test-name">', this.FAILING_MARK, this.name, '</h4>'}];
+                html = [html {'<h4 class="display-4 test-name">', this.FAILING_MARK, this.name, '</h4>'}];
             end
-            html = [html {'<p class="test-message">', this.message, '</p>'}];
+            html = [html {'<p class="test-message">', this.message, '</p>', '</div>', '</div>'}];
             html = strjoin(html, newline);
         end
     end
