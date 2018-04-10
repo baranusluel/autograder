@@ -45,6 +45,13 @@ classdef TestResults < handle
         %%% Exceptions
         %
         % This function is guaranteed to never throw an exception
+            
+            % Need to account for noargs constructor call - otherwise
+            % error when preallocating a vector of TestResults
+            if nargin ~= 1
+                return
+            end
+            
             % create temporary directory
             workDir = tempname;
             mkdir(workDir);

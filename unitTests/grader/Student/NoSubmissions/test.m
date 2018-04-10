@@ -1,17 +1,16 @@
-%% Valid Student
+%% No Submissions
 %
-% Given a valid PATH to a student folder containing submissions
-% (with filenames FILE1, FILE2, ...):
-%
-%   NAME = 'Hello';
+% Given a valid PATH to a student folder containing no submissions:
+%   NAME = 'Hi';
 %   this = Student(PATH, NAME);
 %
-%   this.name -> "Hello"
-%   this.id -> Student's GT username (from name of folder)
+%   this.name -> "Hi";
+%   this.id -> Student's GT username (from name of folder);
 %   this.path -> PATH;
-%   this.submissions -> ["FILE1", "FILE2", ...];
-%   this.feedbacks -> Feedback[];
+%   this.submissions -> []
+%   this.feedbacks -> Feeback[];
 %   this.isGraded -> false;
+
 function [passed, message] = test()
 
     name = 'Hello';
@@ -47,7 +46,7 @@ function [passed, message] = test()
         return;
     end
     % check all files
-    files = {'helloWorld.m', 'myFun.m'};
+    files = {};
     [passed, message] = studentFileChecker(files, S.submissions);
     if ~passed
         return;
