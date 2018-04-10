@@ -75,6 +75,7 @@ classdef TestResults < handle
             else
                 this.method = '';
             end
+            
             cd(workDir);
             % we know test.m will exist
             [this.passed, this.message] = test();
@@ -101,11 +102,11 @@ classdef TestResults < handle
         function html = generateHtml(this)
             html = {'<div class="row result">', '<div class="col-12">'};
             if this.passed
-                html = [html {'<h4 class="test-name">', this.PASSING_MARK, this.name, '</h4>'}];
+                html = [html {'<h4 class="test-name">', '<code>', this.PASSING_MARK, this.name, '</code>', '</h4>'}];
             else
-                html = [html {'<h4 class="test-name">', this.FAILING_MARK, this.name, '</h4>'}];
+                html = [html {'<h4 class="test-name">', '<code>', this.FAILING_MARK, this.name, '</code>', '</h4>'}];
             end
-            html = [html {'<p class="test-message">', this.message, '</p>', '</div>', '</div>'}];
+            html = [html {'<pre class="test-message">', this.message, '</pre>', '</div>', '</div>'}];
             html = strjoin(html, newline);
         end
     end
