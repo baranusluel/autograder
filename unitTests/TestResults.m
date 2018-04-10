@@ -8,6 +8,7 @@
 % * name: The name of this test
 % * passed: Whether or not this test passed
 % * message: Optional message for this test case
+% * method: The method this test applies to (optional)
 %
 %%% Methods
 %
@@ -24,6 +25,7 @@ classdef TestResults < handle
         name;
         passed;
         message;
+        method;
     end
     properties (Constant)
         PASSING_MARK = '<i class="fas fa-check"></i>';
@@ -67,6 +69,12 @@ classdef TestResults < handle
 
             this.path = path;
             [~, this.name, ~] = fileparts(path);
+            if contains(this.name, '_')
+                [this.method, this.name] = strtok(this.name, '_');
+                this.name = this.name(1:end-1);
+            else
+                this.method = '';
+            end
             cd(workDir);
             % we know test.m will exist
             [this.passed, this.message] = test();
