@@ -125,7 +125,7 @@ function problems = build(opts)
         opts.completeFeedback = true;
         opts.output = '';
         opts.modules = {};
-        [status, html] = unitRunner(opts);
+        [status, html] = autotester(opts);
         if ~status
             problems = html;
             fprintf(2, 'Unit Testing failed\n');
