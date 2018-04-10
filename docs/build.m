@@ -4,7 +4,7 @@
 % and if there are no errors, will completely generate the mlappinstall
 % file and the documentation.
 %
-% build() Lints all the modules. If linting passes, build() will generate 
+% build() Lints all the modules. If linting passes, build() will generate
 % an installer (mlappinstall), and place it in the bin folder.
 % Then, it will generate new documentation
 %
@@ -53,17 +53,22 @@
 % vMAJOR.MINOR.PATH. For more information refer to Semantic Versioning
 % Documentation at <https://semver.org SemVer.org>. Do not include leading
 % 'v'.
+%
+% * test
+%
+% A logical - if true, building will fail if any unit test fails. If false,
+% testing is not done at all.
 
 function problems = build(varargin)
     opts = getInputs(varargin{:});
     [path, ~, ~] = fileparts(mfilename('fullpath'));
     thisFolder = cd(path);
-    
+
     % if opts.branch isn't empty, checkout branch. If unable to, say so
     if ~isempty(opts.branch)
         [status, msg] = system(['git checkout ' opts.branch]);
         if status ~= 0
-            e = MException('AUTOGRADER:BUILD:GITERROR', ...
+            e = MException('AUTOGRADER:build:git', ...
                     'Unable to switch to branch %s\nGit gave this error:\n%s', ...
                     opts.branch, msg);
             if nargout == 0
@@ -73,11 +78,10 @@ function problems = build(varargin)
             end
         end
     end
-    
+
     if opts.lint
         % We are linting. If any errors, stop and throw
-        % lint each module. 
-        problems = [];
+        % lint each module.
         % get all files to be linted (files under modules/**/*.m)
         files = dir(['..' filesep 'modules' filesep '**' filesep '*.m']);
         folders = {files.folder};
@@ -91,19 +95,37 @@ function problems = build(varargin)
         [info, paths] = checkcode(files, options{:}, '-struct');
         if ~all(cellfun(@isempty, info, 'uni', true))
             % if requesting output, don't error
-            if nargout == 0
-                e = MException('AUTOGRADER:build:lintFailure', ...
-                    'Files failed lint test');
-                throw(e);
-            else
+            fprintf(2, 'Files failed lint test\n');
+            if nargout ~= 0
                 problems = [paths, info];
-                return;
             end
+            return;
         else
             fprintf(1, 'Linting finished - no problems found\n');
         end
     end
-    
+
+    if opts.test
+        % We'll need to run the unit tests. Fortunately, this is simple -
+        % just call unitRunner()
+        orig = cd(['..' filesep 'unitTests']);
+        opts.showFeedback = false;
+        opts.completeFeedback = true;
+        opts.output = '';
+        opts.modules = {};
+        [status, html] = unitRunner(opts);
+        if ~status
+            fprintf(2, 'Unit Testing failed\n');
+            if nargout ~= 0
+                problems = html;
+            end
+            return;
+        else
+            fprintf(1, 'Unit Tests all passed\n');
+        end
+        cd(orig);
+    end
+
     % if given installer path, create installer
     if ~isempty(opts.installerPath)
         % Read lines
@@ -159,7 +181,6 @@ function problems = build(varargin)
         outputS = find(contains(lines, '<build-deliverables>'), 1);
         outputE = find(contains(lines, '</build-deliverables>'), 1);
 
-        % It should look like this:
         for i = (outputS + 1):(outputE - 1)
             % relace <file location="stuff" with path TO folder, NOT INCLUDING
             % BIN. no trailing \
@@ -199,10 +220,10 @@ function problems = build(varargin)
         delete('*.prj');
         fprintf(1, 'Created App Installation Package\n');
     end
-    
+
     if opts.generateDocs
         generateDocs;
-        fprintf(1, 'Generated & <a href="https://github.gatech.edu/pages/CS1371/autograder/">Published</a> documentation\n');
+        fprintf(1, 'Generated <a href="https://github.gatech.edu/pages/CS1371/autograder/">Documentation</a>\n');
     end
     cd(thisFolder);
 end
