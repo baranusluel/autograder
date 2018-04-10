@@ -123,7 +123,7 @@ classdef Student < handle
         %   this.name -> "Hi";
         %   this.id -> Student's GT username (from name of folder);
         %   this.path -> PATH;
-        %   this.submissions -> ["FILE1", "FILE2", ...]
+        %   this.submissions -> []
         %   this.feedbacks -> Feeback[];
         %   this.isGraded -> false;
         %
