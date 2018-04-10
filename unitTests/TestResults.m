@@ -71,7 +71,7 @@ classdef TestResults < handle
             [~, this.name, ~] = fileparts(path);
             if contains(this.name, '_')
                 [this.method, this.name] = strtok(this.name, '_');
-                this.name = this.name(1:end-1);
+                this.name = this.name(2:end);
             else
                 this.method = '';
             end
