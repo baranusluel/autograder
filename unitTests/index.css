@@ -7,3 +7,6 @@
 .test-message {
     text-indent: 10%;
 }
+.test-error {
+    color: firebrick;
+}
