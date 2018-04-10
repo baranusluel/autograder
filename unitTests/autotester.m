@@ -28,6 +28,8 @@
 % * modules: A cell array of character vectors. If given and non-empty, only modules that match the name in
 % given in the cell array are tested. If empty or not given, all modules are assumed. Default: empty cell array
 %
+% * css: A character vector of a custom CSS class to use for the html. If empty, default css is applied. Default: Empty
+%
 %%% Exceptions
 %
 % This code will never throw exceptions
@@ -35,7 +37,7 @@
 
 function [status, html] = autotester(varargin)
     outs = parseInputs(varargin);
-    
+
     % path is going to be this file's directory
     origPath = fileparts(mfilename('fullpath'));
     userPath = path();
@@ -78,7 +80,7 @@ function [status, html] = autotester(varargin)
     html = [html {'<hr />', '<p class="lead">Read below for a list of test results</p>', '</div>'}];
     html = [html {'<div class="results">'}, feedbacks, {'</div>', '</div>'}];
 
-    completeHtml = [generateHeader() html '</body>', '</html>'];
+    completeHtml = [generateHeader(outs.css) html '</body>', '</html>'];
 
     html = strjoin(html, newline);
     completeHtml = strjoin(completeHtml, newline);
@@ -115,6 +117,7 @@ function outs = parseInputs(ins)
     parser.addParameter('output', '', @ischar);
     parser.addParameter('modules', {}, @iscell);
     parser.addParameter('completeFeedback', false, @islogical);
+    parser.addParameter('css', '', @(p)(isempty(p) || isfile(p)));
     parser.CaseSensitive = false;
     parser.FunctionName = 'unitRunner';
     parser.KeepUnmatched = false;
@@ -124,7 +127,7 @@ function outs = parseInputs(ins)
     outs = parser.Results;
 end
 
-function header = generateHeader()
+function header = generateHeader(path)
     header = {'<!DOCTYPE html>', '<html lang="en">', '<head>', ...
         '<meta charset="utf-8">', ...
         '<title>Test Results</title>', ...
@@ -134,14 +137,25 @@ function header = generateHeader()
         '<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>', ...
         '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>', ...
         '<script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js"></script>', ...
-        '<style>', ...
+        generateCSS(path), ...
+        '</head>', ...
+        '<body>'};
+end
+
+function style = generateCSS(path)
+    if isempty(path)
+        style = {'<style>', ...
         '.fa-check {', ...
         '    color: forestgreen;', ...
         '}', ...
         '.fa-times {', ...
         '    color: darkred;', ...
         '}', ...
-        '</style>', ...
-        '</head>', ...
-        '<body>'};
+        '</style>'};
+    else
+        fid = fopen(path, 'rt');
+        lines = char(fread(fid)');
+        fclose(fid);
+        style = {'<style>', lines, '</style>'};
+    end
 end
