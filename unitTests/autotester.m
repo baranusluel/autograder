@@ -33,7 +33,7 @@
 % This code will never throw exceptions
 %
 
-function [status, html] = unitRunner(varargin)
+function [status, html] = autotester(varargin)
     outs = parseInputs(varargin);
     
     % path is going to be this file's directory

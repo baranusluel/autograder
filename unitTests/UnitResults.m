@@ -29,6 +29,12 @@ classdef UnitResults < handle
     end
     methods
         function this = UnitResults(path)
+            % Need to account for noargs constructor call - otherwise
+            % error when preallocating a vector of UnitResults
+            if nargin ~= 1
+                return
+            end
+            
             this.path = path;
             [~, this.name, ~] = fileparts(path);
             % find all unit tests (just all directories) - then, create them

@@ -37,6 +37,13 @@ classdef ModuleResults < handle
         %%% Exceptions
         %
         % This method is guaranteed to never throw an exception
+        
+            % Need to account for noargs constructor call - otherwise
+            % error when preallocating a vector of ModuleResults
+            if nargin ~= 1
+                return
+            end
+            
             this.path = path;
             [~, this.name, ~] = fileparts(path);
 

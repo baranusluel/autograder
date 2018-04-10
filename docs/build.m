@@ -113,7 +113,7 @@ function problems = build(varargin)
         opts.completeFeedback = true;
         opts.output = '';
         opts.modules = {};
-        [status, html] = unitRunner(opts);
+        [status, html] = autotester(opts);
         if ~status
             fprintf(2, 'Unit Testing failed\n');
             if nargout ~= 0
