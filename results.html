@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Test Results</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js"></script>
+<style>
+.fa-check {
+    color: forestgreen;
+}
+.fa-times {
+    color: darkred;
+}
+</style>
+</head>
+<body>
+<div class="container-fluid">
+<div class="jumbotron text-center">
+<i class="display-1 text-center fas fa-times"></i>
+<h1 class="display-3 text-center">Code Failed Inspection</h1>
+<hr />
+<p class="lead">Read below for a list of test results</p>
+</div>
+<div class="results">
+<div class="module-result row">
+<div class="col-12">
+<h2 class="module-name"
+<i class="fas fa-times"></i> 
+grader
+</h2>
+<div class="module-tests container-fluid">
+<div class="unit-result row">
+<div class="col-12">
+<h3 class="unit-name">
+<i class="fas fa-check"></i> 
+Student
+</h3>
+<div class="unit-tests container">
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+InvalidPath
+</code>
+</h4>
+<pre class="test-message">
+Exception correctly thrown
+</pre>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+NoSubmissions
+</code>
+</h4>
+<pre class="test-message">
+Student correctly constructed
+</pre>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+ValidStudent
+</code>
+</h4>
+<pre class="test-message">
+Student correctly constructed
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="unit-result row">
+<div class="col-12">
+<h3 class="unit-name">
+<i class="fas fa-times"></i> 
+TestCase
+</h3>
+<div class="unit-tests container">
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-times"></i>
+LoadMatFile
+</code>
+</h4>
+<pre class="test-message">
+Exception Thrown: parallel:fevalqueue:ExecutionErrors (One or more futures resulted in an error.)
+</pre>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-times"></i>
+ValidTestCase
+</code>
+</h4>
+<pre class="test-message">
+Exception Thrown: parallel:fevalqueue:ExecutionErrors (One or more futures resulted in an error.)
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
