@@ -19,6 +19,7 @@
 % then 'https://github.gatech.edu/CS1371/autograder/wiki/' is used as a
 % default.
 
+%#ok<*AGROW>
 function html = parseReadme(var, includeBoiler, baseUrl)
     if ~exist('baseUrl', 'var')
         baseUrl = 'https://github.gatech.edu/CS1371/autograder/wiki/';
@@ -63,7 +64,8 @@ function html = parser(lines, includeBoiler, baseUrl)
         % Add scripts, etc.
         scripts = {'<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>', ...
             '<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>', ...
-            '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>'};
+            '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>', ...
+            '<script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>'};
         links = {'<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">'};
         style = {'<style>', 'pre.bg-light {', '    border-radius: 5%;', '}', ...
             'pre.bg-light {', '    padding-left: 15px;', '}', '</style>'};
@@ -151,7 +153,7 @@ function html = parser(lines, includeBoiler, baseUrl)
                             end
                             line = regexprep(line, '^\s*[-*]\s+', '');
                             line = parseLine(line, baseUrl);
-                            body = [body {'<li>', '<p>', {line}, '</p>'}];
+                            body = [body {'<li>', '<p>', line, '</p>'}];
                             indLevel = thisLevel;
                         end
                         if i == numel(lines)
@@ -190,7 +192,7 @@ function html = parser(lines, includeBoiler, baseUrl)
                 line = lines{i};
                 while i <= numel(lines) && length(line) > 1 && line(1) == '>' && line(2) == ' '
                     line = parseLine(line(3:end), baseUrl);
-                    qContents = [qContents ' ' qContents];
+                    qContents = [qContents ' ' line];
                     if i == numel(lines)
                         break;
                     end

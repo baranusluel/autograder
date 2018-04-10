@@ -58,7 +58,7 @@ classdef Feedback < handle
         plots;
         reason;
         points;
-        exception;
+        isRecursive;
     end
     methods
         %% Constructor
@@ -90,9 +90,9 @@ classdef Feedback < handle
         %   T = [];
         %   F = Feedback(T);
         %
-        %   Threw an INVALIDTESTCASE exception
-        function this = Feedback(testCase)
-            
+        function [this] = Feedback(aTestCase)
+            this.testCase = aTestCase;
+            this.isRecursive = false;
         end
     end
     methods (Access = public)

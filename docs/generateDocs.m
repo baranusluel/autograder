@@ -2,13 +2,22 @@
 %
 % Generates documentation (published) from the path to all modules
 %
-% generateDocs() will create documentation in the folder this 
+% generateDocs() will create documentation in the folder this
 % function resides in, and will find all modules and source code files,
 % publish them, and add them to documentation.
 
 %#ok<*NASGU>
 function generateDocs(email)
     thisDir = pwd;
+    % if the email doesn't exist, try to get it from the current folder...
+    if ~exist('email', 'var')
+        [status, email] = system('git config --get user.email');
+        if status == 0
+            email = strtok(email, newline);
+        else
+            clear('email');
+        end
+    end
     [genFolder, ~, ~] = fileparts(mfilename('fullpath'));
     % Create temp dir for cloning repo
     tDir = [tempdir 'autograderDocs' filesep];
@@ -21,12 +30,12 @@ function generateDocs(email)
     tDir = [tDir 'autograder' filesep];
     cd(genFolder);
     options.format = 'html';
-    % options.stylesheet = [pwd filesep 'resources' filesep 'stylesheet.xls'];
+    options.stylesheet = fullfile(pwd, 'resources', 'stylesheet.xsl');
     options.createThumbnail = false;
     options.imageFormat = 'png';
     options.evalCode = false;
     options.catchError = false;
-    options.showCode = true;
+    options.showCode = false;
 
     % each directory is a module. Create a new directory in for it
     mods = dir(['..' filesep 'modules']);
@@ -47,7 +56,7 @@ function generateDocs(email)
         % Generate HTML index for this module
         description = parseReadme(['..' filesep 'modules' filesep module.name  filesep 'README.md'], ...
             false, 'https://github.gatech.edu/CS1371/autograder/wiki/');
-        
+
         fid = fopen(['resources' filesep 'module.html'], 'r');
         lines = textscan(fid, '%s', 'Delimiter', {'\n'});
         fclose(fid);
@@ -110,7 +119,7 @@ function generateDocs(email)
             [~, ~] = system('git config commit.gpgsign false');
         end
     end
-    
+
     [~, ~] = system('git add *');
     [~, ~] = system('git commit -m "Update Documentation"');
     [~, ~] = system('git push');
