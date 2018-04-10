@@ -37,7 +37,7 @@ function [status, html] = unitRunner(varargin)
     outs = parseInputs(varargin);
     
     % path is going to be this file's directory
-    origPath = cd(mfilename('fullpath'));
+    origPath = cd(fileparts(mfilename('fullpath')));
     userPath = path();
     addpath(genpath(fileparts(mfilename('fullpath'))));
     % get all modules:
