@@ -1,4 +1,4 @@
-%% ValidStudent
+%% Valid Student
 % Given a valid PATH to a student folder containing submissions
 % (with filenames FILE1, FILE2, ...):
 %
