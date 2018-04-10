@@ -82,9 +82,9 @@ classdef ModuleResults < handle
         %
             html = {'<div class="module-result row">', '<div class="col-12">'};
             if this.passed
-                html = [html {'<h2 class="display-2 module-name"', [TestResults.PASSING_MARK ' '], this.name, '</h2>'}];
+                html = [html {'<h2 class="module-name"', [TestResults.PASSING_MARK ' '], this.name, '</h2>'}];
             else
-                html = [html {'<h2 class="display-2 module-name"', [TestResults.FAILING_MARK ' '], this.name, '</h2>'}];
+                html = [html {'<h2 class="module-name"', [TestResults.FAILING_MARK ' '], this.name, '</h2>'}];
             end
             feedbacks = cell(1, numel(this.unitResults));
             for f = 1:numel(feedbacks)

@@ -101,9 +101,9 @@ classdef TestResults < handle
         function html = generateHtml(this)
             html = {'<div class="row result">', '<div class="col-12">'};
             if this.passed
-                html = [html {'<h4 class="display-4 test-name">', this.PASSING_MARK, this.name, '</h4>'}];
+                html = [html {'<h4 class="test-name">', this.PASSING_MARK, this.name, '</h4>'}];
             else
-                html = [html {'<h4 class="display-4 test-name">', this.FAILING_MARK, this.name, '</h4>'}];
+                html = [html {'<h4 class="test-name">', this.FAILING_MARK, this.name, '</h4>'}];
             end
             html = [html {'<p class="test-message">', this.message, '</p>', '</div>', '</div>'}];
             html = strjoin(html, newline);

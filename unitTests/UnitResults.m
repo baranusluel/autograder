@@ -56,9 +56,9 @@ classdef UnitResults < handle
         function html = generateHtml(this)
             html = {'<div class="unit-result row">', '<div class="col-12">'};
             if this.passed
-                html = [html, {'<h3 class="display-3 unit-name">', [TestResults.PASSING_MARK ' '], this.name, '</h3>'}];
+                html = [html, {'<h3 class="unit-name">', [TestResults.PASSING_MARK ' '], this.name, '</h3>'}];
             else
-                html = [html, {'<h3 class="display-3 unit-name">', [TestResults.FAILING_MARK ' '], this.name, '</h3>'}];
+                html = [html, {'<h3 class="unit-name">', [TestResults.FAILING_MARK ' '], this.name, '</h3>'}];
             end
             methods = unique({this.testResults.method});
             methods(strcmp(methods, '')) = [];
