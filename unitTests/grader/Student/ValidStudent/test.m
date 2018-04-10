@@ -1,4 +1,5 @@
 %% Valid Student
+%
 % Given a valid PATH to a student folder containing submissions
 % (with filenames FILE1, FILE2, ...):
 %
@@ -47,17 +48,9 @@ function [passed, message] = test()
     end
     % check all files
     files = {'helloWorld.m', 'myFun.m'};
-    if numel(files) ~= numel(S.submissions)
-        passed = false;
-        message = sprintf('Submission number mismatch; expected %d, got %d', numel(files), numel(S.submissions));
+    [passed, message] = studentFileChecker(files, S.submissions);
+    if ~passed
         return;
-    end
-    for f = 1:numel(files)
-        if sum(strcmp(files{f}, S.submissions)) ~= 1
-            passed = false;
-            message = sprintf('File "%s" was not correctly recorded as a submission', files{f});
-            return;
-        end
     end
     message = 'Student correctly constructed';
     passed = true;
