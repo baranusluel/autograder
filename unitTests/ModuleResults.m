@@ -47,8 +47,9 @@ classdef ModuleResults < handle
             units(~[units.isdir]) = [];
             units(strncmp({units.name}, '.', 1)) = [];
             for u = numel(units):-1:1
-                this.unitResults(u) = UnitResults(fullfile(units(u).folder, units(u).name));
+                unitResults(u) = UnitResults(fullfile(units(u).folder, units(u).name));
             end
+            this.unitResults = unitResults;
             cd(origPath);
         end
         function passed = get.passed(this)

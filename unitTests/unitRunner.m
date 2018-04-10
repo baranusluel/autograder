@@ -56,19 +56,18 @@ function [status, html] = unitRunner(varargin)
         end
     end
 
-    mods = [];
     for m = numel(modules):-1:1
         mods(m) = ModuleResults(fullfile(modules(m).folder, modules(m).name));
     end
 
-    status = all([mods.passing]);
+    status = all([mods.passed]);
 
     feedbacks = cell(1, numel(mods));
     for f = 1:numel(feedbacks)
         feedbacks{f} = mods(f).generateHtml();
     end
 
-    html = {'<div class="container-fluid">', '<div class="jumbotron">'};
+    html = {'<div class="container-fluid">', '<div class="jumbotron text-center">'};
     if status
         html = [html {'<i class="display-1 text-center fas fa-check"></i>'}];
         html = [html {'<h1 class="display-3 text-center">Code Passed Inspection!</h1>'}];

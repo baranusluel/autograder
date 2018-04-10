@@ -37,8 +37,9 @@ classdef UnitResults < handle
             units(~[units.isdir]) = [];
             units(strncmp({units.name}, '.', 1)) = [];
             for i = numel(units):-1:1
-                this.testResults(i) = TestResults(fullfile(units(i).folder, units(i).name));
+                testResults(i) = TestResults(fullfile(units(i).folder, units(i).name));
             end
+            this.testResults = testResults;
             cd(origPath);
         end
         function passed = get.passed(this)
