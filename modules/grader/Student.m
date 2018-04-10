@@ -55,13 +55,11 @@ classdef Student < handle
         path;
         submissions;
         feedbacks = {};
-        % why is this necessary?
         isGraded = false;
     end
     properties (Access=private)
         problems = [];
         html = {};
-        
     end
     methods (Static)
         function resetPath()
@@ -141,7 +139,6 @@ classdef Student < handle
                 'Path %s is not a valid path', path);
                 throw(e);
             end
-            this.path = path;
             this.name = name;
             % We can safely assume that student has been processed (zip
             % unpacked, etc.)
@@ -150,19 +147,19 @@ classdef Student < handle
 
             path(path == '/' | path == '\') = filesep;
 
-            % Path should always have last file separator
+            % Path should never have last file separator
 
-            if path(end) ~= filesep
-                path = [path filesep];
+            if path(end) == filesep
+                path(end) = [];
             end
 
             % Get all submissions
-            subs = dir([path '*.m']);
+            subs = dir([path filesep '*.m']);
             this.submissions = {subs.name};
 
             % ID is folder name:
-            this.id = regexp(path, '[A-Za-z0-9_]+(?=\\$)', 'match');
-            this.id = this.id{1};
+            [~, this.id, ~] = fileparts(path);
+            this.path = path;
         end
     end
     methods (Access=public)
@@ -174,13 +171,9 @@ classdef Student < handle
         %
         % gradeProblem(PROBLEM) takes in a valid PROBLEM class,
         % evaluates the student code, creates a Feedback instance for each
-        % TestCase, which it adds to the feedbacks field. It finally
-        % sets the isGraded field to true.
+        % TestCase, which it adds to the feedbacks field.
         %
         %%% Remarks
-        %
-        % The function will return without making any changes to the class
-        % if the isGraded field is already true.
         %
         % The feedback field should always be populated, even if
         % the submissions field is empty.
@@ -330,7 +323,7 @@ classdef Student < handle
             html = strjoin(this.html, newline);
             fwrite(fid, html);
             fclose(fid);
-
+            this.isGraded = true;
         end
     end
     methods (Access=private)
