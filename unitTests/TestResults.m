@@ -47,13 +47,13 @@ classdef TestResults < handle
         %%% Exceptions
         %
         % This function is guaranteed to never throw an exception
-            
+
             % Need to account for noargs constructor call - otherwise
             % error when preallocating a vector of TestResults
             if nargin ~= 1
                 return
             end
-            
+
             % create temporary directory
             workDir = tempname;
             mkdir(workDir);
@@ -69,13 +69,21 @@ classdef TestResults < handle
 
             this.path = path;
             [~, this.name, ~] = fileparts(path);
-            if contains(this.name, '_')
-                [this.method, this.name] = strtok(this.name, '_');
-                this.name = this.name(2:end);
+            % classes begin with a capital letter. So if two folders up is a class, this is a method
+            [~, className, ~] = fileparts(fileparts(path));
+            % if capital letter, class:
+            if className(1) >= 'A' && className(1) <= 'Z'
+                % class, all tests are methods. If no _, then constructor
+                if contains(this.name, '_')
+                    [this.method, this.name] = strtok(this.name, '_');
+                    this.name = this.name(2:end);
+                else
+                    this.method = 'Constructor';
+                end
             else
                 this.method = '';
             end
-            
+
             cd(workDir);
             % we know test.m will exist
             [this.passed, this.message] = test();
