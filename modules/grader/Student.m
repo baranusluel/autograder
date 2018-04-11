@@ -134,6 +134,9 @@ classdef Student < handle
         %   Constructor threw exception
         %   AUTOGRADER:Student:ctor:invalidPath
         %
+            if nargin == 0
+                return;
+            end
             if ~isfolder(path)
                 e = MException('AUTOGRADER:Student:ctor:invalidPath', ...
                 'Path %s is not a valid path', path);
@@ -201,11 +204,11 @@ classdef Student < handle
         % Given a student who had only partially submitted files:
         % The student code is evaluated normally for non-empty submissions
         % and Feedback instances are created. Empty submissions will
-        % give appropritate score and reason values in the Feedback class.
+        % give appropriate score and reason values in the Feedback class.
         % The Feedback classes will then be added to the feedbacks field.
         %
         % Given a student who had no submitted files:
-        % Empty submissions will give appropritate score and reason values
+        % Empty submissions will give appropriate score and reason values
         % in the Feedback class.
         % The Feedback classes will then be added to the feedbacks field.
 
