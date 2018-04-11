@@ -7,8 +7,7 @@
 % automatically upload student grades to Canvas. This uses Canvas's RESTful API, and will
 % require a valid OAuth Token.
 %
-% uploadToCanvas(S, H, T) will do the same as above; however, it will use the token in T (a string)
-% for authentication
+% uploadToCanvas(S, H, O) will do the same as above; however, it will use the options defiend in O.
 %
 %%% Remarks
 %
@@ -22,6 +21,12 @@
 % It is assumed that our Canvas page is located at https://gatech.instructure.com
 %
 % If a grade is manually changed on canvas, the autograder will skip that student, so tweaked grades are retained.
+%
+% A variety of options can be provided:
+%
+% * token: A string that represents the authentication token you would like to use.
+% * courseId: The ID of the active MATLAB course
+% * assignmentId: The ID of the assignment to grade. If given, this overrides homework
 %
 %%% Exceptions
 %
@@ -67,3 +72,47 @@
 %   uploadToCanvas(S, H, T);
 %
 %   Threw invalidCredentials Exception
+
+function uploadToCanvas(students, homework, varargin)
+    if any(isvalid(students))
+        return;
+    end
+    opts = parseOptions(varargin);
+    API = 'https://gatech.instructure.com/api/v1/';
+
+    % set up web options
+    apiOpts = weboptions;
+    apiOpts.RequestMethod = 'GET';
+    apiOpts.HeaderFields = {'Authorization', ['Bearer ' opts.token]};
+    if isempty(opts.assignmentId)
+        % get HW ID:
+        data = webread([API 'courses/' opts.courseId '/assignments'], 'search_term', homework, apiOpts);
+        % data is structure. If not empty, found hw - get ID
+        homework = data.id;
+    else
+        homework = opts.assignmentId;
+    end
+
+
+    % for each student, get student ID from GT Username. Then, using id, upload grades.
+    for s = 1:numel(students)
+        % get student id
+        apiOpts.RequestMethod = 'GET';
+        id = webread([api 'courses/' opts.courseId '.users'], 'search_term', student.id, apiOpts);
+        id = id.id;
+        % upload student grade
+        apiOpts.RequestMethod = 'PUT';
+        status = webread([api 'courses/' opts.courseId '/assignments/' homework '/submissions/' id], 'submission[posted_grade]', num2str(s.grade), apiOpts);
+    end
+
+end
+
+function outs = parseOptions(ins)
+    parser = inputParser();
+    parser.addParameter('token', '', @ischar);
+    parser.addParameter('courseId', '', @ischar);
+    parser.addParameter('assignmentId', '', @ischar);
+
+    parser.parse();
+    outs = parser.Results;
+end
