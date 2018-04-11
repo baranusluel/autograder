@@ -35,7 +35,7 @@
 
 function [status, html] = autotester(varargin)
     outs = parseInputs(varargin);
-    
+
     % path is going to be this file's directory
     origPath = cd(fileparts(mfilename('fullpath')));
     userPath = path();
@@ -85,7 +85,7 @@ function [status, html] = autotester(varargin)
     completeHtml = strjoin(completeHtml, newline);
 
     if outs.showFeedback
-        file = tempname;
+        file = [tempname '.html'];
         fid = fopen(file, 'wt');
         fwrite(fid, completeHtml);
         fclose(fid);
