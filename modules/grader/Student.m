@@ -23,6 +23,7 @@
 %
 % * isGraded: A logical that indicates whether a student has been graded
 %
+% * grade: The overall score for this student (read-only)
 %%% Methods
 %
 % * Student
@@ -56,6 +57,7 @@ classdef Student < handle
         submissions;
         feedbacks = {};
         isGraded = false;
+        grade;
     end
     properties (Access=private)
         problems = [];
@@ -75,6 +77,12 @@ classdef Student < handle
         end
     end
     methods
+        function grade = get.grade(this)
+            if isempty(this.feedbacks)
+                throw(MException('AUTOGRADER:Student:grade:noFeedbacks', 'No feedbacks were found (did you call gradeProblem?)'));
+            end
+            grade = cellfun(@(f) sum([f.points]), this.feedbacks);
+        end
         function this = Student(path, name)
         %% Constructor
         %
