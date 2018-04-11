@@ -150,14 +150,14 @@ classdef File < handle
         end
     end
     methods (Access = public)
-        function [isEqual, message] = equals(this, soln)
+        function [isEqual, msg] = equals(this, soln)
             %% equals: Determine file equality
             %
-            % Checks if this file object is equal to another (containing same name,
+            % Checks if this file object is equal to anSOLN (containing same name,
             % extension, and data).
             %
-            % [ISEQUAL, MSG] = equals(OTHER) checks whether THIS is equal to
-            % OTHER. If THIS and OTHER have the same name, extension, and data, ISEQUAL
+            % [ISEQUAL, MSG] = equals(THIS,SOLN) checks whether THIS is equal to
+            % SOLN. If THIS and SOLN have the same name, extension, and data, ISEQUAL
             % will be true. If the two file objects are not the same, ISEQUAL is false,
             % and MSG contains the reason why the files aren't equal.
             %
@@ -168,7 +168,7 @@ classdef File < handle
             %
             %%% Exceptions
             %
-            % An AUTOGRADER:File:equals:noFile exception will be thrown if OTHER
+            % An AUTOGRADER:File:equals:noFile exception will be thrown if SOLN
             % is not of type File, or no input is given.
             %
             %%% Unit Tests
@@ -197,6 +197,32 @@ classdef File < handle
             %
             %
             
+            %extract the data from classes, compare name and extension
+            name = strcmp(this.name,soln.name)
+            ext = strcmp(this.extension,soln.extension)
+            data = isequal(this.data,soln.data)
+            %depending on what is true, output proper message
+            msg = ''
+            isEqual = false
+            %How descriptive should I be?
+            if name & ext & data
+                isEqual = true
+            elseif name & ext & ~data
+                msg = 'The data was found to be incorrect'
+            elseif name & ~ext & data
+                msg = 'The extension was found to be incorrect'
+            elseif ~name & ext & data
+                msg = 'The name was found to be incorrect'
+            elseif name & ~ext & ~data
+                msg = 'The extension and data was found to be incorrect'
+            elseif ~name & ext & ~data
+                msg = 'The name and data was found to be incorrect'
+            elseif ~name & ~ext & data
+                msg = 'The name and extension was found to be incorrect'
+            else
+                msg = 'the name, extension, and data were all found to be incorrect'
+            end
+                
         end
         function [html] = generateFeedback(this, soln)
             %% generateFeedback: Generate HTML feedback for students
