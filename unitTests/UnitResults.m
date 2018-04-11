@@ -56,15 +56,37 @@ classdef UnitResults < handle
         function html = generateHtml(this)
             html = {'<div class="unit-result row">', '<div class="col-12">'};
             if this.passed
-                html = [html, {'<h3 class="display-3 text-center unit-name">', [TestResults.PASSING_MARK ' '], this.name, '</h3>'}];
+                html = [html, {'<h3 class="unit-name">', [TestResults.PASSING_MARK ' '], this.name, '</h3>'}];
             else
-                html = [html, {'<h3 class="display-3 text-center unit-name">', [TestResults.FAILING_MARK ' '], this.name, '</h3>'}];
+                html = [html, {'<h3 class="unit-name">', [TestResults.FAILING_MARK ' '], this.name, '</h3>'}];
             end
-            feedbacks = cell(1, numel(this.testResults));
-            for f = 1:numel(feedbacks)
-                feedbacks{f} = this.testResults(f).generateHtml();
+            methods = unique({this.testResults.method});
+            methods(strcmp(methods, '')) = [];
+            if ~isempty(methods)
+                % for each method, print accordingly
+                methodFeedback = cell(1, numel(methods));
+                for m = 1:numel(methods)
+                    feedbackHeader = {'<div class="class-method">', '<h4 class="method-name display-4">', ...
+                        methods{m}, '</h4>'};
+                    res = this.testResults(strcmp(methods{m}, {this.testResults.method}));
+                    feedbacks = cell(1, numel(res));
+                    % for all test methods with that name
+                    for t = 1:numel(res)
+                        feedbacks{t} = res(t).generateHtml();
+                        feedbacks{t} = strrep(feedbacks{t}, '<h4', '<h5');
+                        feedbacks{t} = strrep(feedbacks{t}, '</h4>', '</h5>');
+                    end
+                    methodFeedback{m} = [feedbackHeader, feedbacks, {'</div>'}];
+                end
+                feedback = [methodFeedback{:}];
+            else
+                feedbacks = cell(1, numel(this.testResults));
+                for f = 1:numel(feedbacks)
+                    feedbacks{f} = this.testResults(f).generateHtml();
+                end
+                feedback = feedbacks;
             end
-            html = [html {'<div class="unit-tests container">'}, feedbacks, {'</div>', '</div>', '</div>'}];
+            html = [html {'<div class="unit-tests container">'}, feedback, {'</div>', '</div>', '</div>'}];
             html = strjoin(html, newline);
         end
     end
