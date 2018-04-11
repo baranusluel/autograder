@@ -1,5 +1,5 @@
 function [passed, message] = studentFileChecker(expect, check)
-    if numel(expect) ~= numel(S.submissions)
+    if numel(expect) ~= numel(check)
         passed = false;
         message = sprintf('Submission number mismatch; expected %d, got %d', numel(expect), numel(check));
         return;
