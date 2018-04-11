@@ -79,6 +79,7 @@ function uploadToCanvas(students, homework, varargin)
     end
     opts = parseOptions(varargin);
     API = 'https://gatech.instructure.com/api/v1/';
+    COURSE_CODE = 'CS 1371';
 
     % set up web options
     apiOpts = weboptions;
@@ -100,8 +101,8 @@ function uploadToCanvas(students, homework, varargin)
             starting = datetime(d.start_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX', 'TimeZone', 'America/New_York');
             ending.TimeZone = '';
             starting.TimeZone = '';
-            % if our date is between and name matches, engage
-            if strncmp(d.course_code, 'CS 1371', 7) && starting < datetime() && ending > datetime()
+            % if our date is between and name matches, engage. Note that TA course never has a space
+            if strncmp(d.course_code, COURSE_CODE, length(COURSE_CODE)) && starting < datetime() && ending > datetime()
                 % This is our course!
                 opts.courseId = d.id;
                 break;
