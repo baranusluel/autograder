@@ -61,15 +61,15 @@
 %
 %   S = Student(); % valid student array
 %   H = 'Homework 12 - Recursion'; % valid HW name
-%   T = '...'; % valid token
-%   uploadToCanvas(S, H, T);
+%   O = struct('token', '...'); % valid token
+%   uploadToCanvas(S, H, O);
 %
 %   Students' grades are uploaded
 %
 %   S = Student();
 %   H = 'Homework 12 - Resubmission';
-%   T = ''; % invalid token
-%   uploadToCanvas(S, H, T);
+%   O = struct('token', ''); % invalid token
+%   uploadToCanvas(S, H, O);
 %
 %   Threw invalidCredentials Exception
 
@@ -84,13 +84,48 @@ function uploadToCanvas(students, homework, varargin)
     apiOpts = weboptions;
     apiOpts.RequestMethod = 'GET';
     apiOpts.HeaderFields = {'Authorization', ['Bearer ' opts.token]};
+
+    if isempty(opts.courseId)
+        % find course ID; it will be the only course active
+        data = webread([API 'courses/'], apiOpts);
+        % data will PROBABLY be a cell array
+        if ~iscell(data)
+            % a stucture. num2cell it and proceed
+            data = num2cell(data);
+        end
+        % loop through all data; if we find an end_at that fits, with the course_code starting with 'CS 1371', that's our guy!
+        for d = 1:numel(data);
+            d = data{d};
+            ending = datetime(d.end_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX', 'TimeZone', 'America/New_York');
+            starting = datetime(d.start_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX', 'TimeZone', 'America/New_York');
+            ending.TimeZone = '';
+            starting.TimeZone = '';
+            % if our date is between and name matches, engage
+            if strncmp(d.course_code, 'CS 1371', 7) && starting < datetime() && ending > datetime()
+                % This is our course!
+                opts.courseId = d.id;
+                break;
+            end
+        end
+    end
+
     if isempty(opts.assignmentId)
         % get HW ID:
-        data = webread([API 'courses/' opts.courseId '/assignments'], 'search_term', homework, apiOpts);
+        try
+            data = webread([API 'courses/' opts.courseId '/assignments'], 'search_term', homework, apiOpts);
+        catch reason
+            if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
+                e = MException('AUTOGRADER:uploadToCanvas:invalidCredentials', 'Invalid token was provided');
+                e = e.addCause(reason);
+                throw(e);
+            end
+            e = MException('AUTOGRADER:uploadToCanvas:connection', 'Connection was interrupted');
+            e = e.addCause(reason);
+            throw(e);
+        end
+
         % data is structure. If not empty, found hw - get ID
-        homework = data.id;
-    else
-        homework = opts.assignmentId;
+        opts.assignmentId = data.id;
     end
 
 
@@ -98,13 +133,34 @@ function uploadToCanvas(students, homework, varargin)
     for s = 1:numel(students)
         % get student id
         apiOpts.RequestMethod = 'GET';
-        id = webread([api 'courses/' opts.courseId '.users'], 'search_term', student.id, apiOpts);
+        try
+            id = webread([api 'courses/' opts.courseId '.users'], 'search_term', student.id, apiOpts);
+        catch reason
+            if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
+                e = MException('AUTOGRADER:uploadToCanvas:invalidCredentials', 'Invalid token was provided');
+                e = e.addCause(reason);
+                throw(e);
+            end
+            e = MException('AUTOGRADER:uploadToCanvas:connection', 'Connection was interrupted');
+            e = e.addCause(reason);
+            throw(e);
+        end
         id = id.id;
         % upload student grade
         apiOpts.RequestMethod = 'PUT';
-        status = webread([api 'courses/' opts.courseId '/assignments/' homework '/submissions/' id], 'submission[posted_grade]', num2str(s.grade), apiOpts);
+        try
+            status = webread([api 'courses/' opts.courseId '/assignments/' opts.assignmentId '/submissions/' id], 'submission[posted_grade]', num2str(s.grade), apiOpts);
+        catch reason
+            if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
+                e = MException('AUTOGRADER:uploadToCanvas:invalidCredentials', 'Invalid token was provided');
+                e = e.addCause(reason);
+                throw(e);
+            end
+            e = MException('AUTOGRADER:uploadToCanvas:connection', 'Connection was interrupted');
+            e = e.addCause(reason);
+            throw(e);
+        end
     end
-
 end
 
 function outs = parseOptions(ins)
