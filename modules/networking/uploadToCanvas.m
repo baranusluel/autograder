@@ -95,14 +95,13 @@ function uploadToCanvas(students, homework, varargin)
             data = num2cell(data);
         end
         % loop through all data; if we find an end_at that fits, with the course_code starting with 'CS 1371', that's our guy!
-        for d = 1:numel(data);
-            d = data{d};
-            ending = datetime(d.end_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX', 'TimeZone', 'America/New_York');
-            starting = datetime(d.start_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX', 'TimeZone', 'America/New_York');
+        for d = 1:numel(data)
+            ending = datetime(data{d}.end_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX', 'TimeZone', 'America/New_York');
+            starting = datetime(data{d}.start_at,'InputFormat','yyyy-MM-dd''T''HH:mm:ssXXX', 'TimeZone', 'America/New_York');
             ending.TimeZone = '';
             starting.TimeZone = '';
             % if our date is between and name matches, engage. Note that TA course never has a space
-            if strncmp(d.course_code, COURSE_CODE, length(COURSE_CODE)) && starting < datetime() && ending > datetime()
+            if strncmp(data{d}.course_code, COURSE_CODE, length(COURSE_CODE)) && starting < datetime() && ending > datetime()
                 % This is our course!
                 opts.courseId = d.id;
                 break;
@@ -147,10 +146,9 @@ function uploadToCanvas(students, homework, varargin)
             throw(e);
         end
         id = id.id;
-        % upload student grade
-        apiOpts.RequestMethod = 'PUT';
+        % check if student was hand graded - if we find a comment that says "REGRADE", don't overwrite
         try
-            status = webread([api 'courses/' opts.courseId '/assignments/' opts.assignmentId '/submissions/' id], 'submission[posted_grade]', num2str(s.grade), apiOpts);
+            data = webread([api 'courses/' opts.courseId '/assignments/' opts.assignmentId '/submissions/' id], 'include[]', 'submission_comments', apiOpts);
         catch reason
             if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
                 e = MException('AUTOGRADER:uploadToCanvas:invalidCredentials', 'Invalid token was provided');
@@ -161,6 +159,30 @@ function uploadToCanvas(students, homework, varargin)
             e = e.addCause(reason);
             throw(e);
         end
+        comments = data.submission_comments;
+        isRegrade = false;
+        for c = 1:numel(comments)
+            if strcmp(comments(c).comment, 'REGRADE');
+                isRegrade = true;
+                break;
+            end
+        end
+        if ~isRegrade
+        % upload student grade
+            apiOpts.RequestMethod = 'PUT';
+            try
+                webwrite([api 'courses/' opts.courseId '/assignments/' opts.assignmentId '/submissions/' id], 'submission[posted_grade]', num2str(s.grade), apiOpts);
+            catch reason
+                if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
+                    e = MException('AUTOGRADER:uploadToCanvas:invalidCredentials', 'Invalid token was provided');
+                    e = e.addCause(reason);
+                    throw(e);
+                end
+                e = MException('AUTOGRADER:uploadToCanvas:connection', 'Connection was interrupted');
+                e = e.addCause(reason);
+                throw(e);
+            end
+        end
     end
 end
 
@@ -170,6 +192,6 @@ function outs = parseOptions(ins)
     parser.addParameter('courseId', '', @ischar);
     parser.addParameter('assignmentId', '', @ischar);
 
-    parser.parse();
+    parser.parse(ins{:});
     outs = parser.Results;
 end
