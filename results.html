@@ -4,8 +4,6 @@
 <meta charset="utf-8">
 <title>Test Results</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400&amp;subset=latin-ext" rel="stylesheet">
-<link rel="shortcut icon" type="image/x-icon" href="resources/favicon.ico" />
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
@@ -18,66 +16,17 @@
 .fa-times {
     color: darkred;
 }
-.test-message {
-    text-indent: 4%;
-    color: black;
-    font-family: "Courier New";
-}
-.test-error {
-    color: firebrick;
-}
-h4 {
-    color: darkgrey;
-}
-.module-status {
-    font-size: 24px;
-}
-html,
-body {
-    font-family: 'Open Sans';
-    font-weight: 400;
-    font-size: 18px;
-}
-.navbar-logo {
-    width: 32px;
-    height: 32px;
-}
-.navbar-brand {
-    font-weight: 300;
-}
-.thin {
-    font-weight: 300;
-}
-#goBack {
-    color: white;
-}
 </style>
 </head>
-<body><nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-            <a id="goBack" class="nav-link" href="index.html">
-                <i class="fas fa-arrow-left"></i> Go Back
-            </a>
-            <a class="navbar-brand" href="index.html">
-                <img src="resources/brand.jpg" class="rounded navbar-logo">
-                Autograder Docs
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-                    
-            <div class="collapse navbar-collapse" id="mainNavbar">
-                <ul class="navbar-nav">
-                </ul>
-            </div>
-        </nav>
+<body>
 <div class="container-fluid">
 <div class="jumbotron text-center">
-<i class="display-1 text-center fas fa-times"></i>
-<h1 class="display-4 text-center">Unit Tests Failed</h1>
+<i class="display-1 text-center fas fa-check"></i>
+<h1 class="display-4 text-center">Unit Tests Passed!</h1>
 <hr />
 <div class="row text-center d-flex justify-content-center">
 <div class="col-md-12 col-12 text-center module-status">
-<i class="fas fa-times"></i>
+<i class="fas fa-check"></i>
 Grader
 </div>
 </div>
@@ -124,11 +73,9 @@ Constructor
 InvalidPath
 </code>
 </h5>
-<span class="test-message">
-<p>
+<pre class="test-message">
 Exception correctly thrown
-</p>
-</span>
+</pre>
 </div>
 </div>
 <div class="row result">
@@ -139,11 +86,9 @@ Exception correctly thrown
 NoSubmissions
 </code>
 </h5>
-<span class="test-message">
-<p>
+<pre class="test-message">
 Student correctly constructed
-</p>
-</span>
+</pre>
 </div>
 </div>
 <div class="row result">
@@ -154,11 +99,9 @@ Student correctly constructed
 ValidStudent
 </code>
 </h5>
-<span class="test-message">
-<p>
+<pre class="test-message">
 Student correctly constructed
-</p>
-</span>
+</pre>
 </div>
 </div>
 </div>
@@ -168,7 +111,7 @@ Student correctly constructed
 <div class="unit-result row">
 <div class="col-12">
 <h3 class="unit-name">
-<i class="fas fa-times"></i> 
+<i class="fas fa-check"></i> 
 TestCase
 </h3>
 <div class="unit-tests container">
@@ -180,30 +123,26 @@ Constructor
 <div class="col-12">
 <h5 class="test-name">
 <code>
-<i class="fas fa-times"></i>
+<i class="fas fa-check"></i>
 LoadMatFile
 </code>
 </h5>
-<span class="test-message">
-<p>
-Exception Thrown: parallel:fevalqueue:ExecutionErrors (One or more futures resulted in an error.)
-</p>
-</span>
+<pre class="test-message">
+TestCase correctly constructed
+</pre>
 </div>
 </div>
 <div class="row result">
 <div class="col-12">
 <h5 class="test-name">
 <code>
-<i class="fas fa-times"></i>
+<i class="fas fa-check"></i>
 ValidTestCase
 </code>
 </h5>
-<span class="test-message">
-<p>
-Exception Thrown: parallel:fevalqueue:ExecutionErrors (One or more futures resulted in an error.)
-</p>
-</span>
+<pre class="test-message">
+TestCase correctly constructed
+</pre>
 </div>
 </div>
 </div>
