@@ -45,11 +45,12 @@
 %
 % A logical - if true, linting is done before building. If linting returns
 % errors, the build is stopped - no installer or documentation is created.
+% Defaults to true
 %
 % * version
 %
 % A character vector - if blank or not defined, the current version is
-% unchanged. Version numbers follow the SemVer convention:
+% unchanged. Defaults to blank. Version numbers follow the convention:
 % vMAJOR.MINOR.PATH. For more information refer to Semantic Versioning
 % Documentation at <https://semver.org SemVer.org>. Do not include leading
 % 'v'.
@@ -57,7 +58,7 @@
 % * test
 %
 % A logical - if true, building will fail if any unit test fails. If false,
-% testing is not done at all.
+% testing is not done at all. Defaults to true
 
 function problems = build(varargin)
     opts = getInputs(varargin{:});
