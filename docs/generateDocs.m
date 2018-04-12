@@ -10,7 +10,9 @@ function generateDocs(email)
     thisDir = pwd;
     thisPath = path;
 
-    addpath(genpath(fileparts(pwd)));
+    addpath(genpath([fileparts(pwd) filesep 'unitTests']));
+    addpath(genpath([fileparts(pwd) filesep 'modules']));
+    addpath(genpath(pwd));
     % if the email doesn't exist, try to get it from the current folder...
     if ~exist('email', 'var')
         [status, email] = system('git config --get user.email');
@@ -88,7 +90,7 @@ function generateDocs(email)
     opts.output = '';
     opts.completeFeedback = true;
     opts.modules = {};
-    [status, html] = unitRunner(opts);
+    [status, html] = autotester(opts);
     fid = fopen([tDir 'results.html'], 'wt');
     fwrite(fid, html);
     fclose(fid);
