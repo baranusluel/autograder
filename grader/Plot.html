@@ -6,7 +6,21 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Plot: Class Containing Data for a Plot</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-22"><meta name="DC.source" content="Plot.m"><style type="text/css">
+      --><title>Plot: Class Containing Data for a Plot</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
+      $(document).ready(function() {
+        // get name of class
+        // anywhere CLASS name is or METHOD name is, replace with code version
+        // class name will be in only h1
+        // methods will be underneath ul that says Methods as text (I know, hacky...)
+        var cName = $('h1').text();
+        cName = cName.split(':');
+        cName = cName[0];
+        var strNewString = $('body').html().replace(new RegExp('\\s+' + cName + '\\s+', "g"),'&nbsp;<code>Student</code>&nbsp;');
+        $('body').html(strNewString);
+
+        // for each occurrence of this in 
+      });
+    </script><meta name="DC.date" content="2018-04-12"><meta name="DC.source" content="Plot.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -39,7 +53,7 @@ ol li ul li { list-style:square; }
 .content { font-size:1.2em; line-height:140%; padding: 20px; }
 
 pre, code { font-size:12px; }
-tt { font-size: 1.2em; }
+code { font-size: 1.2em; before: " " }
 pre { margin:0px 0px 20px; }
 pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
 pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
@@ -66,195 +80,22 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Plot: Class Containing Data for a Plot</h1><!--introduction--><p>Holds data needed for each plot in fields.</p><p>Has methods to check if a student's plot matches the solution, and to give feedback for the student plot.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Fields</a></li><li><a href="#2">Methods</a></li><li><a href="#3">Remarks</a></li><li><a href="#4">Constructor</a></li><li><a href="#5">Remarks</a></li><li><a href="#6">Exceptions</a></li><li><a href="#7">Unit Tests</a></li><li><a href="#9">equals: Checks if the given plot is equal to this plot</a></li><li><a href="#10">Remarks</a></li><li><a href="#11">Exceptions</a></li><li><a href="#12">Unit Tests</a></li><li><a href="#13">generateFeedback: Generates HTML feedback for the student and solution Plot.</a></li><li><a href="#14">Remarks</a></li><li><a href="#15">Exceptions</a></li><li><a href="#16">Unit Tests</a></li></ul></div><h2 id="1">Fields</h2><div><ul><li>title: The title used for the plot</li></ul></div><div><ul><li>xData: A cell array of vectors that represents all XData points plotted for this plot</li></ul></div><div><ul><li>yData: A cell array of vectors that represents all YData points plotted for this plot</li></ul></div><div><ul><li>zData: A cell array of vectors that represents all ZData points plotted for this plot</li></ul></div><div><ul><li>image: An image taken of the plot, as an MxNx3 uint8 array.</li></ul></div><div><ul><li>legend: A string array of all the names in the legend</li></ul></div><div><ul><li>colors: A string array that represents the color used for every line</li></ul></div><h2 id="2">Methods</h2><div><ul><li>Plot</li></ul></div><div><ul><li>equals</li></ul></div><div><ul><li>generateFeedback</li></ul></div><h2 id="3">Remarks</h2><p>The Plot class keeps all relevant data about a specific plot; note that a subplot is considered a single plot. Like the File class, the Plot class copies over any data necessary to recreate the plot entirely; as such, the plot can be deleted once a Plot object is created!</p><h2 id="4">Constructor</h2><p>Creates an instance of the Plot class from a student's plot information.</p><p>this = Plot(HANDLE) creates an instance of Plot from the given axes handle.</p><h2 id="5">Remarks</h2><p>This class takes in student plot information and compares it with the solution plot information to return feedback for each student.</p><p>Note that xDdata, yData, and zData will all be cell arrays of the same size. If the plot had data in that dimension, that entry of the cell array will have a vector; otherwise, it will be empty.</p><h2 id="6">Exceptions</h2><p>An AUTOGRADER:PLOT:NOAXISDATA exception will be thrown if no input axis are provided</p><h2 id="7">Unit Tests</h2><p>Given valid axes handle   this = Plot(pHandle)</p><pre class="language-matlab">this.title -&gt; <span class="string">'My Plot'</span>
-this.xData -&gt; XDATA (a cell array of vectors)
-this.yData -&gt; YDATA (a cell array of vectors)
-this.zData -&gt; ZDATA (a cell array of vectors)
-this.image -&gt; IMAGE (a uint8 array)
-this.legend -&gt; [<span class="string">"name1"</span>, <span class="string">"name2"</span>, <span class="keyword">...</span><span class="comment">]</span>
-this.colors -&gt; [<span class="string">"color1"</span>, <span class="string">"color2"</span>, <span class="keyword">...</span><span class="comment">]</span>
-</pre><p>Given invalid axes handle</p><p>Constructor threw exception AUTOGRADER:PLOT:NOAXISDATA</p><h2 id="9">equals: Checks if the given plot is equal to this plot</h2><p>equals is used to check a student plot against the solution plot.</p><p>[OK, MSG] = equals(PLOT) takes in a valid PLOT class and evaluates the plot against the solution file and returns a boolean true/false stored in OK and a string stored in MSG if the two plots do not match.</p><h2 id="10">Remarks</h2><p>This function will compare the two plots and return a boolean value.</p><p>The message will be empty if the plots are equal.</p><h2 id="11">Exceptions</h2><p>An AUTOGRADER:PLOT:EQUALS:NOPLOT exception will be thrown if inputs are not of type Plot.</p><h2 id="12">Unit Tests</h2><p>Given that PLOT is a valid instance of Plot equal to this. Given that this is a valid instance of Plot.   [OK, MSG] = this.equals(PLOT)</p><pre class="language-matlab">OK <span class="string">-&gt;</span> <span class="string">true</span>
+  </style></head><body><div class="container-fluid"><div class="content"><h1>Plot: Class Containing Data for a Plot</h1><!--introduction--><p>Holds data needed for each plot in fields.</p><p>Has methods to check if a student's plot matches the solution, and to give feedback for the student plot.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Fields</a></li><li><a href="#2">Methods</a></li><li><a href="#3">Remarks</a></li><li><a href="#4">Constructor</a></li><li><a href="#5">Remarks</a></li><li><a href="#6">Exceptions</a></li><li><a href="#7">Unit Tests</a></li><li><a href="#9">equals: Checks if the given plot is equal to this plot</a></li><li><a href="#10">Remarks</a></li><li><a href="#11">Exceptions</a></li><li><a href="#12">Unit Tests</a></li><li><a href="#14">generateFeedback: Generates HTML feedback for the student and solution Plot.</a></li><li><a href="#15">Remarks</a></li><li><a href="#16">Exceptions</a></li><li><a href="#17">Unit Tests</a></li></ul></div><h2 id="1">Fields</h2><div><ul><li>Title: A String of the title used for the plot</li></ul></div><div><ul><li>XLabel: A String of the xLabel used for the plot</li></ul></div><div><ul><li>YLabel: A String of the yLabel used for the plot</li></ul></div><div><ul><li>ZLabel: A String of the zLabel used for the plot</li></ul></div><div><ul><li>Position: A 1X4 double vector of the position of the axes in the figure window</li></ul></div><div><ul><li>PlotBox: A 1X3 vector representing the relative axis scale factors</li></ul></div><div><ul><li>Image: An image taken of the plot, as an MxNx3 uint8 array.</li></ul></div><div><ul><li>Legend: A string array of all the names in the legend</li></ul></div><div><ul><li>XData: A cell array of vectors that represents all XData points plotted for this plot</li></ul></div><div><ul><li>XData: A cell array of vectors that represents all YData points plotted for this plot</li></ul></div><div><ul><li>ZData: A cell array of vectors that represents all ZData points plotted for this plot</li></ul></div><div><ul><li>Color: A cell array containing the normalized 1X3 double vector of the color used for each line</li></ul></div><div><ul><li>Marker: A cell array containing the character uses as a marker in the line</li></ul></div><div><ul><li>LineStyle: A cell array containing the character uses as a marker in the line</li></ul></div><h2 id="2">Methods</h2><div><ul><li>Plot</li></ul></div><div><ul><li>equals</li></ul></div><div><ul><li>generateFeedback</li></ul></div><h2 id="3">Remarks</h2><p>The Plot class keeps all relevant data about a specific plot; note that a subplot is considered a single plot. Like the File class, the Plot class copies over any data necessary to recreate the plot entirely; as such, the plot can be deleted once a Plot object is created!</p><h2 id="4">Constructor</h2><p>Creates an instance of the Plot class from a student's plot information.</p><p>this = Plot(HANDLE) creates an instance of Plot from the given axes handle.</p><h2 id="5">Remarks</h2><p>This class takes in student plot information and compares it with the solution plot information to return feedback for each student.</p><p>If the plot does not have a title, xlabel, ylabel, or zlabel, the appropriate field will contain an empty string.</p><p>Note that XDdata, YData, ZData, Color, LineStyle, and Marker will all be cell arrays of the same size. If the plot had data or specification in that dimension, that entry of the cell array will have a vector or character; otherwise, it will be empty. (Note that color should never be empty)</p><h2 id="6">Exceptions</h2><p>An AUTOGRADER:Plot:noAxisData exception will be thrown if no input axis are provided</p><h2 id="7">Unit Tests</h2><p>Given valid axes handle   this = Plot(pHandle)</p><pre class="language-matlab">this.Title -&gt; <span class="string">'My Plot'</span>
+this.XLabel -&gt; <span class="string">'X-Axis'</span>
+this.YLabel -&gt; <span class="string">'Y-Axis'</span>
+this.ZLabel -&gt; <span class="string">''</span>
+this.Image -&gt; IMAGE (a uint8 array)
+this.Legend -&gt; [<span class="string">"name1"</span>, <span class="string">"name2"</span>, <span class="keyword">...</span><span class="comment">]</span>
+this.XData -&gt; XDATA (a cell array of vectors)
+this.YData -&gt; YDATA (a cell array of vectors)
+this.ZData -&gt; ZDATA (a cell array of vectors)
+this.Color -&gt; COLOR (a cell array of vectors)
+this.Marker -&gt; MARKER (a cell array of charactors)
+this.LineStyle -&gt; LINESTYLE (a cell array of charactors)
+</pre><p>Given invalid axes handle</p><p>Constructor threw exception AUTOGRADER:PLOT:NOAXISDATA</p><h2 id="9">equals: Checks if the given plot is equal to this plot</h2><p>equals is used to check a student plot against the solution plot.</p><p>[OK, MSG] = equals(PLOT) takes in a valid PLOT class and evaluates the plot against the solution file and returns a boolean true/false stored in OK and a string stored in MSG if the two plots do not match.</p><h2 id="10">Remarks</h2><p>This function will compare the two plots and return a boolean value.</p><p>The message will be empty if the plots are equal.</p><h2 id="11">Exceptions</h2><p>An AUTOGRADER:Plot:equals:noPlot exception will be thrown if inputs are not of type Plot.</p><h2 id="12">Unit Tests</h2><p>Given that PLOT is a valid instance of Plot equal to this. Given that this is a valid instance of Plot.   [OK, MSG] = this.equals(PLOT)</p><pre class="language-matlab">OK <span class="string">-&gt;</span> <span class="string">true</span>
 MSG <span class="string">-&gt;</span> <span class="string">''</span>
 </pre><p>Given that PLOT is a valid instance of Plot not equal to this. Given that this is a valid instance of Plot.   [OK, MSG] = this.equals(PLOT)</p><pre class="language-matlab">OK <span class="string">-&gt;</span> <span class="string">false</span>
 MSG <span class="string">-&gt;</span> <span class="string">'Reason for inconsistency between plots'</span>
 </pre><p>Given that PLOT is not a valid instance of Plot. Given that this is a valid instance of Plot.   [OK, MSG] = equals(this, PLOT)</p><pre class="language-matlab">equals <span class="string">threw</span> <span class="string">an</span> <span class="string">exception</span>
-AUTOGRADER:PLOT:EQUALS:NOPLOT
-</pre><h2 id="13">generateFeedback: Generates HTML feedback for the student and solution Plot.</h2><p>generateFeedback will return the feedback for the student's plot.</p><p>[HTML] = generateFeedback(PLOT) will return a character vector in HTML that contains the markup for HTML. The contents of this vector will be the feedback associated with a student's plot.</p><h2 id="14">Remarks</h2><p>This function will output a character after calling the generateFeedback method with input as the student plot submission and the solution plot.</p><h2 id="15">Exceptions</h2><p>An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be thrown if the student or solution plots are missing from the generateFeedback method call.</p><h2 id="16">Unit Tests</h2><p>When called, the generateFeedback method will check the student Plot against the solution Plot. If the student plot matches the solution plot, the character HTML vector will contain both the solution and student plot. It will also contain confirmation that the plot was correct.</p><p>If the student plot does not matches the solution plot, the character HTML vector will contain both the solution and student plot. It will also contain a description of why the student plot is not correct, referencing the solution plot as needed.</p><p>An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be thrown if generateFeedback is called with only one or no input Plots.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div><!--
-##### SOURCE BEGIN #####
-%% Plot: Class Containing Data for a Plot
-%
-% Holds data needed for each plot in fields. 
-%
-% Has methods to check if a student's plot matches the solution, and to
-% give feedback for the student plot. 
-%
-%%% Fields
-% * title: The title used for the plot
-%
-% * xData: A cell array of vectors that represents all XData points plotted for this plot
-%
-% * yData: A cell array of vectors that represents all YData points plotted for this plot
-%
-% * zData: A cell array of vectors that represents all ZData points plotted for this plot
-%
-% * image: An image taken of the plot, as an MxNx3 uint8 array.
-%
-% * legend: A string array of all the names in the legend
-%
-% * colors: A string array that represents the color used for every line
-%
-%%% Methods
-%
-% * Plot
-%
-% * equals
-%
-% * generateFeedback
-%
-%%% Remarks
-%
-% The Plot class keeps all relevant data about a specific plot; note that 
-% a subplot is considered a single plot. Like the File class, the Plot 
-% class copies over any data necessary to recreate the plot entirely; as 
-% such, the plot can be deleted once a Plot object is created!
-%
-classdef Plot < handle
-    properties (Access = public)
-        title;
-        xData;
-        yData;
-        zData;
-        image;
-        legend;
-        colors;
-    end
-    methods
-        %% Constructor
-        %
-        % Creates an instance of the Plot class from a student's plot
-        % information.
-        %
-        % this = Plot(HANDLE) creates an instance of Plot from the given axes handle.
-        %
-        %%% Remarks
-        %
-        % This class takes in student plot information and compares it with
-        % the solution plot information to return feedback for each
-        % student.
-        %
-        % Note that xDdata, yData, and zData will all be cell arrays of the same size.
-        % If the plot had data in that dimension, that entry of the cell array will have a vector;
-        % otherwise, it will be empty.
-        %
-        %%% Exceptions
-        %
-        % An AUTOGRADER:PLOT:NOAXISDATA exception will be thrown if no input axis are
-        % provided
-        %
-        %%% Unit Tests
-        %
-        % Given valid axes handle
-        %   this = Plot(pHandle)
-        %
-        %   this.title -> 'My Plot'
-        %   this.xData -> XDATA (a cell array of vectors)
-        %   this.yData -> YDATA (a cell array of vectors)
-        %   this.zData -> ZDATA (a cell array of vectors)
-        %   this.image -> IMAGE (a uint8 array)
-        %   this.legend -> ["name1", "name2", ...]
-        %   this.colors -> ["color1", "color2", ...]
-        %
-        % Given invalid axes handle
-        %
-        % Constructor threw exception
-        % AUTOGRADER:PLOT:NOAXISDATA
-        %
-        function this = Plot(pHandle)
-            
-        end
-    end
-    methods (Access=public)
-        %% equals: Checks if the given plot is equal to this plot
-        %
-        % equals is used to check a student plot against the solution plot.
-        % 
-        % [OK, MSG] = equals(PLOT) takes in a valid PLOT class and evaluates the plot
-        % against the solution file and returns a boolean true/false stored in OK and a
-        % string stored in MSG if the two plots do not match. 
-        %
-        %%% Remarks
-        %
-        % This function will compare the two plots and return a boolean
-        % value.
-        %
-        % The message will be empty if the plots are equal.
-        %
-        %%% Exceptions
-        %
-        % An AUTOGRADER:PLOT:EQUALS:NOPLOT exception will be thrown if inputs
-        % are not of type Plot.
-        %
-        %%% Unit Tests
-        %
-        % Given that PLOT is a valid instance of Plot equal to this.
-        % Given that this is a valid instance of Plot.
-        %   [OK, MSG] = this.equals(PLOT)
-        %
-        %   OK -> true
-        %   MSG -> ''
-        %
-        % Given that PLOT is a valid instance of Plot not equal to this.
-        % Given that this is a valid instance of Plot.
-        %   [OK, MSG] = this.equals(PLOT)
-        %
-        %   OK -> false
-        %   MSG -> 'Reason for inconsistency between plots'
-        %
-        % Given that PLOT is not a valid instance of Plot.
-        % Given that this is a valid instance of Plot.
-        %   [OK, MSG] = equals(this, PLOT)
-        %
-        %   equals threw an exception
-        %   AUTOGRADER:PLOT:EQUALS:NOPLOT
-        %
-        function [areEqual, message] = equals(this, that)
-            
-        end
-        %% generateFeedback: Generates HTML feedback for the student and solution Plot.
-        %
-        % generateFeedback will return the feedback for the student's plot. 
-        %
-        % [HTML] = generateFeedback(PLOT) will return a character vector in HTML that contains the 
-        % markup for HTML. The contents of this vector will be the feedback associated with a student's
-        % plot.
-        %
-        %%% Remarks
-        %
-        % This function will output a character after calling the generateFeedback method with input as 
-        % the student plot submission and the solution plot.
-        %
-        %%% Exceptions
-        %
-        % An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be thrown if the student or 
-        % solution plots are missing from the generateFeedback method call. 
-        %
-        %%% Unit Tests
-        %
-        % When called, the generateFeedback method will check the student Plot against the solution Plot.
-        % If the student plot matches the solution plot, the character HTML vector will contain both the 
-        % solution and student plot. It will also contain confirmation that the plot was correct.
-        %
-        % If the student plot does not matches the solution plot, the character HTML vector will contain both the 
-        % solution and student plot. It will also contain a description of why the student plot is not correct,
-        % referencing the solution plot as needed.
-        %
-        % An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be thrown if generateFeedback is called
-        % with only one or no input Plots. 
-        %
-        function [html] = generateFeedback(this, that)
-
-        end
-    end
-end
-##### SOURCE END #####
---></body></html>
+AUTOGRADER:Plot:equals:noPlot
+</pre><h2 id="14">generateFeedback: Generates HTML feedback for the student and solution Plot.</h2><p>generateFeedback will return the feedback for the student's plot.</p><p>[HTML] = generateFeedback(PLOT) will return a character vector in HTML that contains the markup for HTML. The contents of this vector will be the feedback associated with a student's plot.</p><h2 id="15">Remarks</h2><p>This function will output a character after calling the generateFeedback method with input as the student plot submission and the solution plot.</p><h2 id="16">Exceptions</h2><p>An AUTOGRADER:PLOT:GENERATEFEEDBACK:MISSINGPLOT exception will be thrown if the student or solution plots are missing from the generateFeedback method call.</p><h2 id="17">Unit Tests</h2><p>When called, the generateFeedback method will check the student Plot against the solution Plot. If the student plot matches the solution plot, the character HTML vector will contain both the solution and student plot. It will also contain confirmation that the plot was correct.</p><p>If the student plot does not matches the solution plot, the character HTML vector will contain both the solution and student plot. It will also contain a description of why the student plot is not correct, referencing the solution plot as needed.</p><p>An AUTOGRADER:Plot:generateFeedback:noPlot exception will be thrown if generateFeedback is called with only one or no input Plots.</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div></div></body></html>

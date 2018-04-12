@@ -6,7 +6,21 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>autograder2Canvas: Generate Canvas files from autograder</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-22"><meta name="DC.source" content="autograder2canvas.m"><style type="text/css">
+      --><title>autograder2Canvas: Generate Canvas files from autograder</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
+      $(document).ready(function() {
+        // get name of class
+        // anywhere CLASS name is or METHOD name is, replace with code version
+        // class name will be in only h1
+        // methods will be underneath ul that says Methods as text (I know, hacky...)
+        var cName = $('h1').text();
+        cName = cName.split(':');
+        cName = cName[0];
+        var strNewString = $('body').html().replace(new RegExp('\\s+' + cName + '\\s+', "g"),'&nbsp;<code>Student</code>&nbsp;');
+        $('body').html(strNewString);
+
+        // for each occurrence of this in 
+      });
+    </script><meta name="DC.date" content="2018-04-12"><meta name="DC.source" content="autograder2canvas.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -39,7 +53,7 @@ ol li ul li { list-style:square; }
 .content { font-size:1.2em; line-height:140%; padding: 20px; }
 
 pre, code { font-size:12px; }
-tt { font-size: 1.2em; }
+code { font-size: 1.2em; before: " " }
 pre { margin:0px 0px 20px; }
 pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
 pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
@@ -66,7 +80,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>autograder2Canvas: Generate Canvas files from autograder</h1><!--introduction--><p>Create the gradebook csv file used by canvas to import grades.</p><p>autograder2Canvas(S, C, H) takes the graded Student Array in S and writes it to the CSV given by the path in C in the assignment name specified by H.</p><p>This function will take in a graded student array (S), the name of the gradebook from the canvas website (C), and the name of the homework that it is grading (H). H should be selected before the autograder runs and as such should always be valid.</p><p>This function will edit the gradebook such that it has the new scores from the student array.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>If autograder2canvas is given an ungraded student in an array, it will simply pass over the student and not put a grade in the gradebook.</p><h2 id="2">Exceptions</h2><p>AUTOGRADER:AUTOGRADER2CANVAS:MISSINGGRADEBOOK exception will be thrown if the function is run without a valid gradebook file name.</p><p>AUTOGRADER:AUTOGRADER2CANVAS:MISSINGSTUDENTS exception will be thrown if the function is run without a valid student array</p><p>AUTOGRADER:AUTOGRADER2CANVAS:INVALIDGRADEBOOK exception will be thrown if the function is run with an invalid gradebook file name.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">S = [<span class="keyword">...</span><span class="comment">]; % Assume valid graded Student Array</span>
+  </style></head><body><div class="container-fluid"><div class="content"><h1>autograder2Canvas: Generate Canvas files from autograder</h1><!--introduction--><p>Create the gradebook csv file used by canvas to import grades.</p><p>autograder2Canvas(S, C, H) takes the graded Student Array in S and writes it to the CSV given by the path in C in the assignment name specified by H.</p><p>This function will take in a graded student array (S), the name of the gradebook from the canvas website (C), and the name of the homework that it is grading (H). H should be selected before the autograder runs and as such should always be valid.</p><p>This function will edit the gradebook such that it has the new scores from the student array.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>If autograder2canvas is given an ungraded student in an array, it will simply pass over the student and not put a grade in the gradebook.</p><h2 id="2">Exceptions</h2><p>AUTOGRADER:AUTOGRADER2CANVAS:INVALIDSTUDENTS exception will be thrown if the function is run without a valid student array</p><p>AUTOGRADER:AUTOGRADER2CANVAS:INVALIDGRADEBOOK exception will be thrown if the function is run with an invalid gradebook file name.</p><p>AUTOGRADER:AUTOGRADER2CANVAS:INVALIDHOMEWORKNAME exception will be thrown if the function is run with a hw name that is not in the gradebook.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">S = [<span class="keyword">...</span><span class="comment">]; % Assume valid graded Student Array</span>
 G = <span class="string">'C:\Users\...\grades.csv'</span>; <span class="comment">% Valid grades.csv</span>
 H = <span class="string">'Homework 1'</span>;
 autograder2canvas(S, G, H);
@@ -86,72 +100,4 @@ G = <span class="string">''</span>; <span class="comment">% Invalid path</span>
 H = <span class="string">'Homework 1'</span>;
 autograder2canvas(S, G, H);
 </pre><pre class="language-matlab">Threw <span class="string">INVALIDGRADEBOOK</span> <span class="string">exception</span>
-</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div><!--
-##### SOURCE BEGIN #####
-%% autograder2Canvas: Generate Canvas files from autograder
-% 
-% Create the gradebook csv file used by canvas to import grades.
-%
-% autograder2Canvas(S, C, H) takes the graded Student Array in S and writes
-% it to the CSV given by the path in C in the assignment name specified by
-% H.
-%
-% This function will take in a graded student array (S), the name of the
-% gradebook from the canvas website (C), and the name of the homework that 
-% it is grading (H). H should be selected before the autograder runs and as
-% such should always be valid.
-%
-% This function will edit the gradebook such that it has the new scores
-% from the student array.
-%
-%%% Remarks
-%
-% If autograder2canvas is given an ungraded student in an array, it will
-% simply pass over the student and not put a grade in the gradebook.
-%
-%%% Exceptions
-%
-% AUTOGRADER:AUTOGRADER2CANVAS:MISSINGGRADEBOOK exception will be thrown if
-% the function is run without a valid gradebook file name.
-%
-% AUTOGRADER:AUTOGRADER2CANVAS:MISSINGSTUDENTS exception will be thrown if
-% the function is run without a valid student array
-% 
-% AUTOGRADER:AUTOGRADER2CANVAS:INVALIDGRADEBOOK exception will be thrown if
-% the function is run with an invalid gradebook file name.
-%
-%%% Unit Tests
-%
-%   S = [...]; % Assume valid graded Student Array
-%   G = 'C:\Users\...\grades.csv'; % Valid grades.csv
-%   H = 'Homework 1';
-%   autograder2canvas(S, G, H);
-%
-%   CSV found in path G is now correctly formatted for Canvas
-%
-%   S = [...]; % Assume valid graded Student Array
-%   G = 'C:\Users\...\grades.csv'; % Valid path, but invalid format!
-%   H = 'Homework 1';
-%   autograder2canvas(S, G, H);
-%
-%   Threw INVALIDGRADEBOOK exception
-%
-%   S = [...]; % Assume valid UNGRADED Student Array
-%   G = 'C:\Users\...\grades.csv'; % Valid grades.csv
-%   H = 'Homework 1';
-%   autograder2canvas(S, G, H);
-%
-%   No changes were made, since Student is not graded
-% 
-%   S = [...]; % Graded Student array
-%   G = ''; % Invalid path
-%   H = 'Homework 1';
-%   autograder2canvas(S, G, H);
-%
-%   Threw INVALIDGRADEBOOK exception
-%
-function autograder2canvas(students, gradebook, homework)
-
-end
-##### SOURCE END #####
---></body></html>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div></div></body></html>

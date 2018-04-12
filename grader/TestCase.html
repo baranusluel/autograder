@@ -6,7 +6,21 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>TestCase: A single test for a homework submission</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-22"><meta name="DC.source" content="TestCase.m"><style type="text/css">
+      --><title>TestCase: A single test for a homework submission</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
+      $(document).ready(function() {
+        // get name of class
+        // anywhere CLASS name is or METHOD name is, replace with code version
+        // class name will be in only h1
+        // methods will be underneath ul that says Methods as text (I know, hacky...)
+        var cName = $('h1').text();
+        cName = cName.split(':');
+        cName = cName[0];
+        var strNewString = $('body').html().replace(new RegExp('\\s+' + cName + '\\s+', "g"),'&nbsp;<code>Student</code>&nbsp;');
+        $('body').html(strNewString);
+
+        // for each occurrence of this in 
+      });
+    </script><meta name="DC.date" content="2018-04-12"><meta name="DC.source" content="TestCase.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -39,7 +53,7 @@ ol li ul li { list-style:square; }
 .content { font-size:1.2em; line-height:140%; padding: 20px; }
 
 pre, code { font-size:12px; }
-tt { font-size: 1.2em; }
+code { font-size: 1.2em; before: " " }
 pre { margin:0px 0px 20px; }
 pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
 pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
@@ -66,8 +80,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>TestCase: A single test for a homework submission</h1><!--introduction--><p>This class defines a complete test case for a specific problem</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Fields</a></li><li><a href="#2">Methods</a></li><li><a href="#3">Remarks</a></li><li><a href="#4">Constructor</a></li><li><a href="#5">Remarks</a></li><li><a href="#6">Exceptions</a></li><li><a href="#7">Unit Tests</a></li></ul></div><h2 id="1">Fields</h2><div><ul><li><tt>call</tt>: The complete function call (i.e., <tt>[out1, out2] = myFunction(in1, in2);</tt>)</li></ul></div><div><ul><li><tt>initializer</tt>: The complete function call for a function to be run immediately before testing the student's code</li></ul></div><div><ul><li><tt>points</tt>: The points possible for this specific test case</li></ul></div><div><ul><li><tt>path</tt>: The fully qualified path to the solution code directory</li></ul></div><div><ul><li><tt>supportingFiles</tt>: A string array of complete file paths that will need to be copied to the student's directory</li></ul></div><div><ul><li><tt>loadFiles</tt>: A string array of complete file paths of MAT files to load</li></ul></div><div><ul><li><tt>banned</tt>: A string array of names of banned functions for this problem</li></ul></div><div><ul><li><tt>outputs</tt>: A structure where the field name is the name of the output, and the field value is the value of the output</li></ul></div><div><ul><li><tt>files</tt>: A <tt>File</tt> array that represents all the files produced as outputs</li></ul></div><div><ul><li><tt>plots</tt>: A <tt>Plot</tt> array that represents the plots generated</li></ul></div><h2 id="2">Methods</h2><div><ul><li><tt>TestCase(struct info, string path)</tt></li></ul></div><h2 id="3">Remarks</h2><p>The <tt>TestCase</tt> class defines all the necessary settings and conditions to run a single test of a student's function. The <tt>TestCase</tt> class stores the instructions for running the test case, and includes the solution's outputs for comparison.</p><p>The input arguments referenced in <tt>call</tt> should either be defined in <tt>loadFiles</tt> (the MAT files to be loaded), or in the <tt>initializer</tt>:</p><p>The <tt>initializer</tt> is useful if a variable's value cannot be determined until right before the function call. If <tt>initializer</tt> has outputs that will be used as inputs when calling the student's function, the names of the outputs must match the expected input names in <tt>call</tt> exactly. Such inputs that are generated at runtime don't need to appear in the MAT files, and should be overwritten if they do exist.</p><p>For example, suppose you wanted to populate input <tt>fid</tt> with a file handle. In that case, your <tt>initializer</tt> would look like:</p><pre class="language-matlab">[fid] = fopen(<span class="string">'myInput.txt'</span>);
-</pre><p>Now suppose <tt>fid</tt> is now 3. This will pass in 3 as an input to the function.</p><p>The initializer function can also be used to load a MAT-file, from the <tt>supportingFiles</tt> that are copied into the student's directory. Again, the variable names inside the MAT-file should match the input names in <tt>call</tt>.</p><h2 id="4">Constructor</h2><p>The <tt>TestCase</tt> constructor creates a new <tt>TestCase</tt> from a structure representing parsed JSON.</p><p>T = TestCase(INFO, PATH) will create a new <tt>TestCase</tt> with all the fields filled with values from the solution. INFO should be a structure with the fields <tt>call</tt>, <tt>initializer</tt>, <tt>points</tt>, <tt>supportingFiles</tt>, <tt>banned</tt>. PATH is a fully qualified path to the student's directory.</p><h2 id="5">Remarks</h2><p>The format that the structure <tt>INFO</tt> should follow is shown by the JSON example below:</p><pre class="language-matlab">{
+  </style></head><body><div class="container-fluid"><div class="content"><h1>TestCase: A single test for a homework submission</h1><!--introduction--><p>This class defines a complete test case for a specific problem</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Fields</a></li><li><a href="#2">Methods</a></li><li><a href="#3">Remarks</a></li><li><a href="#4">Constructor</a></li><li><a href="#5">Remarks</a></li><li><a href="#6">Exceptions</a></li><li><a href="#7">Unit Tests</a></li></ul></div><h2 id="1">Fields</h2><div><ul><li><code>call</code>: The complete function call (i.e., <code>[out1, out2] = myFunction(in1, in2);</code>)</li></ul></div><div><ul><li><code>initializer</code>: The complete function call for a function to be run immediately before testing the student's code</li></ul></div><div><ul><li><code>points</code>: The points possible for this specific test case</li></ul></div><div><ul><li><code>path</code>: The fully qualified path to the solution code directory</li></ul></div><div><ul><li><code>supportingFiles</code>: A string array of complete file paths that will need to be copied to the student's directory</li></ul></div><div><ul><li><code>loadFiles</code>: A string array of complete file paths of MAT files to load</li></ul></div><div><ul><li><code>banned</code>: A string array of names of banned functions for this problem</li></ul></div><div><ul><li><code>outputs</code>: A structure where the field name is the name of the output, and the field value is the value of the output</li></ul></div><div><ul><li><code>files</code>: A <code>File</code> array that represents all the files produced as outputs</li></ul></div><div><ul><li><code>plots</code>: A <code>Plot</code> array that represents the plots generated</li></ul></div><h2 id="2">Methods</h2><div><ul><li><code>TestCase(struct info, string path)</code></li></ul></div><h2 id="3">Remarks</h2><p>The <code>TestCase</code> class defines all the necessary settings and conditions to run a single test of a student's function. The <code>TestCase</code> class stores the instructions for running the test case, and includes the solution's outputs for comparison.</p><p>The input arguments referenced in <code>call</code> should either be defined in <code>loadFiles</code> (the MAT files to be loaded), or in the <code>initializer</code>:</p><p>The <code>initializer</code> is useful if a variable's value cannot be determined until right before the function call. If <code>initializer</code> has outputs that will be used as inputs when calling the student's function, the names of the outputs must match the expected input names in <code>call</code> exactly. Such inputs that are generated at runtime don't need to appear in the MAT files, and should be overwritten if they do exist.</p><p>For example, suppose you wanted to populate input <code>fid</code> with a file handle. In that case, your <code>initializer</code> would look like:</p><pre class="language-matlab">[fid] = fopen(<span class="string">'myInput.txt'</span>);
+</pre><p>Now suppose <code>fid</code> is now 3. This will pass in 3 as an input to the function.</p><p>The initializer function can also be used to load a MAT-file, from the <code>supportingFiles</code> that are copied into the student's directory. Again, the variable names inside the MAT-file should match the input names in <code>call</code>.</p><h2 id="4">Constructor</h2><p>The <code>TestCase</code> constructor creates a new <code>TestCase</code> from a structure representing parsed JSON.</p><p>T = TestCase(INFO, PATH) will create a new <code>TestCase</code> with all the fields filled with values from the solution. INFO should be a structure with the fields <code>call</code>, <code>initializer</code>, <code>points</code>, <code>supportingFiles</code>, <code>banned</code>. PATH is a fully qualified path to the solution code directory.</p><h2 id="5">Remarks</h2><p>The format that the structure <code>INFO</code> should follow is shown by the JSON example below:</p><pre class="language-matlab">{
     <span class="string">"call"</span>: <span class="string">"[out1, out2] = myFun(in1, in2);"</span>,
     <span class="string">"initializer"</span>: <span class="string">""</span>,
     <span class="string">"points"</span>: 3,
@@ -83,7 +97,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
         <span class="string">"frewind"</span>
     ]
 }
-</pre><p>Note that white space does <i>not</i> matter in the input JSON.</p><p>The <tt>initializer</tt> is a special function call. <tt>initializer</tt> specifies a function that is designed to run <i>the moment before</i> the main test case is run. This is useful for defining an input that can't be known until runtime. For example, suppose you wanted an open file handle as an input. This could not be done at compile time, since many files may be open when the test case is run. There are some restrictions on <tt>initializer</tt>, however:</p><div><ul><li>It must be a <i>valid function call</i>. It cannot be just proper MATLAB code - only a single function call is allowed</li></ul></div><div><ul><li>It's outputs must be named <i>exactly the same</i> as any inputs to the function.</li></ul></div><div><ul><li>It can reference any valid function, but variable <i>inputs</i> to the <tt>initializer</tt> are not allowed.</li></ul></div><p>See above for an example of how to use the initializer. If the initializer is not found, or is left blank, then it is assumed that no initialization is required.</p><p>As for the variables in the MAT files, it's values <i>must</i> be literals. You cannot use arbitrary MATLAB code as the value. To execute arbitrary MATLAB code, see the remarks for the <tt>initializer</tt>.</p><p>The caller does <i>not</i> need to worry about "cleaning up" any open resources (such as files or figures). Since the autograder will already handle closing these resources, cleanup is the responsibility of <tt>TestCase</tt>, not the writer of the JSON.</p><p>Additionally, the name of the supporting function can be anything. But best practice is for it to be named something "guaranteed" to be unique; as such, suffixing the initializer function name with '__' is usually a good idea.</p><h2 id="6">Exceptions</h2><p>The constructor throws the <tt>AUTOGRADER:TESTCASE:CTOR:BADINFO</tt> if there are problems with the INFO structure. This exception should not be consumed, because this means the <tt>TestCase</tt> is incomplete. It also throws this error if <tt>call</tt> or <tt>initializer</tt> has a syntax error.</p><p>The constructor throws the <tt>AUTOGRADER:TESTCASE:CTOR:BADSOLUTION</tt> if the solution errors. This should never happen, as long as the solution files won't error for the given inputs. This error will also be thrown if the initializer errors when running the solution.</p><h2 id="7">Unit Tests</h2><p>Assume INFO struct that looks like the example given above.</p><pre class="language-matlab">J = <span class="string">'...'</span> <span class="comment">% Valid INFO;</span>
+</pre><p>Note that white space does <i>not</i> matter in the input JSON.</p><p>The <code>initializer</code> is a special function call. <code>initializer</code> specifies a function that is designed to run <i>the moment before</i> the main test case is run. This is useful for defining an input that can't be known until runtime. For example, suppose you wanted an open file handle as an input. This could not be done at compile time, since many files may be open when the test case is run. There are some restrictions on <code>initializer</code>, however:</p><div><ul><li>It must be a <i>valid function call</i>. It cannot be just proper MATLAB code - only a single function call is allowed</li></ul></div><div><ul><li>It's outputs must be named <i>exactly the same</i> as any inputs to the function.</li></ul></div><div><ul><li>It can reference any valid function, but variable <i>inputs</i> to the <code>initializer</code> are not allowed.</li></ul></div><p>See above for an example of how to use the initializer. If the initializer is not found, or is left blank, then it is assumed that no initialization is required.</p><p>As for the variables in the MAT files, it's values <i>must</i> be literals. You cannot use arbitrary MATLAB code as the value. To execute arbitrary MATLAB code, see the remarks for the <code>initializer</code>.</p><p>The caller does <i>not</i> need to worry about "cleaning up" any open resources (such as files or figures). Since the autograder will already handle closing these resources, cleanup is the responsibility of <code>TestCase</code>, not the writer of the JSON.</p><p>Additionally, the name of the supporting function can be anything. But best practice is for it to be named something "guaranteed" to be unique; as such, suffixing the initializer function name with '__' is usually a good idea.</p><h2 id="6">Exceptions</h2><p>The constructor throws the <code>AUTOGRADER:TESTCASE:CTOR:BADINFO</code> if there are problems with the INFO structure. This exception should not be consumed, because this means the <code>TestCase</code> is incomplete. It also throws this error if <code>call</code> or <code>initializer</code> has a syntax error.</p><p>The constructor throws the <code>AUTOGRADER:TESTCASE:CTOR:BADSOLUTION</code> if the solution errors. This should never happen, as long as the solution files won't error for the given inputs. This error will also be thrown if the initializer errors when running the solution.</p><h2 id="7">Unit Tests</h2><p>Assume INFO struct that looks like the example given above.</p><pre class="language-matlab">J = <span class="string">'...'</span> <span class="comment">% Valid INFO;</span>
 P = <span class="string">'...'</span> <span class="comment">% Valid path;</span>
 T = TestCase(J, P);
 </pre><pre class="language-matlab">T <span class="string">isa</span> <span class="string">|TestCase|</span>
@@ -94,9 +108,9 @@ T.supportingFiles -&gt; [<span class="string">"myFile.txt"</span>, <span class="
 T.loadFiles -&gt; [<span class="string">"myTestCases.mat"</span>];
 T.banned -&gt; [<span class="string">"fopen"</span>, <span class="string">"fclose"</span>, <span class="string">"fseek"</span>, <span class="string">"frewind"</span>];
 T.path -&gt; <span class="string">'...'</span> <span class="comment">% Valid path</span>
-</pre><p>Note that the following would be filled <i>after</i> running the solution. This is still done in the constructor. For this example, assume the function created one image file and one text file. For the purposes of documenting <tt>TestCase</tt>, we will not explore the contents of those files - that will be covered in <tt>File</tt>.</p><pre class="language-matlab">T.outputs -&gt; struct(<span class="string">'out1'</span>, 2, <span class="string">'out2'</span>, <span class="string">'Hello, World!'</span>);
+</pre><p>Note that the following would be filled <i>after</i> running the solution. This is still done in the constructor. For this example, assume the function created one image file and one text file. For the purposes of documenting <code>TestCase</code>, we will not explore the contents of those files - that will be covered in <code>File</code>.</p><pre class="language-matlab">T.outputs -&gt; struct(<span class="string">'out1'</span>, 2, <span class="string">'out2'</span>, <span class="string">'Hello, World!'</span>);
 T.files -&gt; File[2]
-</pre><p>Now suppose the structure in <tt>J</tt> is similiar to the following JSON:</p><pre class="language-matlab">{
+</pre><p>Now suppose the structure in <code>J</code> is similiar to the following JSON:</p><pre class="language-matlab">{
     <span class="string">"call"</span>: <span class="string">"[out1, out2] = myFun(in1, in2);"</span>,
     <span class="string">"initializer"</span>: <span class="string">"in2 = supportFunction__"</span>,
     <span class="string">"points"</span>: 3,
@@ -113,7 +127,7 @@ T.files -&gt; File[2]
         <span class="string">"frewind"</span>
     ]
 }
-</pre><p>Note the <tt>initializer</tt> is set. Suppose the following is found in "supportFunction__.m":</p><pre class="language-matlab"><span class="keyword">function</span> out = supportFunction__()
+</pre><p>Note the <code>initializer</code> is set. Suppose the following is found in "supportFunction__.m":</p><pre class="language-matlab"><span class="keyword">function</span> out = supportFunction__()
     out = fopen(<span class="string">'myFile.txt'</span>, <span class="string">'r'</span>);
 <span class="keyword">end</span>
 </pre><p>Now we call the function:</p><pre class="language-matlab">T = TestCase(J, P);
@@ -132,284 +146,4 @@ T.plots -&gt; Plot[1];
 AUTOGRADER:TESTCASE:CTOR:BADINFO
 </pre><p>Assume J is valid structure, but the solution code errors.</p><p>Running the constructor:   T = TestCase(J, P);</p><pre class="language-matlab">The <span class="string">constructor</span> <span class="string">threw</span> <span class="string">exception</span>
 AUTOGRADER:TESTCASE:CTOR:BADSOLUTION
-</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div><!--
-##### SOURCE BEGIN #####
-%% TestCase: A single test for a homework submission
-%
-% This class defines a complete test case for a specific problem
-%
-%%% Fields
-%
-% * |call|: The complete function call 
-% (i.e., |[out1, out2] = myFunction(in1, in2);|)
-%
-% * |initializer|: The complete function call for a function to be run 
-% immediately before testing the student's code
-%
-% * |points|: The points possible for this specific test case
-%
-% * |path|: The fully qualified path to the solution code directory
-%
-% * |supportingFiles|: A string array of complete file paths that will need 
-% to be copied to the student's directory
-%
-% * |loadFiles|: A string array of complete file paths of MAT files to load
-%
-% * |banned|: A string array of names of banned functions for this problem
-%
-% * |outputs|: A structure where the field name is the name of the output, 
-% and the field value is the value of the output
-%
-% * |files|: A |File| array that represents all the files produced as outputs
-%
-% * |plots|: A |Plot| array that represents the plots generated
-%
-%%% Methods
-%
-% * |TestCase(struct info, string path)|
-%
-%%% Remarks
-%
-% The |TestCase| class defines all the necessary settings and conditions to
-% run a single test of a student's function. The |TestCase| class stores
-% the instructions for running the test case, and includes the solution's
-% outputs for comparison.
-%
-% The input arguments referenced in |call| should either be defined in
-% |loadFiles| (the MAT files to be loaded), or in the |initializer|:
-%
-% The |initializer| is useful if a variable's value cannot be determined 
-% until right before the function call. If |initializer| has outputs that will
-% be used as inputs when calling the student's function, the names of the
-% outputs must match the expected input names in |call| exactly. Such inputs
-% that are generated at runtime don't need to appear in the MAT files, and
-% should be overwritten if they do exist.
-% 
-% For example, suppose you wanted to populate input |fid| with a file handle.
-% In that case, your |initializer| would look like:
-%
-%   [fid] = fopen('myInput.txt');
-%
-% Now suppose |fid| is now 3. This will pass in 3 as an input to the function.
-%
-% The initializer function can also be used to load a MAT-file, from the
-% |supportingFiles| that are copied into the student's directory. Again, the
-% variable names inside the MAT-file should match the input names in |call|.
-%
-classdef TestCase < handle
-    properties (Access = public)
-        call;
-        initializer;
-        points;
-        supportingFiles;
-        loadFiles;
-        banned;
-        path;
-        outputs;
-        files;
-        plots;
-    end
-    methods
-        %% Constructor
-        %
-        % The |TestCase| constructor creates a new |TestCase| from a
-        % structure representing parsed JSON.
-        %
-        % T = TestCase(INFO, PATH) will create a new |TestCase| with all the fields 
-        % filled with values from the solution. INFO should be a structure with
-        % the fields |call|, |initializer|, |points|, |supportingFiles|,
-        % |banned|. PATH is a fully qualified path to the
-        % student's directory.
-        %
-        %%% Remarks
-        %
-        % The format that the structure |INFO| should follow
-        % is shown by the JSON example below:
-        %
-        %   {
-        %       "call": "[out1, out2] = myFun(in1, in2);",
-        %       "initializer": "",
-        %       "points": 3,
-        %       "supportingFiles": [
-        %           "myFile.txt",
-        %           "myInputImage.png",
-        %           "myTestCases.mat"
-        %       ],
-        %       "banned": [
-        %           "fopen",
-        %           "fclose",
-        %           "fseek",
-        %           "frewind"
-        %       ]
-        %   }
-        %
-        % Note that white space does _not_ matter in the input JSON.
-        %
-        % The |initializer| is a special function call. |initializer| specifies
-        % a function that is designed to run _the moment before_ the main test 
-        % case is run. This is useful for defining an input that can't be 
-        % known until runtime. For example, suppose you wanted an open 
-        % file handle as an input. This could not be done at compile time, 
-        % since many files may be open when the test case is run. There are 
-        % some restrictions on |initializer|, however:
-        %
-        % * It must be a _valid function call_. It cannot be just proper 
-        % MATLAB code - only a single function call is allowed
-        %
-        % * It's outputs must be named _exactly the same_ as any inputs to 
-        % the function.
-        %
-        % * It can reference any valid function, but variable _inputs_ 
-        % to the |initializer| are not allowed.
-        %
-        % See above for an example of how to use the initializer. 
-        % If the initializer is not found, or is left blank, then it is assumed
-        % that no initialization is required.
-        %
-        % As for the variables in the MAT files, it's values _must_ be
-        % literals. You cannot use arbitrary MATLAB code as the value. To
-        % execute arbitrary MATLAB code, see the remarks for the |initializer|.
-        %
-        % The caller does _not_ need to worry about "cleaning up" any open 
-        % resources (such as files or figures). Since the autograder will 
-        % already handle closing these resources, cleanup is the responsibility
-        % of |TestCase|, not the writer of the JSON.
-        %
-        % Additionally, the name of the supporting function can be anything. 
-        % But best practice is for it to be named something "guaranteed" to be
-        % unique; as such, suffixing the initializer function name with '__'
-        % is usually a good idea.
-        %
-        %%% Exceptions
-        %
-        % The constructor throws the |AUTOGRADER:TESTCASE:CTOR:BADINFO| if
-        % there are problems with the INFO structure. This exception should not
-        % be consumed, because this means the |TestCase| is incomplete. It also
-        % throws this error if |call| or |initializer| has a syntax error.
-        %
-        % The constructor throws the |AUTOGRADER:TESTCASE:CTOR:BADSOLUTION| if
-        % the solution errors. This should never happen, as long as the 
-        % solution files won't error for the given inputs. This error will also 
-        % be thrown if the initializer errors when running the solution.
-        %
-        %%% Unit Tests
-        %
-        % Assume INFO struct that looks like the example given above.
-        % 
-        %   J = '...' % Valid INFO;
-        %   P = '...' % Valid path;
-        %   T = TestCase(J, P);
-        %
-        %   T isa |TestCase|
-        %   T.call -> "[out1, out2] = myFun(in1, in2);"
-        %   T.initializer -> [];
-        %   T.points -> 3;
-        %   T.supportingFiles -> ["myFile.txt", "myInputImage.png"];
-        %   T.loadFiles -> ["myTestCases.mat"];
-        %   T.banned -> ["fopen", "fclose", "fseek", "frewind"];
-        %   T.path -> '...' % Valid path
-        % 
-        % Note that the following would be filled _after_ running the solution. 
-        % This is still done in the constructor. For this example, assume the 
-        % function created one image file and one text file. For the purposes 
-        % of documenting |TestCase|, we will not explore the contents of 
-        % those files - that will be covered in |File|.
-        %
-        %   T.outputs -> struct('out1', 2, 'out2', 'Hello, World!');
-        %   T.files -> File[2]
-        %
-        % Now suppose the structure in |J| is similiar to the following JSON:
-        %
-        %   {
-        %       "call": "[out1, out2] = myFun(in1, in2);",
-        %       "initializer": "in2 = supportFunction__",
-        %       "points": 3,
-        %       "supportingFiles": [
-        %           "myFile.txt",
-        %           "myInputImage.png",
-        %           "supportFunction__.m"
-        %           "myTestCases.mat"
-        %       ],
-        %       "banned": [
-        %           "fopen",
-        %           "fclose",
-        %           "fseek",
-        %           "frewind"
-        %       ]
-        %   }
-        %
-        % Note the |initializer| is set. Suppose the following is 
-        % found in "supportFunction__.m":
-        %
-        %   function out = supportFunction__()
-        %       out = fopen('myFile.txt', 'r');
-        %   end
-        %
-        % Now we call the function:
-        %
-        %   T = TestCase(J, P);
-        %
-        %   T isa |TestCase|
-        %   T.call -> "[out1, out2] = myFun(in1, in2);"
-        %   T.initializer -> "[in1] = supportFunction__();";
-        %   T.points -> 3;
-        %   T.supportingFiles -> ["myFile.txt", "myInputImage.png", "supportFunction__.m"];
-        %   T.loadFiles -> ["myTestCases.mat"];
-        %   T.banned -> ["fopen", "fclose", "fseek", "frewind"];
-        %   T.path -> '...' % Valid path
-        %
-        % The following are filled in after everything is run. 
-        % Note that for this case, the in2 is calculated _immediately_
-        % before the function is run.
-        %
-        %   T.outputs -> struct('out1', 1, 'out2', false);
-        %   T.files -> File[2];
-        %   T.plots -> Plot[1];
-        %
-        % Assume J structure is empty or has missing fields:
-        %   T = TestCase(J, P);
-        %
-        %   The constructor threw exception 
-        %   AUTOGRADER:TESTCASE:CTOR:BADINFO
-        %
-        % Assume J is valid structure, but the solution code errors.
-        %
-        % Running the constructor:
-        %   T = TestCase(J, P);
-        % 
-        %   The constructor threw exception
-        %   AUTOGRADER:TESTCASE:CTOR:BADSOLUTION
-        function this = TestCase(info, path)
-            try
-                this.path = path;
-                
-                % Copy values from struct to TestCase. Do one-by-one
-                % instead of iterating in case fields are wrong/missing.
-                % If a field is missing, exception is caught and
-                % re-thrown as a parse error.
-                this.call = info.call;
-                this.initializer = info.initializer;
-                this.points = info.points;
-                this.banned = info.banned;
-                
-                % contains() errors if supportingFiles is empty
-                if ~isempty(info.supportingFiles)
-                    toLoad = contains(info.supportingFiles, '.mat');
-                    this.loadFiles = info.supportingFiles(toLoad);
-                    this.supportingFiles = info.supportingFiles(~toLoad);
-                end
-            catch
-                throw(MException('AUTOGRADER:TESTCASE:CTOR:BADINFO', ...
-                    'Problem with INFO struct fields'));
-            end
-            
-            % Engine can throw parse exceptions for bad |call| or
-            % |initializer|, and bad solution exception. Don't catch,
-            % let it propagate instead
-            engine(this);
-        end
-    end
-end
-
-##### SOURCE END #####
---></body></html>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div></div></body></html>

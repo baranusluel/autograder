@@ -6,7 +6,21 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>processStuentSubmission: Processes a student's sumissions</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-22"><meta name="DC.source" content="processStudentSubmission.m"><style type="text/css">
+      --><title>processStuentSubmission: Processes a student's sumissions</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
+      $(document).ready(function() {
+        // get name of class
+        // anywhere CLASS name is or METHOD name is, replace with code version
+        // class name will be in only h1
+        // methods will be underneath ul that says Methods as text (I know, hacky...)
+        var cName = $('h1').text();
+        cName = cName.split(':');
+        cName = cName[0];
+        var strNewString = $('body').html().replace(new RegExp('\\s+' + cName + '\\s+', "g"),'&nbsp;<code>Student</code>&nbsp;');
+        $('body').html(strNewString);
+
+        // for each occurrence of this in 
+      });
+    </script><meta name="DC.date" content="2018-04-12"><meta name="DC.source" content="processStudentSubmission.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -39,7 +53,7 @@ ol li ul li { list-style:square; }
 .content { font-size:1.2em; line-height:140%; padding: 20px; }
 
 pre, code { font-size:12px; }
-tt { font-size: 1.2em; }
+code { font-size: 1.2em; before: " " }
 pre { margin:0px 0px 20px; }
 pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
 pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
@@ -66,7 +80,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>processStuentSubmission: Processes a student's sumissions</h1><!--introduction--><p>processStudentSubmission will unpack a student's submissions into their same folder.</p><p>processStudentSubmission(P) will unpack any ZIP files, and generally prepare the student folder for the autograder.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>If the student submitted each file separately, this function will not change the folder at all.</p><p>processStudentSubmission won't recursively unzip archives. In other words, suppose the student submits a ZIP archive that has, inside of it, another ZIP archive. That second archive will not be unzipped!</p><p>Additionally, folder structure within the ZIP archive will remain intact, with the exception of the case where inside the ZIP archive is a single folder. In that case, the contents of that single folder will be considered to be the contents of the ZIP archive.</p><p>In the event of a name collision (i.e., suppose the ZIP archive has a file with the same name as an existing file), the existing file will always win. Note that in the case of having multiple archives present, there is no guarantee as to which file will survive if both archives have the same file.</p><h2 id="2">Exceptions</h2><p>An AUTOGRADER:PROCESSSTUDENTSUBMISSION:INVALIDPATH exception will be thrown if the given path is not a valid folder.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab"><span class="comment">% Assume P points to a student folder, and the student folder</span>
+  </style></head><body><div class="container-fluid"><div class="content"><h1>processStuentSubmission: Processes a student's sumissions</h1><!--introduction--><p>processStudentSubmission will unpack a student's submissions into their same folder.</p><p>processStudentSubmission(P) will unpack any ZIP files, and generally prepare the student folder for the autograder.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>If the student submitted each file separately, this function will not change the folder at all.</p><p>processStudentSubmission won't recursively unzip archives. In other words, suppose the student submits a ZIP archive that has, inside of it, another ZIP archive. That second archive will not be unzipped!</p><p>Additionally, folder structure within the ZIP archive will remain intact, with the exception of the case where inside the ZIP archive is a single folder. In that case, the contents of that single folder will be considered to be the contents of the ZIP archive.</p><p>In the event of a name collision (i.e., suppose the ZIP archive has a file with the same name as an existing file), the existing file will always win. Note that in the case of having multiple archives present, there is no guarantee as to which file will survive if both archives have the same file.</p><h2 id="2">Exceptions</h2><p>An AUTOGRADER:processStudentSubmission:invalidPath exception will be thrown if the given path is not a valid folder.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab"><span class="comment">% Assume P points to a student folder, and the student folder</span>
 <span class="comment">% contains several files.</span>
 P = <span class="string">'C:\Users\...\'</span>;
 processStudentSubmission(P);
@@ -115,107 +129,5 @@ processStudentSubmission(P);
 <span class="comment">% archive. It does NOT recursively unzip!</span>
 </pre><pre class="language-matlab">P = <span class="string">''</span>; <span class="comment">% Invalid Path</span>
 processStudentSubmission(P);
-</pre><pre class="language-matlab">Threw <span class="string">INVALIDPATH</span> <span class="string">exception</span>
-</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div><!--
-##### SOURCE BEGIN #####
-%% processStuentSubmission: Processes a student's sumissions
-%   
-% processStudentSubmission will unpack a student's submissions into their same 
-% folder.
-%
-% processStudentSubmission(P) will unpack any ZIP files, and generally prepare
-% the student folder for the autograder.
-%
-%%% Remarks
-%
-% If the student submitted each file separately, this function will not
-% change the folder at all.
-%
-% processStudentSubmission won't recursively unzip archives. In other words,
-% suppose the student submits a ZIP archive that has, inside of it, another 
-% ZIP archive. That second archive will not be unzipped!
-%
-% Additionally, folder structure within the ZIP archive will remain intact, 
-% with the exception of the case where inside the ZIP archive is a single folder. 
-% In that case, the contents of that single folder will be considered to be the 
-% contents of the ZIP archive.
-%
-% In the event of a name collision (i.e., suppose the ZIP archive has a file
-% with the same name as an existing file), the existing file will always win.
-% Note that in the case of having multiple archives present, there is no 
-% guarantee as to which file will survive if both archives have the same file.
-%
-%%% Exceptions
-%
-% An AUTOGRADER:PROCESSSTUDENTSUBMISSION:INVALIDPATH exception will be 
-% thrown if the given path is not a valid folder.
-%
-%%% Unit Tests
-%
-%   % Assume P points to a student folder, and the student folder 
-%   % contains several files.
-%   P = 'C:\Users\...\';
-%   processStudentSubmission(P);
-%
-%   The folder referenced in P is unchanged
-%
-%   % Assume P points to student folder, and the student folder
-%   % contains only a ZIP archive. This ZIP archive contains only 
-%   % files
-%   P = 'C:\Users\...\';
-%   processStudentSubmission(P);
-%
-%   % Whereas before, the student folder only had a ZIP archive, it now 
-%   % only has the files contained within that ZIP archive.
-%
-%   % Assume P points to a student folder, and the student folder
-%   % contains a single ZIP archive. However, this ZIP archive itself 
-%   % contains a single folder, which then just has files.
-%   P = 'C:\Users\...\';
-%   processStudentSubmission(P);
-%
-%   % The student folder now has all the files contained within the single
-%   % folder of the ZIP archive.
-%
-%   % Assume P points to a student folder, and the student folder
-%   % contains multiple files, including a ZIP archive.
-%   P = 'C:\Users\...\';
-%   processStudentSubmission(P);
-%
-%   % Now the student's folder only contains files; the ZIP archive has been 
-%   % removed. Furthermore, the structure within the ZIP archive has been 
-%   % preserved.
-%
-%   % Assume P points to a student folder, and the student folder
-%   % contains multiple files, including a ZIP archive. Furthermore,
-%   % assume a single file in the submission is called 'myFun.m', 
-%   % and that a file named 'myFun.m' exists in the ZIP archive.
-%   P = 'C:\Users\...\';
-%   processStudentSubmission(P);
-%
-%   % Now the folder contains only files. Note that 'myFun.m' is 
-%   % the one from the original submission; NOT the one inside the 
-%   % ZIP archive!
-%
-%   % Assume P points to a student folder, which contains multiple ZIPs.
-%   P = 'C:\Users\...\';
-%   processStudentSubmission(P);
-%
-%   % Now there are only the files and folders that were inside the ZIP archive(s).
-%   % Note that, if two of them had a file or folder with the same name, then 
-%   % which one "survives" is indeterminant.
-%
-%   % Assume P points to a student folder, which contains one ZIP archive. This 
-%   % ZIP archive contains another ZIP archive!
-%   P = 'C:\Users\...\';
-%   processStudentSubmission(P);
-%
-%   % The folder now contains the archive that was inside the original submssion's 
-%   % archive. It does NOT recursively unzip!
-%
-%   P = ''; % Invalid Path
-%   processStudentSubmission(P);
-%
-%   Threw INVALIDPATH exception
-##### SOURCE END #####
---></body></html>
+</pre><pre class="language-matlab">Threw <span class="string">invalidPath</span> <span class="string">exception</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div></div></body></html>

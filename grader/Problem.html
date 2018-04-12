@@ -6,7 +6,21 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Problem: Class representing a Problem</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-22"><meta name="DC.source" content="Problem.m"><style type="text/css">
+      --><title>Problem: Class representing a Problem</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
+      $(document).ready(function() {
+        // get name of class
+        // anywhere CLASS name is or METHOD name is, replace with code version
+        // class name will be in only h1
+        // methods will be underneath ul that says Methods as text (I know, hacky...)
+        var cName = $('h1').text();
+        cName = cName.split(':');
+        cName = cName[0];
+        var strNewString = $('body').html().replace(new RegExp('\\s+' + cName + '\\s+', "g"),'&nbsp;<code>Student</code>&nbsp;');
+        $('body').html(strNewString);
+
+        // for each occurrence of this in 
+      });
+    </script><meta name="DC.date" content="2018-04-12"><meta name="DC.source" content="Problem.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -39,7 +53,7 @@ ol li ul li { list-style:square; }
 .content { font-size:1.2em; line-height:140%; padding: 20px; }
 
 pre, code { font-size:12px; }
-tt { font-size: 1.2em; }
+code { font-size: 1.2em; before: " " }
 pre { margin:0px 0px 20px; }
 pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
 pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
@@ -66,87 +80,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Problem: Class representing a Problem</h1><!--introduction--><p>This represents a single problem set</p><p>Includes the name of the file, the test cases, and any banned functions as fields</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Fields</a></li><li><a href="#2">Methods</a></li><li><a href="#3">Constructor:</a></li><li><a href="#4">Remarks</a></li><li><a href="#5">Exceptions</a></li><li><a href="#6">Unit Tests</a></li></ul></div><h2 id="1">Fields</h2><div><ul><li>name: the name of the problem (function name without a .m).</li></ul></div><div><ul><li>testCases: TestCase[] representing each test case for the problem.</li></ul></div><div><ul><li>banned: a cell array of names of banned functions for this problem.</li></ul></div><h2 id="2">Methods</h2><div><ul><li>Problem</li></ul></div><h2 id="3">Constructor:</h2><p>The constructor creates a new Problem from a JSON.</p><p>P = Problem(J) will return a Problem with all the fields containing the appropriate information for the Problem</p><h2 id="4">Remarks</h2><p>The Problem constructor will <i>not</i> catch any errors thrown by TestCase; these are fatal errors that generally mean something serious is wrong with the solution JSON file.</p><h2 id="5">Exceptions</h2><p>an AUTOGRADER:PROBLEM:INVALIDJSON exception will be thrown if the JSON file is incorrectly formatted or missing information</p><p>Does not catch exceptions thrown by testCase</p><h2 id="6">Unit Tests</h2><p>Given that the input is a complete and valid JSON:    J = '...' % Valid JSON    P = Problem(J)</p><pre>  P -&gt; complete Problem with a defined name and a cell
-  array of the names of banned functions</pre><p>Given that the input is an invalid JSON:    J = '...' % Invalid JSON    P = Problem(J)</p><pre>  Constructor threw exception
-  AUTOGRADER:PROBLEM:INVALIDJSON</pre><p>Given that the input is a valid JSON that is missing information:    J = '...' % Valid JSON with missing information    P = Problem(J)</p><pre>  Constructor threw exception
-  AUTOGRADER:PROBLEM:INVALIDJSON</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div><!--
-##### SOURCE BEGIN #####
-%% Problem: Class representing a Problem
-% 
-% This represents a single problem set 
-% 
-% Includes the name of the file, the test cases, and any banned functions
-% as fields
-%
-%%% Fields
-%
-% * name: the name of the problem (function name without a .m).
-% 
-% * testCases: TestCase[] representing each test case for the problem.
-%
-% * banned: a cell array of names of banned functions for this problem.
-%
-%%% Methods
-% 
-% * Problem
-% 
-classdef Problem < handle
-    properties (Access = public)
-        name;
-        testCases;
-        banned;
-    end
-    methods
-        %% Constructor: 
-        %
-        % The constructor creates a new Problem from a JSON.
-        %
-        % P = Problem(J) will return a Problem with all the fields
-        % containing the appropriate information for the Problem
-        %
-        %%% Remarks
-        %
-        % The Problem constructor will _not_ catch any errors thrown by
-        % TestCase; these are fatal errors that generally mean something 
-        % serious is wrong with the solution JSON file.
-        %
-        %%% Exceptions
-        %
-        % an AUTOGRADER:PROBLEM:INVALIDJSON exception will be thrown if
-        % the JSON file is incorrectly formatted or missing information
-        %
-        % Does not catch exceptions thrown by testCase
-        %
-        %%% Unit Tests
-        %
-        % Given that the input is a complete and valid JSON:
-        %    J = '...' % Valid JSON
-        %    P = Problem(J)
-        %
-        %    P -> complete Problem with a defined name and a cell
-        %    array of the names of banned functions
-        %
-        % Given that the input is an invalid JSON:
-        %    J = '...' % Invalid JSON
-        %    P = Problem(J)
-        %
-        %    Constructor threw exception
-        %    AUTOGRADER:PROBLEM:INVALIDJSON
-        % 
-        % Given that the input is a valid JSON that is missing
-        % information:
-        %    J = '...' % Valid JSON with missing information
-        %    P = Problem(J)
-        % 
-        %    Constructor threw exception
-        %    AUTOGRADER:PROBLEM:INVALIDJSON
-        % 
-        function this = Problem(JSON)
-            
-        end
-    end
-end
-
-
-##### SOURCE END #####
---></body></html>
+  </style></head><body><div class="container-fluid"><div class="content"><h1>Problem: Class representing a Problem</h1><!--introduction--><p>This represents a single problem set</p><p>Includes the name of the file, the test cases, and any banned functions as fields</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Fields</a></li><li><a href="#2">Methods</a></li><li><a href="#3">Constructor:</a></li><li><a href="#4">Remarks</a></li><li><a href="#5">Exceptions</a></li><li><a href="#6">Unit Tests</a></li></ul></div><h2 id="1">Fields</h2><div><ul><li>name: the name of the problem (function name without a .m).</li></ul></div><div><ul><li>testCases: TestCase[] representing each test case for the problem.</li></ul></div><div><ul><li>banned: a cell array of names of banned functions for this problem.</li></ul></div><h2 id="2">Methods</h2><div><ul><li>Problem</li></ul></div><h2 id="3">Constructor:</h2><p>The constructor creates a new Problem from a structure representing</p><h2 id="4">Remarks</h2><p>The Problem constructor will <i>not</i> catch any errors thrown by TestCase; these are fatal errors that generally mean something serious is wrong with the solution structure.</p><h2 id="5">Exceptions</h2><p>an AUTOGRADER:PROBLEM:INVALIDINFO exception will be thrown if the structure is incorrectly formatted or missing information</p><p>Does not catch exceptions thrown by testCase</p><h2 id="6">Unit Tests</h2><p>Given that the input is a complete and valid parsed JSON:    J = '...' % Valid parsed JSON    P = Problem(J)</p><code>  P -&gt; complete Problem with a defined name and a cell
+  array of the names of banned functions</code><p>Given that the input is an invalid parsed JSON:    J = '...' % Invalid parsed JSON    P = Problem(J)</p><code>  Constructor threw exception
+  AUTOGRADER:PROBLEM:INVALIDINFO</code><p>Given that the input is a valid parsed JSON that is missing information:    J = '...' % Valid parsed JSON with missing information    P = Problem(J)</p><code>  Constructor threw exception
+  AUTOGRADER:PROBLEM:INVALIDINFO</code><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div></div></body></html>

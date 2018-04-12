@@ -1,56 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>User Interface</title>
-<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400&amp;subset=latin-ext" rel="stylesheet">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>User Interface</title>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400&amp;subset=latin-ext" rel="stylesheet">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="../resources/css/module.css" />
+        <link rel='shortcut icon' type='image/x-icon' href='../resources/favicon.ico' />
+        <script src="../resources/js/module.js"></script>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+            <a class="navbar-brand" href="../index.html">
+                <img src="../resources/brand.jpg" class="rounded navbar-logo">
+                Autograder Docs
+            </a>
+    
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+    
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                </ul>
+            </div>
+        </nav>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-4">
+                    <h1 class="display-4 text-left">
+                        User Interface
+                    </h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2 text-center">
+                    <ul class="nav flex-column">
+                        <div id="modFunctions">
 
-<link rel="stylesheet" href="../resources/css/module.css" />
-<link rel='shortcut icon' type='image/x-icon' href='../resources/favicon.ico' />
-<script src="../resources/js/module.js"></script>
-</head>
-<body>
-<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-<a class="navbar-brand" href="../index.html">
-<img src="../resources/brand.jpg" class="rounded navbar-logo">
-Autograder Docs
-</a>
-
-<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar">
-<span class="navbar-toggler-icon"></span>
-</button>
-
-<div class="collapse navbar-collapse" id="mainNavbar">
-<ul class="navbar-nav">
-<li class="nav-item">
-</ul>
-</div>
-</nav>
-
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-4">
-<h1 class="display-4 text-left">
-User Interface
-</h1>
-</div>
-</div>
-<div class="row">
-<div class="col-md-2 text-center">
-<ul class="nav flex-column">
-<div id="modFunctions">
-
-</div>
-</ul>
-</div>
-<div class="col-md-10 text-left">
-<p class="module-description">
-<div>
+                        </div>
+                    </ul>
+                </div>
+                <div class="col-md-10 text-left">
+                    <p class="module-description">
+                        <div>
 <h1>
 User Interface
 </h1>
@@ -114,10 +112,11 @@ Functions
  Get the paths for the student submissions and the solutions. If <code class="bg-light">failed</code> is given and true, <code class="bg-light">getInputs</code> will notify the user that it did receive inputs, <em>but</em>, those inputs were invalid.
 </p>
 </div>
-</p>
-</div>
-</div>
-</div>
-</body>
-
+                    </p>
+                </div>
+            </div>
+        </div>
+    </body>
+    
 </html>
+

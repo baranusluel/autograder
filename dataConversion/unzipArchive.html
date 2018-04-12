@@ -6,7 +6,21 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>unzipArchive: Unzips an archive into a specified directory</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-03-22"><meta name="DC.source" content="unzipArchive.m"><style type="text/css">
+      --><title>unzipArchive: Unzips an archive into a specified directory</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
+      $(document).ready(function() {
+        // get name of class
+        // anywhere CLASS name is or METHOD name is, replace with code version
+        // class name will be in only h1
+        // methods will be underneath ul that says Methods as text (I know, hacky...)
+        var cName = $('h1').text();
+        cName = cName.split(':');
+        cName = cName[0];
+        var strNewString = $('body').html().replace(new RegExp('\\s+' + cName + '\\s+', "g"),'&nbsp;<code>Student</code>&nbsp;');
+        $('body').html(strNewString);
+
+        // for each occurrence of this in 
+      });
+    </script><meta name="DC.date" content="2018-04-12"><meta name="DC.source" content="unzipArchive.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -39,7 +53,7 @@ ol li ul li { list-style:square; }
 .content { font-size:1.2em; line-height:140%; padding: 20px; }
 
 pre, code { font-size:12px; }
-tt { font-size: 1.2em; }
+code { font-size: 1.2em; before: " " }
 pre { margin:0px 0px 20px; }
 pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
 pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
@@ -66,7 +80,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>unzipArchive: Unzips an archive into a specified directory</h1><!--introduction--><p>unzipArchive unzips an archive into a folder, either creating a temporary folder or unzipping into the current folder. Returns the path of the unzipped archive.</p><p>UNZIPPATH = unzipArchive(PATH) unzips the arhive at PATH into the current folder.</p><p>UNZIPPATH = unzipArchive(PATH, DESTINATION) unzips the archive at PATH to a folder specified by DESTINATION. If DESTINATION is a folder path, the archive will be unzipped to the destination. If DESTINATION is either the character vector 'temp', the string "temp", or a logical true, the archive will be unzipped to a temporary folder. If DESTINATION is the character vector 'curr', the string "curr", or a logical false, the archive will be unzipped to the current directory.</p><p>UNZIPPATH = unzipArchive(PATH, DESTINATION, DELETEORIGINAL) has the same behavior as the previous usage, however it will delete the archive if DELETEORIGINAL is true.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><h2 id="2">Exceptions</h2><p>AUTOGRADER:UNZIPARCHIVE:INVALIDPATH exception will be thrown if an invalid path is passed in.</p><p>AUTOGRADER:UNZIPARCHIVE:INVALIDFILE exception will be thrown if a non archive file is passed in.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">P = unzipArchive(<span class="string">'test.zip'</span>)
+  </style></head><body><div class="container-fluid"><div class="content"><h1>unzipArchive: Unzips an archive into a specified directory</h1><!--introduction--><p>unzipArchive unzips an archive into a folder, either creating a temporary folder or unzipping into the current folder. Returns the path of the unzipped archive.</p><p>UNZIPPATH = unzipArchive(PATH) unzips the arhive at PATH into a temp directory and returns the path to its contents.</p><p>UNZIPPATH = unzipArchive(PATH, DESTINATION) unzips the archive at PATH to a folder specified by DESTINATION. If DESTINATION is a folder path, the archive will be unzipped to the destination. If DESTINATION is either the character vector 'temp', the string "temp", or a logical true, the archive will be unzipped to a temporary folder. If DESTINATION is the character vector 'curr', the string "curr", or a logical false, the archive will be unzipped to the current directory.</p><p>UNZIPPATH = unzipArchive(PATH, DESTINATION, DELETEORIGINAL) has the same behavior as the previous usage, however it will delete the archive if DELETEORIGINAL is true.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><h2 id="2">Exceptions</h2><p>AUTOGRADER:UNZIPARCHIVE:INVALIDPATH exception will be thrown if an invalid path is passed in.</p><p>AUTOGRADER:UNZIPARCHIVE:INVALIDFILE exception will be thrown if a non archive file is passed in.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">P = unzipArchive(<span class="string">'test.zip'</span>)
 </pre><pre class="language-matlab">P <span class="string">contains</span> <span class="string">'\test\'</span> <span class="string">appended</span> <span class="string">to</span> <span class="string">the</span> <span class="string">end</span> <span class="string">of</span> <span class="string">the</span> <span class="string">current</span> <span class="string">directory</span> <span class="string">path</span>
 and <span class="string">the</span> <span class="string">contents</span> <span class="string">of</span> <span class="string">test.zip</span> <span class="string">are</span> <span class="string">unzipped</span> <span class="string">into</span> <span class="string">the</span> <span class="string">newly</span> <span class="string">created</span> <span class="string">test\</span>
 folder.
@@ -77,74 +91,4 @@ temporary <span class="string">appdata</span> <span class="string">designated</s
 </pre><pre class="language-matlab">P <span class="string">contains</span> <span class="string">'\test\'</span> <span class="string">appended</span> <span class="string">to</span> <span class="string">the</span> <span class="string">end</span> <span class="string">of</span> <span class="string">the</span> <span class="string">current</span> <span class="string">directory</span> <span class="string">path</span>
 and <span class="string">the</span> <span class="string">contents</span> <span class="string">of</span> <span class="string">test.zip</span> <span class="string">are</span> <span class="string">unzipped</span> <span class="string">into</span> <span class="string">the</span> <span class="string">newly</span> <span class="string">created</span> <span class="string">test\</span>
 folder. The original <span class="string">archive</span> <span class="string">test.zip</span> <span class="string">is</span> <span class="string">deleted.</span>
-</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div><!--
-##### SOURCE BEGIN #####
-%% unzipArchive: Unzips an archive into a specified directory
-%   
-% unzipArchive unzips an archive into a folder, either creating a temporary
-% folder or unzipping into the current folder. Returns the path of the
-% unzipped archive.
-%
-% UNZIPPATH = unzipArchive(PATH) unzips the arhive at PATH into the current 
-% folder.
-%
-% UNZIPPATH = unzipArchive(PATH, DESTINATION) unzips the archive at PATH to
-% a folder specified by DESTINATION. If DESTINATION is a folder path, the
-% archive will be unzipped to the destination. If DESTINATION is either the
-% character vector 'temp', the string "temp", or a logical true, the
-% archive will be unzipped to a temporary folder. If DESTINATION is the 
-% character vector 'curr', the string "curr", or a logical false, the
-% archive will be unzipped to the current directory.
-%
-% UNZIPPATH = unzipArchive(PATH, DESTINATION, DELETEORIGINAL) has the same
-% behavior as the previous usage, however it will delete the archive if
-% DELETEORIGINAL is true.
-%
-%%% Remarks
-%
-%
-%
-%%% Exceptions
-%
-% AUTOGRADER:UNZIPARCHIVE:INVALIDPATH exception will be thrown if an
-% invalid path is passed in.
-%
-% AUTOGRADER:UNZIPARCHIVE:INVALIDFILE exception will be thrown if a non
-% archive file is passed in.
-%
-%%% Unit Tests
-%
-%   P = unzipArchive('test.zip')
-%
-%   P contains '\test\' appended to the end of the current directory path 
-%   and the contents of test.zip are unzipped into the newly created test\ 
-%   folder.
-%
-%   P = unzipArchive('test.zip', true) or P = unzipArchive('test.zip', 'temp')
-%
-%   P contains a path to a temporary folder named 'test' somewhere in the
-%   temporary appdata designated to MATLAB.
-%
-%   P = unzipArchive('test.zip', 'curr', true)
-%
-%   P contains '\test\' appended to the end of the current directory path 
-%   and the contents of test.zip are unzipped into the newly created test\ 
-%   folder. The original archive test.zip is deleted.
-%
-function pName = unzipArchive(zipPath,dest,delOriginal)
-    if ~exist(zipPath,'var')
-        error('Requires a first Input')
-    elseif isempty(which(zipPath))
-        error('Archive does not exist')
-    end
-    if ~exist('dest','var')
-        dest = pwd;
-    end
-    if ~exist('delOriginal','var')
-        delOriginal = false;
-    end
-
-
-end
-##### SOURCE END #####
---></body></html>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div></div></body></html>
