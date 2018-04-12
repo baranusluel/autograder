@@ -81,7 +81,7 @@ classdef Student < handle
             if isempty(this.feedbacks)
                 throw(MException('AUTOGRADER:Student:grade:noFeedbacks', 'No feedbacks were found (did you call gradeProblem?)'));
             end
-            grade = cellfun(@(f) sum([f.points]), this.feedbacks);
+            grade = sum(cellfun(@(f) sum([f.points]), this.feedbacks));
         end
         function this = Student(path, name)
         %% Constructor
