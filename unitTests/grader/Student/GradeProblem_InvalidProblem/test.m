@@ -3,7 +3,7 @@
 % An AUTOGRADER:Student:gradeProblem:invalidProblem exception will
 % be thrown if PROBLEM is invalid (i.e. if it is empty or
 % if name or testcases fields of PROBLEM are empty).
-function [passed, message] test()
+function [passed, message] = test()
     try
         S = Student(pwd, 'test');
         % not really a valid student, but doesn't matter since not testing that
