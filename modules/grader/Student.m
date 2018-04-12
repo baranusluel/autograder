@@ -233,7 +233,7 @@ classdef Student < handle
                 % assume name is problem name
                 if any(strncmp(problem.name, this.submissions, length(problem.name)))
                     feeds(i) = engine(feeds(i));
-                    % this.resetPath();
+                    this.resetPath();
                 else
                     feeds(i).exception = MEXCEPTION('AUTOGRADER:Student:fileNotSubmitted', ...
                         'File %s wasn''t submitted, so the engine was not run.', [problem.name '.m']);
