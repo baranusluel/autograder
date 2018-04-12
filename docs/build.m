@@ -116,13 +116,13 @@ function problems = build(varargin)
         testOpts.modules = {};
         [status, html] = autotester(testOpts);
         if ~status
-            fprintf(2, 'Unit Testing failed\n');
+            fprintf(2, 'Failed Unit Testing\n');
             if nargout ~= 0
                 problems = html;
             end
             return;
         else
-            fprintf(1, 'Unit Tests all passed\n');
+            fprintf(1, 'Passed Unit Testing\n');
         end
         cd(orig);
     end
@@ -169,6 +169,10 @@ function problems = build(varargin)
             lines{i} = regexprep(lines{i}, '(?<=<file>).+(?=<\/file>)', ...
                 ['\' sizes{i - iconS}]);
         end
+        iconLine = find(contains(lines, '<param.icon>'), 1);
+        lines{iconLine} = regexprep(lines{iconLine}, ...
+            '(?<=<param.icon>).+(?=<\/param.icon)', ...
+            ['\' sizes{2}]);
 
         % Included Files
         % should still work correctly, since based on ROOT
@@ -226,6 +230,7 @@ function problems = build(varargin)
         generateDocs;
         fprintf(1, 'Generated <a href="https://github.gatech.edu/pages/CS1371/autograder/">Documentation</a>\n');
     end
+    fprintf(1, 'Build Successfully Completed\n');
     cd(thisFolder);
 end
 
