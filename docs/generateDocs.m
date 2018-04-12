@@ -24,9 +24,8 @@ function generateDocs(email)
     end
     [genFolder, ~, ~] = fileparts(mfilename('fullpath'));
     % Create temp dir for cloning repo
-    tDir = [tempdir 'autograderDocs' filesep];
+    tDir = [tempname filesep];
     % remove if already exists
-    [~] = rmdir(tDir, 's');
     mkdir(tDir);
     cleaner = onCleanup(@() cleanup(thisDir, thisPath));
     cd(tDir);
@@ -46,16 +45,17 @@ function generateDocs(email)
     mods(~[mods.isdir]) = [];
     mods(strncmp({mods.name}, '.', 1)) = [];
     % For each directory, for each file, publish into mirror directory.
-    for i = 1:numel(mods)
+    parfor i = 1:numel(mods)
         module = mods(i);
         warning('off');
         [~] = rmdir([tDir module.name], 's');
         warning('on');
         mkdir([tDir module.name]);
         sources = dir(['..' filesep 'modules' filesep module.name filesep '*.m']);
-        options.outputDir = [tDir module.name filesep];
+        modOpts = options;
+        modOpts.outputDir = [tDir module.name filesep];
         for s = sources'
-            publish([s.folder filesep s.name], options);
+            publish([s.folder filesep s.name], modOpts);
         end
         % Generate HTML index for this module
         description = parseReadme(['..' filesep 'modules' filesep module.name  filesep 'README.md'], ...
@@ -90,7 +90,11 @@ function generateDocs(email)
     opts.output = '';
     opts.completeFeedback = true;
     opts.modules = {};
+    opts.css = [fileparts(pwd) filesep 'unitTests' filesep 'index.css'];
     [status, html] = autotester(opts);
+    % splice in header:
+    body = regexp(html, '<body.*?>', 'end');
+    html = [html(1:body) backNav(tDir) html((body+1):end)];
     fid = fopen([tDir 'results.html'], 'wt');
     fwrite(fid, html);
     fclose(fid);
@@ -165,4 +169,15 @@ function cleanup(thisDir, thisPath)
     if exist('thisPath', 'var')
         path(thisPath, '');
     end
+end
+
+function nav = backNav(tDir)
+    fid = fopen([tDir 'rubric.html'], 'rt');
+    data = char(fread(fid)');
+    fclose(fid);
+    nav = strfind(data, '<nav');
+    nav = nav(1);
+    nav = [nav, strfind(data, '</nav>') - 1];
+    nav = nav(1:2);
+    nav = [data(nav(1):nav(end)) '</nav>'];
 end

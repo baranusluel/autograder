@@ -5,11 +5,35 @@
     color: darkred;
 }
 .test-message {
-    text-indent: 10%;
+    text-indent: 4%;
+    color: black;
+    font-family: "Courier New";
 }
 .test-error {
     color: firebrick;
 }
 h4 {
     color: darkgrey;
+}
+.module-status {
+    font-size: 24px;
+}
+html,
+body {
+    font-family: 'Open Sans';
+    font-weight: 400;
+    font-size: 18px;
+}
+.navbar-logo {
+    width: 32px;
+    height: 32px;
+}
+.navbar-brand {
+    font-weight: 300;
+}
+.thin {
+    font-weight: 300;
+}
+#goBack {
+    color: white;
 }
