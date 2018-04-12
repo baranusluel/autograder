@@ -109,11 +109,11 @@ function problems = build(varargin)
         % We'll need to run the unit tests. Fortunately, this is simple -
         % just call unitRunner()
         orig = cd(['..' filesep 'unitTests']);
-        opts.showFeedback = false;
-        opts.completeFeedback = true;
-        opts.output = '';
-        opts.modules = {};
-        [status, html] = autotester(opts);
+        testOpts.showFeedback = false;
+        testOpts.completeFeedback = true;
+        testOpts.output = '';
+        testOpts.modules = {};
+        [status, html] = autotester(testOpts);
         if ~status
             fprintf(2, 'Unit Testing failed\n');
             if nargout ~= 0
@@ -235,6 +235,7 @@ function res = getInputs(varargin)
     parser.addParameter('installerPath', ['..' filesep 'bin' filesep], @(p)(isempty(p) || isfolder(p)));
     parser.addParameter('checkSuppressed', false, @islogical);
     parser.addParameter('lint', true, @islogical);
+    parser.addParameter('test', true, @islogical);
     parser.addParameter('version', '', @(v)(isempty(v) || ischar(v)));
     
     parser.CaseSensitive = false;
