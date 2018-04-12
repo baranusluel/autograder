@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <title>Test Results</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400&amp;subset=latin-ext" rel="stylesheet">
+<link rel="shortcut icon" type="image/x-icon" href="resources/favicon.ico" />
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
@@ -16,23 +18,92 @@
 .fa-times {
     color: darkred;
 }
+.test-message {
+    text-indent: 4%;
+    color: black;
+    font-family: "Courier New";
+}
+.test-error {
+    color: firebrick;
+}
+h4 {
+    color: darkgrey;
+}
+.module-status {
+    font-size: 24px;
+}
+html,
+body {
+    font-family: 'Open Sans';
+    font-weight: 400;
+    font-size: 18px;
+}
+.navbar-logo {
+    width: 32px;
+    height: 32px;
+}
+.navbar-brand {
+    font-weight: 300;
+}
+.thin {
+    font-weight: 300;
+}
+#goBack {
+    color: white;
+}
 </style>
 </head>
-<body>
+<body><nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+            <a id="goBack" class="nav-link" href="index.html">
+                <i class="fas fa-arrow-left"></i> Go Back
+            </a>
+            <a class="navbar-brand" href="index.html">
+                <img src="resources/brand.jpg" class="rounded navbar-logo">
+                Autograder Docs
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+                    
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav">
+                </ul>
+            </div>
+        </nav>
 <div class="container-fluid">
 <div class="jumbotron text-center">
 <i class="display-1 text-center fas fa-times"></i>
-<h1 class="display-3 text-center">Code Failed Inspection</h1>
+<h1 class="display-4 text-center">Unit Tests Failed</h1>
 <hr />
-<p class="lead">Read below for a list of test results</p>
+<div class="row text-center d-flex justify-content-center">
+<div class="col-md-12 col-12 text-center module-status">
+<i class="fas fa-times"></i>
+Grader
 </div>
-<div class="results">
+</div>
+</div>
+<div class="row text-center">
+<div class="col-12 d-none d-sm-block text-center">
+<ul class="nav nav-pills nav-fill" role = "tablist">
+<li class="nav-item">
+<a class="nav-link active" data-toggle="pill" href="#grader">Grader</a>
+</li>
+</ul>
+</div>
+</div>
+<div class="row text-center">
+<div class="col-12 d-block d-sm-none text-center">
+<ul class="nav nav-pills nav-fill flex-column" role = "tablist">
+<li class="nav-item">
+<a class="nav-link active" data-toggle="pill" href="#grader">Grader</a>
+</li>
+</ul>
+</div>
+</div>
+<div class="tab-content">
+<div id="grader" class="tab-pane active">
 <div class="module-result row">
 <div class="col-12">
-<h2 class="module-name"
-<i class="fas fa-times"></i> 
-grader
-</h2>
 <div class="module-tests container-fluid">
 <div class="unit-result row">
 <div class="col-12">
@@ -42,7 +113,7 @@ Student
 </h3>
 <div class="unit-tests container">
 <div class="class-method">
-<h4 class="method-name display-4">
+<h4 class="method-name">
 Constructor
 </h4>
 <div class="row result">
@@ -53,9 +124,11 @@ Constructor
 InvalidPath
 </code>
 </h5>
-<pre class="test-message">
+<span class="test-message">
+<p>
 Exception correctly thrown
-</pre>
+</p>
+</span>
 </div>
 </div>
 <div class="row result">
@@ -66,9 +139,11 @@ Exception correctly thrown
 NoSubmissions
 </code>
 </h5>
-<pre class="test-message">
+<span class="test-message">
+<p>
 Student correctly constructed
-</pre>
+</p>
+</span>
 </div>
 </div>
 <div class="row result">
@@ -79,9 +154,11 @@ Student correctly constructed
 ValidStudent
 </code>
 </h5>
-<pre class="test-message">
+<span class="test-message">
+<p>
 Student correctly constructed
-</pre>
+</p>
+</span>
 </div>
 </div>
 </div>
@@ -96,7 +173,7 @@ TestCase
 </h3>
 <div class="unit-tests container">
 <div class="class-method">
-<h4 class="method-name display-4">
+<h4 class="method-name">
 Constructor
 </h4>
 <div class="row result">
@@ -107,9 +184,11 @@ Constructor
 LoadMatFile
 </code>
 </h5>
-<pre class="test-message">
+<span class="test-message">
+<p>
 Exception Thrown: parallel:fevalqueue:ExecutionErrors (One or more futures resulted in an error.)
-</pre>
+</p>
+</span>
 </div>
 </div>
 <div class="row result">
@@ -120,9 +199,12 @@ Exception Thrown: parallel:fevalqueue:ExecutionErrors (One or more futures resul
 ValidTestCase
 </code>
 </h5>
-<pre class="test-message">
+<span class="test-message">
+<p>
 Exception Thrown: parallel:fevalqueue:ExecutionErrors (One or more futures resulted in an error.)
-</pre>
+</p>
+</span>
+</div>
 </div>
 </div>
 </div>
