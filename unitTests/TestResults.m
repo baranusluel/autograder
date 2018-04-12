@@ -86,7 +86,13 @@ classdef TestResults < handle
 
             cd(workDir);
             % we know test.m will exist
-            [this.passed, this.message] = test();
+            try
+                [this.passed, this.message] = test();
+            catch e
+                this.passed = false;
+                this.message = sprintf('<span class="test-error">Test threw exception %s: %s', ...
+                    e.identifier, e.message);
+            end
             cd(origPath);
             % completely delete folder
             [~] = rmdir(workDir, 's');
