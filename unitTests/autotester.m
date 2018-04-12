@@ -63,11 +63,17 @@ function [status, html] = autotester(varargin)
 
     status = all([mods.passed]);
 
+    navs = cell(1, numel(mods));
     feedbacks = cell(1, numel(mods));
+    active = ' active';
     for f = 1:numel(feedbacks)
-        feedbacks{f} = mods(f).generateHtml();
+        feedbacks{f} = strjoin({['<div id="' mods(f).name '" class="tab-pane' active '">'], mods(f).generateHtml(), '</div>'}, newline);
+        navs{f} = strjoin({'<li class="nav-item">', ['<a class="nav-link' active '" data-toggle="pill" href="#' ...
+            mods(f).name '">' camel2normal(mods(f).name) '</a>'], '</li>'}, newline);
+        active = '';
     end
-
+    navs = [{'<div class="row text-center">', '<div class="col-12 text-center">', ...
+        '<ul class="nav nav-pills nav-fill" role = "tablist">'} navs {'</ul>', '</div>', '</div>'}];
     html = {'<div class="container-fluid">', '<div class="jumbotron text-center">'};
     if status
         html = [html {'<i class="display-1 text-center fas fa-check"></i>'}];
@@ -77,7 +83,8 @@ function [status, html] = autotester(varargin)
         html = [html {'<h1 class="display-3 text-center">Code Failed Inspection</h1>'}];
     end
     html = [html {'<hr />', '<p class="lead">Read below for a list of test results</p>', '</div>'}];
-    html = [html {'<div class="results">'}, feedbacks, {'</div>', '</div>'}];
+    html = [html, navs];
+    html = [html {'<div class="tab-content">'}, feedbacks, {'</div>', '</div>'}];
 
     completeHtml = [generateHeader() html '</body>', '</html>'];
 
@@ -145,4 +152,23 @@ function header = generateHeader()
         '</style>', ...
         '</head>', ...
         '<body>'};
+end
+
+function newStr = camel2normal(str)
+    % for each capital letter, replace with ' ' + lowercase
+    newStr = char(zeros(1, length(str) + sum(str >= 'A' & str <= 'Z')));
+    oldInd = 1;
+    newInd = 1;
+    while oldInd <= numel(str)
+        if str(oldInd) >= 'a' && str(oldInd) <= 'z'
+            newStr(newInd) = str(oldInd);
+        else
+            newStr(newInd) = ' ';
+            newInd = newInd + 1;
+            newStr(newInd) = str(oldInd);
+        end
+        newInd = newInd + 1;
+        oldInd = oldInd + 1;
+    end
+    newStr(1) = upper(newStr(1));
 end
