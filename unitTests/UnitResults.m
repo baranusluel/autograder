@@ -66,7 +66,7 @@ classdef UnitResults < handle
                 % for each method, print accordingly
                 methodFeedback = cell(1, numel(methods));
                 for m = 1:numel(methods)
-                    feedbackHeader = {'<div class="class-method">', '<h4 class="method-name display-4">', ...
+                    feedbackHeader = {'<div class="class-method">', '<h4 class="method-name">', ...
                         methods{m}, '</h4>'};
                     res = this.testResults(strcmp(methods{m}, {this.testResults.method}));
                     feedbacks = cell(1, numel(res));

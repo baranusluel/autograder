@@ -41,6 +41,18 @@ classdef File < handle
 
         end
     end
+    methods (Static)
+        function s = SENTINEL()
+            persistent name;
+            if isempty(name)
+                name = [tempname '.lock'];
+                fid = fopen(name, 'wt');
+                fwrite(fid, 'SENTINEL');
+                fclose(fid);
+            end
+            s = name;
+        end
+    end
     methods (Access = public)
         %% equals: Determine file equality
         %
