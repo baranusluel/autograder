@@ -128,6 +128,7 @@ function Main(varargin)
     solnPath = [settings.workingDir 'solutions.zip'];
     
     % Remove user's PATH, instate factory default instead:
+    addpath(genpath(fileparts(mfilename('fullpath'))));
     settings.userPath = {path(), userpath()};
     Student.resetPath();
     
