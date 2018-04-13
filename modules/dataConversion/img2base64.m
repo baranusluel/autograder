@@ -32,3 +32,32 @@
 %   B = img2base64(I, 'bmp');
 %
 %   B -> 'data:image/bmp;base64,STRING...';
+function base = img2base64(img, fmt)
+    persistent encoder;
+    if isempty(encoder)
+        encoder = org.apache.commons.codec.binary.Base64;
+    end
+    if nargin < 2
+        fmt = '.png';
+    elseif fmt(1) ~= '.'
+        fmt = ['.' fmt];
+    end
+    tmp = [tempname fmt];
+    imwrite(img, tmp);
+    fid = fopen(tmp, 'r');
+    cleaner = onCleanup(@()(clean(fid)));
+    bytes = fread(fid);
+    base = char(encoder.encode(bytes))';
+end
+
+function clean(fid)
+    fname = fopen(fid);
+    fclose(fid);
+    delete(fname);
+    % Windows waits...
+    if isfile(fname)
+        pause(0.4);
+        delete(fname);
+    end
+end
+        
