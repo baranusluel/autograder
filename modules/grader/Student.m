@@ -238,8 +238,8 @@ classdef Student < handle
                     feeds(i) = engine(feeds(i));
                     this.resetPath();
                 else
-                    feeds(i).exception = MEXCEPTION('AUTOGRADER:Student:fileNotSubmitted', ...
-                        'File %s wasn''t submitted, so the engine was not run.', [problem.name '.m']);
+                    feeds(i).exception = MException('AUTOGRADER:Student:fileNotSubmitted', ...
+                        'File %s wasn''t submitted', [problem.name '.m']);
                 end
             end
             this.feedbacks = [this.feedbacks {feeds}];
