@@ -38,17 +38,18 @@ function base = img2base64(img, fmt)
         encoder = org.apache.commons.codec.binary.Base64;
     end
     if nargin < 2
-        fmt = '.png';
-    elseif fmt(1) ~= '.'
-        fmt = ['.' fmt];
+        fmt = 'png';
+    elseif fmt(1) == '.'
+        fmt = fmt(2:end);
     end
     try
-        tmp = [tempname fmt];
+        tmp = [tempname '.' fmt];
         imwrite(img, tmp);
         fid = fopen(tmp, 'r');
         cleaner = onCleanup(@()(clean(fid)));
         bytes = fread(fid);
         base = char(encoder.encode(bytes))';
+        base = ['data:image/' fmt ';base64,' base];
     catch reason
         e = MException('AUTOGRADER:img2base64:conversionException', ...
             'Conversion Failed');
