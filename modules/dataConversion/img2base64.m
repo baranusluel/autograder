@@ -42,12 +42,19 @@ function base = img2base64(img, fmt)
     elseif fmt(1) ~= '.'
         fmt = ['.' fmt];
     end
-    tmp = [tempname fmt];
-    imwrite(img, tmp);
-    fid = fopen(tmp, 'r');
-    cleaner = onCleanup(@()(clean(fid)));
-    bytes = fread(fid);
-    base = char(encoder.encode(bytes))';
+    try
+        tmp = [tempname fmt];
+        imwrite(img, tmp);
+        fid = fopen(tmp, 'r');
+        cleaner = onCleanup(@()(clean(fid)));
+        bytes = fread(fid);
+        base = char(encoder.encode(bytes))';
+    catch reason
+        e = MException('AUTOGRADER:img2base64:conversionException', ...
+            'Conversion Failed');
+        e = e.addCause(reason);
+        throw(e);
+    end
 end
 
 function clean(fid)
