@@ -28,6 +28,8 @@
 % * modules: A cell array of character vectors. If given and non-empty, only modules that match the name in
 % given in the cell array are tested. If empty or not given, all modules are assumed. Default: empty cell array
 %
+% * css: A character vector of a custom CSS class to use for the html. If empty, default css is applied. Default: Empty
+%
 %%% Exceptions
 %
 % This code will never throw exceptions
@@ -56,8 +58,8 @@ function [status, html] = autotester(varargin)
             modules(m) = [];
         end
     end
-
-    for m = numel(modules):-1:1
+    mods(numel(modules)) = ModuleResults();
+    for m = 1:numel(modules)
         mods(m) = ModuleResults(fullfile(modules(m).folder, modules(m).name));
     end
 
@@ -99,7 +101,7 @@ function [status, html] = autotester(varargin)
     html = [html, navs];
     html = [html {'<div class="tab-content">'}, feedbacks, {'</div>', '</div>'}];
 
-    completeHtml = [generateHeader() html '</body>', '</html>'];
+    completeHtml = [generateHeader(outs.css) html '</body>', '</html>'];
 
     html = strjoin(html, newline);
     completeHtml = strjoin(completeHtml, newline);
@@ -136,6 +138,7 @@ function outs = parseInputs(ins)
     parser.addParameter('output', '', @ischar);
     parser.addParameter('modules', {}, @iscell);
     parser.addParameter('completeFeedback', false, @islogical);
+    parser.addParameter('css', '', @(p)(isempty(p) || isfile(p)));
     parser.CaseSensitive = false;
     parser.FunctionName = 'unitRunner';
     parser.KeepUnmatched = false;
@@ -145,26 +148,40 @@ function outs = parseInputs(ins)
     outs = parser.Results;
 end
 
-function header = generateHeader()
+function header = generateHeader(path)
     header = {'<!DOCTYPE html>', '<html lang="en">', '<head>', ...
         '<meta charset="utf-8">', ...
         '<title>Test Results</title>', ...
         '<meta name="viewport" content="width=device-width, initial-scale=1">', ...
-        '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">', ...
+        '<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400&amp;subset=latin-ext" rel="stylesheet">', ...
+        '<link rel="shortcut icon" type="image/x-icon" href="resources/favicon.ico" />', ...
+        '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">', ...
         '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>', ...
         '<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>', ...
-        '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>', ...
+        '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>', ...
         '<script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js"></script>', ...
-        '<style>', ...
+        generateCSS(path), ...
+        '</head>', ...
+        '<body>'};
+end
+
+function style = generateCSS(path)
+    if isempty(path)
+        style = {'<style>', ...
         '.fa-check {', ...
         '    color: forestgreen;', ...
         '}', ...
         '.fa-times {', ...
         '    color: darkred;', ...
         '}', ...
-        '</style>', ...
-        '</head>', ...
-        '<body>'};
+        '</style>'};
+    else
+        fid = fopen(path, 'rt');
+        lines = char(fread(fid)');
+        fclose(fid);
+        style = {'<style>', lines, '</style>'};
+    end
+    style = strjoin(style, newline);
 end
 
 function newStr = camel2normal(str)
