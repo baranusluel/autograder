@@ -17,8 +17,9 @@
 %
 %%% Exceptions
 %
-% If the format is not recognized, then this will throw an 
-% AUTOGRADER:img2base64:invalidFormat exception.
+% Any exceptions will be thrown as an
+% AUTOGRADER:img2base64:conversionException, with the reason listed as a
+% cause.
 %
 %%% Unit Tests
 %
@@ -31,8 +32,3 @@
 %   B = img2base64(I, 'bmp');
 %
 %   B -> 'data:image/bmp;base64,STRING...';
-%
-%   I = imread(...); % valid image
-%   B = img2base64(I, 'unknownType');
-%
-%   Threw invalidFormat exception
