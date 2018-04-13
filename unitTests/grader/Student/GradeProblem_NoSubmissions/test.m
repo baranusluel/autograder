@@ -40,6 +40,10 @@ function [passed, msg] = test()
         passed = false;
         msg = sprintf('Expected fileNotSubmitted exception, got %s', S.feedbacks{1}.exception.identifier);
         return;
+    elseif S.feedbacks{1}.points ~= 0
+        passed = false;
+        msg = sprintf('Expected 0 points; got %d', S.feedbacks{1}.points);
+        return;
     else
         passed = true;
         msg = 'No Submission case correctly tested';
