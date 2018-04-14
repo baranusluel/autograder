@@ -53,7 +53,8 @@ classdef ModuleResults < handle
             units = dir();
             units(~[units.isdir]) = [];
             units(strncmp({units.name}, '.', 1)) = [];
-            for u = numel(units):-1:1
+            unitResults(numel(units)) = UnitResults();
+            for u = 1:numel(units)
                 unitResults(u) = UnitResults(fullfile(units(u).folder, units(u).name));
             end
             this.unitResults = unitResults;
@@ -81,11 +82,6 @@ classdef ModuleResults < handle
         % This method is guaranteed to never throw an exception
         %
             html = {'<div class="module-result row">', '<div class="col-12">'};
-            if this.passed
-                html = [html {'<h2 class="module-name"', [TestResults.PASSING_MARK ' '], this.name, '</h2>'}];
-            else
-                html = [html {'<h2 class="module-name"', [TestResults.FAILING_MARK ' '], this.name, '</h2>'}];
-            end
             feedbacks = cell(1, numel(this.unitResults));
             for f = 1:numel(feedbacks)
                 feedbacks{f} = this.unitResults(f).generateHtml();

@@ -6,9 +6,13 @@
 % function resides in, and will find all modules and source code files,
 % publish them, and add them to documentation.
 
-%#ok<*NASGU>
 function generateDocs(email)
     thisDir = pwd;
+    thisPath = path;
+
+    addpath(genpath([fileparts(pwd) filesep 'unitTests']));
+    addpath(genpath([fileparts(pwd) filesep 'modules']));
+    addpath(genpath(pwd));
     % if the email doesn't exist, try to get it from the current folder...
     if ~exist('email', 'var')
         [status, email] = system('git config --get user.email');
@@ -20,11 +24,10 @@ function generateDocs(email)
     end
     [genFolder, ~, ~] = fileparts(mfilename('fullpath'));
     % Create temp dir for cloning repo
-    tDir = [tempdir 'autograderDocs' filesep];
+    tDir = [tempname filesep];
     % remove if already exists
-    status = rmdir(tDir, 's');
     mkdir(tDir);
-    cleaner = onCleanup(@() cleanup(thisDir));
+    cleaner = onCleanup(@() cleanup(thisDir, thisPath));
     cd(tDir);
     [~, ~] = system('git clone https://github.gatech.edu/CS1371/autograder.git --branch gh-pages --single-branch');
     tDir = [tDir 'autograder' filesep];
@@ -42,26 +45,26 @@ function generateDocs(email)
     mods(~[mods.isdir]) = [];
     mods(strncmp({mods.name}, '.', 1)) = [];
     % For each directory, for each file, publish into mirror directory.
-    for i = 1:numel(mods)
+    parfor i = 1:numel(mods)
         module = mods(i);
         warning('off');
-        status = rmdir([tDir module.name], 's');
+        [~] = rmdir([tDir module.name], 's');
         warning('on');
         mkdir([tDir module.name]);
         sources = dir(['..' filesep 'modules' filesep module.name filesep '*.m']);
-        options.outputDir = [tDir module.name filesep];
+        modOpts = options;
+        modOpts.outputDir = [tDir module.name filesep];
         for s = sources'
-            publish([s.folder filesep s.name], options);
+            publish([s.folder filesep s.name], modOpts);
         end
         % Generate HTML index for this module
         description = parseReadme(['..' filesep 'modules' filesep module.name  filesep 'README.md'], ...
             false, 'https://github.gatech.edu/CS1371/autograder/wiki/');
 
-        fid = fopen(['resources' filesep 'module.html'], 'r');
-        lines = textscan(fid, '%s', 'Delimiter', {'\n'});
+        fid = fopen(['resources' filesep 'module.html'], 'rt');
+        lines = strsplit(char(fread(fid)'), newline);
         fclose(fid);
-        lines = lines{1};
-        fid = fopen([tDir module.name filesep 'index.html'], 'w');
+        fid = fopen([tDir module.name filesep 'index.html'], 'wt');
         for l = 1:numel(lines)
             % look for:
             %   MODULE_NAME
@@ -72,10 +75,10 @@ function generateDocs(email)
                 line = strrep(line, '<!-- MODULE_NAME -->', camel2normal(module.name));
             elseif contains(line, '<!-- MODULE_DESCRIPTION -->')
                 line = strrep(line, '<!-- MODULE_DESCRIPTION -->', strjoin(description, '\n'));
-            elseif contains(line, '<!-- MODULE_FUNCTIONS')
+            elseif contains(line, '<!-- MODULE_FUNCTIONS -->')
                 % Write all functions in divs
                 for s = sources'
-                    fprintf(fid, '<div data-link="%s">%s</div>', [s.name(1:end-2) '.html'], s.name(1:end-2));
+                    fprintf(fid, '<div data-link="%s">%s</div>\n', [s.name(1:end-2) '.html'], s.name(1:end-2));
                 end
                 line = '';
             end
@@ -83,11 +86,22 @@ function generateDocs(email)
         end
         fclose(fid);
     end
-    fid = fopen(['resources' filesep 'index.html']);
-    lines = textscan(fid, '%s', 'Delimiter', {'\n'});
+    opts.showFeedback = false;
+    opts.output = '';
+    opts.completeFeedback = true;
+    opts.modules = {};
+    opts.css = [fileparts(pwd) filesep 'unitTests' filesep 'index.css'];
+    [status, html] = autotester(opts);
+    % splice in header:
+    body = regexp(html, '<body.*?>', 'end');
+    html = [html(1:body) backNav(tDir) html((body+1):end)];
+    fid = fopen([tDir 'results.html'], 'wt');
+    fwrite(fid, html);
     fclose(fid);
-    lines = lines{1};
-    fid = fopen([tDir 'index.html'], 'w');
+    fid = fopen(['resources' filesep 'index.html'], 'rt');
+    lines = strsplit(char(fread(fid)'), newline);
+    fclose(fid);
+    fid = fopen([tDir 'index.html'], 'wt');
     for l = 1:numel(lines)
         line = lines{l};
         % Look for MODULES
@@ -96,10 +110,17 @@ function generateDocs(email)
             for m = mods'
                 fprintf(fid, '<div data-link="%s">%s</div>', [m.name '/index.html'], camel2normal(m.name));
             end
+        elseif contains(line, '<!-- UNIT_RESULTS -->')
+            if status
+                line = '<i class="fas fa-check"></i>';
+            else
+                line = '<i class="fas fa-times"></i>';
+            end
         end
         fprintf(fid, '%s\n', line);
     end
     fclose(fid);
+    % create unit test results
     cd(tDir);
     % commit our changes, create commit, push
     if exist('email', 'var')
@@ -124,7 +145,7 @@ function generateDocs(email)
     [~, ~] = system('git commit -m "Update Documentation"');
     [~, ~] = system('git push');
     cd(thisDir);
-    status = rmdir([tDir '..' filesep], 's');
+    [~] = rmdir([tDir '..' filesep], 's');
 end
 
 function str = camel2normal(str)
@@ -138,11 +159,25 @@ function str = camel2normal(str)
     str(1) = upper(str(1));
 end
 
-function cleanup(thisDir)
+function cleanup(thisDir, thisPath)
     warning('off');
-    status = rmdir('autograderDocs', 's');
+    [~] = rmdir('autograderDocs', 's');
     warning('on');
-    if exist(thisDir, 'var')
+    if exist('thisDir', 'var')
         cd(thisDir);
     end
+    if exist('thisPath', 'var')
+        path(thisPath, '');
+    end
+end
+
+function nav = backNav(tDir)
+    fid = fopen([tDir 'rubric.html'], 'rt');
+    data = char(fread(fid)');
+    fclose(fid);
+    nav = strfind(data, '<nav');
+    nav = nav(1);
+    nav = [nav, strfind(data, '</nav>') - 1];
+    nav = nav(1:2);
+    nav = [data(nav(1):nav(end)) '</nav>'];
 end

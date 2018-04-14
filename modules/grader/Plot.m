@@ -133,7 +133,9 @@ classdef Plot < handle
         % Constructor threw exception
         % AUTOGRADER:PLOT:NOAXISDATA
         %
-            
+            if nargin == 0
+                return;
+            end
             if ~isa(pHandle,'matlab.graphics.axis.Axes')
                 ME = MException('AUTOGRADER:Plot:noAxisData',...
                     'Given input to Plot Constructor is not Axes Handle');
