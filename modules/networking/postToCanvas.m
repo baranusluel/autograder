@@ -48,7 +48,7 @@ function postToCanvas(courseId, token, message)
             e = e.addCause(reason);
             throw(e);
         end
-        e = MException('AUTOGRADER:uploadToCanvas:connection', 'Connection was interrupted');
+        e = MException('AUTOGRADER:postToCanvas:connection', 'Connection was interrupted');
         e = e.addCause(reason);
         throw(e);
     end
