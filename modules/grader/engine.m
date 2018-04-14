@@ -355,7 +355,9 @@ function runnable = runCase(runnable)
     % run the function
     % create sentinel file
     fid = fopen(File.SENTINEL, 'r');
+    origPath = cd(runnable.path);
     [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
+    cd(origPath);
     name = fopen(fid);
     fclose(fid);
     if ~strcmp(name, File.SENTINEL)
