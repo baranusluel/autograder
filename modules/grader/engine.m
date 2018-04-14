@@ -252,9 +252,11 @@ function runnable = engine(runnable)
     % Delete the job
     if isTimeout
         cancel(test);
+        runnable.exception = MException('AUTOGRADER:timeout', 'Timeout occurred');
+    else
+        runnable = test.fetchOutputs();
     end
     tCase.loadFiles = origFileNames;
-    runnable = test.fetchOutputs();
     if isa(runnable, 'TestCase')
         tCase = runnable;
     else
