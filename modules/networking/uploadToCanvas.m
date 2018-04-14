@@ -112,7 +112,7 @@ function uploadToCanvas(students, homework, varargin)
     if isempty(opts.assignmentId)
         % get HW ID:
         try
-            data = webread([API 'courses/' opts.courseId '/assignments'], 'search_term', homework, apiOpts);
+            data = webread([API 'courses/' num2str(opts.courseId) '/assignments'], 'search_term', homework, apiOpts);
         catch reason
             if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
                 e = MException('AUTOGRADER:uploadToCanvas:invalidCredentials', 'Invalid token was provided');
@@ -139,8 +139,8 @@ function uploadToCanvas(students, homework, varargin)
     putApiOpts = apiOpts;
     putApiOpts.RequestMethod = 'PUT';
     
-    courseId = opts.courseId;
-    assignmentId = opts.assignmentId;
+    courseId = num2str(opts.courseId);
+    assignmentId = num2str(opts.assignmentId);
     studentId = student.id;
     parfor s = 1:numel(students)
         % get student id
