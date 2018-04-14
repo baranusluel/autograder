@@ -181,7 +181,7 @@ function runnable = engine(runnable)
 
     % Copy over supporting files
     supportingFiles = tCase.supportingFiles;
-
+    origPath = cd(runnable.path);
     [~, ~, func] = parseFunction(tCase.call);
 
     allCalls = getcallinfo([func2str(func) '.m']);
@@ -252,9 +252,11 @@ function runnable = engine(runnable)
     % Delete the job
     if isTimeout
         cancel(test);
+        runnable.exception = MException('AUTOGRADER:timeout', 'Timeout occurred');
+    else
+        runnable = test.fetchOutputs();
     end
     tCase.loadFiles = origFileNames;
-    runnable = fetchOutputs(test);
     if isa(runnable, 'TestCase')
         tCase = runnable;
     else
@@ -271,7 +273,6 @@ function runnable = engine(runnable)
 
     populateFiles(runnable, addedFiles);
     populatePlots(runnable);
-
     %% Cleanup
     % Delete all files mentioned in the files field
     for i = 1:numel(runnable.files)
@@ -288,6 +289,7 @@ function runnable = engine(runnable)
     figs = findobj(0, 'type', 'figure');
     delete(figs);
     tCase.loadFiles = origFileNames;
+    cd(origPath);
     % If timeout and TestCase, throw error
     if isa(runnable, 'TestCase') && isTimeout
         throw(MException('MATLAB:timeout', 'Solution Code Timed Out'));
@@ -307,7 +309,6 @@ function populateFiles(runnable, addedFiles)
                 files(i).name = strrep(files(i).name, '_soln', '');
             end
         end
-
         runnable.files = files;
     end
 end
@@ -356,7 +357,15 @@ function runnable = runCase(runnable)
     % run the function
     % create sentinel file
     fid = fopen(File.SENTINEL, 'r');
-    [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
+    try
+        [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
+    catch e
+        if isa(runnable, 'TestCase')
+            rethrow(e);
+        else
+            runnable.exception = e;
+        end
+    end
     cd(origPath);
     name = fopen(fid);
     fclose(fid);
