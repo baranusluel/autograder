@@ -143,7 +143,9 @@ classdef Feedback < handle
         %
         %
         function html = generateFeedback(this)
-            
+            if hasPassed
+                html = '<div></div>';
+            end
         end
     end
 end
