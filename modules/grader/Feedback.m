@@ -10,6 +10,9 @@
 %
 % * path: The fully qualified path for this student's directory
 %
+% * outputs: A structure where the field name is the name of the output, 
+%            and the field value is the value of the output
+%
 % * files: A File array that represents all the files produced by the
 %          student
 %
@@ -64,10 +67,10 @@ classdef Feedback < handle
     methods
         %% Constructor
         %
-        % The constructor creates a new Feedback from a TestCase. 
+        % The constructor creates a new Feedback from a TestCase and path. 
         %
-        % this = Feedback(T) will return a Feedback with the
-        % T field assigned. The rest of the fields will be
+        % this = Feedback(T,P) will return a Feedback with the
+        % T and P field assigned. The rest of the fields will be
         % assigned by the gradeProblem function
         %
         %%% Remarks
