@@ -54,11 +54,12 @@ classdef Feedback < handle
         testCase;
         hasPassed;
         path;
+        outputs;
         files;
         plots;
         reason;
         points;
-        isRecursive;
+        isRecursive = false;
     end
     methods
         %% Constructor
@@ -90,15 +91,18 @@ classdef Feedback < handle
         %   T = [];
         %   F = Feedback(T);
         %
-        function [this] = Feedback(aTestCase)
-            this.testCase = aTestCase;
-            this.isRecursive = false;
+        function [this] = Feedback(testCase, path)
+            if nargin == 0
+                return;
+            end
+            this.testCase = testCase;
+            this.path = path;
         end
     end
     methods (Access = public)
         %% generateFeedback: Generates HTML feedback 
         %
-        % The function genreates complete HTML feedback for the specific
+        % The function generates complete HTML feedback for the specific
         % feedback 
         %
         % H = generateFeedback() generates the complete html
