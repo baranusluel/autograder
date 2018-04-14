@@ -350,12 +350,12 @@ function runnable = runCase(runnable)
     end
 
     % Parse the call
+    origPath = cd(runnable.path);
     [inNames, outNames, func] = parseFunction(tCase.call);
     outs = cell(size(outNames));
     % run the function
     % create sentinel file
     fid = fopen(File.SENTINEL, 'r');
-    origPath = cd(runnable.path);
     [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
     cd(origPath);
     name = fopen(fid);
