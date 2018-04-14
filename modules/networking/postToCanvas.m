@@ -29,4 +29,28 @@
 %
 %   Message 'Hello, World!' posted
 function postToCanvas(courseId, token, message)
+    API = 'https://gatech.instructure.com/api/v1/';
+    apiOpts = weboptions;
+    apiOpts.RequestMethod = 'POST';
+    apiOpts.HeaderFields = {'Authorization', ['Bearer ' token]};
     
+    title = 'Homework Grades Released';
+    published = 'true';
+    allow_rating = 'false';
+    is_announcement = 'true';
+    try
+        webwrite([API 'courses/' num2str(courseId) '/discussion_topics'], ...
+            'title', title, 'message', message, 'published', published, ...
+            'allow_rating', allow_rating, 'is_announcement', is_announcement, apiOpts);
+    catch reason
+        if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
+            e = MException('AUTOGRADER:postToCanvas:invalidCredentials', 'Invalid token was provided');
+            e = e.addCause(reason);
+            throw(e);
+        end
+        e = MException('AUTOGRADER:uploadToCanvas:connection', 'Connection was interrupted');
+        e = e.addCause(reason);
+        throw(e);
+    end
+        
+end
