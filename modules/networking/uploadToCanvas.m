@@ -74,7 +74,7 @@
 %   Threw invalidCredentials Exception
 
 function uploadToCanvas(students, homework, varargin)
-    if any(isvalid(students))
+    if any(~isvalid(students))
         return;
     end
     opts = parseOptions(varargin);
@@ -123,18 +123,29 @@ function uploadToCanvas(students, homework, varargin)
             e = e.addCause(reason);
             throw(e);
         end
-
-        % data is structure. If not empty, found hw - get ID
-        opts.assignmentId = data.id;
+        if isfield(data, 'id') && ~isempty(data.id)
+            opts.assignmentId = data.id;
+        else
+            e = MException('AUTOGRADER:uploadToCanvas:dataNotFound', ...
+                'Could not find assignment');
+            throw(e);
+        end
     end
 
 
     % for each student, get student ID from GT Username. Then, using id, upload grades.
-    for s = 1:numel(students)
+    getApiOpts = apiOpts;
+    getApiOpts.RequestMethod = 'GET';
+    putApiOpts = apiOpts;
+    putApiOpts.RequestMethod = 'PUT';
+    
+    courseId = opts.courseId;
+    assignmentId = opts.assignmentId;
+    studentId = student.id;
+    parfor s = 1:numel(students)
         % get student id
-        apiOpts.RequestMethod = 'GET';
         try
-            id = webread([api 'courses/' opts.courseId '.users'], 'search_term', student.id, apiOpts);
+            id = webread([API 'courses/' courseId '.users'], 'search_term', studentId, getApiOpts);
         catch reason
             if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
                 e = MException('AUTOGRADER:uploadToCanvas:invalidCredentials', 'Invalid token was provided');
@@ -148,7 +159,7 @@ function uploadToCanvas(students, homework, varargin)
         id = id.id;
         % check if student was hand graded - if we find a comment that says "REGRADE", don't overwrite
         try
-            data = webread([api 'courses/' opts.courseId '/assignments/' opts.assignmentId '/submissions/' id], 'include[]', 'submission_comments', apiOpts);
+            data = webread([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], 'include[]', 'submission_comments', getApiOpts);
         catch reason
             if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
                 e = MException('AUTOGRADER:uploadToCanvas:invalidCredentials', 'Invalid token was provided');
@@ -162,16 +173,15 @@ function uploadToCanvas(students, homework, varargin)
         comments = data.submission_comments;
         isRegrade = false;
         for c = 1:numel(comments)
-            if strcmp(comments(c).comment, 'REGRADE');
+            if strcmp(comments(c).comment, 'REGRADE')
                 isRegrade = true;
                 break;
             end
         end
         if ~isRegrade
         % upload student grade
-            apiOpts.RequestMethod = 'PUT';
             try
-                webwrite([api 'courses/' opts.courseId '/assignments/' opts.assignmentId '/submissions/' id], 'submission[posted_grade]', num2str(s.grade), apiOpts);
+                webwrite([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], 'submission[posted_grade]', num2str(s.grade), putApiOpts);
             catch reason
                 if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
                     e = MException('AUTOGRADER:uploadToCanvas:invalidCredentials', 'Invalid token was provided');
