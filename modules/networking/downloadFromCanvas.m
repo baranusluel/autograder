@@ -28,3 +28,51 @@
 %   downloadFromCanvas(C, A, T, P);
 %
 %   threw connectionError exception
+function downloadFromCanvas(courseId, assignmentId, token, path)
+    subs = getSubmissions(courseId, assignmentId, token);
+    origPath = cd(path);
+    % for each user, get GT Username, create folder, then inside that
+    % folder, download submission
+    names = cell(2, numel(subs));
+    for s = 1:numel(subs)
+        student = getStudentInfo(subs{s}.user_id, token);
+        % create folder with name as login_id
+        mkdir(student.login_id);
+        names{1, s} = student.name;
+        names{2, s} = student.login_id;
+        orig = cd(student.login_id);
+        % for each attachment, download it here
+        if isfield(subs{s}, 'attachments')
+            for a = 1:numel(subs{s}.attachments)
+                websave(subs{s}.attachments(a).filename, ...
+                    subs{s}.attachments(a).url);
+            end
+        end
+        cd(orig);
+    end
+    % write info.csv
+    records = cell(1, size(names, 2));
+    for n = 1:size(names, 2)
+        records{n} = strjoin(names(:, n)', ': ');
+    end
+    fid = fopen('info.csv', 'wt');
+    fwrite(fid, strjoin(records, newline));
+    fclose(fid);
+    cd(origPath);
+end
+
+function subs = getSubmissions(courseId, assignmentId, token)
+    % get all subs for this assignment. 
+    API = 'https://gatech.instructure.com/api/v1';
+    opts = weboptions;
+    opts.HeaderFields = {'Authorization', ['Bearer ' token]};
+    subs = webread([API '/courses/' num2str(courseId) '/assignments/' num2str(assignmentId) '/submissions/'], 'per_page', '10000', opts);
+end
+
+function info = getStudentInfo(userId, token)
+    API = 'https://gatech.instructure.com/api/v1';
+    opts = weboptions;
+    opts.HeaderFields = {'Authorization', ['Bearer ' token]};
+    info = webread([API '/users/' num2str(userId) '/profile/'], opts);
+end
+    
