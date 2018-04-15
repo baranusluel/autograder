@@ -35,7 +35,7 @@
 function downloadFromDrive(folderId, token, path)
 
     % get this folder's information
-    
+    folder = getFolder(folderId, token);
     % create directory for this root folder and cd to it
     
     % for all the files inside, download them here
@@ -47,10 +47,18 @@ function downloadFromDrive(folderId, token, path)
     
 end
 
-function downloadFile(fileId, token)
-
+function downloadFile(file, token)
+    API = 'https://www.googleapis.com/drive/v3/files/';
+    opts = weboptions();
+    opts.HeaderFields = {'Authorization', ['Bearer ' token]};
+    url = [API file.id '?alt=media'];
+    websave(file.name, url, opts);
 end
 
 function folder = getFolder(folderId, token)
-
+    API = 'https://www.googleapis.com/drive/v3/files/';
+    opts = weboptions();
+    opts.HeaderFields = {'Authorization', ['Bearer ' token]};
+    folder = webread(API, 'q', ['''' folderId ''' in parents'], opts);
+    
 end
