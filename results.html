@@ -4,10 +4,12 @@
 <meta charset="utf-8">
 <title>Test Results</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400&amp;subset=latin-ext" rel="stylesheet">
+<link rel="shortcut icon" type="image/x-icon" href="resources/favicon.ico" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
 <script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js"></script>
 <style>
 .fa-check {
@@ -16,9 +18,58 @@
 .fa-times {
     color: darkred;
 }
+.test-message {
+    text-indent: 4%;
+    color: black;
+    font-family: "Courier New";
+}
+.test-error {
+    color: firebrick;
+}
+h4 {
+    color: darkgrey;
+}
+.module-status {
+    font-size: 24px;
+}
+html,
+body {
+    font-family: 'Open Sans';
+    font-weight: 400;
+    font-size: 18px;
+}
+.navbar-logo {
+    width: 32px;
+    height: 32px;
+}
+.navbar-brand {
+    font-weight: 300;
+}
+.thin {
+    font-weight: 300;
+}
+#goBack {
+    color: white;
+}
 </style>
 </head>
-<body>
+<body><nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+            <a id="goBack" class="nav-link" href="index.html">
+                <i class="fas fa-arrow-left"></i> Go Back
+            </a>
+            <a class="navbar-brand" href="index.html">
+                <img src="resources/brand.jpg" class="rounded navbar-logo">
+                Autograder Docs
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+                    
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav">
+                </ul>
+            </div>
+        </nav>
 <div class="container-fluid">
 <div class="jumbotron text-center">
 <i class="display-1 text-center fas fa-check"></i>
@@ -73,9 +124,11 @@ Constructor
 InvalidPath
 </code>
 </h5>
-<pre class="test-message">
+<div class="test-message">
+<p>
 Exception correctly thrown
-</pre>
+</p>
+</div>
 </div>
 </div>
 <div class="row result">
@@ -86,9 +139,11 @@ Exception correctly thrown
 NoSubmissions
 </code>
 </h5>
-<pre class="test-message">
+<div class="test-message">
+<p>
 Student correctly constructed
-</pre>
+</p>
+</div>
 </div>
 </div>
 <div class="row result">
@@ -99,9 +154,31 @@ Student correctly constructed
 ValidStudent
 </code>
 </h5>
-<pre class="test-message">
+<div class="test-message">
+<p>
 Student correctly constructed
-</pre>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div class="class-method">
+<h4 class="method-name">
+GradeProblem
+</h4>
+<div class="row result">
+<div class="col-12">
+<h5 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+NoSubmissions
+</code>
+</h5>
+<div class="test-message">
+<p>
+Exception correctly thrown
+</p>
+</div>
 </div>
 </div>
 </div>
@@ -127,9 +204,11 @@ Constructor
 LoadMatFile
 </code>
 </h5>
-<pre class="test-message">
+<div class="test-message">
+<p>
 TestCase correctly constructed
-</pre>
+</p>
+</div>
 </div>
 </div>
 <div class="row result">
@@ -140,9 +219,11 @@ TestCase correctly constructed
 ValidTestCase
 </code>
 </h5>
-<pre class="test-message">
+<div class="test-message">
+<p>
 TestCase correctly constructed
-</pre>
+</p>
+</div>
 </div>
 </div>
 </div>
