@@ -143,9 +143,39 @@ classdef Feedback < handle
         %
         %
         function html = generateFeedback(this)
-            if hasPassed
+            %Check if testCase was passed and output empty div
+            if this.hasPassed
                 html = '<div></div>';
+            else
+                %Get solution outputs for testCase
+                solnOutputs = this.testCase.outputs;
+                solnFiles = this.testCase.outputs;
+                solnPlots = this.testCase.plots;
+                
+                %Check whether regular outputs should have been produced
+                %by student
+                if ~isempty(solnOutputs)
+                    fn = fieldnames(solnOutputs);
+                    for i = 1:length(fn)
+                        str = generateFeedback(this.outputs.(fn{i}),solnOutputs.(fn{i}));
+                    end
+                end
+                
+                %Check whether files should have been produced by student
+                if ~isempty(solnFiles)
+                    for i = 1:length(solnFiles)
+                        str = File.generateFeedback(this.files(i),solnFiles(i));
+                    end
+                end
+                
+                %Check whether plots should have been produced by student
+                if ~isempty(solnPlots)
+                    for i = 1:length(solnPlots)
+                        str = Plot.generateFeedback(this.plots(i),solnPlots(i));
+                    end
+                end
             end
+            html = sprintf('<div class="container feedback"><p>%s</p><p>%s</p></div>',this.reason,str);
         end
     end
 end
