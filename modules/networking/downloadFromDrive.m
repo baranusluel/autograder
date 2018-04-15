@@ -32,3 +32,25 @@
 %
 %   threw connectionError exception
 %
+function downloadFromDrive(folderId, token, path)
+
+    % get this folder's information
+    
+    % create directory for this root folder and cd to it
+    
+    % for all the files inside, download them here
+    
+    % for each folder inside this, call ourselves recursively
+    
+    % cd back to original folder
+    
+    
+end
+
+function downloadFile(fileId, token)
+
+end
+
+function folder = getFolder(folderId, token)
+
+end
