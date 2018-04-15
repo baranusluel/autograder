@@ -42,7 +42,8 @@ classdef UnitResults < handle
             units = dir();
             units(~[units.isdir]) = [];
             units(strncmp({units.name}, '.', 1)) = [];
-            for i = numel(units):-1:1
+            testResults(numel(units)) = TestResults();
+            for i = 1:numel(units)
                 testResults(i) = TestResults(fullfile(units(i).folder, units(i).name));
             end
             this.testResults = testResults;
