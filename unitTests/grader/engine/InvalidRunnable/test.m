@@ -7,8 +7,9 @@
 % Threw exception invalidRunnable
 function [passed, msg] = test()
     F = Feedback();
+    delete(F);
     try
-        F = engine(F);
+        engine(F);
         passed = false;
         msg = 'Engine failed to throw exception';
     catch e
