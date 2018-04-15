@@ -31,6 +31,7 @@
 function downloadFromCanvas(courseId, assignmentId, token, path)
     subs = getSubmissions(courseId, assignmentId, token);
     origPath = cd(path);
+    cleaner = onCleanup(@()(cd(origPath)));
     % for each user, get GT Username, create folder, then inside that
     % folder, download submission
     names = cell(2, numel(subs));
@@ -44,8 +45,14 @@ function downloadFromCanvas(courseId, assignmentId, token, path)
         % for each attachment, download it here
         if isfield(subs{s}, 'attachments')
             for a = 1:numel(subs{s}.attachments)
-                websave(subs{s}.attachments(a).filename, ...
-                    subs{s}.attachments(a).url);
+                try
+                    websave(subs{s}.attachments(a).filename, ...
+                        subs{s}.attachments(a).url);
+                catch reason
+                    e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
+                    e = addCause(e, reason);
+                    throw(e);
+                end
             end
         end
         cd(orig);
@@ -66,13 +73,25 @@ function subs = getSubmissions(courseId, assignmentId, token)
     API = 'https://gatech.instructure.com/api/v1';
     opts = weboptions;
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
-    subs = webread([API '/courses/' num2str(courseId) '/assignments/' num2str(assignmentId) '/submissions/'], 'per_page', '10000', opts);
+    try
+        subs = webread([API '/courses/' num2str(courseId) '/assignments/' num2str(assignmentId) '/submissions/'], 'per_page', '10000', opts);
+    catch reason
+        e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
+        e = addCause(e, reason);
+        throw(e);
+    end
 end
 
 function info = getStudentInfo(userId, token)
     API = 'https://gatech.instructure.com/api/v1';
     opts = weboptions;
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
-    info = webread([API '/users/' num2str(userId) '/profile/'], opts);
+    try
+        info = webread([API '/users/' num2str(userId) '/profile/'], opts);
+    catch reason
+        e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
+        e = addCause(e, reason);
+        throw(e);
+    end
 end
     
