@@ -14,11 +14,8 @@
 %%% Exceptions
 %
 % Like all other networking functions, this will throw an
-% AUTOGRADER:postToCanvas:invalidCredentials exception if the token given 
-% doesn't work.
-%
-% Additionally, it will also throw an AUTOGRADER:postToCanvas:connection
-% exception if the connection is somehow broken.
+% AUTOGRADER:networking:connectionError exception if something
+% goes wrong.
 %
 %%% Unit Tests
 %
@@ -33,7 +30,7 @@ function postToCanvas(courseId, token, message)
     apiOpts = weboptions;
     apiOpts.RequestMethod = 'POST';
     apiOpts.HeaderFields = {'Authorization', ['Bearer ' token]};
-    
+
     title = 'Homework Grades Released';
     published = 'true';
     allow_rating = 'false';
@@ -43,14 +40,9 @@ function postToCanvas(courseId, token, message)
             'title', title, 'message', message, 'published', published, ...
             'allow_rating', allow_rating, 'is_announcement', is_announcement, apiOpts);
     catch reason
-        if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
-            e = MException('AUTOGRADER:postToCanvas:invalidCredentials', 'Invalid token was provided');
-            e = e.addCause(reason);
-            throw(e);
-        end
-        e = MException('AUTOGRADER:postToCanvas:connection', 'Connection was interrupted');
+        e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted');
         e = e.addCause(reason);
         throw(e);
     end
-        
+
 end
