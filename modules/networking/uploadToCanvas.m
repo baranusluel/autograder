@@ -88,7 +88,7 @@ function uploadToCanvas(students, homework, varargin)
 
     if isempty(opts.courseId)
         % find course ID; it will be the only course active
-        data = webread([API 'courses/'], apiOpts);
+        data = coveredRead([API 'courses/'], apiOpts);
         % data will PROBABLY be a cell array
         if ~iscell(data)
             % a stucture. num2cell it and proceed
@@ -111,18 +111,7 @@ function uploadToCanvas(students, homework, varargin)
 
     if isempty(opts.assignmentId)
         % get HW ID:
-        try
-            data = webread([API 'courses/' num2str(opts.courseId) '/assignments'], 'search_term', homework, apiOpts);
-        catch reason
-            if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
-                e = MException('AUTOGRADER:uploadToCanvas:invalidCredentials', 'Invalid token was provided');
-                e = e.addCause(reason);
-                throw(e);
-            end
-            e = MException('AUTOGRADER:uploadToCanvas:connection', 'Connection was interrupted');
-            e = e.addCause(reason);
-            throw(e);
-        end
+        data = coveredRead([API 'courses/' num2str(opts.courseId) '/assignments'], apiOpts, 'search_term', homework);
         if isfield(data, 'id') && ~isempty(data.id)
             opts.assignmentId = data.id;
         else
@@ -138,38 +127,16 @@ function uploadToCanvas(students, homework, varargin)
     getApiOpts.RequestMethod = 'GET';
     putApiOpts = apiOpts;
     putApiOpts.RequestMethod = 'PUT';
-    
+
     courseId = num2str(opts.courseId);
     assignmentId = num2str(opts.assignmentId);
     studentId = student.id;
     parfor s = 1:numel(students)
         % get student id
-        try
-            id = webread([API 'courses/' courseId '.users'], 'search_term', studentId, getApiOpts);
-        catch reason
-            if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
-                e = MException('AUTOGRADER:uploadToCanvas:invalidCredentials', 'Invalid token was provided');
-                e = e.addCause(reason);
-                throw(e);
-            end
-            e = MException('AUTOGRADER:uploadToCanvas:connection', 'Connection was interrupted');
-            e = e.addCause(reason);
-            throw(e);
-        end
+        id = coveredRead([API 'courses/' courseId '/users'], getApiOpts, 'search_term', studentId);
         id = id.id;
+        data = coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], getApiOpts, 'include[]', 'submission_comments');
         % check if student was hand graded - if we find a comment that says "REGRADE", don't overwrite
-        try
-            data = webread([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], 'include[]', 'submission_comments', getApiOpts);
-        catch reason
-            if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
-                e = MException('AUTOGRADER:uploadToCanvas:invalidCredentials', 'Invalid token was provided');
-                e = e.addCause(reason);
-                throw(e);
-            end
-            e = MException('AUTOGRADER:uploadToCanvas:connection', 'Connection was interrupted');
-            e = e.addCause(reason);
-            throw(e);
-        end
         comments = data.submission_comments;
         isRegrade = false;
         for c = 1:numel(comments)
@@ -180,18 +147,7 @@ function uploadToCanvas(students, homework, varargin)
         end
         if ~isRegrade
         % upload student grade
-            try
-                webwrite([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], 'submission[posted_grade]', num2str(s.grade), putApiOpts);
-            catch reason
-                if strcmp(reason.identifier, 'MATLAB:webservices:HTTP401StatusCodeError')
-                    e = MException('AUTOGRADER:uploadToCanvas:invalidCredentials', 'Invalid token was provided');
-                    e = e.addCause(reason);
-                    throw(e);
-                end
-                e = MException('AUTOGRADER:uploadToCanvas:connection', 'Connection was interrupted');
-                e = e.addCause(reason);
-                throw(e);
-            end
+            coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], putApiOpts, 'submission[posted_grade]', num2str(s.grade));
         end
     end
 end
@@ -204,4 +160,14 @@ function outs = parseOptions(ins)
 
     parser.parse(ins{:});
     outs = parser.Results;
+end
+
+function out = coveredRead(url, opts, varargin)
+    try
+        out = webread(url, varargin{:}, opts);
+    catch reason
+        e = MException('AUTOGRADER:networking:connectionError', 'Connection was terminated');
+        e = e.addCause(reason);
+        throw(e);
+    end
 end
