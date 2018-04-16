@@ -73,6 +73,9 @@ classdef Problem < handle
         %    AUTOGRADER:PROBLEM:INVALIDINFO
         % 
         function this = Problem(info)
+            if nargin == 0
+                return;
+            end
             try
                 this.name = info.name;
                 this.banned = info.banned;
