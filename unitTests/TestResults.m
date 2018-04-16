@@ -120,7 +120,7 @@ classdef TestResults < handle
             else
                 html = [html {'<h4 class="test-name">', '<code>', this.FAILING_MARK, this.name, '</code>', '</h4>'}];
             end
-            html = [html {'<pre class="test-message">', this.message, '</pre>', '</div>', '</div>'}];
+            html = [html {'<div class="test-message">', '<p>', this.message, '</p>', '</div>', '</div>', '</div>'}];
             html = strjoin(html, newline);
         end
     end
