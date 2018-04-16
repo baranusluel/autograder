@@ -28,7 +28,17 @@
 %   % Assuming user says no:
 %   threw connectionError exception
 function token = authorizeWithGoogle()
-    URL = 'https://accounts.google.com/o/oauth2/v2/auth?scope=https://www.googleapis.com/auth/drive.readonly&response_type=code&redirect_uri=http://127.0.0.1:9004&client_id=995321590274-1msjncpalf2cj5vmqmudjj2pl7npjicd.apps.googleusercontent.com';
+    SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
+    RESP_TYPE = 'code';
+    REDIRECT = 'http://127.0.0.1:9004';
+    CLIENT_ID = '995321590274-1msjncpalf2cj5vmqmudjj2pl7npjicd.apps.googleusercontent.com';
+    CLIENT_SECRET = 'finkYqyQBbOC6HFbqEyeeHAn';
+    GRANT_TYPE = 'authorization_code';
+    
+    URL = ['https://accounts.google.com/o/oauth2/v2/auth?scope=', SCOPE, ...
+        '&response_type=', RESP_TYPE, ...
+        '&redirect_uri=', REDIRECT, ...
+        '&client_id=', CLIENT_ID];
     web(URL, '-browser');
     % start up server socket
     server = tcpip('0.0.0.0', 9004, 'NetworkRole', 'server');
@@ -36,10 +46,23 @@ function token = authorizeWithGoogle()
     fopen(server);
     RESPONSE = strjoin({'HTTP/1.1 200 OK', '', '<html><body><h1>Success! You can close this window and head back to the autograder...</h1></body></html>'}, newline);
     % get code
-    code = fread(server, server.BytesAvailable);
+    while server.BytesAvailable == 0
+        pause(.5);
+    end
+    code = char(fread(server, server.BytesAvailable, 'uchar')');
     % write response
     fwrite(server, RESPONSE);
     fclose(server);
-    
+    % parse the code
+    code = strtok(code, newline);
+    code = regexp(code, '(?<=^GET [/][?]code[=])[^\s]*', 'match');
+    code = code{1};
     % send auth code and get back refresh token
+    opts = weboptions();
+    opts.RequestMethod = 'POST';
+    EXCHANGER = 'https://www.googleapis.com/oauth2/v4/token';
+    data = webread(EXCHANGER, 'code', code, 'client_id', CLIENT_ID, ...
+        'client_secret', CLIENT_SECRET, 'redirect_uri', REDIRECT, ...
+        'grant_type', GRANT_TYPE, opts);
+    token = data.refresh_token;
 end
