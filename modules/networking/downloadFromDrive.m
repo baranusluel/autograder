@@ -33,17 +33,30 @@
 %   threw connectionError exception
 %
 function downloadFromDrive(folderId, token, path)
-
+    FOLDER_TYPE = 'application/vnd.google-apps.folder';
+    if nargin == 3
+        origPath = cd(path);
+    else
+        origPath = pwd;
+    end
+    cleaner = onCleanup(@()(cd(origPath)));
     % get this folder's information
     folder = getFolder(folderId, token);
     % create directory for this root folder and cd to it
-    
+    mkdir(folder.name);
+    cd(folder.name);
     % for all the files inside, download them here
-    
-    % for each folder inside this, call ourselves recursively
-    
-    % cd back to original folder
-    
+    contents = getFolderContents(folder.id, token);
+    for c = 1:numel(contents)
+        content = contents(c);
+        if strcmp(content.mimeType, FOLDER_TYPE)
+            % folder; call recursively
+            downloadFromDrive(content.id, token);
+        else
+            % file; download
+            downloadFile(content, token);
+        end
+    end
     
 end
 
@@ -52,13 +65,41 @@ function downloadFile(file, token)
     opts = weboptions();
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
     url = [API file.id '?alt=media'];
-    websave(file.name, url, opts);
+    try
+        websave(file.name, url, opts);
+    catch reason
+        e = MException('AUTOGRADER:networking:connectionError', ...
+            'Connection was terminated (Are you connected to the internet?');
+        e = e.addCause(reason);
+        throw(e);
+    end
+end
+
+function contents = getFolderContents(folderId, token)
+    API = 'https://www.googleapis.com/drive/v3/files/';
+    opts = weboptions();
+    opts.HeaderFields = {'Authorization', ['Bearer ' token]};
+    try
+        contents = webread(API, 'q', ['''' folderId ''' in parents'], opts);
+    catch reason
+        e = MException('AUTOGRADER:networking:connectionError', ...
+            'Connection was terminated (Are you connected to the internet?');
+        e = e.addCause(reason);
+        throw(e);
+    end
+    contents = contents.files;
 end
 
 function folder = getFolder(folderId, token)
     API = 'https://www.googleapis.com/drive/v3/files/';
     opts = weboptions();
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
-    folder = webread(API, 'q', ['''' folderId ''' in parents'], opts);
-    
+    try
+        folder = webread([API folderId], opts);
+    catch reason
+        e = MException('AUTOGRADER:networking:connectionError', ...
+            'Connection was terminated (Are you connected to the internet?');
+        e = e.addCause(reason);
+        throw(e);
+    end 
 end
