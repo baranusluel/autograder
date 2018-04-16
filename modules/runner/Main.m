@@ -85,25 +85,19 @@ function Main(varargin)
         settings.upload ...
     ] = parser(varargin);
         
-
-    % Check if given params.
-    if isempty(settings.students)
-        % uigetfile
-        [studName, studPath, ~] = uigetfile('*.zip', 'Select the Student ZIP Archive');
-        if isequal(studName, 0) || isequal(studPath, 0)
-            return; % (user cancelled)
-        else
-            settings.students = fullfile(studPath, studName);
-        end
-    elseif isempty(settings.solutions)
-        % throw exception?
-        [solnName, solnPath, ~] = uigetfile('*.zip', 'Select the Solutions ZIP Archive');
-        if isequal(solnName, 0) || isequal(solnPath, 0)
-            return; % (user cancelled)
-        else
-            settings.solutions = fullfile(solnPath, solnName);
-        end
-    end
+    % Show the app. After it's done (uiresume), we'll extract necessary
+    % info and then change to updating. If it's cancelled, we'll exit
+    % gracefully.
+    
+    % add to path
+    addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
+    settings.userPath = {path(), userpath()};
+    clear Student;
+    Student.resetPath();
+    
+    % start up application
+    app = Autograder();
+    uiwait(app.UIFigure);
     
     % Start up parallel pool
     if isempty(gcp)
@@ -120,17 +114,35 @@ function Main(varargin)
     fclose(fid);
     File.SENTINEL = [pwd filesep 'SENTINEL.lock']; %#ok<STRNU>
     
-    % Copy zip files
-    % rename appropriately (students -> students, solutions -> solutions)
-    copyfile(settings.students, [settings.workingDir 'students.zip']);
-    copyfile(settings.solutions, [settings.workingDir 'solutions.zip']);
-    studPath = [settings.workingDir 'students.zip'];
-    solnPath = [settings.workingDir 'solutions.zip'];
+    % For submission, what are we doing?
+    % if downloading, call, otherwise, unzip
+    if app.HomeworkChoice.Value == 1
+        % downloading. We should create new Students folder and download
+        % there.
+        mkdir('Students');
+        try
+            downloadFromCanvas(app.courseId, app.assignmentId, ...
+                app.canvasToken, [pwd filesep 'Students']);
+            studPath = [pwd filesep 'Students'];
+        catch e
+            % alert in some way
+        end
+    else
+        % unzip the archive
+        studPath = [settings.workingDir 'students.zip'];
+    end
     
-    % Remove user's PATH, instate factory default instead:
-    addpath(genpath(fileparts(mfilename('fullpath'))));
-    settings.userPath = {path(), userpath()};
-    Student.resetPath();
+    % For solution, what are we doing?
+    % if downloading, call, otherwise, unzip
+    if app.SolutionChoice.Value == 1
+        % downloading
+        mkdir('Solutions');
+        % downloadFromDrive(...);
+        solnPath = [pwd filesep 'Solutions'];
+    else
+        % unzip the archive
+        solnPath = [settings.workingDir 'solutions.zip'];
+    end
     
     % Make sure figure's don't show
     settings.figures = get(0, 'DefaultFigureVisible');
