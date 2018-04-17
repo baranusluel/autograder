@@ -1,19 +1,19 @@
-%% unitRunner: Run all unit tests and return feedback
+%% autotester: Run all unit tests and return feedback
 %
-% unitRunner will run all Unit Tests for the autograder. Then, it will (optionally) show feedback.
+% autotester will run all Unit Tests for the autograder. Then, it will (optionally) show feedback.
 %
-% [S, H] = unitRunner() will run all Unit Tests. If all of them pass, S is true; otherwise, S is
+% [S, H] = autotester() will run all Unit Tests. If all of them pass, S is true; otherwise, S is
 % false. H will be the base HTML feedback for all the unit tests.
 %
-% [S, H] = unitRunner(O) will use the options in structure O to run unit tests. See the Remarks
+% [S, H] = autotester(O) will use the options in structure O to run unit tests. See the Remarks
 % section for more details
 %
-% [S, H] = unitRunner(P1, V1, ...) will use the options specified by parameters P1, P2, ... and
+% [S, H] = autotester(P1, V1, ...) will use the options specified by parameters P1, P2, ... and
 % values V1, V2, ... to run unit tests. See the Remarks section for more details
 %
 %%% Remarks
 %
-% unitRunner can take in a few parameters that augment it's functionality. These parameters, and
+% autotester can take in a few parameters that augment it's functionality. These parameters, and
 % their effects, are listed below:
 %
 % * showFeedback: A logical. If true, the built-in web browser will show you the HTML feedback for

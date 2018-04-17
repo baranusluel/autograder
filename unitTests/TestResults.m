@@ -60,11 +60,24 @@ classdef TestResults < handle
             origPath = cd(path);
             % copy over everything in the PATH directory
             copyfile([pwd filesep '*'], workDir);
+            status = dbstatus('test.m', '-completenames'); % guaranteed to exist
+            for i = 1:numel(status)
+                status(i).file = [workDir filesep 'test.m'];
+                status(i).name = regexprep(status(i).name, '^[^>]*', [workDir filesep 'test.m']);
+                dbstop(status(i));
+            end
+            % change name
             % copy over any FILES in parent
             files = dir('..');
             files([files.isdir]) = [];
             for f = 1:numel(files)
+                status = dbstatus([files(f).folder filesep files(f).name], '-completenames');
                 copyfile([files(f).folder filesep files(f).name], workDir);
+                for i = 1:numel(status)
+                    status(i).file = [workDir filesep files(f).name];
+                    status(i).name = regexprep(status(i).name, '^[^>]*', [workDir filesep files(f).name]);
+                    dbstop(status(i));
+                end
             end
 
             this.path = path;
@@ -85,6 +98,7 @@ classdef TestResults < handle
             end
 
             cd(workDir);
+            cleaner = onCleanup(@()(cd(origPath)));
             % we know test.m will exist
             try
                 [this.passed, this.message] = test();
