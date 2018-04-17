@@ -43,7 +43,7 @@ classdef Problem < handle
         %
         %%% Exceptions
         %
-        % an AUTOGRADER:PROBLEM:INVALIDINFO exception will be thrown if
+        % an AUTOGRADER:Problem:ctor:invalidInfo exception will be thrown if
         % the structure is incorrectly formatted or missing information
         %
         % Does not catch exceptions thrown by testCase
@@ -62,7 +62,7 @@ classdef Problem < handle
         %    P = Problem(J)
         %
         %    Constructor threw exception
-        %    AUTOGRADER:PROBLEM:INVALIDINFO
+        %    AUTOGRADER:Problem:ctor:invalidInfo
         % 
         % Given that the input is a valid parsed JSON that is missing
         % information:
@@ -70,7 +70,7 @@ classdef Problem < handle
         %    P = Problem(J)
         % 
         %    Constructor threw exception
-        %    AUTOGRADER:PROBLEM:INVALIDINFO
+        %    AUTOGRADER:Problem:ctor:invalidInfo
         % 
         function this = Problem(info)
             if nargin == 0
@@ -92,7 +92,7 @@ classdef Problem < handle
                     this.testCases(i) = TestCase(tInfo, [pwd filesep() 'Solutions']);
                 end
             catch 
-                throw(MException('AUTOGRADER:PROBLEM:CTOR:INVALIDINFO', ...
+                throw(MException('AUTOGRADER:Problem:ctor:invalidInfo', ...
                     'Problem with INFO struct fields'));
             end
         end
