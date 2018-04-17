@@ -109,7 +109,7 @@
 %
 %   PROBLEMS -> Valid Problem Array
 %
-%   isResubmission = ''; % Inavlid Input
+%   isResubmission = ''; % Invalid Input
 %   PROBLEMS = generateSolutions(isResubmission);
 %
 %   Threw invalidInput exception
@@ -152,7 +152,6 @@ try
         %The problems output vector should now contain all necessary problems.
     else
         mE = MException('AUTOGRADER:generateSolutions:invalidInput','The input is not of type logical for isResubmission.');
-        mE = mE.addCause(e);
         throw(mE);
     end
     
@@ -169,9 +168,8 @@ catch e
     else
         %This next conditional checks for the decoding of the JSON.
         switch e.identifier
-            case 'AUTOGRADER:problem:invalidInput'
-                %This checks for issues with the conversion of the
-                %problems to the type Problem.
+            case 'AUTOGRADER:generateSolutions:invalidInput'
+                %This checks if the input is a logical or not.
                 mE = MException('AUTOGRADER:generateSolutions:invalidInput','The input is not of type logical for isResubmission.');
                 mE = mE.addCause(e);
                 throw(mE);
