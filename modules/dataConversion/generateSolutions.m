@@ -123,10 +123,9 @@
 %   Threw INVALIDPATH exception
 %
 function solutions = generateSolutions(path)
-%try-catch block to check if the path is invalid at all.
+%try-catch block to catch any resulting errors.
 try
-    %Unzip the archive to the current folder.
-    unzipArchive(path);
+    %Archive is already unzipped.
     %Decode the JSON
     fh = fopen('rubric.json','rt');
     json = char(fread(fh)');
@@ -147,38 +146,27 @@ catch e
     %Check for the errors that could have been thrown in the try block.
     %The first three conditionals check for the unzipping and file status
     %of the solution archive.
-    if strcmp(e.identifier, 'AUTOGRADER:unzipArchive:invalidPath') 
-        mE = MException('AUTOGRADER:generateSolutions:invalidPath','The path is not valid.');
-        mE = MException.addCause(e);
-        throw(mE);
-        
-    elseif strcmp(e.identifier, 'AUTOGRADER:unzipArchive:invalidPath') 
-        mE = MException('AUTOGRADER:generateSolutions:invalidPath','The path is valid but the file is not a valid archive.');
-        mE = MException.addCause(e);
-        throw(mE);
-        
-        %Check if the solution file is empty or not.
-    elseif fh == -1
+    
+    %Check if the solution file is empty or not.
+    if fh == -1
         mE = MException('AUTOGRADER:generateSolutions:invalidPath','The path is valid, but the solutions could not be parsed (Perhaps the solutions are not valid, or the archive is unreadable?)');
         mE = MException.addCause(e);
         throw(mE);
-        
-        %This next conditional checks for the decoding of the JSON.
-    elseif contains(e.identifier, 'json','IgnoreCase',true)
-        mE = MException('AUTOGRADER:generateSolutions:invalidPath','The path is valid, but the solutions are not in a valid JSON format.');
-        mE = MException.addCause(e);
-        throw(mE);
-        %This next conditional checks for issues with the conversion of the
-        %problems to the type Problem. 
-    elseif strcmp(e.identifier, 'AUTOGRADER:problem:invalidJSON')
-        mE = MException('AUTOGRADER:generateSolutions:invalidPath','The path is valid, but the solutions are not in a valid JSON format and could not be converted to the type PROBLEM.');
-        mE = MException.addCause(e);
-        throw(mE);        
     else
-        mE = MException('AUTOGRADER:generateSolutions:invalidPath','There was an error with the generateSolutions method of the autograder.');
-        mE = MException.addCause(e);
-        throw(mE);
+        %This next conditional checks for the decoding of the JSON.
+        switch e.identifier
+            case 'AUTOGRADER:problem:invalidJSON'
+                %This checks for issues with the conversion of the
+                %problems to the type Problem.
+                mE = MException('AUTOGRADER:generateSolutions:invalidPath','The path is valid, but the solutions are not in a valid JSON format and could not be converted to the type PROBLEM.');
+                mE = MException.addCause(e);
+                throw(mE);
+            otherwise
+                mE = MException('AUTOGRADER:generateSolutions:invalidPath','There was an error with the generateSolutions method of the autograder.');
+                mE = MException.addCause(e);
+                throw(mE);
+        end
     end
-end
 
+end
 end
