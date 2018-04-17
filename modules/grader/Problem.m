@@ -92,10 +92,11 @@ classdef Problem < handle
                     this.testCases(i) = TestCase(tInfo, [pwd filesep() 'Solutions']);
                 end
             catch ME
-                if strcmp(ME.identifier, 'MATLAB:nonExistentField')
-                    throw(MException('AUTOGRADER:Problem:ctor:invalidInfo', ...
-                        'Problem with INFO struct fields'));
-                end
+                e = MException('AUTOGRADER:Problem:ctor:invalidInfo', ...
+                    'Problem with INFO struct fields');
+                e = e.addCause(ME);
+                throw(e);
+                
             end
         end
     end
