@@ -80,10 +80,16 @@ classdef Problem < handle
                 this.name = info.name;
                 this.banned = info.banned;
                 this.isRecursive = info.isRecursive;
+                % Go through supporting files and get full paths
+                for j = 1:length(info.supportingFiles)
+                    info.supportingFiles{i} = [fileparts(fileparts(pwd)) filesep 'SupportingFiles' filesep info.supportingFiles{i}];
+                end
+
                 for i = length(info.testCases):-1:1
                     tInfo = info.TestCases(i);
                     tInfo.banned = this.banned; 
-                    this.testCases(i) = TestCase(tInfo, 'path/to/solution/file');
+                    tInfo.supportingFiles = info.supportingFiles;
+                    this.testCases(i) = TestCase(tInfo, [pwd filesep() 'Solutions']);
                 end
             catch 
                 throw(MException('AUTOGRADER:PROBLEM:CTOR:INVALIDINFO', ...
