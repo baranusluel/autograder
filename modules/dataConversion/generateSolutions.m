@@ -3,8 +3,7 @@
 % This will generate the solution values, given a logical value. These solutions are held in a `Problem` array.
 %
 % PROBLEMS = generateSolutions(isResubmission) will return a Problem Array containing
-% the problems for the current homework specified by PATH, which is a
-% string representation of the path to the solution ZIP archive
+% the problems for the current homework.
 % 
 %%% Remarks
 % 
@@ -96,28 +95,32 @@
 %%% Exceptions
 % 
 % generateSolutions throws exception 
-% AUTOGRADER:generateSolutions:invalidPath if the input path is invalid
-% or if necessary file is missing in the given directory
+% AUTOGRADER:generateSolutions:invalidInput if the input is not of type
+% logical.
+%
+% generateSolutions throws exception 
+% AUTOGRADER:generateSolutions:invalidPath if the path (solutions) are not
+% valid.
 % 
 %%% Unit Tests
 % 
-%   PATH = 'C:\Users\...\Soln.zip'; % Valid Solutions Archive
-%   PROBLEMS = generateSolutions(PATH);
+%   isResubmission = true
+%   PROBLEMS = generateSolutions(isResubmission);
 %
 %   PROBLEMS -> Valid Problem Array
 %
-%   PATH = ''; % Inavlid Path
-%   PROBLEMS = generateSolutions(PATH);
+%   isResubmission = ''; % Inavlid Input
+%   PROBLEMS = generateSolutions(isResubmission);
 %
-%   Threw invalidPath exception
+%   Threw invalidInput exception
 %
-%   PATH = 'C:\Users\...\Soln.zip'; % Valid path, invalid solutions!
-%   PROBLEMS = generateSolutions(PATH);
+%   isResubmission = true; % Valid input, invalid solutions!
+%   PROBLEMS = generateSolutions(isResubmission);
 %
 %   TestCase Threw exception <solnException>
 %
-%   PATH = 'C:\Users\...\Soln.zip'; % Valid path, but incomplete archive
-%   PROBLEMS = generateSolutions(PATH);
+%   isResubmission = false; % Valid input, but incomplete archive
+%   PROBLEMS = generateSolutions(isResubmission);
 %
 %   Threw invalidPath exception
 %
@@ -126,26 +129,32 @@ function solutions = generateSolutions(isResubmission)
 try
     %Archive is already unzipped.
     %Decode the JSON
-    if isResubmission
-        fh = fopen('rubrica.json','rt');
-        json = char(fread(fh)');
-        fclose(fh);
-        rubric = jsondecode(json);
+    if islogical(isResubmission)
+        if isResubmission
+            fh = fopen('rubrica.json','rt');
+            json = char(fread(fh)');
+            fclose(fh);
+            rubric = jsondecode(json);
+        else
+            fh = fopen('rubricb.json','rt');
+            json = char(fread(fh)');
+            fclose(fh);
+            rubric = jsondecode(json);
+        end
+        
+        %Go through the structure array (vector) that was created from the
+        %jsondecode() call and create problem types.
+        %Store these in one vector.
+        elements = numel(rubric);
+        for i = elements:-1:1
+            solutions(i) = Problem(rubric(i));
+        end
+        %The problems output vector should now contain all necessary problems.
     else
-        fh = fopen('rubricb.json','rt');
-        json = char(fread(fh)');
-        fclose(fh);
-        rubric = jsondecode(json);
+        mE = MException('AUTOGRADER:generateSolutions:invalidInput','The input is not of type logical for isResubmission.');
+        mE = mE.addCause(e);
+        throw(mE);
     end
-    
-    %Go through the structure array (vector) that was created from the
-    %jsondecode() call and create problem types.
-    %Store these in one vector.
-    elements = numel(rubric);
-    for i = elements:-1:1
-        solutions(i) = Problem(rubric(i));
-    end
-    %The problems output vector should now contain all necessary problems.
     
 catch e
     %Check for the errors that could have been thrown in the try block.
@@ -160,6 +169,12 @@ catch e
     else
         %This next conditional checks for the decoding of the JSON.
         switch e.identifier
+            case 'AUTOGRADER:problem:invalidInput'
+                %This checks for issues with the conversion of the
+                %problems to the type Problem.
+                mE = MException('AUTOGRADER:generateSolutions:invalidInput','The input is not of type logical for isResubmission.');
+                mE = mE.addCause(e);
+                throw(mE);
             case 'AUTOGRADER:problem:invalidJSON'
                 %This checks for issues with the conversion of the
                 %problems to the type Problem.
