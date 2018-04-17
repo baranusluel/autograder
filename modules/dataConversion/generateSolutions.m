@@ -1,9 +1,8 @@
 %% generateSolutions: Generate the solution values for comparison 
 %   
-% This will generate the solution values, given a path to the 
-% solution ZIP archive. These solutions are held in a `Problem` array.
+% This will generate the solution values, given a logical value. These solutions are held in a `Problem` array.
 %
-% PROBLEMS = generateSolutions(PATH) will return a Problem Array containing
+% PROBLEMS = generateSolutions(isResubmission) will return a Problem Array containing
 % the problems for the current homework specified by PATH, which is a
 % string representation of the path to the solution ZIP archive
 % 
@@ -143,7 +142,6 @@ try
     %jsondecode() call and create problem types.
     %Store these in one vector.
     elements = numel(rubric);
-    solutions = [];
     for i = elements:-1:1
         solutions(i) = Problem(rubric(i));
     end
