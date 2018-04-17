@@ -122,15 +122,22 @@
 %
 %   Threw INVALIDPATH exception
 %
-function solutions = generateSolutions(path)
+function solutions = generateSolutions(isResubmission)
 %try-catch block to catch any resulting errors.
 try
     %Archive is already unzipped.
     %Decode the JSON
-    fh = fopen('rubric.json','rt');
-    json = char(fread(fh)');
-    fclose(fh);
-    rubric = jsondecode(json);
+    if isResubmission
+        fh = fopen('rubrica.json','rt');
+        json = char(fread(fh)');
+        fclose(fh);
+        rubric = jsondecode(json);
+    else
+        fh = fopen('rubricb.json','rt');
+        json = char(fread(fh)');
+        fclose(fh);
+        rubric = jsondecode(json);
+    end
     
     %Go through the structure array (vector) that was created from the
     %jsondecode() call and create problem types.
@@ -167,6 +174,6 @@ catch e
                 throw(mE);
         end
     end
-
+    
 end
 end
