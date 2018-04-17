@@ -96,7 +96,7 @@
 %%% Exceptions
 % 
 % generateSolutions throws exception 
-% AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH if the input path is invalid
+% AUTOGRADER:generateSolutions:invalidPath if the input path is invalid
 % or if necessary file is missing in the given directory
 % 
 %%% Unit Tests
@@ -109,17 +109,17 @@
 %   PATH = ''; % Inavlid Path
 %   PROBLEMS = generateSolutions(PATH);
 %
-%   Threw INVALIDPATH exception
+%   Threw invalidPath exception
 %
 %   PATH = 'C:\Users\...\Soln.zip'; % Valid path, invalid solutions!
 %   PROBLEMS = generateSolutions(PATH);
 %
-%   TestCase Threw exception <SolnException>
+%   TestCase Threw exception <solnException>
 %
 %   PATH = 'C:\Users\...\Soln.zip'; % Valid path, but incomplete archive
 %   PROBLEMS = generateSolutions(PATH);
 %
-%   Threw INVALIDPATH exception
+%   Threw invalidPath exception
 %
 function solutions = generateSolutions(isResubmission)
 %try-catch block to catch any resulting errors.
@@ -155,7 +155,7 @@ catch e
     %Check if the solution file is empty or not.
     if fh == -1
         mE = MException('AUTOGRADER:generateSolutions:invalidPath','The path is valid, but the solutions could not be parsed (Perhaps the solutions are not valid, or the archive is unreadable?)');
-        mE = MException.addCause(e);
+        mE = mE.addCause(e);
         throw(mE);
     else
         %This next conditional checks for the decoding of the JSON.
@@ -164,11 +164,11 @@ catch e
                 %This checks for issues with the conversion of the
                 %problems to the type Problem.
                 mE = MException('AUTOGRADER:generateSolutions:invalidPath','The path is valid, but the solutions are not in a valid JSON format and could not be converted to the type PROBLEM.');
-                mE = MException.addCause(e);
+                mE = mE.addCause(e);
                 throw(mE);
             otherwise
                 mE = MException('AUTOGRADER:generateSolutions:invalidPath','There was an error with the generateSolutions method of the autograder.');
-                mE = MException.addCause(e);
+                mE = mE.addCause(e);
                 throw(mE);
         end
     end
