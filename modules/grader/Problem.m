@@ -89,8 +89,9 @@ classdef Problem < handle
                     tInfo = info.TestCases(i);
                     tInfo.banned = this.banned; 
                     tInfo.supportingFiles = info.supportingFiles;
-                    this.testCases(i) = TestCase(tInfo, [pwd filesep() 'Solutions']);
+                    testCases(i) = TestCase(tInfo, [pwd filesep() 'Solutions']);
                 end
+                this.testCases = testCases;
             catch ME
                 e = MException('AUTOGRADER:Problem:ctor:invalidInfo', ...
                     'Problem with INFO struct fields');
