@@ -3,12 +3,9 @@
 % img2base64 will convert an image to a base64 string with uri tags as
 % well.
 %
-% B = img2base64(I) will convert I to base64 string B using PNG
+% B = img2base64(I) will convert I to base64 string B using BMP
 % compression formats. The string B will include the |data| and |base64|
 % attributes, which means it can be injected directly inside of HTML.
-%
-% B = img2base64(I, F) will use the format in F to encode I as a base 64
-% string B.
 %
 %%% Remarks
 %
@@ -17,55 +14,46 @@
 %
 %%% Exceptions
 %
-% Any exceptions will be thrown as an
-% AUTOGRADER:img2base64:conversionException, with the reason listed as a
-% cause.
+% This will never throw an exception
 %
 %%% Unit Tests
 %
 %   I = imread(...); % valid image
 %   B = img2base64(I);
 %
-%   B -> 'data:image/png;base64,STRING...';
-%
-%   I = imread(...); % valid iamge
-%   B = img2base64(I, 'bmp');
-%
 %   B -> 'data:image/bmp;base64,STRING...';
-function base = img2base64(img, fmt)
+function base64 = img2base64(img)
     persistent encoder;
     if isempty(encoder)
         encoder = org.apache.commons.codec.binary.Base64;
     end
-    if nargin < 2
-        fmt = 'png';
-    elseif fmt(1) == '.'
-        fmt = fmt(2:end);
-    end
-    try
-        tmp = [tempname '.' fmt];
-        imwrite(img, tmp);
-        fid = fopen(tmp, 'r');
-        cleaner = onCleanup(@()(clean(fid)));
-        bytes = fread(fid);
-        base = char(encoder.encode(bytes))';
-        base = ['data:image/' fmt ';base64,' base];
-    catch reason
-        e = MException('AUTOGRADER:img2base64:conversionException', ...
-            'Conversion Failed');
-        e = e.addCause(reason);
-        throw(e);
-    end
-end
+    % Base header for bmp
+    HEADER = uint8([66;77;118;5;0;0;0;0;0;0;54;0;0;0;40;0;0;0;21;0;0;0;21;0;0;
+        0;1;0;24;0;0;0;0;0;64;5;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0]);
 
-function clean(fid)
-    fname = fopen(fid);
-    fclose(fid);
-    delete(fname);
-    % Windows waits...
-    if isfile(fname)
-        pause(0.4);
-        delete(fname);
-    end
+    layers = cellfun(@(l)(l'), {img(:, :, 1), img(:, :, 2), img(:, :, 3)}, 'uni', false);
+    img = cat(3, layers{end:-1:1});
+    img = img(:, end:-1:1, :);
+
+    [w, h, ~] = size(img);
+    % Since it's transposed, width is actually rows!
+    base64 = HEADER;
+    % The width
+    base64(19:22) = typecast(int32(w), 'uint8');
+    % The height
+    base64(23:26) = typecast(int32(h), 'uint8');
+
+    img = reshape(permute(img, [3 1 2]), [w * 3, h]);
+
+    % Pad image
+    W = ceil(w*3/4);
+
+    img((3*w + 1):W, :) = 0;
+
+    img = img(:);
+    base64(35:38) = typecast(uint32(numel(img)), 'uint8'); % size of actual pixel data
+    base64 = [base64; img];
+    base64(3:6) = typecast(uint32(length(base64)), 'uint8'); % file size
+
+    base64 = ['data:image/bmp;base64,', char(encoder.encode(base64)')];
 end
-        
