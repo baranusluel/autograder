@@ -181,7 +181,7 @@ function runnable = engine(runnable)
 
     % Copy over supporting files
     supportingFiles = tCase.supportingFiles;
-
+    origPath = cd(runnable.path);
     [~, ~, func] = parseFunction(tCase.call);
 
     allCalls = getcallinfo([func2str(func) '.m']);
@@ -252,9 +252,11 @@ function runnable = engine(runnable)
     % Delete the job
     if isTimeout
         cancel(test);
+        runnable.exception = MException('AUTOGRADER:timeout', 'Timeout occurred');
+    else
+        runnable = test.fetchOutputs();
     end
     tCase.loadFiles = origFileNames;
-    runnable = fetchOutputs(test);
     if isa(runnable, 'TestCase')
         tCase = runnable;
     else
@@ -271,7 +273,6 @@ function runnable = engine(runnable)
 
     populateFiles(runnable, addedFiles);
     populatePlots(runnable);
-
     %% Cleanup
     % Delete all files mentioned in the files field
     for i = 1:numel(runnable.files)
@@ -288,6 +289,7 @@ function runnable = engine(runnable)
     figs = findobj(0, 'type', 'figure');
     delete(figs);
     tCase.loadFiles = origFileNames;
+    cd(origPath);
     % If timeout and TestCase, throw error
     if isa(runnable, 'TestCase') && isTimeout
         throw(MException('MATLAB:timeout', 'Solution Code Timed Out'));
@@ -307,7 +309,6 @@ function populateFiles(runnable, addedFiles)
                 files(i).name = strrep(files(i).name, '_soln', '');
             end
         end
-
         runnable.files = files;
     end
 end
@@ -329,9 +330,8 @@ end
 
 function runnable = runCase(runnable)
     % Setup workspace
-    timeout = Timeout();
     % is this supposed to be here?  -->     cleanup();
-    cleaner = onCleanup(@() cleanup(runnable, timeout));
+    cleaner = onCleanup(@() cleanup());
 
     if isa(runnable, 'TestCase')
         tCase = runnable;
@@ -350,12 +350,25 @@ function runnable = runCase(runnable)
     end
 
     % Parse the call
+    origPath = cd(runnable.path);
     [inNames, outNames, func] = parseFunction(tCase.call);
     outs = cell(size(outNames));
     % run the function
     % create sentinel file
     fid = fopen(File.SENTINEL, 'r');
-    [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
+    try
+        [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
+    catch e
+        if isa(runnable, 'TestCase')
+            rethrow(e);
+        else
+            me = MException('AUTOGRADER:studentCodeError', ...
+                'Student Code Errored');
+            me = me.addCause(e);
+            runnable.exception = me;
+        end
+    end
+    cd(origPath);
     name = fopen(fid);
     fclose(fid);
     if ~strcmp(name, File.SENTINEL)
@@ -370,7 +383,6 @@ function runnable = runCase(runnable)
     for i = 1:numel(outs)
         runnable.outputs.(outNames{i}) = outs{i};
     end
-    timeout.isTimeout = false;
 end
 
 function varargout = runner(func____, init____, ins, loads____)
@@ -501,13 +513,9 @@ function [ins, outs, func] = parseFunction(call)
 
 end
 
-function cleanup(runnable, timeout)
+function cleanup()
     % check if runnable is TestCase or Feedback
     fclose('all');
-
-    if timeout.isTimeout && isa(runnable, 'Feedback')
-        runnable.exception = MException('AUTOGRADER:timeout', 'Timeout occurred');
-    end
 end
 
 
