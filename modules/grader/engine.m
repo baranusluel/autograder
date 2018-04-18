@@ -189,6 +189,7 @@ function runnable = engine(runnable)
     catch e
         if isa(runnable, 'Feedback')
             runnable.exception = e;
+            return;
         else
             e.rethrow();
         end
