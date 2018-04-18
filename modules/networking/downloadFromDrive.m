@@ -36,6 +36,7 @@ function downloadFromDrive(folderId, token, path)
     FOLDER_TYPE = 'application/vnd.google-apps.folder';
     if nargin == 3
         origPath = cd(path);
+        addpath(origPath);
     else
         origPath = pwd;
     end
