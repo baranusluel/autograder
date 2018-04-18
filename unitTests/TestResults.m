@@ -60,12 +60,19 @@ classdef TestResults < handle
             origPath = cd(path);
             % copy over everything in the PATH directory
             copyfile([pwd filesep '*'], workDir);
-            status = dbstatus('test.m', '-completenames'); % guaranteed to exist
-            for i = 1:numel(status)
-                status(i).file = [workDir filesep 'test.m'];
-                status(i).name = regexprep(status(i).name, '^[^>]*', [workDir filesep 'test.m']);
-                dbstop(status(i));
+            files = dir('**/*.m');
+            % for each file, get it's dbstatus, and then do the replacement
+            for f = 1:numel(files)
+                file = files(f);
+                status = dbstatus([file.folder filesep file.name], '-completenames');
+                relativeFolder = [workDir strrep(file.folder, path, '')];
+                for i = 1:numel(status)
+                    status(i).file = [relativeFolder filesep file.name];
+                    status(i).name = regexprep(status(i).name, '^[^>]*', [relativeFolder filesep file.name]);
+                    dbstop(status(i));
+                end
             end
+            
             % change name
             % copy over any FILES in parent
             files = dir('..');
@@ -79,6 +86,7 @@ classdef TestResults < handle
                     dbstop(status(i));
                 end
             end
+            
 
             this.path = path;
             [~, this.name, ~] = fileparts(path);
