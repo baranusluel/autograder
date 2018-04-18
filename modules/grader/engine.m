@@ -204,10 +204,15 @@ function runnable = engine(runnable)
     % Test for recursion. If any function calls itself, good to go.
     if isa(runnable, 'Feedback')
         runnable.isRecursive = checkRecur(allCalls, func2str(func));
-        if checkBanned([func2str(func) '.m'], [BANNED tCase.banned])
+    end
+    if checkBanned([func2str(func) '.m'], [BANNED tCase.banned])
+        if isa(runnable, 'Feedback')
             runnable.exception = MException('AUTOGRADER:engine:banned', ...
                 'File used banned function');
             return;
+        else
+            throw(MException('AUTOGRADER:engine:banned', ...
+                'File used banned function'));
         end
     end
 
