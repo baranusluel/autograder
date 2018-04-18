@@ -362,7 +362,10 @@ function runnable = runCase(runnable)
         if isa(runnable, 'TestCase')
             rethrow(e);
         else
-            runnable.exception = e;
+            me = MException('AUTOGRADER:studentCodeError', ...
+                'Student Code Errored');
+            me = me.addCause(e);
+            runnable.exception = me;
         end
     end
     cd(origPath);
