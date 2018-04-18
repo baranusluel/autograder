@@ -146,11 +146,13 @@ classdef Feedback < handle
             %Check if testCase was passed and output empty div
             if this.hasPassed
                 html = '<div></div>';
+            elseif ~isempty(this.exception)
+                html = ['<div class = "container feedback"><p>' this.exception '</p>'];
             else
-                html = ['<div class = "container feedback"><p>' this.reason '</p>'];
+                html = '<div class = "container feedback">';
                 %Get solution outputs for testCase
                 solnOutputs = this.testCase.outputs;
-                solnFiles = this.testCase.outputs;
+                solnFiles = this.testCase.Files;
                 solnPlots = this.testCase.plots;
                 
                 %Check whether regular outputs should have been produced
