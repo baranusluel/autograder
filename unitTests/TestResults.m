@@ -98,7 +98,11 @@ classdef TestResults < handle
             end
 
             cd(workDir);
-            cleaner = onCleanup(@()(cd(origPath)));
+            function clean(p, d)
+                cd(p);
+                [~] = rmdir(d);
+            end
+            cleaner = onCleanup(@()(clean(origPath, workDir)));
             % we know test.m will exist
             try
                 [this.passed, this.message] = test();
@@ -107,9 +111,6 @@ classdef TestResults < handle
                 this.message = sprintf('<span class="test-error">Test threw exception %s: %s', ...
                     e.identifier, e.message);
             end
-            cd(origPath);
-            % completely delete folder
-            [~] = rmdir(workDir, 's');
         end
     end
     methods (Access=public)
