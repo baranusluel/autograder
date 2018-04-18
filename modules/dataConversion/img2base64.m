@@ -31,8 +31,8 @@ function base64 = img2base64(img)
     HEADER = uint8([66;77;118;5;0;0;0;0;0;0;54;0;0;0;40;0;0;0;21;0;0;0;21;0;0;
         0;1;0;24;0;0;0;0;0;64;5;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0]);
 
-    layers = cellfun(@(l)(l'), {img(:, :, 1), img(:, :, 2), img(:, :, 3)}, 'uni', false);
-    img = cat(3, layers{end:-1:1});
+    img = permute(img, [2 1 3]);
+    img = img(:, :, end:-1:1);
     img = img(:, end:-1:1, :);
 
     [w, h, ~] = size(img);
