@@ -60,7 +60,7 @@ classdef Feedback < handle
         outputs;
         files;
         plots;
-        reason;
+        exception;
         points;
         isRecursive = false;
     end
