@@ -164,6 +164,12 @@ function runnable = engine(runnable)
     % all plots.
 
     %% Setup
+
+    BANNED = {'parpool', 'gcp', 'parfeval', ...
+        'eval', 'feval', 'assignin', 'evalc', 'evalin', ...
+        'input', 'wait', 'uiwait', 'keyboard', 'dbstop', ...
+        'cd', 'system'};
+
     if ~isvalid(runnable)
         e = MException('AUTOGRADER:engine:invalidRunnable', ...
         'Input was not valid');
@@ -194,26 +200,14 @@ function runnable = engine(runnable)
             e.rethrow();
         end
     end
-    calls = [allCalls.calls];
-    calls = [calls.fcnCalls];
-    calls = [calls.names];
 
     % Test for recursion. If any function calls itself, good to go.
     if isa(runnable, 'Feedback')
         runnable.isRecursive = checkRecur(allCalls, func2str(func));
-    end
-
-    bannedFunctions = tCase.banned;
-    for i = 1:numel(bannedFunctions)
-        if any(strcmpi(calls, bannedFunctions{i}))
-            if isa(runnable, 'TestCase')
-                throw(MException('AUTOGRADER:engine:invalidSolution', ...
-                    'Solution uses banned functions'));
-            else
-                runnable.exception = MException('AUTOGRADER:engine:banned', ...
-                    'File used banned function %s.', bannedFunctions{i});
-                return;
-            end
+        if checkBanned([func2str(func) '.m'], [BANNED tCase.banned])
+            runnable.exception = MException('AUTOGRADER:engine:banned', ...
+                'File used banned function');
+            return;
         end
     end
 
@@ -565,4 +559,27 @@ function isRecurring = checkRecur(callInfo, main)
     end
 
     isRecurring = false;
+end
+
+function isBanned = checkBanned(name, banned)
+    isBanned = false;
+    % for each call, we should first check that they didn't use any banned names:
+    calls = getcallinfo(name);
+    for i = 1:numel(calls)
+        possibleCalls = [calls.fcnCalls];
+        possibleCalls = [possibleCalls.names];% inner calls are to helper functions, so no worries there
+        % See if ANY banned are found in possibleCalls
+        if any(contains(possibleCalls, banned))
+            isBanned = true;
+            return;
+        end
+    end
+    BANNED_OPS = {'BANG', 'PARFOR', 'SPMD'};
+    info = mtree(name, '-file');
+    for b = 1:numel(BANNED_OPS)
+        if info.anykind(BANNED_OPS{b})
+            isBanned = true;
+            return;
+        end
+    end
 end
