@@ -184,7 +184,15 @@ function runnable = engine(runnable)
     origPath = cd(runnable.path);
     [~, ~, func] = parseFunction(tCase.call);
 
-    allCalls = getcallinfo([func2str(func) '.m']);
+    try
+        allCalls = getcallinfo([func2str(func) '.m']);
+    catch e
+        if isa(runnable, 'Feedback')
+            runnable.exception = e;
+        else
+            e.rethrow();
+        end
+    end
     calls = [allCalls.calls];
     calls = [calls.fcnCalls];
     calls = [calls.names];
