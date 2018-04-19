@@ -191,7 +191,8 @@ classdef Feedback < handle
                     end
                 end
             end
-            html = [html '</div>'];
+            html = sprintf('%s<p>Points earned for this test case: %d/%d</p></div>',...
+                            html,this.points,this.testCase.points);
         end
     end
 end
