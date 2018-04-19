@@ -46,7 +46,7 @@
 function newPath = canvas2autograder(canvasPath,canvasGradebook)
 
     cur = pwd;
-    if ~contains(canvasGradebook,'.zip')
+    if ~contains(canvasPath,'.zip')
         throw(MException('AUTOGRADER:canvas2autograder:invalidFile',...
                          'The Path given is not a .zip file'));
     end
