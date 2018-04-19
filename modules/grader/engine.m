@@ -330,9 +330,8 @@ end
 
 function runnable = runCase(runnable)
     % Setup workspace
-    timeout = Timeout();
     % is this supposed to be here?  -->     cleanup();
-    cleaner = onCleanup(@() cleanup(runnable, timeout));
+    cleaner = onCleanup(@() cleanup());
 
     if isa(runnable, 'TestCase')
         tCase = runnable;
@@ -363,7 +362,10 @@ function runnable = runCase(runnable)
         if isa(runnable, 'TestCase')
             rethrow(e);
         else
-            runnable.exception = e;
+            me = MException('AUTOGRADER:studentCodeError', ...
+                'Student Code Errored');
+            me = me.addCause(e);
+            runnable.exception = me;
         end
     end
     cd(origPath);
@@ -381,7 +383,6 @@ function runnable = runCase(runnable)
     for i = 1:numel(outs)
         runnable.outputs.(outNames{i}) = outs{i};
     end
-    timeout.isTimeout = false;
 end
 
 function varargout = runner(func____, init____, ins, loads____)
@@ -512,13 +513,9 @@ function [ins, outs, func] = parseFunction(call)
 
 end
 
-function cleanup(runnable, timeout)
+function cleanup()
     % check if runnable is TestCase or Feedback
     fclose('all');
-
-    if timeout.isTimeout && isa(runnable, 'Feedback')
-        runnable.exception = MException('AUTOGRADER:timeout', 'Timeout occurred');
-    end
 end
 
 
