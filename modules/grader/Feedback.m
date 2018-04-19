@@ -164,7 +164,7 @@ classdef Feedback < handle
                         html = [html '<p>Number of outputs don''t match.</p>'];
                     else
                         for i = 1:length(fnSoln)
-                            html = [html generateFeedback(this.outputs.(fnSoln{i}),solnOutputs.(fnSoln{i}))];
+                            html = [html generateFeedback(this.outputs.(fnSoln{i}), solnOutputs.(fnSoln{i}))];
                         end
                     end
                 end
@@ -175,7 +175,7 @@ classdef Feedback < handle
                         html = [html '<p>Number of files don''t match.</p>'];
                     else
                         for i = 1:length(solnFiles)
-                            html = [html File.generateFeedback(this.files(i),solnFiles(i))];
+                            html = [html File.generateFeedback(this.files(i), solnFiles(i))];
                         end
                     end
                 end
@@ -186,13 +186,13 @@ classdef Feedback < handle
                         html = [html '<p>Number of plots don''t match.</p>'];
                     else
                         for i = 1:length(solnPlots)
-                            html = [html Plot.generateFeedback(this.plots(i),solnPlots(i))];
+                            html = [html Plot.generateFeedback(this.plots(i), solnPlots(i))];
                         end
                     end
                 end
             end
             html = sprintf('%s<p>Points earned for this test case: %d/%d</p></div>',...
-                            html,this.points,this.testCase.points);
+                            html, this.points, this.testCase.points);
         end
     end
 end
