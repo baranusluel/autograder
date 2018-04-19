@@ -152,29 +152,42 @@ classdef Feedback < handle
                 html = '<div class = "container feedback">';
                 %Get solution outputs for testCase
                 solnOutputs = this.testCase.outputs;
-                solnFiles = this.testCase.Files;
+                solnFiles = this.testCase.files;
                 solnPlots = this.testCase.plots;
                 
                 %Check whether regular outputs should have been produced
                 %by student
                 if ~isempty(solnOutputs)
-                    fn = fieldnames(solnOutputs);
-                    for i = 1:length(fn)
-                        html = [html generateFeedback(this.outputs.(fn{i}),solnOutputs.(fn{i}))];
+                    fn = fieldnames(this.outputs);
+                    fnSoln = fieldnames(solnOutputs);
+                    if length(fn) ~= length(fnSoln)
+                        html = [html '<p>Number of outputs don''t match.</p>'];
+                    else
+                        for i = 1:length(fnSoln)
+                            html = [html generateFeedback(this.outputs.(fnSoln{i}),solnOutputs.(fnSoln{i}))];
+                        end
                     end
                 end
                 
                 %Check whether files should have been produced by student
                 if ~isempty(solnFiles)
-                    for i = 1:length(solnFiles)
-                        html = [html File.generateFeedback(this.files(i),solnFiles(i))];
+                    if length(solnFiles) ~= length(this.files)
+                        html = [html '<p>Number of files don''t match.</p>'];
+                    else
+                        for i = 1:length(solnFiles)
+                            html = [html File.generateFeedback(this.files(i),solnFiles(i))];
+                        end
                     end
                 end
                 
                 %Check whether plots should have been produced by student
                 if ~isempty(solnPlots)
-                    for i = 1:length(solnPlots)
-                        html = [html Plot.generateFeedback(this.plots(i),solnPlots(i))];
+                    if length(solnPlots) ~= length(this.plots)
+                        html = [html '<p>Number of plots don''t match.</p>'];
+                    else
+                        for i = 1:length(solnPlots)
+                            html = [html Plot.generateFeedback(this.plots(i),solnPlots(i))];
+                        end
                     end
                 end
             end
