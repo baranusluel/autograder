@@ -364,7 +364,7 @@ function runnable = runCase(runnable)
     outs = cell(size(outNames));
     % run the function
     % create sentinel file
-    fid = fopen(File.SENTINEL, 'r');
+    fid = fopen(File.SENTINEL, 'w');
     try
         [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
     catch e
@@ -575,7 +575,7 @@ function isBanned = checkBanned(name, banned)
     % for each call, we should first check that they didn't use any banned names:
     calls = getcallinfo(name);
     for i = 1:numel(calls)
-        possibleCalls = [calls.fcnCalls];
+        possibleCalls = [calls(i).calls.fcnCalls];
         possibleCalls = [possibleCalls.names];% inner calls are to helper functions, so no worries there
         % See if ANY banned are found in possibleCalls
         if any(contains(possibleCalls, banned))
