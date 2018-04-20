@@ -244,6 +244,10 @@ classdef TestCase < handle
             % 
             %   The constructor threw exception
             %   AUTOGRADER:TESTCASE:CTOR:BADSOLUTION
+            if nargin == 0
+                return;
+            end
+            
             try
                 this.path = path;
                 
