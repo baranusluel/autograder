@@ -90,15 +90,17 @@ function Main(varargin)
     % gracefully.
     
     % add to path
-    addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     settings.userPath = {path(), userpath()};
+    addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     clear Student;
     Student.resetPath();
     
     % start up application
     app = Autograder();
     uiwait(app.UIFigure);
-    
+    if ~isvalid(app)
+        return;
+    end
     % Start up parallel pool
     if isempty(gcp)
         parpool(2);
@@ -220,7 +222,6 @@ function Main(varargin)
     if ~isempty(app.localOutputPath)
         % save canvas info in path
         % copy csv, then change accordingly
-        copyfile('
     end
     if ~isempty(app.localDebugPath)
         % save MAT file
