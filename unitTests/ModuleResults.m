@@ -53,7 +53,8 @@ classdef ModuleResults < handle
             units = dir();
             units(~[units.isdir]) = [];
             units(strncmp({units.name}, '.', 1)) = [];
-            for u = numel(units):-1:1
+            unitResults(numel(units)) = UnitResults();
+            for u = 1:numel(units)
                 unitResults(u) = UnitResults(fullfile(units(u).folder, units(u).name));
             end
             this.unitResults = unitResults;
