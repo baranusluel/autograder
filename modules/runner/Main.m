@@ -64,8 +64,8 @@ function Main(varargin)
     % * Start the Parallel Pool
     % * Create the SENTINEL file; assign to the File class
     % * Apply the factory default path, and remove the user's MATLAB path
-    % * Create a temporary folder, and copy the student and solution zip
-    % files there
+    % * Create a temporary folder, and copy the student and solution files
+    % there. If they're zips, deal with accordingly
     % * Ensure figures don't become visible
     %
     % *Cleanup*
@@ -109,39 +109,43 @@ function Main(varargin)
     mkdir(settings.workingDir);
     settings.userDir = cd(settings.workingDir);
     % Create SENTINEL file
-    fid = fopen('SENTINEL.lock', 'wt');
+    fid = fopen(File.SENTINEL, 'wt');
     fwrite(fid, 'SENTINEL');
     fclose(fid);
-    File.SENTINEL = [pwd filesep 'SENTINEL.lock']; %#ok<STRNU>
     
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
+    mkdir('Students');
     if app.HomeworkChoice.Value == 1
         % downloading. We should create new Students folder and download
         % there.
-        mkdir('Students');
         try
             downloadFromCanvas(app.courseId, app.assignmentId, ...
                 app.canvasToken, [pwd filesep 'Students']);
-            studPath = [pwd filesep 'Students'];
         catch e
-            % alert in some way
+            % alert in some way and return
+            alert('Exception %s found when trying to download from Canvas', e.identifier);
+            return;
         end
     else
         % unzip the archive
-        studPath = [settings.workingDir 'students.zip'];
+        unzipArchive(app.submissionArchivePath, [pwd filesep 'Students']);
     end
     
     % For solution, what are we doing?
     % if downloading, call, otherwise, unzip
+    mkdir('Solutions');
     if app.SolutionChoice.Value == 1
         % downloading
-        mkdir('Solutions');
-        % downloadFromDrive(...);
-        solnPath = [pwd filesep 'Solutions'];
+        try
+            downloadFromDrive(app.driveFolderId, app.driveToken);
+        catch e
+            alert('Exception %s found when trying to download from Google Drive', e.identifier);
+            return;
+        end
     else
         % unzip the archive
-        solnPath = [settings.workingDir 'solutions.zip'];
+        unzipArchive(app.solutionArchivePath, [pwd filesep 'Solutions']);
     end
     
     % Make sure figure's don't show
@@ -153,7 +157,7 @@ function Main(varargin)
     
     % Generate solutions
     try
-        solutions = generateSolutions(solnPath);
+        solutions = generateSolutions([pwd filesep 'Solutions']);
     catch e
         % Display to user that we failed
         alert('Problem generation failed. Error %s: %s', e.identifier, ...
@@ -163,10 +167,7 @@ function Main(varargin)
     
     % Generate students
     try
-        if strcmpi(inputFormat, 'canvas')
-            studPath = canvas2autograder(studPath, settings.workingDir);
-        end
-        students = generateStudents(studPath);
+        students = generateStudents([pwd filesep 'Students']);
     catch e
         alert('Student generation failed. Error %s: %s', e.identifier, ...
             e.message);
@@ -200,26 +201,32 @@ function Main(varargin)
         end
     end
     
-    % Formatting
-    % format the output
-    if strcmpi(outputFormat, 'canvas')
-        autograder2canvas(studPath);
+    % If the user requested uploading, do it
+    if app.UploadToCanvas.Value
+        opts.token = app.canvasToken;
+        if ~isempty(app.canvasCourseId)
+            opts.courseId = app.canvasCourseId;
+        end
+        if ~isempty(app.canvasHomeworkId)
+            opts.homeworkId = app.canvasHomeworkId;
+        end
+        uploadToCanvas(students, [], opts);
     end
-    % Uploading
-    switch upload
-        case {'website'}
-            % upload to the website
-        case {'canvas'}
-            % upload to canvas
-        case {'tsquare'}
-            % upload to TSquare
+    if app.UploadToServer.Value
+        
     end
-    % Save .MAT file
-    % Where to save it?
-    % Save in pwd for now
-    save([settings.userDir filesep 'autograder.mat'], ...
-        'students', 'solutions', 'inputFormat', ...
-        'outputFormat', 'upload', 'settings');
+    
+    % if they want the output, do it
+    if ~isempty(app.localOutputPath)
+        % save canvas info in path
+        % copy csv, then change accordingly
+        copyfile('
+    end
+    if ~isempty(app.localDebugPath)
+        % save MAT file
+        save([app.localDebugPath filesep 'autograder.mat'], ...
+            'students', 'solutions', 'settings', 'app');
+    end
     
 end
 
@@ -242,56 +249,18 @@ function cleanup(settings)
     path(settings.userPath{1}, '');
     userpath(settings.userPath{2});
     
-    % Copy over any files (?)
-    
     % cd to user's dir
     cd(settings.userDir);
     
     % Delete our working directory
-    try
-        rmdir(settings.workingDir, 's');
-    catch
-        
-    end
+    [~] = rmdir(settings.workingDir, 's');
     % Restore figure settings
     set(0, 'DefaultFigureVisible', settings.figures);
+    % delete SENTINEL
+    delete(File.SENTINEL);
 end
 
 function varargout = parser(args)
-    function formatValidator(param)
-        formats = {'canvas', 'tsquare', 'autograder'};
-        if (isstring(param) && numel(param) ~= 1)
-            e = MException('AUTOGRADER:MAIN', ...
-                'Input given must be a scalar string or character vector');
-            throw(e);
-        elseif ~ischar(param) && ~isstring(param)
-            e = MException('AUTOGRADER:MAIN', ...
-                'Input given must be a scalar string or character vector');
-            throw(e);
-        elseif ~any(strcmpi(formats, param))
-            e = MException('AUTOGRADER:MAIN', ...
-                'Unkown input %s; must be one of the following: ''%s''', ...
-                param, strjoin(formats, ''', '''));
-            throw(e);
-        end
-    end
-
-    function validator(param)
-        if isstring(param) && numel(param) ~= 1
-            e = MException('AUTOGRADER:MAIN', ...
-                'Input given must be a scalar string or character vector');
-            throw(e);
-        elseif isstring(param)
-            param = char(param);
-        end
-        if ~ischar(param)
-            e = MException('AUTOGRADER:MAIN', ...
-                'Input given must be a scalar string or character vector');
-            throw(e);
-        elseif ~isempty(param)
-            formatValidator(param);
-        end
-    end
 
     inputs = inputParser();
     inputs.CaseSensitive = false;
