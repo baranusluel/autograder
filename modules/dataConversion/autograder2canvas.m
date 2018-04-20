@@ -1,5 +1,5 @@
 %% autograder2Canvas: Generate Canvas files from autograder
-% 
+%
 % Create the gradebook csv file used by canvas to import grades.
 %
 % autograder2Canvas(S, C, H) takes the graded Student Array in S and writes
@@ -7,7 +7,7 @@
 % H.
 %
 % This function will take in a graded student array (S), the name of the
-% gradebook from the canvas website (C), and the name of the homework that 
+% gradebook from the canvas website (C), and the name of the homework that
 % it is grading (H). H should be selected before the autograder runs and as
 % such should always be valid.
 %
@@ -21,13 +21,13 @@
 %
 %%% Exceptions
 %
-% AUTOGRADER:AUTOGRADER2CANVAS:INVALIDSTUDENTS exception will be thrown if
+% AUTOGRADER:autograder2canvas:invalidStudents exception will be thrown if
 % the function is run without a valid student array
-% 
-% AUTOGRADER:AUTOGRADER2CANVAS:INVALIDGRADEBOOK exception will be thrown if
+%
+% AUTOGRADER:autograder2canvas:invalidGradebook exception will be thrown if
 % the function is run with an invalid gradebook file name.
 %
-% AUTOGRADER:AUTOGRADER2CANVAS:INVALIDHOMEWORKNAME exception will be thrown
+% AUTOGRADER:autograder2canvas:invalidHomeworkName exception will be thrown
 % if the function is run with a hw name that is not in the gradebook.
 %
 %%% Unit Tests
@@ -44,7 +44,7 @@
 %   H = 'Homework 1';
 %   autograder2canvas(S, G, H);
 %
-%   Threw INVALIDGRADEBOOK exception
+%   Threw invalidGradebook exception
 %
 %   S = [...]; % Assume valid UNGRADED Student Array
 %   G = 'C:\Users\...\grades.csv'; % Valid grades.csv
@@ -52,50 +52,36 @@
 %   autograder2canvas(S, G, H);
 %
 %   No changes were made, since Student is not graded
-% 
+%
 %   S = [...]; % Graded Student array
 %   G = ''; % Invalid path
 %   H = 'Homework 1';
 %   autograder2canvas(S, G, H);
 %
-%   Threw INVALIDGRADEBOOK exception
+%   Threw invalidGradebook exception
 %
 function autograder2canvas(studentArr,canvasGradebook,homeworkName)
-    
+
     % Input Validation
     if isa(studentArr,'Student')
-        ME = MException('AUTOGRADER:AUTOGRADER2CANVAS:INVALIDSTUDENTS',...
-                        'The first input is not a student array');
+        throw(MException('AUTOGRADER:autograder2canvas:invalidStudents',...
+                         'The first input is not a student array'));
     end
-    
+
     if ~contains(canvasGradebook,'.csv')
-        if exist('ME','var')
-            ME = addCause(ME,MException('AUTOGRADER:AUTOGRADER2CANVAS:INVALIDGRADEBOOK',...
-                                        'The second input is not a .csv file'));
-        else
-            ME = MException('AUTOGRADER:AUTOGRADER2CANVAS:INVALIDGRADEBOOK',...
-                            'The second input is not a .csv file');
-        end
-    else
-        [~,~,gradebook] = xlsread(canvasGradebook);
-        if isValidHwName(homeworkName,gradebook)
-            if exist('ME','var')
-                ME = addCause(ME,MException('AUTOGRADER:AUTOGRADER2CANVAS:INVALIDHOMEWORKNAME',...
-                                            'The given Homework Name is not in the given Gradebook'));
-            else
-                ME = MException('AUTOGRADER:AUTOGRADER2CANVAS:INVALIDHOMEWORKNAME',...
-                                'The given Homework Name is not in the given Gradebook');
-            end
-        end
+        throw(MException('AUTOGRADER:autograder2canvas:invalidGradebook',...
+                         'The second input is not a .csv file'));
     end
-    
-    if exist('ME','var')
-        throw(ME);
+
+    [~,~,gradebook] = xlsread(canvasGradebook);
+    if isValidHwName(homeworkName,gradebook)
+        throw(MException('AUTOGRADER:autograder2canvas:invalidHomeworkName',...
+                         'The given Homework Name is not in the given Gradebook'));
     end
-    
+
     % Mask to get the assignment
-    hwMask = strcmp(gradebook(1,:),homeworkName); 
-    
+    hwMask = strcmp(gradebook(1,:),homeworkName);
+
     % Edit grades
     for i = 1:length(studentArr)
         if studentArr.isgraded
@@ -105,10 +91,10 @@ function autograder2canvas(studentArr,canvasGradebook,homeworkName)
             gradebook{sdntMask,hwMask} = grade;
         end
     end
-    
+
     % Rewrite gradebook
     writeCsv(gradebook,canvasGradebook)
-    
+
 end
 
 function writeCsv(cellArr,fileName)

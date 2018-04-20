@@ -1,11 +1,9 @@
 %% generateSolutions: Generate the solution values for comparison 
 %   
-% This will generate the solution values, given a path to the 
-% solution ZIP archive. These solutions are held in a `Problem` array.
+% This will generate the solution values, given a logical value. These solutions are held in a `Problem` array.
 %
-% PROBLEMS = generateSolutions(PATH) will return a Problem Array containing
-% the problems for the current homework specified by PATH, which is a
-% string representation of the path to the solution ZIP archive
+% PROBLEMS = generateSolutions(isResubmission) will return a Problem Array containing
+% the problems for the current homework.
 % 
 %%% Remarks
 % 
@@ -97,77 +95,96 @@
 %%% Exceptions
 % 
 % generateSolutions throws exception 
-% AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH if the input path is invalid
-% or if necessary file is missing in the given directory
+% AUTOGRADER:generateSolutions:invalidInput if the input is not of type
+% logical.
+%
+% generateSolutions throws exception 
+% AUTOGRADER:generateSolutions:invalidPath if the path (solutions) are not
+% valid.
 % 
 %%% Unit Tests
 % 
-%   PATH = 'C:\Users\...\Soln.zip'; % Valid Solutions Archive
-%   PROBLEMS = generateSolutions(PATH);
+%   isResubmission = true
+%   PROBLEMS = generateSolutions(isResubmission);
 %
 %   PROBLEMS -> Valid Problem Array
 %
-%   PATH = ''; % Inavlid Path
-%   PROBLEMS = generateSolutions(PATH);
+%   isResubmission = ''; % Invalid Input
+%   PROBLEMS = generateSolutions(isResubmission);
 %
-%   Threw INVALIDPATH exception
+%   Threw invalidInput exception
 %
-%   PATH = 'C:\Users\...\Soln.zip'; % Valid path, invalid solutions!
-%   PROBLEMS = generateSolutions(PATH);
+%   isResubmission = true; % Valid input, invalid solutions!
+%   PROBLEMS = generateSolutions(isResubmission);
 %
-%   TestCase Threw exception <SolnException>
+%   TestCase Threw exception <solnException>
 %
-%   PATH = 'C:\Users\...\Soln.zip'; % Valid path, but incomplete archive
-%   PROBLEMS = generateSolutions(PATH);
+%   isResubmission = false; % Valid input, but incomplete archive
+%   PROBLEMS = generateSolutions(isResubmission);
 %
-%   Threw INVALIDPATH exception
+%   Threw invalidPath exception
 %
-function problems = generateSolutions(path)
-%first check if the path contains .zip at all. 
-if contains(path,'.zip')
-    %try-catch block to check catch if the path is invalid at all. 
-    try
-        
-        %Find the path without the archive name.
-        [dir, rest] = strtok(path,'\');
-        while ~strcmp(dir,'.zip')
-            [dir, rest] = strtok(rest,'\');
-        end
-        dir = [dir, '\'];
-        unzip(path,dir);
-        %Navigate to that directory to work with files there.
-        oldFolder = cd(dir);
-        
-        %Decode the JSON
-        fh = fopen('rubric.json');
-        if fh==(-1)
-            %Invalid archive.
-            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH')
+function solutions = generateSolutions(isResubmission)
+%try-catch block to catch any resulting errors.
+try
+    %Archive is already unzipped.
+    %Decode the JSON
+    if islogical(isResubmission)
+        if isResubmission
+            fh = fopen('rubrica.json','rt');
+            json = char(fread(fh)');
+            fclose(fh);
+            rubric = jsondecode(json);
         else
-            raw = fread(fh,inf);
-            str = char(raw'); 
-            fclose(fid); 
-            val = jsondecode(str);
+            fh = fopen('rubricb.json','rt');
+            json = char(fread(fh)');
+            fclose(fh);
+            rubric = jsondecode(json);
         end
         
-    catch ME
-        if strcmp(ME.identifier,'MATLAB:checkfilename:invalidFilename')
-            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH','Threw INVALIDPATH exception.')
-        %Error message for valid path, but invalid archive.
-        elseif strcmp(ME.identifier,'AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH')
-            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH', 'Threw INVALIDPATH exception.')
-        elseif strcmp(ME.identifier,'MATLAB:json:ExpectedLiteral')
-            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH', 'Threw INVALIDPATH exception. JSON formatting is not correct.')
-        else
-            error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH', 'Threw INVALIDPATH exception.')
+        %Go through the structure array (vector) that was created from the
+        %jsondecode() call and create problem types.
+        %Store these in one vector.
+        elements = numel(rubric);
+        for i = elements:-1:1
+            solutions(i) = Problem(rubric(i));
+        end
+        %The problems output vector should now contain all necessary problems.
+    else
+        mE = MException('AUTOGRADER:generateSolutions:invalidInput','The input is not of type logical for isResubmission.');
+        throw(mE);
+    end
+    
+catch e
+    %Check for the errors that could have been thrown in the try block.
+    %The first three conditionals check for the unzipping and file status
+    %of the solution archive.
+    
+    %Check if the solution file is empty or not.
+    if fh == -1
+        mE = MException('AUTOGRADER:generateSolutions:invalidPath','The path is valid, but the solutions could not be parsed (Perhaps the solutions are not valid, or the archive is unreadable?)');
+        mE = mE.addCause(e);
+        throw(mE);
+    else
+        %This next conditional checks for the decoding of the JSON.
+        switch e.identifier
+            case 'AUTOGRADER:generateSolutions:invalidInput'
+                %This checks if the input is a logical or not.
+                mE = MException('AUTOGRADER:generateSolutions:invalidInput','The input is not of type logical for isResubmission.');
+                mE = mE.addCause(e);
+                throw(mE);
+            case 'AUTOGRADER:problem:invalidJSON'
+                %This checks for issues with the conversion of the
+                %problems to the type Problem.
+                mE = MException('AUTOGRADER:generateSolutions:invalidPath','The path is valid, but the solutions are not in a valid JSON format and could not be converted to the type PROBLEM.');
+                mE = mE.addCause(e);
+                throw(mE);
+            otherwise
+                mE = MException('AUTOGRADER:generateSolutions:invalidPath','There was an error with the generateSolutions method of the autograder.');
+                mE = mE.addCause(e);
+                throw(mE);
         end
     end
     
-        rubric = jsondecode()
-        
-    
-else
-    %Invalid Path
-    error('AUTOGRADER:GENERATESOLUTIONS:INVALIDPATH')
 end
 end

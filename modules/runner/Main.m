@@ -128,7 +128,8 @@ function Main(varargin)
     solnPath = [settings.workingDir 'solutions.zip'];
     
     % Remove user's PATH, instate factory default instead:
-    settings.userPath = path();
+    addpath(genpath(fileparts(mfilename('fullpath'))));
+    settings.userPath = {path(), userpath()};
     Student.resetPath();
     
     % Make sure figure's don't show
@@ -226,7 +227,8 @@ function cleanup(settings)
     end
     
     % Restore user's path
-    path(settings.userPath, '');
+    path(settings.userPath{1}, '');
+    userpath(settings.userPath{2});
     
     % Copy over any files (?)
     

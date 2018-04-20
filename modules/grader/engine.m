@@ -6,7 +6,7 @@
 % outputs, files, and plots to the corresponding fields in T.
 %
 % engine(F) runs the code specified by the TestCase found in Feedback F,
-% and assigns the outputs, files, and plots to the corresponding fields 
+% and assigns the outputs, files, and plots to the corresponding fields
 % in F. This does NOT grade the code, just runs it.
 %
 %%% Remarks
@@ -15,21 +15,21 @@
 % the autograder. It provides a "sandboxed" environment for running code,
 % and protects against student errors and timeouts.
 %
-% Timeouts are handled using a parallel pool of workers. In essence, a 
+% Timeouts are handled using a parallel pool of workers. In essence, a
 % student's code is limited to a certain runtime, 30 seconds by default.
 % To change this value, you should edit the TIMEOUT field of the STudent
 % class.
 %
-% Errors in the code itself are handled differently, depending on whether 
+% Errors in the code itself are handled differently, depending on whether
 % a TestCase or a Feedback was passed in.
 %
-% If a TestCase was received, the error is propogated; this is because a 
+% If a TestCase was received, the error is propogated; this is because a
 % solution error is usually a fatal error.
 %
-% If a Feedback was received, the error is caught and assigned to the 
+% If a Feedback was received, the error is caught and assigned to the
 % exception field of the Feedback.
 %
-% engine uses static checking to check if the function is recursive. 
+% engine uses static checking to check if the function is recursive.
 % Calls are traced to the first instance of a call to a built in function.
 % For each call to a user-supplied function, that function is checked to see
 % if it ever calls itself. Note that it's possible to circumvent this checking
@@ -43,8 +43,8 @@
 %
 % engine cannot tell that this isn't actually recursive.
 %
-% Additionally, banned function usage is also statically checked. Calls are 
-% traced to the first instance of a call to a built in function, just like 
+% Additionally, banned function usage is also statically checked. Calls are
+% traced to the first instance of a call to a built in function, just like
 % checking for recursion. Each call to a user-defined function results in a
 % check for use of banned functions. Note that, just as with recursion checking,
 % a "false positive" is possible if code that is unreachable uses a banned function.
@@ -60,19 +60,19 @@
 % If user created their own version of a banned function, and included it in the file,
 % then that is considered to be OK.
 %
-% Even if the student uses a banned function, the code is still run, and outputs 
+% Even if the student uses a banned function, the code is still run, and outputs
 % still produced.
 %
 %%% Exceptions
 %
-% An AUTOGRADER:ENGINE:INVALIDRUNNABLE exception is thrown if the input is in an 
+% An AUTOGRADER:engine:invalidRunnable exception is thrown if the input is in an
 % invalid state.
 %
-% An AUTOGRADER:ENGINE:BADSOLUTION exception is thrown if the input is a solution
-% AND that solution errors. The original exception is added to the 
+% An AUTOGRADER:engine:invalidSolution exception is thrown if the input is a solution
+% AND that solution errors. The original exception is added to the
 % causes array of the MException.
 %
-% A TIMEOUT exception will never be thrown, but will be assigned to the 
+% A TIMEOUT exception will never be thrown, but will be assigned to the
 % Feedback's exception field instead, should the code timeout.
 %
 %%% Unit Tests
@@ -87,14 +87,14 @@
 %   T = TestCase(...);
 %   engine(T);
 %
-%   Threw exception BADSOLUTION, with the original error 
+%   Threw exception invalidSolution, with the original error
 %   in causes.
 %
 %   % Assume T has not been correctly initialized
 %   T;
 %   engine(T);
 %
-%   Threw exception INVALIDRUNNABLE
+%   Threw exception invalidRunnable
 %
 %   % Assume F is a valid Feedback with a valid TestCase
 %   F = Feedback(...);
@@ -106,7 +106,7 @@
 %   F = Feedback(...);
 %   engine(F);
 %
-%   F will have no fields filled in except for points (0) and exception, 
+%   F will have no fields filled in except for points (0) and exception,
 %   which will be the exception raised by the student code.
 %
 %   % Assume F is a valid Feedback that goes into an infinite loop
@@ -114,17 +114,17 @@
 %   engine(F);
 %
 %   F will have no fields filled in except for points (0) and exception,
-%   which will be the TIMEOUT exception.
+%   which will be the timeout exception.
 %
 %   % Assume F is an invalid Feedback;
 %   F;
 %   engine(F);
 %
-%   Threw exception INVALIDRUNNABLE   
+%   Threw exception invalidRunnable
 %
-function engine(runnable)
+function runnable = engine(runnable)
 
-    % For banned functions, we'll need to use static checking, instead of 
+    % For banned functions, we'll need to use static checking, instead of
     % overwriting it in the directory. This is because some functions
     % (like length) are extremely necessary for MATLAB to even function
     % correctly. I would recommend the following:
@@ -134,19 +134,19 @@ function engine(runnable)
     %   calls = [calls.fcnCalls];
     %   calls = [calls.names];
     %
-    %   Now, calls is cell array of called functions. For each function which 
+    %   Now, calls is cell array of called functions. For each function which
     %   isn't built in, we could walk them recursively, checking for use of the
     %   banned function. Personally, I think that's overkill. This cell array
     %   represents all functions called by any function inside the FunctionName.m
     %   file.
 
     % This code is divided up into three sections:
-    % 
+    %
     %   1. Setup
     %   2. Running
     %   3. Cleanup
     %
-    % Setup sets up the initial call. It cleans up the workspace, 
+    % Setup sets up the initial call. It cleans up the workspace,
     % sets up the supporting Files.
     %
     % Running defines all late-bound variables and runs the function itself,
@@ -156,47 +156,64 @@ function engine(runnable)
     %
     % *NOTE*: Late-bound variables (defined via the initializer) are defined immediately
     % before a function is run. As such, the produced error could be from an initializer.
-    % However, this does not cause problems with students, since this error happens 
+    % However, this does not cause problems with students, since this error happens
     % during solution code as well.
     %
-    % Cleanup cleans up the directory to make it look "pristine" - or at least as it 
-    % did before. It deletes all files mentioned in the runnable's outputs, and closes 
+    % Cleanup cleans up the directory to make it look "pristine" - or at least as it
+    % did before. It deletes all files mentioned in the runnable's outputs, and closes
     % all plots.
 
     %% Setup
+
+    BANNED = {'parpool', 'gcp', 'parfeval', 'send','fetchOutputs', ...
+        'cancel', 'parfevalOnAll', 'fetchNext', 'batch', ...
+        'eval', 'feval', 'assignin', 'evalc', 'evalin', ...
+        'input', 'wait', 'uiwait', 'keyboard', 'dbstop', ...
+        'cd', 'system', 'restoredefaultpath', 'builtin'};
+
+    if ~isvalid(runnable)
+        e = MException('AUTOGRADER:engine:invalidRunnable', ...
+        'Input was not valid');
+        throw(e);
+    end
     if isa(runnable, 'TestCase')
         tCase = runnable;
-    else
+    elseif isa(runnable, 'Feedback')
         tCase = runnable.testCase;
+    else
+        e = MException('AUTOGRADER:engine:invalidRunnable', ...
+        'Input was not of class Runnable');
+        throw(e);
     end
 
     % Copy over supporting files
     supportingFiles = tCase.supportingFiles;
-
+    origPath = cd(runnable.path);
     [~, ~, func] = parseFunction(tCase.call);
 
-    allCalls = getcallinfo([func2str(func) '.m']);
-    calls = [allCalls.calls];
-    calls = [calls.fcnCalls];
-    calls = [calls.names];
+    try
+        allCalls = getcallinfo([func2str(func) '.m']);
+    catch e
+        if isa(runnable, 'Feedback')
+            runnable.exception = e;
+            return;
+        else
+            e.rethrow();
+        end
+    end
 
     % Test for recursion. If any function calls itself, good to go.
     if isa(runnable, 'Feedback')
-        isRecur = checkRecur(allCalls, func2str(func));
-        runnable.isRecursive = isRecur;
+        runnable.isRecursive = checkRecur(allCalls, func2str(func));
     end
-
-    bannedFunctions = tCase.banned;
-    for i = 1:numel(bannedFunctions)
-        if any(strcmpi(calls, bannedFunctions{i}))
-            if isa(runnable, 'TestCase')
-                throw(MException('AUTOGRADER:ENGINE:BADSOLUTION', ...
-                    'Solution uses banned functions'));
-            else
-                runnable.exception = MException('AUTOGRADER:ENGINE:BANNED', ...
-                    'File used banned function %s.', bannedFunctions{i});
-                return;
-            end
+    if checkBanned([func2str(func) '.m'], [BANNED tCase.banned])
+        if isa(runnable, 'Feedback')
+            runnable.exception = MException('AUTOGRADER:engine:banned', ...
+                'File used banned function');
+            return;
+        else
+            throw(MException('AUTOGRADER:engine:banned', ...
+                'File used banned function'));
         end
     end
 
@@ -237,14 +254,22 @@ function engine(runnable)
     tCase.loadFiles = [varNames; varValues];
     %% Running
     % Create a new job for the parallel pool
-    test = parfeval(@runCase, 0, runnable);
+    test = parfeval(@runCase, 1, runnable);
 
     % Wait until it's finished, up to 30 seconds
     isTimeout = ~wait(test, 'finished', Student.TIMEOUT);
-    
     % Delete the job
     if isTimeout
         cancel(test);
+        runnable.exception = MException('AUTOGRADER:timeout', 'Timeout occurred');
+    else
+        runnable = test.fetchOutputs();
+    end
+    tCase.loadFiles = origFileNames;
+    if isa(runnable, 'TestCase')
+        tCase = runnable;
+    else
+        tCase = runnable.testCase;
     end
     delete(test);
 
@@ -252,19 +277,18 @@ function engine(runnable)
     afterSnap = dir();
     afterSnap = {afterSnap.name};
     afterSnap(strncmp(afterSnap, '.', 1)) = [];
-    
+
     addedFiles = sort(setdiff(afterSnap, beforeSnap));
 
     populateFiles(runnable, addedFiles);
     populatePlots(runnable);
-
     %% Cleanup
     % Delete all files mentioned in the files field
     for i = 1:numel(runnable.files)
         % Delete file with name of File
         delete([runnable.files(i).name runnable.files(i).extension]);
     end
-    
+
     % Delete all files that were marked as supporting files
     for i = 1:numel(supportingFiles)
         delete(supportingFiles{i});
@@ -274,9 +298,10 @@ function engine(runnable)
     figs = findobj(0, 'type', 'figure');
     delete(figs);
     tCase.loadFiles = origFileNames;
+    cd(origPath);
     % If timeout and TestCase, throw error
     if isa(runnable, 'TestCase') && isTimeout
-        throw(MException('MATLAB:TIMEOUT', 'Solution Code Timed Out'));
+        throw(MException('MATLAB:timeout', 'Solution Code Timed Out'));
     end
 end
 
@@ -293,13 +318,12 @@ function populateFiles(runnable, addedFiles)
                 files(i).name = strrep(files(i).name, '_soln', '');
             end
         end
-
         runnable.files = files;
     end
 end
 
 function populatePlots(runnable)
-    % Get all handles; since the Position is captured, that can be used 
+    % Get all handles; since the Position is captured, that can be used
     % for the subplot checking
     pHandles = findobj(0, 'type', 'axes');
     if numel(pHandles) ~= 0
@@ -313,11 +337,10 @@ function populatePlots(runnable)
 end
 
 
-function runCase(runnable)
+function runnable = runCase(runnable)
     % Setup workspace
-    timeout = Timeout();
     % is this supposed to be here?  -->     cleanup();
-    cleaner = onCleanup(@() cleanup(runnable, timeout));
+    cleaner = onCleanup(@() cleanup());
 
     if isa(runnable, 'TestCase')
         tCase = runnable;
@@ -334,20 +357,33 @@ function runCase(runnable)
     else
         init = '';
     end
-    
+
     % Parse the call
+    origPath = cd(runnable.path);
     [inNames, outNames, func] = parseFunction(tCase.call);
     outs = cell(size(outNames));
     % run the function
     % create sentinel file
-    fid = fopen(File.SENTINEL, 'r');
-    [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
+    fid = fopen(File.SENTINEL, 'w');
+    try
+        [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
+    catch e
+        if isa(runnable, 'TestCase')
+            rethrow(e);
+        else
+            me = MException('AUTOGRADER:studentCodeError', ...
+                'Student Code Errored');
+            me = me.addCause(e);
+            runnable.exception = me;
+        end
+    end
+    cd(origPath);
     name = fopen(fid);
     fclose(fid);
     if ~strcmp(name, File.SENTINEL)
         % Communicate that user called fclose all.
         if isa(runnable, 'Feedback')
-            runnable.exception = MException('AUTOGRADER:FCLOSEALL', 'Student Code called fclose all');
+            runnable.exception = MException('AUTOGRADER:fcloseAll', 'Student Code called fclose all');
         end
     end
     % Populate outputs
@@ -356,11 +392,10 @@ function runCase(runnable)
     for i = 1:numel(outs)
         runnable.outputs.(outNames{i}) = outs{i};
     end
-    timeout.isTimeout = false;
 end
 
 function varargout = runner(func____, init____, ins, loads____)
-    
+
     % Create statement that becomes cell array of all inputs.
     % No input sanitization here because all input names have already
     % been checked.
@@ -368,7 +403,7 @@ function varargout = runner(func____, init____, ins, loads____)
     % varargout becomes cell array of the size of number of args requested
     varargout = cell(1, nargout);
     % Load MAT files
-    for i____ = 1:length(loads____)
+    for i____ = 1:size(loads____, 2)
         eval([loads____{1, i____} ' = loads____{2, ' num2str(i____) '};']);
     end
     % Run initializer, if any
@@ -386,7 +421,7 @@ end
 % Parses the function call for inputs, outputs, and the function handle.
 %
 % [I, O, F] = parseFunction(C) will parse the function call C and
-% return the input names in I, the output names in O, and the function 
+% return the input names in I, the output names in O, and the function
 % handle in F.
 %
 %%% Remarks
@@ -396,9 +431,9 @@ end
 % This function is case sensitive
 %
 %%% Unit Tests
-% Unlike ordinary Unit Tests, this is a list of tests. P means passing, U 
+% Unlike ordinary Unit Tests, this is a list of tests. P means passing, U
 % means unknown.
-% 
+%
 % * P |'myFun'| -> [{}, {}, @myFun]
 % * P |'myFun;'| -> [{}, {}, @myFun]
 % * P |'myFun()'| -> [{}, {}, @myFun]
@@ -483,17 +518,13 @@ function [ins, outs, func] = parseFunction(call)
         ind = strfind(call, '(');
         call(ind:end) = '';
     end
-    func = str2func(strip(call));        
+    func = str2func(strip(call));
 
 end
 
-function cleanup(runnable, timeout)
+function cleanup()
     % check if runnable is TestCase or Feedback
     fclose('all');
-    
-    if timeout.isTimeout && isa(runnable, 'Feedback')
-        runnable.exception = MException('AUTOGRADER:TIMEOUT', 'Timeout occurred');
-    end
 end
 
 
@@ -537,4 +568,27 @@ function isRecurring = checkRecur(callInfo, main)
     end
 
     isRecurring = false;
+end
+
+function isBanned = checkBanned(name, banned)
+    isBanned = false;
+    % for each call, we should first check that they didn't use any banned names:
+    calls = getcallinfo(name);
+    for i = 1:numel(calls)
+        possibleCalls = [calls(i).calls.fcnCalls];
+        possibleCalls = [possibleCalls.names];% inner calls are to helper functions, so no worries there
+        % See if ANY banned are found in possibleCalls
+        if any(contains(possibleCalls, banned))
+            isBanned = true;
+            return;
+        end
+    end
+    BANNED_OPS = {'BANG', 'PARFOR', 'SPMD'};
+    info = mtree(name, '-file');
+    for b = 1:numel(BANNED_OPS)
+        if info.anykind(BANNED_OPS{b})
+            isBanned = true;
+            return;
+        end
+    end
 end
