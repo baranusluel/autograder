@@ -4,53 +4,58 @@
 % folder or unzipping into the current folder. Returns the path of the
 % unzipped archive.
 %
-% UNZIPPATH = unzipArchive(PATH) unzips the arhive at PATH into the current 
-% folder.
+% P = unzipArchive(Z) unzips the archive in path Z. P is a path that leads 
+% to contents of the unzipped archive. This usage is guaranteed to never 
+% overwrite any files.
 %
-% UNZIPPATH = unzipArchive(PATH, DESTINATION) unzips the archive at PATH to
-% a folder specified by DESTINATION. If DESTINATION is a folder path, the
-% archive will be unzipped to the destination. If DESTINATION is either the
-% character vector 'temp', the string "temp", or a logical true, the
-% archive will be unzipped to a temporary folder. If DESTINATION is the 
-% character vector 'curr', the string "curr", or a logical false, the
-% archive will be unzipped to the current directory.
+% P = unzipArchive(Z, D) unzips the archive at path Z into the folder D,
+% where D is an absolute or relative path. If D does not exist, it's
+% created. The contents of the archive will be placed directly inside of
+% folder D. If D is empty, it's equivalent to calling U = unzipArchive(Z).
+% Regardless, the path to the unzipped contents is returned as P.
 %
-% UNZIPPATH = unzipArchive(PATH, DESTINATION, DELETEORIGINAL) has the same
-% behavior as the previous usage, however it will delete the archive if
-% DELETEORIGINAL is true.
+% P = unzipArchive(Z, D, X) does the same as P = unzipArchive(Z, D), except
+% it will delete the original Zip Archive if X is true. If it's false, the
+% original archive will not be deleted.
 %
 %%% Remarks
 %
-%
+% If a destination is given, files and folders whose names conflict will be
+% unconditionally deleted.
 %
 %%% Exceptions
 %
-% AUTOGRADER:UNZIPARCHIVE:INVALIDPATH exception will be thrown if an
-% invalid path is passed in.
-%
-% AUTOGRADER:UNZIPARCHIVE:INVALIDFILE exception will be thrown if a non
-% archive file is passed in.
+% An AUTOGRADER:unzipArchive:invalidArchive exception will be thrown if the
+% unzipping process returns an error. The specific reason will be attached
+% as a cause. This includes if the destination does not exist, or if the
+% given ZIP archive doesn't exist either.
 %
 %%% Unit Tests
 %
-%   P = unzipArchive('test.zip')
+%   Z = 'C:\...\archive.zip'; % valid ZIP
+%   P = unzipArchive(Z);
 %
-%   P contains '\test\' appended to the end of the current directory path 
-%   and the contents of test.zip are unzipped into the newly created test\ 
-%   folder.
+%   P is a path. cd(P) will put you inside the unzipped contents.
 %
-%   P = unzipArchive('test.zip', true) or P = unzipArchive('test.zip', 'temp')
+%   Z = 'C:\...\archive.zip';
+%   D = 'C:\Users\Public\test\'; % valid destination
+%   P = unzipArchive(Z, D);
 %
-%   P contains a path to a temporary folder named 'test' somewhere in the
-%   temporary appdata designated to MATLAB.
+%   P is the same as D, where the unzipped contents have been placed
 %
-%   P = unzipArchive('test.zip', 'curr', true)
+%   Z = 'C:\...\archive.zip';
+%   D = []; % or D = '';
+%   P = unzipArchive(Z, D);
 %
-%   P contains '\test\' appended to the end of the current directory path 
-%   and the contents of test.zip are unzipped into the newly created test\ 
-%   folder. The original archive test.zip is deleted.
+%   P is a unique path. cd(P) will put you inside the unzipped contents.
 %
-function test = unzipArchive(unzipPath, varargin)
-    if (nargin == 0)
-    end
-end
+%   Z = 'C:\...\archive.zip';
+%   D = [];
+%   X = true;
+%   P = unzipArchive(Z, D, X);
+%
+%   P is a unique path. cd(P) will put you inside the unzipped contents.
+%   Additionally, the archive at Z no longer exists.
+%
+%   All unzipping errors. are caught and returned as an
+%   AUTOGRADER:unzipArchive:invalidArchive exception
