@@ -82,7 +82,7 @@ classdef Problem < handle
                 this.isRecursive = info.isRecursive;
                 
                 for i = length(info.testCases):-1:1
-                    tInfo = info.TestCases(i);
+                    tInfo = info.testCases(i);
                     tInfo.banned = this.banned;
                     % Get the full paths of the supporting files and add to
                     % the test case info struct
