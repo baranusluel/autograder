@@ -69,7 +69,7 @@ classdef Student < handle
             if isempty(PATH)
                 restoredefaultpath();
                 userpath('clear');
-                addpath(genpath(fileparts(fileparts(mfilename('fullname')))));
+                addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
                 PATH = path();
             else
                 path(PATH, '');

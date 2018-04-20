@@ -28,18 +28,6 @@
 % The options can be one of the following. If in a structure, the field
 % name must match the option. All options are case insensitive.
 %
-% * inputFormat: The format of the input ZIP student archive. Can be one of
-% the following: 'canvas' or 'tsqaure'. Default is 'canvas'
-%
-% * outputFormat: The format of the output to write. Can be one of the
-% following: 'canvas' or 'tsquare'. Default is 'canvas'
-%
-% * upload: A string. If 'website', then it will only upload to the CS 1371
-% website. If 'all', then it will upload to the CS 1371 website & the given
-% format - if the outputFormat is 'canvas', it will upload to the canvas
-% website, for example. If upload is empty, then no uploads take
-% place.
-%
 %%% Exceptions
 %
 % An AUTOGRADER:INVALIDPATH exception will be thrown if either input paths
@@ -51,7 +39,7 @@
 %   N = ''; % invalid path
 %   Main(S, N);
 %
-%   Threw AUTOGRADER:INVALIDPATH exception
+%   Threw AUTOGRADER:invalidPath exception
 %
 function Main(varargin)
     % Implementation Notes:
@@ -77,13 +65,6 @@ function Main(varargin)
     % * Reapply user's settings for figures
     
     % Parse inputs
-    [
-        settings.students, ...
-        settings.solutions, ...
-        settings.inputFormat, ...
-        settings.outputFormat, ...
-        settings.upload ...
-    ] = parser(varargin);
         
     % Show the app. After it's done (uiresume), we'll extract necessary
     % info and then change to updating. If it's cancelled, we'll exit
@@ -126,7 +107,7 @@ function Main(varargin)
                 app.canvasToken, [pwd filesep 'Students']);
         catch e
             % alert in some way and return
-            alert('Exception %s found when trying to download from Canvas', e.identifier);
+            alert(app, 'Exception %s found when trying to download from Canvas', e.identifier);
             return;
         end
     else
@@ -142,7 +123,7 @@ function Main(varargin)
         try
             downloadFromDrive(app.driveFolderId, app.driveToken);
         catch e
-            alert('Exception %s found when trying to download from Google Drive', e.identifier);
+            alert(app, 'Exception %s found when trying to download from Google Drive', e.identifier);
             return;
         end
     else
@@ -162,7 +143,7 @@ function Main(varargin)
         solutions = generateSolutions([pwd filesep 'Solutions']);
     catch e
         % Display to user that we failed
-        alert('Problem generation failed. Error %s: %s', e.identifier, ...
+        alert(app, 'Problem generation failed. Error %s: %s', e.identifier, ...
             e.message);
         return;
     end
@@ -171,7 +152,7 @@ function Main(varargin)
     try
         students = generateStudents([pwd filesep 'Students']);
     catch e
-        alert('Student generation failed. Error %s: %s', e.identifier, ...
+        alert(app, 'Student generation failed. Error %s: %s', e.identifier, ...
             e.message);
         return;
     end
@@ -231,11 +212,11 @@ function Main(varargin)
     
 end
 
-function alert(msg, params)
-    if ~exist('params', 'var') || isempty(params)
-        fprintf(2, '%s\n', msg);
+function alert(app, msg, varargin)
+    if nargin == 2
+        app.uialert(msg, 'Autograder');
     else
-        fprintf(2, [msg '\n'], params{:});
+        app.uialert(sprintf(msg, varargin{:}), 'Autograder');
     end
 end
 
@@ -259,22 +240,4 @@ function cleanup(settings)
     set(0, 'DefaultFigureVisible', settings.figures);
     % delete SENTINEL
     delete(File.SENTINEL);
-end
-
-function varargout = parser(args)
-
-    inputs = inputParser();
-    inputs.CaseSensitive = false;
-    inputs.FunctionName = 'Autograder';
-    inputs.addOptional("students", '', @isfile);
-    inputs.addOptional("solutions", '', @isfile);
-    inputs.addParameter("inputFormat", 'canvas', @formatValidator);
-    inputs.addParameter("outputFormat", 'canvas', @formatValidator);
-    inputs.addParameter("upload", '', @validator);
-    inputs.parse(args{:});
-    varargout{1} = inputs.Results.students;
-    varargout{2} = inputs.Results.solutions;
-    varargout{3} = inputs.Results.inputFormat;
-    varargout{4} = inputs.Results.outputFormat;
-    varargout{5} = inputs.Results.upload;
 end
