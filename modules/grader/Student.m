@@ -238,6 +238,112 @@ classdef Student < handle
                     feeds(i).exception = MEXCEPTION('AUTOGRADER:Student:fileNotSubmitted', ...
                         'File %s wasn''t submitted, so the engine was not run.', [problem.name '.m']);
                 end
+                % fill out feedback
+                feedback = feeds(i);
+                % if exception, hasPassed = false;
+                if ~isempty(feedback.exception)
+                    feedback.hasPassed = false;
+                    feedback.points = 0;
+                else
+                    % split points evenly among outputs, files, and plots?
+                    solnOutputs = feedback.testCase.outputs;
+                    solnFiles = feedback.testCase.files;
+                    solnPlots = feedback.testCase.plots;
+                    points = feedback.testCase.points;
+                    
+                    pointsPerItem = points / ...
+                        sum([numel(fieldnames(solnOutputs)), ...
+                        numel(solnFiles), numel(solnPlots)]);
+                    points = 0;
+                    
+                    % for each output, if isequaln returns true, then give
+                    % partial
+                    outs = fieldnames(solnOutputs);
+                    for o = 1:numel(outs)
+                        soln = solnOutputs.(outs{o});
+                        stud = feedback.outputs.(outs{o});
+                        if isequaln(soln, stud)
+                            points = points + pointsPerItem;
+                        end
+                    end
+                    
+                    % for each file, we need to see what file matches.
+                    % to do this, for each soln, we'll see if any student
+                    % equals it. If it does, then we take it out of both
+                    studFiles = cell(1, numel(solnFiles));
+                    solnFiles = cell(1, numel(solnFiles));
+                    matching  = false(1, numel(solnFiles));
+                    studInds = 1:numel(feedback.files);
+                    for f = 1:numel(solnFiles)
+                        solnFiles{f} = feedback.testCase.files(f);
+                        % for each student file, try to find an equal one.
+                        % If found, add both to cell array, and then remove
+                        % from studInds
+                        for s = studInds
+                            if solnFiles{f}.equals(feedback.files(s))
+                                studFiles{f} = feedback.files(s);
+                                matching(f) = true;
+                                studInds(s) = [];
+                                break;
+                            end
+                        end
+                    end
+                    % for each matching file, place it in line for checking
+                    solnFound = [solnFiles{matching}];
+                    studFound = [studFiles{matching}];
+                    solnNotFound = [solnFiles{~matching}];
+                    studNotFound = feedback.files(studInds);
+                    % since they are matching (matching == true), we know
+                    % that length(solnFound) == length(studFound). So, we
+                    % place them first
+                    % now, place the REST of them afterwards. We don't have
+                    % to make any guarantee about length here
+                    feedback.testCase.files = [solnFound solnNotFound];
+                    feedback.files = [studFound studNotFound];
+                    
+                    % add points for all matching
+                    points = points + (sum(matching) * pointsPerItem);
+                    
+                    % for each plot, we need to see what plot matches.
+                    % to do this, for each soln, we'll see if any student
+                    % equals it. If it does, then we take it out of both
+                    studPlots = cell(1, numel(solnPlots));
+                    solnPlots = cell(1, numel(solnPlots));
+                    matching  = false(1, numel(solnPlots));
+                    studInds = 1:numel(feedback.plots);
+                    for p = 1:numel(solnPlots)
+                        solnPlots{p} = feedback.testCase.plots(p);
+                        % for each student file, try to find an equal one.
+                        % If found, add both to cell array, and then remove
+                        % from studInds
+                        for s = studInds
+                            if solnPlots{p}.equals(feedback.plots(s))
+                                studPlots{p} = feedback.plots(s);
+                                matching(p) = true;
+                                studInds(s) = [];
+                                break;
+                            end
+                        end
+                    end
+                    % for each matching file, place it in line for checking
+                    solnFound = [solnPlots{matching}];
+                    studFound = [studPlots{matching}];
+                    solnNotFound = [solnPlots{~matching}];
+                    studNotFound = feedback.plots(studInds);
+                    % since they are matching (matching == true), we know
+                    % that length(solnFound) == length(studFound). So, we
+                    % place them first
+                    % now, place the REST of them afterwards. We don't have
+                    % to make any guarantee about length here
+                    feedback.testCase.plots = [solnFound solnNotFound];
+                    feedback.plots = [studFound studNotFound];
+                    
+                    % add points for all matching
+                    points = points + (sum(matching) * pointsPerItem);
+                    
+                    
+                    feedback.points = points;
+                end
             end
             this.feedbacks = [this.feedbacks {feeds}];
         end
