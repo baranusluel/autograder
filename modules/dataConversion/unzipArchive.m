@@ -4,14 +4,9 @@
 % folder or unzipping into the current folder. Returns the path of the
 % unzipped archive.
 %
-<<<<<<< HEAD
 % P = unzipArchive(Z) unzips the archive in path Z. P is a path that leads 
 % to contents of the unzipped archive. This usage is guaranteed to never 
 % overwrite any files.
-=======
-% UNZIPPATH = unzipArchive(PATH) unzips the arhive at PATH into a temp
-% directory and returns the path to its contents.
->>>>>>> Development
 %
 % P = unzipArchive(Z, D) unzips the archive at path Z into the folder D,
 % where D is an absolute or relative path. If D does not exist, it's
