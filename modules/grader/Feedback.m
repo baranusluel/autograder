@@ -79,20 +79,12 @@ classdef Feedback < handle
         % To actually _generate_ feedback, the Feedback class will need to 
         % be initialized correctly.
         %
-        %%% Exceptions
-        %
-        % An AUTOGRADER:FEEDBACK:INVALIDTESTCASE exception will be thrown
-        % if the testCase is incorrectly formatted or missing information
-        %
         %%% Unit Tests
         %
         %   T = testCase; % Given a valid TestCase:
         %   F = Feedback(T);
         %
         %   F.testCase -> T;
-        %
-        %   T = [];
-        %   F = Feedback(T);
         %
         function [this] = Feedback(testCase, path)
             if nargin == 0
