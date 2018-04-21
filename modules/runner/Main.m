@@ -121,7 +121,8 @@ function Main(varargin)
     if app.SolutionChoice.Value == 1
         % downloading
         try
-            downloadFromDrive(app.driveFolderId, app.driveToken);
+            token = refresh2access(app.driveToken);
+            downloadFromDrive(app.driveFolderId, token, [pwd filesep 'Solutions']);
         catch e
             alert(app, 'Exception %s found when trying to download from Google Drive', e.identifier);
             return;

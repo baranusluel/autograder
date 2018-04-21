@@ -34,19 +34,19 @@ function downloadFromCanvas(courseId, assignmentId, token, path)
     cleaner = onCleanup(@()(cd(origPath)));
     % for each user, get GT Username, create folder, then inside that
     % folder, download submission
-    names = cell(2, numel(subs));
-    for s = 1:numel(subs)
+    names = cell(1, numel(subs));
+    ids = cell(1, numel(subs));
+    parfor s = 1:numel(subs)
         student = getStudentInfo(subs{s}.user_id, token);
         % create folder with name as login_id
         mkdir(student.login_id);
-        names{1, s} = student.name;
-        names{2, s} = student.login_id;
-        orig = cd(student.login_id);
+        names{s} = student.name;
+        ids{s} = student.login_id;
         % for each attachment, download it here
         if isfield(subs{s}, 'attachments')
             for a = 1:numel(subs{s}.attachments)
                 try
-                    websave(subs{s}.attachments(a).filename, ...
+                    websave([pwd filesep student.login_id filesep subs{s}.attachments(a).filename], ...
                         subs{s}.attachments(a).url);
                 catch reason
                     e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
@@ -55,15 +55,13 @@ function downloadFromCanvas(courseId, assignmentId, token, path)
                 end
             end
         end
-        cd(orig);
     end
     % write info.csv
-    records = cell(1, size(names, 2));
-    for n = 1:size(names, 2)
-        records{n} = strjoin(names(:, n)', ': ');
-    end
+    names = [names; ids]';
+    names = join(names, ', "');
+    names = ['"' strjoin(names, '"\n"'), '"'];
     fid = fopen('info.csv', 'wt');
-    fwrite(fid, strjoin(records, newline));
+    fwrite(fid, names);
     fclose(fid);
     cd(origPath);
 end
