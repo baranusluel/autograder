@@ -142,6 +142,9 @@ classdef Student < handle
         %   Constructor threw exception
         %   AUTOGRADER:Student:ctor:invalidPath
         %
+            if nargin == 0
+                return;
+            end
             if ~isfolder(path)
                 e = MException('AUTOGRADER:Student:ctor:invalidPath', ...
                 'Path %s is not a valid path', path);
