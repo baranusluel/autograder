@@ -10,7 +10,7 @@
 %
 % * data: One of the following:
 %		- MxNx3 uint8 image
-%		- Cell array of lines (without newline characters)
+%		- Character vector of file data
 %		- Cell array for raw Excel output
 %
 %%% Methods
@@ -32,8 +32,8 @@
 %
 classdef File < handle
     properties (Access = public)
-        name; %will be class str
-        extension; %will be class str
+        name; %will be class char
+        extension; %will be class char
         data; %will vary in file type
     end
     properties (Access = public)
@@ -75,7 +75,7 @@ classdef File < handle
             %
             %   File.name -> 'test'
             %   File.extension -> '.txt'
-            %   File.data -> data (a string array with no newline characters)
+            %   File.data -> data (a char vector)
             %
             %   P = ''; % invalid path
             %   this = File(P);
@@ -99,7 +99,7 @@ classdef File < handle
             %
             %   this.name -> 'img'
             %   this.extension -> '.png'
-            %   this.data -> UINT MxNx3 array
+            %   this.data -> uint MxNx3 array
             %
             if nargin == 0
                 return;
@@ -139,16 +139,13 @@ classdef File < handle
                     %preallocating look lame af in the presence of the
                     %glorious fread function.
                     fid = fopen(name, 'rt');
-                    lines = fread(fid)';
+                    this.data = char(fread(fid)');
                     fclose(fid);
-                    lines = char(lines);
-                    this.data = lines;
                 case this.IMAGES
                     %read in image array and store in File class
                     this.data = imread(name);
                 case this.EXCEL
-                    [~,~,data] = xlsread(name);
-                    this.data = data;
+                    [~,~,this.data] = xlsread(name);
             end
         end
     end
@@ -171,45 +168,31 @@ classdef File < handle
             % Checks if this file object is equal to anSOLN (containing same name,
             % extension, and data).
             %
-            % [ISEQUAL, MSG] = equals(THIS,SOLN) checks whether THIS is equal to
-            % SOLN. If THIS and SOLN have the same name, extension, and data, ISEQUAL
-            % will be true. If the two file objects are not the same, ISEQUAL is false,
-            % and MSG contains the reason why the files aren't equal.
+            % [I] = equals(T,S) checks whether this file T is equal to
+            % solution S. If T and S have the same name, extension, and data,
+            % I is true; otherwise, it's false.
             %
             %%% Remarks
             %
-            % Assuming the input file is indeed a File object, this method is
-            % guaranteed to never error.
+            % The order doesn't actually matter, although it's assumed the
+            % solution is given as an input.
             %
             %%% Exceptions
             %
-            % An AUTOGRADER:File:equals:noFile exception will be thrown if SOLN
-            % is not of type File, or no input is given.
+            % This method will not throw an exception
             %
             %%% Unit Tests
             %
             %    Given that F is a valid File instance that is equal to THIS:
-            %    [ISEQUAL, MSG] = equals(F)
+            %    [I] = equals(F)
             %
-            %	 ISEQUAL -> true
-            %	 MSG -> ''
+            %	 I -> true;
             %
             %    If B is a valid File instance with one or more fields not equal
             %    to the fields of THIS:
-            %	 [ISEQUAL, MSG] = equals(B)
+            %	 [I] = equals(B)
             %
-            %	 ISEQUAL -> false
-            %	 MSG contains a message describing how B differs from THIS.
-            %
-            %    If C is an invalid File instance or not type File:
-            %	 [ISEQUAL, MSG] = equals(C)
-            %
-            %	 equals threw AUTOGRADER:File:equals:noFile exception
-            %
-            % 	 [ISEQUAL, MSG] = equals()
-            %
-            %    equals threw AUTOGRADER:File:equals:noFile exception
-            %
+            %	 I -> false;
             %
             
             %extract the data from classes, compare name and extension
@@ -231,8 +214,8 @@ classdef File < handle
             % information the equality of THIS and SOLN, where THIS and SOLN are both
             % type File. If SOLN is a text file, HTML contains a visdiff() of the two
             % files. If SOLN is an image, the Image Comparison Tool will be used. If
-            % SOLN is an Excel file, both files will be converted to tables and visdiff()
-            % will be used to compare.
+            % SOLN is an Excel file, both files will be compared via their
+            % output cell arrays (using xlsread);
             %
             %%% Remarks
             %
@@ -241,11 +224,7 @@ classdef File < handle
             %
             %%% Exceptions
             %
-            % An AUTOGRADER:File:equals:noFile exception will be thrown if SOLN
-            % is not of type File.
             %
-            % An AUTOGRADER:File:equals:invalidFile exception will be thrown if no
-            % input is given.
             %
             %%% Unit Tests
             %
@@ -258,18 +237,6 @@ classdef File < handle
             %	 [OUT] = generateFeedback(this, B)
             %
             %	 OUT will contain HTML describing that THIS and B are not the same.
-            %
-            %    If C is an invalid File instance:
-            %	 [HTML] = generateFeedback(THIS, C)
-            %
-            %	 equals threw AUTOGRADER:File:equals:invalidFile exception
-            %
-            %    If C does not contain a vaild File path:
-            %	 [HTML] = generateFeedback(THIS, C)
-            %
-            %	 equals threw AUTOGRADER:File:equals:noFile exception
-            %	 [HTML] = generateFeedback()
-            %
             %
             %below, my code is uncertain as of this moment.
             %Check out what data type is soln
