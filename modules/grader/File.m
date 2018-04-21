@@ -95,14 +95,16 @@ classdef File < handle
             %   this.extension -> '.png'
             %   this.data -> UINT MxNx3 array
             %
-            
+            if nargin == 0
+                return;
+            end
             
             %Parse the path input into the proper parts
             [~, name, ext] = fileparts(path);
             
             %store info in File
             
-            File.name = nname;
+            File.name = name;
             File.extension = ext;
             %depending on the ext, extract the information
             %for images, imformats will be used for the potential cases
@@ -141,8 +143,7 @@ classdef File < handle
                     File.data = lines;
                 case imc
                     %read in image array and store in File class
-                    data = imread(name);
-                    File.data = data;
+                    File.data = imread(name);
                 case {'xls', 'xlsx', 'csv'}
                     [~,~,data] = xlsread(name);
                     File.data = data;
@@ -210,8 +211,8 @@ classdef File < handle
             %
             
             %extract the data from classes, compare name and extension
-            name = strcmp(this.name,soln.name)
-            ext = strcmp(this.extension,soln.extension)
+            name = strcmpi(this.name,soln.name)
+            ext = strcmpi(this.extension,soln.extension)
             data = isequal(this.data,soln.data)
             %depending on what is true, output proper message
             msg = ''
@@ -285,6 +286,14 @@ classdef File < handle
             %	 [HTML] = generateFeedback()
             %
             %
+            %below, my code is uncertain as of this moment.
+            %Check out what data type is soln
+            if strcmp(class(soln.data),'cell') %for text files, that are now cells?
+                
+            elseif strcmp(class(soln.data),'cell') %for excel files
+                
+            else %if image
+            end
         end
     end
 end
