@@ -139,7 +139,8 @@ classdef Feedback < handle
             if this.hasPassed
                 html = '<div class = "container feedback">';
             elseif ~isempty(this.exception)
-                html = ['<div class = "container feedback"><p>' this.exception '</p>'];
+                html = ['<div class = "container feedback"><p class = "exception">' 
+                        this.exception.identifier ":" this.exception.message '</p>'];
             else
                 html = '<div class = "container feedback">';
                 %Get solution outputs for testCase
