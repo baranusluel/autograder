@@ -77,16 +77,6 @@ classdef File < handle
             %   File.extension -> '.txt'
             %   File.data -> data (a char vector)
             %
-            %   P = ''; % invalid path
-            %   this = File(P);
-            %
-            %   threw invalidPath exception
-            %
-            %   P = 'C:\test.fdasfdsa'; % invalid file extension
-            %   this = File(P);
-            %
-            %   threw invalidExtension exception
-            %
             %   P = 'C:\test\e.xls'; % valid file
             %   this = File(P);
             %
@@ -146,6 +136,10 @@ classdef File < handle
                     this.data = imread(name);
                 case this.EXCEL
                     [~,~,this.data] = xlsread(name);
+                otherwise
+                    fid = fopen([this.name this.extension];) %binary reading
+                    this.data = fread(fid);
+                    fclose(fid)
             end
         end
     end
@@ -224,7 +218,7 @@ classdef File < handle
             %
             %%% Exceptions
             %
-            %
+            % This method will never throw an exception
             %
             %%% Unit Tests
             %
@@ -240,40 +234,47 @@ classdef File < handle
             %
             %below, my code is uncertain as of this moment.
             %Check out what data type is soln
-            switch lower(this.extension(2:end))
-                case this.TXT
-                    studPath = [tempname this.extension];
-                    solnPath = [tempname soln.extension];
-                    fid = fopen(studPath, 'wt');
-                    fwrite(fid, this.data);
-                    fclose(fid);
-                    fid = fopen(solnPath, 'wt');
-                    fwrite(fid, soln.data);
-                    fclose(fid);
-                    html = visdiff(studPath, solnPath, 'text');
-                    html = strrep(html, 'Student File');
-                    html = strrep(html, 'Solution File');
-                    startInd = strfind(html, '<title>');
-                    endInd = strfind(html, '</title>');
-                    startInd = startInd(1) + length('<title>');
-                    endInd = endInd(1) - 1;
-                    html = [html(1:startInd), 'Comparison of Student and Solution Files' html(endInd:end)];
-                case this.IMAGES
-                    html = '<div class="row image-feedback">';
-                    html = [html '<div class="col-md-6 text-center student-image">'];
-                    studImg = img2base64(this.data);
-                    solnImg = img2base64(soln.data);
-                    html = [html '<img class="img-thumbnail rounded img-fluid" src="%s">'];
-                    html = [html '</div><div class="col-md-6 text-center soln-image">'];
-                    html = [html '<img class="img-thumbnail rounded img-fluid" src="%s">'];
-                    html = [html '</div></div>'];
-                    html = sprint(html, studImg, solnImg);
-                case this.EXCEL
-                    html = generateFeedback(this.data, soln.data);
-                otherwise
-                    html = '<p class="unknown">Unknown File Extension "%s"</p>';
-                    html = sprintf(html, this.extension);
-            end  
+            if ~strcmp(this.extension, soln.extension)
+                html = sprintf('<p>Expected extension "%s"; got extension "%s"</p>',...
+                    soln.extension, this.extension);
+            elseif ~strcmp(this.name, soln.name)
+                html = sprintf('<p>Expected name "%s"; got name "%s"</p>',...
+                    soln.name, this.name);
+            else
+                switch lower(this.extension(2:end))
+                    case this.TXT
+                        studPath = [tempname this.extension];
+                        solnPath = [tempname soln.extension];
+                        fid = fopen(studPath, 'wt');
+                        fwrite(fid, this.data);
+                        fclose(fid);
+                        fid = fopen(solnPath, 'wt');
+                        fwrite(fid, soln.data);
+                        fclose(fid);
+                        html = visdiff(studPath, solnPath, 'text');
+                        html = strrep(html, 'Student File');
+                        html = strrep(html, 'Solution File');
+                        startInd = strfind(html, '<title>');
+                        endInd = strfind(html, '</title>');
+                        startInd = startInd(1) + length('<title>');
+                        endInd = endInd(1) - 1;
+                        html = [html(1:startInd), 'Comparison of Student and Solution Files' html(endInd:end)];
+                    case this.IMAGES
+                        html = '<div class="row image-feedback">';
+                        html = [html '<div class="col-md-6 text-center student-image">'];
+                        studImg = img2base64(this.data);
+                        solnImg = img2base64(soln.data);
+                        html = [html '<img class="img-thumbnail rounded img-fluid" src="%s">'];
+                        html = [html '</div><div class="col-md-6 text-center soln-image">'];
+                        html = [html '<img class="img-thumbnail rounded img-fluid" src="%s">'];
+                        html = [html '</div></div>'];
+                        html = sprint(html, studImg, solnImg);
+                    case this.EXCEL
+                        html = generateFeedback(this.data, soln.data);
+                    otherwise
+                        html = '<p class="unknown">Data is different</p>';
+                end  
+            end
         end
     end
 end
