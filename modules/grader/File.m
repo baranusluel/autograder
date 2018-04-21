@@ -128,7 +128,7 @@ classdef File < handle
                     %preallocating. However, Matlab makes even
                     %preallocating look lame af in the presence of the
                     %glorious fread function.
-                    fid = fopen(name, 'rt');
+                    fid = fopen([name ext], 'rt');
                     this.data = char(fread(fid)');
                     fclose(fid);
                 case this.IMAGES
