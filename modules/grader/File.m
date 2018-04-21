@@ -36,7 +36,16 @@ classdef File < handle
         extension; %will be class str
         data; %will vary in file type
     end
+    properties (Access = public)
+        TXT = {'txt', 'm', 'rtf', 'html'};
+        EXCEL = {'xls', 'xlsx', 'csv'};
+        IMAGES;
+    end
     methods
+        function val = get.IMAGES(~)
+            tmp = imformats;
+            val = [tmp.ext];
+        end
         function this = File(path)
             %% Constructor: Create a File object from a path
             %
@@ -108,10 +117,8 @@ classdef File < handle
             %because we are using imformats, we will remove the periods
             %from the variable stored in ext when you use the
             %switch statements
-            imc = imformats;
-            imc = [imc.ext];
             switch ext(2:end)
-                case 'txt' %read data in and create a vertical string vector
+                case this.TXT %read data in and create a vertical string vector
                     %In standard practice, using the string class to extract the
                     %contents of a text file would be preferable. Most TAs,
                     %however, would be more comfortable with cell arrays, so
@@ -136,10 +143,10 @@ classdef File < handle
                     fclose(fid);
                     lines = char(lines);
                     this.data = lines;
-                case imc
+                case this.IMAGES
                     %read in image array and store in File class
                     this.data = imread(name);
-                case {'xls', 'xlsx', 'csv'}
+                case this.EXCEL
                     [~,~,data] = xlsread(name);
                     this.data = data;
             end
