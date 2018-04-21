@@ -2,14 +2,26 @@
 %
 % The engine function serves as the primary runner of code.
 %
-% engine(T) runs the code specified by the TestCase T, and assigns the
+% T = engine(T) runs the code specified by the TestCase T, and assigns the
 % outputs, files, and plots to the corresponding fields in T.
 %
-% engine(F) runs the code specified by the TestCase found in Feedback F,
+% F = engine(F) runs the code specified by the TestCase found in Feedback F,
 % and assigns the outputs, files, and plots to the corresponding fields
-% in F. This does NOT grade the code, just runs it.
+% in F. This does NOT grade the code, just runs it. You must caputre
+%
+% R = engine(R) will run all runnables in the Runnable vector R, and will
+% return when they have all finished.
 %
 %%% Remarks
+%
+% For multiple runnables, the engine will wait until all of them have
+% finished, or timed out. However, other than that, there is no requirement
+% that any of them be related to each other - they are all run in parellel.
+%
+% If there are n cores on the machine, then up to n-1 runnables are run at
+% the same time. Should there be more runnables in R than that, they are
+% run in "batches". As such, while it will always be faster to run them in
+% parallel, there are no guarantees made about 
 %
 % The engine function is the primary grading mechanism used within the
 % the autograder. It provides a "sandboxed" environment for running code,
@@ -121,6 +133,11 @@
 %   engine(F);
 %
 %   Threw exception invalidRunnable
+%
+%   F = []; % assume F is a vector of Feedbacks
+%   A = engine(F);
+%
+%   A is a vector of finished runnables.
 %
 function runnable = engine(runnable)
 
