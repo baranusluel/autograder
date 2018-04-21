@@ -101,8 +101,8 @@ classdef File < handle
             
             %store info in File
             
-            File.name = name;
-            File.extension = ext;
+            this.name = name;
+            this.extension = ext;
             %depending on the ext, extract the information
             %for images, imformats will be used for the potential cases
             %because we are using imformats, we will remove the periods
@@ -135,15 +135,16 @@ classdef File < handle
                     lines = fread(fid)';
                     fclose(fid);
                     lines = char(lines);
+                    lines = strrep(lines,[char(13),char(10)], char(10)); 
                     lines = strsplit(lines, newline, 'CollapseDelimiters',...
                         false);
-                    File.data = lines;
+                    this.data = lines;
                 case imc
                     %read in image array and store in File class
-                    File.data = imread(name);
+                    this.data = imread(name);
                 case {'xls', 'xlsx', 'csv'}
                     [~,~,data] = xlsread(name);
-                    File.data = data;
+                    this.data = data;
             end
         end
     end
