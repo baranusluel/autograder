@@ -268,10 +268,10 @@ classdef File < handle
             %Check out what data type is soln
              imc = imformats;
             imc = [imc.ext];
-            switch lower(this.extension(2:end)
+            switch lower(this.extension(2:end))
                 case 'txt'
                     studPath = [tempname this.extension];
-                    solnPath = tempname soln.extension];
+                    solnPath = [tempname soln.extension];
                     fid = fopen(studPath, 'wt');
                     fwrite(fid, this.data);
                     fclose(fid);
