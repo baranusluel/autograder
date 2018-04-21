@@ -74,7 +74,7 @@ function subs = getSubmissions(courseId, assignmentId, token)
     opts = weboptions;
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
     try
-        subs = webread([API '/courses/' num2str(courseId) '/assignments/' num2str(assignmentId) '/submissions/'], 'per_page', '10000', opts);
+        subs = webread([API '/courses/' courseId '/assignments/' assignmentId '/submissions/'], 'per_page', '10000', opts);
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
         e = addCause(e, reason);

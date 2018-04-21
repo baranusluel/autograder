@@ -103,7 +103,7 @@ function Main(varargin)
         % downloading. We should create new Students folder and download
         % there.
         try
-            downloadFromCanvas(app.courseId, app.assignmentId, ...
+            downloadFromCanvas(app.canvasCourseId, app.canvasHomeworkId, ...
                 app.canvasToken, [pwd filesep 'Students']);
         catch e
             % alert in some way and return

@@ -10,7 +10,8 @@
 %
 %%% Remarks
 %
-% This function is used to find the courseID for Canvas - this is used by virtually all other canvas functions
+% This function is used to find the courseID for Canvas - this is used by 
+% virtually all other canvas functions
 %
 %%% Exceptions
 %
@@ -22,16 +23,16 @@
 %
 %%% Unit Tests
 %
-%   T = '..'; % valid token
+%   T = '...'; % valid token
 %   C = getCanvasCourse(T);
 %
-%   C -> 123456 % numeric courseId
+%   C -> '123456'
 %
-%   T = '..'; % valid token
+%   T = '...'; % valid token
 %   N = 'CS 1371 SPR18' % valid exact name
 %   C = getCanvasCourse(T, N);
 %
-%   C -> 123456; % numeric courseId
+%   C -> '123456' % numeric courseId
 %
 %   T = '...'; % valid token
 %   N = 'CS 1371 fdsa'; % INVALID exact name
@@ -72,7 +73,7 @@ function courseId = getCanvasCourse(token, code)
         % if our date is between and name matches, engage. Note that TA course never has a space
         if strncmp(data{d}.course_code, code, length(code)) && starting < datetime() && ending > datetime()
             % This is our course!
-            courseId = d.id;
+            courseId = num2str(d.id);
             isFound = true;
             break;
         end
