@@ -269,7 +269,7 @@ classdef File < handle
              imc = imformats;
             imc = [imc.ext];
             switch lower(this.extension(2:end))
-                case 'txt'
+                case this.TXT
                     studPath = [tempname this.extension];
                     solnPath = [tempname soln.extension];
                     fid = fopen(studPath, 'wt');
@@ -279,14 +279,14 @@ classdef File < handle
                     fwrite(fid, soln.data);
                     fclose(fid);
                     html = visdiff(studPath, solnPath, 'text');
-                    html = strrep(studPath, 'Student File');
-                    html = strrep(solnPath, 'Solution File');
+                    html = strrep(html, 'Student File');
+                    html = strrep(html, 'Solution File');
                     ind = strfind(html, '<title>');
                     endInd = strfind(html, '</title>');
                     startInd = startInd(1) + length('<title>');
                     endInd = endInd(1) - 1;
                     html = [html(1:startInd), 'Comparison of Student and Solution Files' html(endInd:end)];
-                case imc
+                case this.IMAGES
                     html = '<div class="row image-feedback">';
                     html = [html '<div class="col-md-6 text-center student-image">'];
                     studImg = img2base64(this.data);
@@ -296,7 +296,7 @@ classdef File < handle
                     html = [html '<img class="img-thumbnail rounded img-fluid" src="%s">'];
                     html = [html '</div></div>'];
                     html = sprint(html, studImg, solnImg);
-                case {'xls', 'xlsx', 'csv'}
+                case this.EXCEL
                     html = generateFeedback(this.data, soln.data);
                 otherwise
                     html = '<p class="unknown">Unknown File Extension "%s"</p>';
