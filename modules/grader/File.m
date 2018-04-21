@@ -36,9 +36,6 @@ classdef File < handle
         extension; %will be class str
         data; %will vary in file type
     end
-    properties (Constant)
-        SENTINEL = [tempfile '.lock'];
-    end
     methods
         function this = File(path)
             %% Constructor: Create a File object from a path
