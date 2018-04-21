@@ -135,7 +135,6 @@ classdef File < handle
                     lines = fread(fid)';
                     fclose(fid);
                     lines = char(lines);
-                    lines = strrep(lines,[char(13),char(10)], char(10)); 
                     lines = strsplit(lines, newline, 'CollapseDelimiters',...
                         false);
                     this.data = lines;
@@ -161,7 +160,7 @@ classdef File < handle
         end
     end
     methods (Access = public)
-        function [isEqual, msg] = equals(this, soln)
+        function [isEqual] = equals(this, soln)
             %% equals: Determine file equality
             %
             % Checks if this file object is equal to anSOLN (containing same name,
@@ -209,30 +208,13 @@ classdef File < handle
             %
             
             %extract the data from classes, compare name and extension
-            name = strcmpi(this.name,soln.name)
-            ext = strcmpi(this.extension,soln.extension)
-            data = isequal(this.data,soln.data)
-            %depending on what is true, output proper message
-            msg = ''
-            isEqual = false
-            %How descriptive should I be?
-            if name & ext & data
-                isEqual = true
-            elseif name & ext & ~data
-                msg = 'The data was found to be incorrect'
-            elseif name & ~ext & data
-                msg = 'The extension was found to be incorrect'
-            elseif ~name & ext & data
-                msg = 'The name was found to be incorrect'
-            elseif name & ~ext & ~data
-                msg = 'The extension and data was found to be incorrect'
-            elseif ~name & ext & ~data
-                msg = 'The name and data was found to be incorrect'
-            elseif ~name & ~ext & data
-                msg = 'The name and extension was found to be incorrect'
-            else
-                msg = 'the name, extension, and data were all found to be incorrect'
-            end
+            isName = strcmp(this.name,soln.name);
+            isExt = strcmp(this.extension,soln.extension);
+            isData = isequal(this.data,soln.data);
+            %output whether all portions are true or not
+
+            isEqual = isName && isExt && isData;
+           
                 
         end
         function [html] = generateFeedback(this, soln)
