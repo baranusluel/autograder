@@ -135,8 +135,6 @@ classdef File < handle
                     lines = fread(fid)';
                     fclose(fid);
                     lines = char(lines);
-                    lines = strsplit(lines, newline, 'CollapseDelimiters',...
-                        false);
                     this.data = lines;
                 case imc
                     %read in image array and store in File class
@@ -268,13 +266,44 @@ classdef File < handle
             %
             %below, my code is uncertain as of this moment.
             %Check out what data type is soln
-            if strcmp(class(soln.data),'cell') %for text files, that are now cells?
-                
-            elseif strcmp(class(soln.data),'cell') %for excel files
-                
-            else %if image
+             imc = imformats;
+            imc = [imc.ext];
+            switch lower(this.extension(2:end)
+                case 'txt'
+                    studPath = [tempname this.extension];
+                    solnPath = tempname soln.extension];
+                    fid = fopen(studPath, 'wt');
+                    fwrite(fid, this.data);
+                    fclose(fid);
+                    fid = fopen(solnPath, 'wt');
+                    fwrite(fid, soln.data);
+                    fclose(fid);
+                    html = visdiff(studPath, solnPath, 'text');
+                    html = strrep(studPath, 'Student File');
+                    html = strrep(solnPath, 'Solution File');
+                    ind = strfind(html, '<title>');
+                    endInd = strfind(html, '</title>');
+                    startInd = startInd(1) + length('<title>');
+                    endInd = endInd(1) - 1;
+                    html = [html(1:startInd), 'Comparison of Student and Solution Files' html(endInd:end)];
+                case imc
+                    html = '<div class="row image-feedback">';
+                    html = [html '<div class="col-md-6 text-center student-image">'];
+                    studImg = img2base64(this.data);
+                    solnImg = img2base64(soln.data);
+                    html = [html '<img class="img-thumbnail rounded img-fluid" src="%s">'];
+                    html = [html '</div><div class="col-md-6 text-center soln-image">'];
+                    html = [html '<img class="img-thumbnail rounded img-fluid" src="%s">'];
+                    html = [html '</div></div>'];
+                    html = sprint(html, studImg, solnImg);
+                case {'xls', 'xlsx', 'csv'}
+                    html = generateFeedback(this.data, soln.data);
+                otherwise
+                    html = '<p class="unknown">Unknown File Extension "%s"</p>';
+                    html = sprintf(html, this.extension);
             end
-        end
+                
+                  end
     end
 end
 %Code Written by: Tobin K Abraham
