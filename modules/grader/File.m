@@ -273,8 +273,6 @@ classdef File < handle
             %
             %below, my code is uncertain as of this moment.
             %Check out what data type is soln
-             imc = imformats;
-            imc = [imc.ext];
             switch lower(this.extension(2:end))
                 case this.TXT
                     studPath = [tempname this.extension];
@@ -288,7 +286,7 @@ classdef File < handle
                     html = visdiff(studPath, solnPath, 'text');
                     html = strrep(html, 'Student File');
                     html = strrep(html, 'Solution File');
-                    ind = strfind(html, '<title>');
+                    startInd = strfind(html, '<title>');
                     endInd = strfind(html, '</title>');
                     startInd = startInd(1) + length('<title>');
                     endInd = endInd(1) - 1;
@@ -308,9 +306,8 @@ classdef File < handle
                 otherwise
                     html = '<p class="unknown">Unknown File Extension "%s"</p>';
                     html = sprintf(html, this.extension);
-            end
-                
-                  end
+            end  
+        end
     end
 end
 %Code Written by: Tobin K Abraham
