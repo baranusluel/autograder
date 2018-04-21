@@ -137,7 +137,7 @@ classdef File < handle
                 case this.EXCEL
                     [~,~,this.data] = xlsread(name);
                 otherwise
-                    fid = fopen([this.name this.extension];) %binary reading
+                    fid = fopen([this.name this.extension]); %binary reading
                     this.data = fread(fid);
                     fclose(fid);
             end
