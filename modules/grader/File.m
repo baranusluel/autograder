@@ -139,7 +139,7 @@ classdef File < handle
                 otherwise
                     fid = fopen([this.name this.extension];) %binary reading
                     this.data = fread(fid);
-                    fclose(fid)
+                    fclose(fid);
             end
         end
     end
