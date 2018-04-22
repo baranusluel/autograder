@@ -62,7 +62,7 @@
 function outPath = unzipArchive(archivePath, outPath, deleteArchive)
     if exist(archivePath, 'file') ~= 2
         ME = MException('AUTOGRADER:unzipArchive:invalidArchive', ...
-            'Archive %s not found', archivePath);
+            'Archive "%s" not found', archivePath);
         throw(ME);
     end
     
@@ -85,7 +85,7 @@ function outPath = unzipArchive(archivePath, outPath, deleteArchive)
     [status, ~] = system(['7z x ' archivePath ' -o' outPath]);
     if status ~= 0
         ME = MException('AUTOGRADER:unzipArchive:invalidArchive', ...
-            'Error while unzipping %s to %s', archivePath, outPath);
+            'Error while unzipping "%s" to "%s"', archivePath, outPath);
         throw(ME);
     end
     
