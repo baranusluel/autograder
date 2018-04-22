@@ -293,7 +293,6 @@ function allRunnables = engine(allRunnables)
             runnables(r) = runnable;
         end
         % done with parfor - now run all the cases!
-        workers = workers(false);
         for w = numel(runnables):-1:1
             workers(w) = parfeval(@runCase, 1, runnables(w));
         end
@@ -324,6 +323,7 @@ function allRunnables = engine(allRunnables)
             [~] = rmdir(folders{w}, 's');
             mkdir(folders{w});
         end
+        workers = workers(false);
         allRunnables(i:min([i + pool.NumWorkers - 1, ...
             length(allRunnables)])) = runnables;
     end
