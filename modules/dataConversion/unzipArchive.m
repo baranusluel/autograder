@@ -69,7 +69,7 @@ function outPath = unzipArchive(archivePath, outPath, deleteArchive)
     if nargin < 3
         deleteArchive = false;
     end
-    if nargin < 2
+    if nargin < 2 || isempty(outPath)
         outPath = tempname;
     end
     outPath(outPath == '/' | outPath == '\') = filesep;
