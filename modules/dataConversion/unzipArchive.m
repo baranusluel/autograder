@@ -84,9 +84,15 @@ function outPath = unzipArchive(archivePath, outPath, deleteArchive)
     
     [status, ~] = system(['7z x ' archivePath ' -o' outPath]);
     if status ~= 0
-        ME = MException('AUTOGRADER:unzipArchive:invalidArchive', ...
-            'Error while unzipping "%s" to "%s"', archivePath, outPath);
-        throw(ME);
+        % 7zip failed - try MATLAB unzip
+        try
+            unzip(archivePath, outPath);
+        catch causeME
+            ME = MException('AUTOGRADER:unzipArchive:invalidArchive', ...
+                'Error while unzipping "%s" to "%s"', archivePath, outPath);
+            ME.addCause(causeME);
+            throw(ME);
+        end
     end
     
     contents = dir(outPath);
