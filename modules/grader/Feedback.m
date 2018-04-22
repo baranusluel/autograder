@@ -164,11 +164,25 @@ classdef Feedback < handle
                 
                 %Check whether files should have been produced by student
                 if ~isempty(solnFiles)
-                    if length(solnFiles) ~= length(this.files)
-                        html = [html '<p>Number of files don''t match.</p>'];
-                    else
+                    if length(solnFiles) > length(this.files)
                         for i = 1:length(this.files)
-                            html = [html matchFiles(this.files(i), solnFiles)];
+                            html = [html File.generateFeedback(this.files(i), solnFiles(i))];
+                        end
+                        for i = length(this.files)+1:length(solnFiles)
+                            html = [html '<p>Your code did not produce a file to match ' 
+                                    solnFiles(i).name '</p>'];
+                        end
+                    elseif length(solnFiles) < length(this.files)
+                        for i = 1:length(solnFiles)
+                            html = [html File.generateFeedback(this.files(i), solnFiles(i))];
+                        end
+                        for i = length(solnFiles)+1:length(this.files)
+                            html = [html '<p>The solution did not produce a file to match '
+                                    this.files(i).name '</p>'];
+                        end
+                    else
+                        for i = 1:length(solnFiles)
+                            html = [html File.generateFeedback(this.files(i), solnFiles(i))];
                         end
                     end
                 end
