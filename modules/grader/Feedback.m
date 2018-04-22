@@ -48,6 +48,7 @@
 % Additionally, this class also has many constants that aid when generating 
 % feedback. Of note are |CORRECT_MARK| and |INCORRECT_MARK|, which are the 
 % marks we use to show passing or failing, respectively.
+
 %#ok<*AGROW>
 classdef Feedback < handle
     properties (Constant)
