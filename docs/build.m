@@ -160,10 +160,16 @@ function problems = build(varargin)
         % find <param.icons> and </param.icons>, fill with <file>
         iconS = find(contains(lines, '<param.icons>'), 1);
         iconE = find(contains(lines, '</param.icons>'), 1);
-        sizes = regexprep({'${PROJECT_ROOT}\docs\resources\images\icon_48.png', ...
-            '${PROJECT_ROOT}\docs\resources\images\icon_24.png', ...
-            '${PROJECT_ROOT}\docs\resources\images\icon_16.png'}, ...
-            '\\', '\\\\');
+        if ispc
+            sizes = regexprep({'${PROJECT_ROOT}\docs\resources\images\icon_48.png', ...
+                '${PROJECT_ROOT}\docs\resources\images\icon_24.png', ...
+                '${PROJECT_ROOT}\docs\resources\images\icon_16.png'}, ...
+                '\\', '\\\\');
+        else
+            sizes = {'${PROJECT_ROOT}/docs/resources/images/icon_48.png', ...
+                '${PROJECT_ROOT}/docs/resources/images/icon_24.png', ...
+                '${PROJECT_ROOT}/docs/resources/images/icon_16.png'};
+        end
         for i = (iconS + 1):(iconE - 1)
             % find file tags; replace innards
             lines{i} = regexprep(lines{i}, '(?<=<file>).+(?=<\/file>)', ...
@@ -218,11 +224,10 @@ function problems = build(varargin)
             % .package();
         end
         % Delete root .prj
-        cd('..');
         % wait for .4 seconds because...windows? Without this pause, delete
         % does not delete the .prj files...
         pause(0.4);
-        delete('*.prj');
+        delete(['..' filesep '*.prj']);
         fprintf(1, 'Created App Installation Package\n');
     end
 
