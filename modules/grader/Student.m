@@ -289,9 +289,9 @@ classdef Student < handle
                         % for each student file, try to find an equal one.
                         % If found, add both to cell array, and then remove
                         % from studInds
-                        for s = studInds
-                            if solnFiles{f}.equals(feedback.files(s))
-                                studFiles{f} = feedback.files(s);
+                        for s = 1:numel(studInds)
+                            if solnFiles{f}.equals(feedback.files(studInds(s)))
+                                studFiles{f} = feedback.files(studInds(s));
                                 matching(f) = true;
                                 points = points + pointsPerItem;
                                 studInds(s) = [];
@@ -301,9 +301,10 @@ classdef Student < handle
                         % if not matching, redo the search, but instead of
                         % using equals, just check the name and extension
                         if ~matching(f)
-                            for s = studInds
-                                if strcmpi(solnFiles{f}.name, feedback.files(s).name)
-                                    studFiles{f} = feedback.files(s);
+                            for s = 1:numel(studInds)
+                                if strcmpi(solnFiles{f}.name, ...
+                                        feedback.files(studInds(s)).name)
+                                    studFiles{f} = feedback.files(studInds(s));
                                     matching(f) = true;
                                     studInds(s) = [];
                                     break;
@@ -336,9 +337,9 @@ classdef Student < handle
                         % for each student file, try to find an equal one.
                         % If found, add both to cell array, and then remove
                         % from studInds
-                        for s = studInds
-                            if solnPlots{p}.equals(feedback.plots(s))
-                                studPlots{p} = feedback.plots(s);
+                        for s = 1:numel(studInds)
+                            if solnPlots{p}.equals(feedback.plots(studIinds(s)))
+                                studPlots{p} = feedback.plots(studInds(s));
                                 matching(p) = true;
                                 points = points + pointsPerItem;
                                 studInds(s) = [];
@@ -347,9 +348,10 @@ classdef Student < handle
                         end
                         % if no perfect match, redo just for title
                         if ~matching(p)
-                            for s = studInds
-                                if strcmpi(solnPlots{p}.Title, feedback.plots(s).Title)
-                                    studPlots{p} = feedback.plots(s);
+                            for s = 1:numel(studInds)
+                                if strcmpi(solnPlots{p}.Title, ...
+                                        feedback.plots(studInds(s)).Title)
+                                    studPlots{p} = feedback.plots(studInds(s));
                                     matching(p) = true;
                                     studInds(s) = [];
                                     break;
