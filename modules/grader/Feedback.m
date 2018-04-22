@@ -216,42 +216,4 @@ classdef Feedback < handle
                             html, this.points, this.testCase.points);
         end
     end
-    methods (Access = private)
-        %% matchFiles
-        % Mathces student file to corresponding solution file and 
-        % calls generateFeedback
-        % If pair not found, 'Misnamed File' html output
-        function html = matchFiles(student, solutions)
-            found = false;
-            for i = 1:length(solutions)
-                if strcmp(student.name, solutions(i).name)
-                    found = true;
-                    ind = i;
-                end
-            end
-            if found
-                html = File.generateFeedback(student, solutions(ind));
-            else
-                html = '<p>Incorrect file name.</p>';
-            end
-        end
-        
-        %% matchPlots
-        % Matches student plot to corresponding solution plot and 
-        % calls generateFeedback
-        function html = matchPlots(student, solutions)
-            found = false;
-            for i = 1:length(solutions)
-                if strcmp(student.Title, solutions(i).Title)
-                    found = true;
-                    ind = i;
-                end
-            end
-            if found
-                html = Plot.generateFeedback(student, solutions(ind));
-            else
-                html = '<p>Invalid plot.</p>';
-            end
-        end
-    end
 end
