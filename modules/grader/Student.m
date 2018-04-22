@@ -290,6 +290,7 @@ classdef Student < handle
                             if solnFiles{f}.equals(feedback.files(s))
                                 studFiles{f} = feedback.files(s);
                                 matching(f) = true;
+                                points = points + pointsPerItem;
                                 studInds(s) = [];
                                 break;
                             end
@@ -320,9 +321,6 @@ classdef Student < handle
                     feedback.testCase.files = [solnFound solnNotFound];
                     feedback.files = [studFound studNotFound];
                     
-                    % add points for all matching
-                    points = points + (sum(matching) * pointsPerItem);
-                    
                     % for each plot, we need to see what plot matches.
                     % to do this, for each soln, we'll see if any student
                     % equals it. If it does, then we take it out of both
@@ -339,6 +337,7 @@ classdef Student < handle
                             if solnPlots{p}.equals(feedback.plots(s))
                                 studPlots{p} = feedback.plots(s);
                                 matching(p) = true;
+                                points = points + pointsPerItem;
                                 studInds(s) = [];
                                 break;
                             end
@@ -367,11 +366,7 @@ classdef Student < handle
                     % to make any guarantee about length here
                     feedback.testCase.plots = [solnFound solnNotFound];
                     feedback.plots = [studFound studNotFound];
-                    
-                    % add points for all matching
-                    points = points + (sum(matching) * pointsPerItem);
-                    
-                    
+
                     feedback.points = points;
                 end
             end
