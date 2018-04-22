@@ -11,7 +11,7 @@ function [passed, msg] = test()
     info.initializer = '';
     info.points = 3;
     info.banned = {};
-    info.supportingFiles = {'vars.mat'};
+    info.supportingFiles = {[pwd filesep 'testcase' filesep 'vars.mat']};
     T = TestCase(info, p);
     
     try
