@@ -1,4 +1,4 @@
-% Valid Test Case
+%% Valid Test Case
 %
 %   Assume T is a valid TestCase that does NOT error.
 %   T = TestCase(...);
