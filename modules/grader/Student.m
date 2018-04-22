@@ -338,7 +338,7 @@ classdef Student < handle
                         % If found, add both to cell array, and then remove
                         % from studInds
                         for s = 1:numel(studInds)
-                            if solnPlots{p}.equals(feedback.plots(studIinds(s)))
+                            if solnPlots{p}.equals(feedback.plots(studInds(s)))
                                 studPlots{p} = feedback.plots(studInds(s));
                                 matching(p) = true;
                                 points = points + pointsPerItem;
