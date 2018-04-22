@@ -288,6 +288,7 @@ function allRunnables = engine(allRunnables)
             runnables(r) = runnable;
         end
         % done with parfor - now run all the cases!
+        workers = workers(false);
         for w = numel(runnables):-1:1
             workers(w) = parfeval(@runCase, 1, runnables(w));
         end
