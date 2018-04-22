@@ -44,15 +44,16 @@ function downloadFromDrive(folderId, token, path)
     % get this folder's information
     folder = getFolder(folderId, token);
     % create directory for this root folder and cd to it
-    mkdir(folder.name);
-    cd(folder.name);
     % for all the files inside, download them here
     contents = getFolderContents(folder.id, token);
     for c = 1:numel(contents)
         content = contents(c);
         if strcmp(content.mimeType, FOLDER_TYPE)
             % folder; call recursively
+            mkdir(content.name);
+            cd(content.name);
             downloadFromDrive(content.id, token);
+            cd('..');
         else
             % file; download
             downloadFile(content, token);

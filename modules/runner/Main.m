@@ -83,9 +83,7 @@ function Main(varargin)
         return;
     end
     % Start up parallel pool
-    if isempty(gcp)
-        parpool(2);
-    end
+    evalc('gcp');
     
     % Get temporary directory
     settings.workingDir = [tempname filesep];
@@ -141,9 +139,12 @@ function Main(varargin)
     
     % Generate solutions
     try
-        solutions = generateSolutions([pwd filesep 'Solutions']);
+        orig = cd('Solutions');
+        solutions = generateSolutions(app.isResubmission);
+        cd(orig);
     catch e
         % Display to user that we failed
+        cd(orig);
         alert(app, 'Problem generation failed. Error %s: %s', e.identifier, ...
             e.message);
         return;
@@ -215,22 +216,20 @@ end
 
 function alert(app, msg, varargin)
     if nargin == 2
-        app.uialert(msg, 'Autograder');
+        uialert(app.UIFigure, msg, 'Autograder');
     else
-        app.uialert(sprintf(msg, varargin{:}), 'Autograder');
+        uialert(app.UIFigure, sprintf(msg, varargin{:}), 'Autograder');
     end
 end
 
 function cleanup(settings)
     % Cleanup
-    % Delete the parallel pool
-    if ~isempty(gcp('nocreate'))
-        delete(gcp);
-    end
     
     % Restore user's path
     path(settings.userPath{1}, '');
-    userpath(settings.userPath{2});
+    if ~isempty(settings.userPath{2})
+        userpath(settings.userPath{2});
+    end
     
     % cd to user's dir
     cd(settings.userDir);

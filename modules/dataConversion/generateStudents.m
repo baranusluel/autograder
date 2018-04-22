@@ -66,7 +66,7 @@ else % if path leads to folder
         CSV_NAME = 'info.csv'; % magic variable for csv filename
         FULLNAME_COL = 2; % magic number for col with full names
         GT_USERNAME_COL = 1; % magic number for col with usernames
-        [~, ~, raw] = xlsread(CSV_NAME);
+        [~, ~, raw] = xlsread([path filesep CSV_NAME]);
         studentNames = raw(:, FULLNAME_COL);
         users = raw(:, GT_USERNAME_COL);
         for i = length(studs):-1:1

@@ -130,7 +130,7 @@ try
     %Archive is already unzipped.
     %Decode the JSON
     if islogical(isResubmission)
-        if isResubmission
+        if ~isResubmission
             fh = fopen('rubrica.json','rt');
             json = char(fread(fh)');
             fclose(fh);
