@@ -69,24 +69,14 @@ function outPath = unzipArchive(archivePath, outPath, deleteArchive)
     if nargin < 3
         deleteArchive = false;
     end
-    if nargin < 2 || isempty(outPath)
-        outPath = tempname;
-    end
-    outPath(outPath == '/' | outPath == '\') = filesep;
-    if outPath(end) == filesep
-        outPath(end) = [];
-    end
+    tmpPath = tempname;
+    mkdir(tmpPath);
     
-    % Out directory shouldn't exist unless conflict
-    if exist(outPath, 'dir') == 7
-        rmdir(outPath, 's');
-    end
-    
-    [status, ~] = system(['7z x ' archivePath ' -o' outPath]);
+    [status, ~] = system(['7z x ' archivePath ' -o' tmpPath]);
     if status ~= 0
         % 7zip failed - try MATLAB unzip
         try
-            unzip(archivePath, outPath);
+            unzip(archivePath, tmpPath);
         catch causeME
             ME = MException('AUTOGRADER:unzipArchive:invalidArchive', ...
                 'Error while unzipping "%s" to "%s"', archivePath, outPath);
@@ -95,11 +85,24 @@ function outPath = unzipArchive(archivePath, outPath, deleteArchive)
         end
     end
     
-    contents = dir(outPath);
+    contents = dir(tmpPath);
     contents(strncmp({contents.name}, '.', 1)) = [];
     if numel(contents) == 1 && contents.isdir
-        movefile([outPath filesep contents.name filesep '*'], outPath);
-        rmdir([outPath filesep contents.name]);
+        movefile([tmpPath filesep contents.name filesep '*'], tmpPath);
+        rmdir([tmpPath filesep contents.name]);
+    end
+    
+    if nargin >= 2 && ~isempty(outPath)
+        outPath(outPath == '/' | outPath == '\') = filesep;
+        if outPath(end) == filesep
+            outPath(end) = [];
+        end
+        if exist(outPath, 'dir') ~= 7
+            mkdir(outPath);
+        end
+        movefile([tmpPath filesep '*'], [outPath filesep]);
+    else
+        outPath = tmpPath;
     end
     
     if deleteArchive
