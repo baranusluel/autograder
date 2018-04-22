@@ -268,9 +268,12 @@ classdef Student < handle
                     outs = fieldnames(solnOutputs);
                     for o = 1:numel(outs)
                         soln = solnOutputs.(outs{o});
-                        stud = feedback.outputs.(outs{o});
-                        if isequaln(soln, stud)
-                            points = points + pointsPerItem;
+                        try
+                            stud = feedback.outputs.(outs{o});
+                            if isequaln(soln, stud)
+                                points = points + pointsPerItem;
+                            end
+                        catch
                         end
                     end
                     
