@@ -611,9 +611,23 @@ function isBanned = checkBanned(name, banned)
         possibleCalls = [calls(i).calls.fcnCalls];
         possibleCalls = [possibleCalls.names];% inner calls are to helper functions, so no worries there
         % See if ANY banned are found in possibleCalls
-        if any(contains(possibleCalls, banned))
-            isBanned = true;
-            return;
+        % for each call, see where it exists. If it exists IN THIS FOLDER,
+        % then check it recursively
+        for j = 1:numel(possibleCalls)
+            location = fileparts(which(possibleCalls{j}));
+            if strcmp(location, pwd)
+                % in current folder. We should recursively check
+                if checkBanned([possibleCalls{j} '.m'], banned)
+                    isBanned = true;
+                    return;
+                end
+            else
+                % see if contained in banned:
+                if any(strcmp(possibleCalls{j}, banned))
+                    isBanned = true;
+                    return;
+                end
+            end
         end
     end
     BANNED_OPS = {'BANG', 'PARFOR', 'SPMD', 'GLOBAL'};
