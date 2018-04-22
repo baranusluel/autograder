@@ -147,15 +147,10 @@ classdef TestCase < handle
             %
             %%% Exceptions
             %
-            % The constructor throws the |AUTOGRADER:TESTCASE:CTOR:BADINFO| if
+            % The constructor throws the |AUTOGRADER:TestCase:ctor:badInfo| if
             % there are problems with the INFO structure. This exception should not
             % be consumed, because this means the |TestCase| is incomplete. It also
             % throws this error if |call| or |initializer| has a syntax error.
-            %
-            % The constructor throws the |AUTOGRADER:TESTCASE:CTOR:BADSOLUTION| if
-            % the solution errors. This should never happen, as long as the 
-            % solution files won't error for the given inputs. This error will also 
-            % be thrown if the initializer errors when running the solution.
             %
             %%% Unit Tests
             %
@@ -235,15 +230,8 @@ classdef TestCase < handle
             %   T = TestCase(J, P);
             %
             %   The constructor threw exception 
-            %   AUTOGRADER:TESTCASE:CTOR:BADINFO
+            %   AUTOGRADER:TestCase:ctor:badInfo
             %
-            % Assume J is valid structure, but the solution code errors.
-            %
-            % Running the constructor:
-            %   T = TestCase(J, P);
-            % 
-            %   The constructor threw exception
-            %   AUTOGRADER:TESTCASE:CTOR:BADSOLUTION
             if nargin == 0
                 return;
             end
@@ -267,7 +255,7 @@ classdef TestCase < handle
                     this.supportingFiles = info.supportingFiles(~toLoad);
                 end
             catch e
-                ME = MException('AUTOGRADER:TESTCASE:CTOR:BADINFO', ...
+                ME = MException('AUTOGRADER:TestCase:ctor:badInfo', ...
                     'Problem with INFO struct fields');
                 ME.addCause(e);
                 throw(ME);
