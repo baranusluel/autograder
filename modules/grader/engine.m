@@ -198,7 +198,7 @@ function allRunnables = engine(allRunnables)
         'input', 'wait', 'uiwait', 'keyboard', 'dbstop', ...
         'cd', 'system', 'restoredefaultpath', 'builtin'};
     
-    if any(isvalid(allRunnables))
+    if any(~isvalid(allRunnables))
         e = MException('AUTOGRADER:engine:invalidRunnable', ...
             'Input were not valid runnables');
         e.throw();
@@ -208,8 +208,9 @@ function allRunnables = engine(allRunnables)
         runnables = allRunnables(i:min([i + pool.NumWorkers - 1, ...
             length(allRunnables)]));
         origLoads = cell(size(runnables));
+        origPaths = cell(size(runnables));
         parfor r = 1:numel(runnables)
-            runnable = runnables{r};
+            runnable = runnables(r);
             fld = folders{r};
             if isTestCase
                 tCase = runnable;
@@ -218,27 +219,29 @@ function allRunnables = engine(allRunnables)
             end
             % copy the student's files to fld
             copyfile([runnable.path filesep '*.m'], fld);
+            origPaths{r} = runnable.path;
+            runnable.path = fld;
             origPath = cd(fld);
             
             % parse the function call
             [~, ~, func] = parseFunction(tCase.call);
-            
-            try
-                allCalls = getcallinfo([func2str(func) '.m']);
-            catch e
-                if isa(runnable, 'Feedback')
-                    runnable.exception = e;
-                else
-                    e.rethrow();
-                end
-            end
-            
+
             % check recursion
             if isa(runnable, 'Feedback')
-                runnable.isRecursive = checkRecur(allCalls, func2str(func));
+                try
+                    runnable.isRecursive = ...
+                        checkRecur(getcallinfo([func2str(func) '.m']),...
+                        func2str(func));
+                catch e
+                    if isa(runnable, 'Feedback')
+                        runnable.exception = e;
+                    else
+                        e.rethrow();
+                    end
+                end
             end
             % check banned usage
-            if checkBanned([func2sr(func) '.m'], [BANNED tCase.banned])
+            if checkBanned([func2str(func) '.m'], [BANNED tCase.banned])
                 if isa(runnable, 'Feedback')
                     runnable.exception = MException('AUTOGRADER:engine:banned', ...
                         'File used banned function');
@@ -277,6 +280,12 @@ function allRunnables = engine(allRunnables)
             origLoads{r} = tCase.loadFiles;
             tCase.loadFiles = [varNames; varValues];
             cd(origPath);
+            if isa(runnable, 'Feedback')
+                runnable.testCase = tCase;
+            else
+                runnable = tCase;
+            end
+            runnables(r) = runnable;
         end
         % done with parfor - now run all the cases!
         for w = numel(runnables):-1:1
@@ -295,19 +304,22 @@ function allRunnables = engine(allRunnables)
             else
                 % finished and valid. Get the runnable out
                 runnable = worker.fetchOutputs();
-                if isa(runnable, 'TestCase')
-                    tCase = runnable;
-                else
-                    tCase = runnable.testCase;
-                end
-                tCase.loadFiles = origLoads{w};
-                delete(worker);
             end
+            if isa(runnable, 'TestCase')
+                tCase = runnable;
+            else
+                tCase = runnable.testCase;
+            end
+            runnable.path = origPaths{w};
+            tCase.loadFiles = origLoads{w};
+            delete(worker);
+            runnables(w) = runnable;
             % clear the folder
             [~] = rmdir(folders{w}, 's');
             mkdir(folders{w});
         end
-        
+        allRunnables(i:min([i + pool.NumWorkers - 1, ...
+            length(allRunnables)])) = runnables;
     end
 end
 
@@ -342,7 +354,6 @@ function populatePlots(runnable)
         for i = 1:(numel(pHandles) - 1)
             plots(i) = Plot(pHandles(i));
         end
-
         runnable.plots = plots;
     end
 end
@@ -352,6 +363,7 @@ function runnable = runCase(runnable)
     % Setup workspace
     % is this supposed to be here?  -->     cleanup();
     cleaner = onCleanup(@() cleanup());
+    orig = cd(runnable.path);
     beforeSnap = dir();
     beforeSnap = {beforeSnap.name};
     beforeSnap(strncmp(beforeSnap, '.', 1)) = [];
@@ -372,7 +384,6 @@ function runnable = runCase(runnable)
     end
 
     % Parse the call
-    origPath = cd(runnable.path);
     [inNames, outNames, func] = parseFunction(tCase.call);
     outs = cell(size(outNames));
     % run the function
@@ -391,7 +402,6 @@ function runnable = runCase(runnable)
             runnable.exception = me;
         end
     end
-    cd(origPath);
     name = fopen(fid);
     fclose(fid);
     if ~strcmp(name, File.SENTINEL)
@@ -408,6 +418,7 @@ function runnable = runCase(runnable)
     end
     populateFiles(runnable, beforeSnap);
     populatePlots(runnable);
+    cd(orig);
 end
 
 function varargout = runner(func____, init____, ins, loads____)
