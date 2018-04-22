@@ -60,12 +60,33 @@ classdef TestResults < handle
             origPath = cd(path);
             % copy over everything in the PATH directory
             copyfile([pwd filesep '*'], workDir);
+            files = dir('**/*.m');
+            % for each file, get it's dbstatus, and then do the replacement
+            for f = 1:numel(files)
+                file = files(f);
+                status = dbstatus([file.folder filesep file.name], '-completenames');
+                relativeFolder = [workDir strrep(file.folder, path, '')];
+                for i = 1:numel(status)
+                    status(i).file = [relativeFolder filesep file.name];
+                    status(i).name = regexprep(status(i).name, '^[^>]*', [relativeFolder filesep file.name]);
+                    dbstop(status(i));
+                end
+            end
+            
+            % change name
             % copy over any FILES in parent
-            files = dir('..');
+            files = dir('../*.m');
             files([files.isdir]) = [];
             for f = 1:numel(files)
+                status = dbstatus([files(f).folder filesep files(f).name], '-completenames');
                 copyfile([files(f).folder filesep files(f).name], workDir);
+                for i = 1:numel(status)
+                    status(i).file = [workDir filesep files(f).name];
+                    status(i).name = regexprep(status(i).name, '^[^>]*', [workDir filesep files(f).name]);
+                    dbstop(status(i));
+                end
             end
+            
 
             this.path = path;
             [~, this.name, ~] = fileparts(path);
@@ -85,6 +106,11 @@ classdef TestResults < handle
             end
 
             cd(workDir);
+            function clean(p, d)
+                cd(p);
+                [~] = rmdir(d);
+            end
+            cleaner = onCleanup(@()(clean(origPath, workDir)));
             % we know test.m will exist
             try
                 [this.passed, this.message] = test();
@@ -93,9 +119,6 @@ classdef TestResults < handle
                 this.message = sprintf('<span class="test-error">Test threw exception %s: %s', ...
                     e.identifier, e.message);
             end
-            cd(origPath);
-            % completely delete folder
-            [~] = rmdir(workDir, 's');
         end
     end
     methods (Access=public)

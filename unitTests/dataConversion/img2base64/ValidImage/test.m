@@ -16,7 +16,7 @@ function [passed, msg] = test()
         passed = false;
         return;
     end
-    compStr = 'data:image/png;base64,';
+    compStr = 'data:image/bmp;base64,';
     if ~strncmp(compStr, testStr, length(compStr))
         passed = false;
         if length(testStr) >= length(compStr)

@@ -2,7 +2,7 @@
 %
 % generateStudents turns a set of Student Folders into a vector of Students
 %
-% [S] = generateStudents(P) will convert all the student folders found in ZIP P
+% [S] = generateStudents(P) will convert all the student folders found in P
 % into Students, and will return a vector in alphabetical order (case insensitive)
 % of the Students, where alphabetical order is based on their ID.
 %
@@ -53,10 +53,7 @@ if ~isfolder(path) % if path doesn't lead to existing folder, exception
     ME = MException(msgID, msgtext);
     throw(ME);
 else % if path leads to folder
-    % extract archived contents of path into the current folder
-    mkdir('students');
-    studPath = unzipArchive(path, [pwd filesep 'students']);
-    studs = dir(studPath);
+    studs = dir(path);
     studs(strncmp({studs.name}, '.', 1)) = []; % filter out '.' and '..'
     studs(~[studs.isdir]) = []; % filter out any misc files
     if isempty(studs) % if there are no student folders, exception
