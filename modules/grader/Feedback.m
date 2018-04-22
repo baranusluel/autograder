@@ -113,12 +113,6 @@ classdef Feedback < handle
         % generateFeedback is guaranteed to never error so long as it has been correctly 
         % initialized.
         %
-        %%% Exceptions
-        %
-        % An AUTOGRADER:FEEDBACK:GENERATEFEEDBACK:INVALIDFEEDBACK exception
-        % will be thrown if no Feedback is given or the given Feedback has
-        % insufficient or missing data
-        %
         %%% Unit Tests
         %
         %   F = Feedback(T); % T is valid Test Case
@@ -128,10 +122,6 @@ classdef Feedback < handle
         %   The correct HTML feedback is returned.
         % a correct and complete html feedback will be output based on the
         % properties of the feedback file
-        %
-        % Given an invalid Feedback: 
-        % an AUTOGRADER:FEEDBACK:GENERATEFEEDBACK:INVALIDFEEDBACK exception
-        % will be thrown
         %
         %
         function html = generateFeedback(this)
