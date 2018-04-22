@@ -72,6 +72,10 @@ function outPath = unzipArchive(archivePath, outPath, deleteArchive)
     if nargin < 2
         outPath = tempname;
     end
+    outPath(outPath == '/' | outPath == '\') = filesep;
+    if outPath(end) == filesep
+        outPath(end) = [];
+    end
     
     % Out directory shouldn't exist unless conflict
     if exist(outPath, 'dir') == 7
@@ -83,6 +87,13 @@ function outPath = unzipArchive(archivePath, outPath, deleteArchive)
         ME = MException('AUTOGRADER:unzipArchive:invalidArchive', ...
             'Error while unzipping %s to %s', archivePath, outPath);
         throw(ME);
+    end
+    
+    contents = dir(outPath);
+    contents(strncmp({contents.name}, '.', 1)) = [];
+    if numel(contents) == 1 && contents.isdir
+        movefile([outPath filesep contents.name filesep '*'], outPath);
+        rmdir([outPath filesep contents.name]);
     end
     
     if deleteArchive
