@@ -230,18 +230,22 @@ classdef Student < handle
             end
             % Add problem to end of our list
             this.problems = [this.problems problem];
+            isRunnable = false(1, numel(problem.testCases));
             for i = numel(problem.testCases):-1:1
                 feeds(i) = Feedback(problem.testCases(i));
                 % check if even submitted
                 % assume name is problem name
                 if any(strncmp(problem.name, this.submissions, length(problem.name)))
-                    feeds(i) = engine(feeds(i));
-                    this.resetPath();
+                    isRunnable(i) = true;
                 else
+                    isRunnable(i) = false;
                     feeds(i).exception = MEXCEPTION('AUTOGRADER:Student:fileNotSubmitted', ...
                         'File %s wasn''t submitted, so the engine was not run.', [problem.name '.m']);
                 end
-                % fill out feedback
+            end
+            feeds(isRunnable) = engine(feeds(isRunnable));
+            % fill out feedbacks
+            for i = 1:numel(feeds)
                 feedback = feeds(i);
                 % if exception, hasPassed = false;
                 if ~isempty(feedback.exception)
@@ -290,6 +294,18 @@ classdef Student < handle
                                 break;
                             end
                         end
+                        % if not matching, redo the search, but instead of
+                        % using equals, just check the name and extension
+                        if ~matching(f)
+                            for s = studInds
+                                if strcmpi(solnFiles{f}.name, feedback.files(s).name)
+                                    studFiles{f} = feedback.files(s);
+                                    matching(f) = true;
+                                    studInds(s) = [];
+                                    break;
+                                end
+                            end
+                        end
                     end
                     % for each matching file, place it in line for checking
                     solnFound = [solnFiles{matching}];
@@ -325,6 +341,17 @@ classdef Student < handle
                                 matching(p) = true;
                                 studInds(s) = [];
                                 break;
+                            end
+                        end
+                        % if no perfect match, redo just for title
+                        if ~matching(p)
+                            for s = studInds
+                                if strcmpi(solnPlots{p}.Title, feedback.plots(s).Title)
+                                    studPlots{p} = feedback.plots(s);
+                                    matching(p) = true;
+                                    studInds(s) = [];
+                                    break;
+                                end
                             end
                         end
                     end
