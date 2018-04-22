@@ -189,11 +189,25 @@ classdef Feedback < handle
                 
                 %Check whether plots should have been produced by student
                 if ~isempty(solnPlots)
-                    if length(solnPlots) ~= length(this.plots)
-                        html = [html '<p>Number of plots don''t match.</p>'];
-                    else
+                    if length(solnPlots) > length(this.plots)
                         for i = 1:length(this.plots)
-                            html = [html matchPlots(this.plots(i), solnPlots)];
+                            html = [html Plot.generateFeedback(this.plots(i), solnPlots(i))];
+                        end
+                        for i = length(this.plots)+1:length(solnPlots)
+                            html = [html '<p>Your code did not produce a plot to match ' 
+                                    solnPlots(i).Title '</p>'];
+                        end
+                    elseif length(solnPlots) < length(this.plots)
+                        for i = 1:length(solnPlots)
+                            html = [html Plot.generateFeedback(this.plots(i), solnPlots(i))];
+                        end
+                        for i = length(solnPlots)+1:length(this.plots)
+                            html = [html '<p>The solution did not produce a plot to match '
+                                    this.plots(i).Title '</p>'];
+                        end
+                    else
+                        for i = 1:length(solnPlots)
+                            html = [html Plot.generateFeedback(this.plots(i), solnPlots(i))];
                         end
                     end
                 end
