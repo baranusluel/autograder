@@ -57,5 +57,55 @@
 %   P is a unique path. cd(P) will put you inside the unzipped contents.
 %   Additionally, the archive at Z no longer exists.
 %
-%   All unzipping errors. are caught and returned as an
+%   All unzipping errors are caught and returned as an
 %   AUTOGRADER:unzipArchive:invalidArchive exception
+function outPath = unzipArchive(archivePath, outPath, deleteArchive)
+    if exist(archivePath, 'file') ~= 2
+        ME = MException('AUTOGRADER:unzipArchive:invalidArchive', ...
+            'Archive "%s" not found', archivePath);
+        throw(ME);
+    end
+    
+    if nargin < 3
+        deleteArchive = false;
+    end
+    tmpPath = tempname;
+    mkdir(tmpPath);
+    
+    [status, ~] = system(['7z x ' archivePath ' -o' tmpPath]);
+    if status ~= 0
+        % 7zip failed - try MATLAB unzip
+        try
+            unzip(archivePath, tmpPath);
+        catch causeME
+            ME = MException('AUTOGRADER:unzipArchive:invalidArchive', ...
+                'Error while unzipping "%s" to "%s"', archivePath, outPath);
+            ME.addCause(causeME);
+            throw(ME);
+        end
+    end
+    
+    contents = dir(tmpPath);
+    contents(strncmp({contents.name}, '.', 1)) = [];
+    if numel(contents) == 1 && contents.isdir
+        movefile([tmpPath filesep contents.name filesep '*'], tmpPath);
+        rmdir([tmpPath filesep contents.name]);
+    end
+    
+    if nargin >= 2 && ~isempty(outPath)
+        outPath(outPath == '/' | outPath == '\') = filesep;
+        if outPath(end) == filesep
+            outPath(end) = [];
+        end
+        if exist(outPath, 'dir') ~= 7
+            mkdir(outPath);
+        end
+        movefile([tmpPath filesep '*'], [outPath filesep]);
+    else
+        outPath = tmpPath;
+    end
+    
+    if deleteArchive
+        delete(archivePath);
+    end
+end
