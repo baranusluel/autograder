@@ -57,7 +57,7 @@
 %   P is a unique path. cd(P) will put you inside the unzipped contents.
 %   Additionally, the archive at Z no longer exists.
 %
-%   All unzipping errors. are caught and returned as an
+%   All unzipping errors are caught and returned as an
 %   AUTOGRADER:unzipArchive:invalidArchive exception
 function outPath = unzipArchive(archivePath, outPath, deleteArchive)
     if exist(archivePath, 'file') ~= 2
@@ -83,5 +83,9 @@ function outPath = unzipArchive(archivePath, outPath, deleteArchive)
         ME = MException('AUTOGRADER:unzipArchive:invalidArchive', ...
             'Error while unzipping %s to %s', archivePath, outPath);
         throw(ME);
+    end
+    
+    if deleteArchive
+        delete(archivePath);
     end
 end
