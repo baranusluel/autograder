@@ -58,7 +58,7 @@ function downloadFromCanvas(courseId, assignmentId, token, path)
     end
     % write info.csv
     names = [names; ids]';
-    names = join(names, ', "');
+    names = join(names, '", "');
     names = ['"' strjoin(names, '"\n"'), '"'];
     fid = fopen('info.csv', 'wt');
     fwrite(fid, names);
