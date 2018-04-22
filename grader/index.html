@@ -48,7 +48,6 @@
 <div data-link="Problem.html">Problem</div>
 <div data-link="Student.html">Student</div>
 <div data-link="TestCase.html">TestCase</div>
-<div data-link="Timeout.html">Timeout</div>
 <div data-link="engine.html">engine</div>
 <div data-link="generateFeedback.html">generateFeedback</div>
 
@@ -150,7 +149,7 @@ Classes
 </li>
 <li>
 <p>
-<code class="bg-light">isgraded</code>: A logical stating if a student object has been graded
+<code class="bg-light">isGraded</code>: A logical stating if a student object has been graded
 </p>
 </li>
 </ul>
@@ -192,6 +191,11 @@ Classes
 <li>
 <p>
 <code class="bg-light">banned</code>: A cell array of names of banned functions for this problem
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">isRecursive</code>: A logical; <code class="bg-light">true</code> if the function must be recursive to receive credit.
 </p>
 </li>
 </ul>
@@ -336,6 +340,11 @@ If you want a custom function to run instead, include it as a supporting file an
 </li>
 <li>
 <p>
+<code class="bg-light">outputs</code>: The outputs produced by the student
+</p>
+</li>
+<li>
+<p>
 <code class="bg-light">files</code>: A <code class="bg-light">File</code> array that represents all the files produced by the student
 </p>
 </li>
@@ -346,12 +355,12 @@ If you want a custom function to run instead, include it as a supporting file an
 </li>
 <li>
 <p>
-<code class="bg-light">reason</code>: A string that represents the reason the student did not get full credit
+<code class="bg-light">points</code>: The number of points earned for this test case
 </p>
 </li>
 <li>
 <p>
-<code class="bg-light">points</code>: The number of points earned for this test case
+<code class="bg-light">exception</code>: The exception thrown by the user - empty if no exception occurred.
 </p>
 </li>
 </ul>
@@ -461,37 +470,57 @@ If the File is an Excel file, it will convert the cell array into a "table", and
 <ul>
 <li>
 <p>
-<code class="bg-light">title</code>: The title used for the plot
+<code class="bg-light">Title</code>: The title used for the plot
 </p>
 </li>
 <li>
 <p>
-<code class="bg-light">xData</code>: A cell array of vectors that represents all <code class="bg-light">XData</code> points plotted for this plot
+<code class="bg-light">XData</code>: A cell array of vectors that represents all <code class="bg-light">XData</code> points plotted for this plot
 </p>
 </li>
 <li>
 <p>
-<code class="bg-light">yData</code>: A cell array of vectors that represents all <code class="bg-light">YData</code> points plotted for this plot
+<code class="bg-light">YData</code>: A cell array of vectors that represents all <code class="bg-light">YData</code> points plotted for this plot
 </p>
 </li>
 <li>
 <p>
-<code class="bg-light">zData</code>: A cell array of vectors that represents all <code class="bg-light">ZData</code> points plotted for this plot
+<code class="bg-light">ZData</code>: A cell array of vectors that represents all <code class="bg-light">ZData</code> points plotted for this plot
 </p>
 </li>
 <li>
 <p>
-<code class="bg-light">image</code>: An image taken of the plot, as an <code class="bg-light">MxNx3 uint8</code> array.
+<code class="bg-light">Position</code>: Where the plot is relative to the window. A vector; used to determine subplotting
 </p>
 </li>
 <li>
 <p>
-<code class="bg-light">legend</code>: A string array of all the names in the legend
+<code class="bg-light">PlotBox</code>: A string used to see the orientation of the <code class="bg-light">axes</code>
 </p>
 </li>
 <li>
 <p>
-<code class="bg-light">colors</code>: A string array that represents the color used for every line
+<code class="bg-light">Image</code>: An image taken of the plot, as an <code class="bg-light">MxNx3 uint8</code> array.
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">Legend</code>: A string array of all the names in the legend
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">Color</code>: A string array that represents the color used for every line
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">Marker</code>: A cell array of the point markers used, where each entry is a string
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">LineStyle</code>: A cell array of the line styles used, where each entry is a string
 </p>
 </li>
 </ul>

@@ -47,6 +47,7 @@
 <div data-link="canvas2autograder.html">canvas2autograder</div>
 <div data-link="generateSolutions.html">generateSolutions</div>
 <div data-link="generateStudents.html">generateStudents</div>
+<div data-link="img2base64.html">img2base64</div>
 <div data-link="processStudentSubmission.html">processStudentSubmission</div>
 <div data-link="unzipArchive.html">unzipArchive</div>
 
@@ -81,32 +82,32 @@ Functions
 <ul>
 <li>
 <p>
-<code class="bg-light">[string convertedPath] = canvas2Autograder(string path, *optional* string outPath=void);</code>
+<code class="bg-light">[string convertedPath] = canvas2autograder(string zipPath, string csvPath);</code>
 </p>
 </li>
 </ul>
 <p>
- Takes in a path to the ZIP archive downloaded from Canvas of all the student's submissions. This will reformat this data to be fed into the main autograder. If <code class="bg-light">outPath</code> is given, then <code class="bg-light">canvas2Autograder</code> will unzip the given archive into that path. Regardless, <code class="bg-light">convertedPath</code> will be a path to the resulting folder (including that folder name) will be returned.
+ Takes in a path to the ZIP archive downloaded from Canvas of all the student's submissions, and a CSV path from Canvas. This will reformat this data to be fed into the main autograder. <code class="bg-light">convertedPath</code> will be a path to the resulting folder (including that folder name) will be returned. It operates within the current directory (<code class="bg-light">pwd</code>).
 </p>
 <ul>
 <li>
 <p>
-<code class="bg-light">[string convertedPath] = autograder2Canvas(string path, *optional* string outPath=void);</code>
+<code class="bg-light">autograder2canvas(Student[] students, string gradebook, string hwName);</code>
 </p>
 </li>
 </ul>
 <p>
- Takes in a path to the autograder's working folder, and converts the data to be compatible with Canvas. If <code class="bg-light">outPath</code> is given, then it will store these results into the path given by <code class="bg-light">outPath</code>; otherwise, it will use a temporary folder. Regardless, this function returns the path to the resulting Canvas compatible archive.
+ Takes in an array of <code class="bg-light">Student</code>s, a path to the <code class="bg-light">gradebook</code> csv, and a <code class="bg-light">Homework Name</code>. It then will generate a new gradebook that is fit to upload to Canvas.
 </p>
 <ul>
 <li>
 <p>
-<code class="bg-light">[string convertedPath] = autograder2Website(string path, *optional* string outPath=void);</code>
+<code class="bg-light">[string convertedPath] = autograder2website(string studentPath, *optional* string outpath=pwd);</code>
 </p>
 </li>
 </ul>
 <p>
- Takes in a path to the autograder's working folder, and converts the data to be compatible with the CS 1371 Website. If <code class="bg-light">outPath</code> is given, then it will store the results into the path given by <code class="bg-light">outPath</code>; otherwise, it will use a temporary folder. Regardless, this function returns the path to the resulting Website-compliant data.
+ This will generate a folder structure ready to be uploaded to the CS 1371 Website. It takes in a path to all the Student folders. Optionally, you can specify a place for this folder - otherwise, it just uses the current directory. This looks for a folder called.
 </p>
 <ul>
 <li>
@@ -121,7 +122,7 @@ Functions
 <ul>
 <li>
 <p>
-<code class="bg-light">[void] = unpackStudentSubmission(string startPath);</code>
+<code class="bg-light">[void] = processStudentSubmission(string startPath);</code>
 </p>
 </li>
 </ul>

@@ -72,12 +72,16 @@ body {
         </nav>
 <div class="container-fluid">
 <div class="jumbotron text-center">
-<i class="display-1 text-center fas fa-check"></i>
-<h1 class="display-4 text-center">Unit Tests Passed!</h1>
+<i class="display-1 text-center fas fa-times"></i>
+<h1 class="display-4 text-center">Unit Tests Failed</h1>
 <hr />
 <div class="row text-center d-flex justify-content-center">
-<div class="col-md-12 col-12 text-center module-status">
+<div class="col-md-6 col-12 text-center module-status">
 <i class="fas fa-check"></i>
+Data Conversion
+</div>
+<div class="col-md-6 col-12 text-center module-status">
+<i class="fas fa-times"></i>
 Grader
 </div>
 </div>
@@ -86,7 +90,10 @@ Grader
 <div class="col-12 d-none d-sm-block text-center">
 <ul class="nav nav-pills nav-fill" role = "tablist">
 <li class="nav-item">
-<a class="nav-link active" data-toggle="pill" href="#grader">Grader</a>
+<a class="nav-link active" data-toggle="pill" href="#dataConversion">Data Conversion</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" data-toggle="pill" href="#grader">Grader</a>
 </li>
 </ul>
 </div>
@@ -95,13 +102,49 @@ Grader
 <div class="col-12 d-block d-sm-none text-center">
 <ul class="nav nav-pills nav-fill flex-column" role = "tablist">
 <li class="nav-item">
-<a class="nav-link active" data-toggle="pill" href="#grader">Grader</a>
+<a class="nav-link active" data-toggle="pill" href="#dataConversion">Data Conversion</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" data-toggle="pill" href="#grader">Grader</a>
 </li>
 </ul>
 </div>
 </div>
 <div class="tab-content">
-<div id="grader" class="tab-pane active">
+<div id="dataConversion" class="tab-pane active">
+<div class="module-result row">
+<div class="col-12">
+<div class="module-tests container-fluid">
+<div class="unit-result row">
+<div class="col-12">
+<h3 class="unit-name">
+<i class="fas fa-check"></i> 
+img2base64
+</h3>
+<div class="unit-tests container">
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+ValidImage
+</code>
+</h4>
+<div class="test-message">
+<p>
+Successfully created Data URI string
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="grader" class="tab-pane">
 <div class="module-result row">
 <div class="col-12">
 <div class="module-tests container-fluid">
@@ -162,26 +205,6 @@ Student correctly constructed
 </div>
 </div>
 </div>
-<div class="class-method">
-<h4 class="method-name">
-GradeProblem
-</h4>
-<div class="row result">
-<div class="col-12">
-<h5 class="test-name">
-<code>
-<i class="fas fa-check"></i>
-NoSubmissions
-</code>
-</h5>
-<div class="test-message">
-<p>
-Exception correctly thrown
-</p>
-</div>
-</div>
-</div>
-</div>
 </div>
 </div>
 </div>
@@ -224,6 +247,106 @@ ValidTestCase
 TestCase correctly constructed
 </p>
 </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="unit-result row">
+<div class="col-12">
+<h3 class="unit-name">
+<i class="fas fa-times"></i> 
+engine
+</h3>
+<div class="unit-tests container">
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-times"></i>
+Feedback
+</code>
+</h4>
+<div class="test-message">
+<p>
+<span class="test-error">Test threw exception MATLAB:TooManyInputs: Too many input arguments.
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-times"></i>
+InfiniteLoop
+</code>
+</h4>
+<div class="test-message">
+<p>
+<span class="test-error">Test threw exception MATLAB:TooManyInputs: Too many input arguments.
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-times"></i>
+InfiniteOpenFiles
+</code>
+</h4>
+<div class="test-message">
+<p>
+<span class="test-error">Test threw exception MATLAB:TooManyInputs: Too many input arguments.
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-times"></i>
+InvalidRunnable
+</code>
+</h4>
+<div class="test-message">
+<p>
+<span class="test-error">Test threw exception MATLAB:minrhs: Not enough input arguments.
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-times"></i>
+StudentError
+</code>
+</h4>
+<div class="test-message">
+<p>
+<span class="test-error">Test threw exception MATLAB:TooManyInputs: Too many input arguments.
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+TestCase
+</code>
+</h4>
+<div class="test-message">
+<p>
+Output correctly created
+</p>
 </div>
 </div>
 </div>
