@@ -75,7 +75,7 @@ classdef TestResults < handle
             
             % change name
             % copy over any FILES in parent
-            files = dir('..');
+            files = dir('../*.m');
             files([files.isdir]) = [];
             for f = 1:numel(files)
                 status = dbstatus([files(f).folder filesep files(f).name], '-completenames');
