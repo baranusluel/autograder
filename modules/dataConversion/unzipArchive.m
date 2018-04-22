@@ -59,3 +59,29 @@
 %
 %   All unzipping errors. are caught and returned as an
 %   AUTOGRADER:unzipArchive:invalidArchive exception
+function outPath = unzipArchive(archivePath, outPath, deleteArchive)
+    if exist(archivePath, 'file') ~= 2
+        ME = MException('AUTOGRADER:unzipArchive:invalidArchive', ...
+            'Archive %s not found', archivePath);
+        throw(ME);
+    end
+    
+    if nargin < 3
+        deleteArchive = false;
+    end
+    if nargin < 2
+        outPath = tempname;
+    end
+    
+    % Out directory shouldn't exist unless conflict
+    if exist(outPath, 'dir') == 7
+        rmdir(outPath, 's');
+    end
+    
+    [status, ~] = system(['7z x ' archivePath ' -o' outPath]);
+    if status ~= 0
+        ME = MException('AUTOGRADER:unzipArchive:invalidArchive', ...
+            'Error while unzipping %s to %s', archivePath, outPath);
+        throw(ME);
+    end
+end
