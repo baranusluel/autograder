@@ -616,7 +616,7 @@ function isBanned = checkBanned(name, banned)
             return;
         end
     end
-    BANNED_OPS = {'BANG', 'PARFOR', 'SPMD'};
+    BANNED_OPS = {'BANG', 'PARFOR', 'SPMD', 'GLOBAL'};
     info = mtree(name, '-file');
     for b = 1:numel(BANNED_OPS)
         if info.anykind(BANNED_OPS{b})
