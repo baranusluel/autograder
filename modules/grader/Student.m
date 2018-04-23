@@ -259,13 +259,10 @@ classdef Student < handle
                     solnOutputs = feedback.testCase.outputs;
                     solnFiles = feedback.testCase.files;
                     solnPlots = feedback.testCase.plots;
-                    points = feedback.testCase.points;
                     
-                    pointsPerItem = points / ...
-                        sum([numel(fieldnames(solnOutputs)), ...
+                    numTotal = sum([numel(fieldnames(solnOutputs)), ...
                         numel(solnFiles), numel(solnPlots)]);
-                    points = 0;
-                    
+                    numCorrect = 0;
                     % for each output, if isequaln returns true, then give
                     % partial
                     outs = fieldnames(solnOutputs);
@@ -274,7 +271,7 @@ classdef Student < handle
                         try
                             stud = feedback.outputs.(outs{o});
                             if isequaln(soln, stud)
-                                points = points + pointsPerItem;
+                                numCorrect = numCorrect + 1;
                             end
                         catch
                         end
@@ -296,7 +293,7 @@ classdef Student < handle
                             if solnFiles{f}.equals(feedback.files(studInds(s)))
                                 studFiles{f} = feedback.files(studInds(s));
                                 matching(f) = true;
-                                points = points + pointsPerItem;
+                                numCorrect = numCorrect + 1;
                                 studInds(s) = [];
                                 break;
                             end
@@ -344,7 +341,7 @@ classdef Student < handle
                             if solnPlots{p}.equals(feedback.plots(studInds(s)))
                                 studPlots{p} = feedback.plots(studInds(s));
                                 matching(p) = true;
-                                points = points + pointsPerItem;
+                                numCorrect = numCorrect + 1;
                                 studInds(s) = [];
                                 break;
                             end
@@ -374,12 +371,13 @@ classdef Student < handle
                     % to make any guarantee about length here
                     feedback.testCase.plots = [solnFound solnNotFound];
                     feedback.plots = [studFound studNotFound];
-
-                    feedback.points = points;
-                    if feedback.points == feedback.testCase.points
+                    
+                    if numCorrect == numTotal
                         feedback.hasPassed = true;
+                        feedback.points = feedback.testCase.points;
                     else
                         feedback.hasPassed = false;
+                        feedback.points = feedback.testCase.points*numCorrect/numTotal;
                     end
                 end
             end
