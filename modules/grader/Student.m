@@ -556,9 +556,15 @@ classdef Student < handle
 
         % Create feedback for specific problem
         function generateProblem(this, problem, feedbacks)
-            prob = {'<div class="problem col-12">', '<h2>', problem.name, ...
-                '</h2>', '<div class="tests">', '</div>', '</div>'};
-
+            if all([feedbacks.hasPassed])
+                prob = {'<div class="problem col-12">', '<h2>', ...
+                    Feedback.CORRECT_MARK, ' ', problem.name, ...
+                    '</h2>', '<div class="tests">', '</div>', '</div>'};
+            else
+                prob = {'<div class="problem col-12">', '<h2>', ...
+                    Feedback.INCORRECT_MARK, ' ', problem.name, ...
+                    '</h2>', '<div class="tests">', '</div>', '</div>'};
+            end
             for i = 1:numel(feedbacks)
                 feed = feedbacks(i);
 

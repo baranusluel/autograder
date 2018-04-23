@@ -3,14 +3,14 @@
 % The engine function serves as the primary runner of code.
 %
 % T = engine(T) runs the code specified by the TestCase T, and assigns the
-% outputs, files, and plots to the corresponding fields in T.
+% outputs, files, and plots to the corresponding fields in T. The output is
+% the same size as the input
 %
 % F = engine(F) runs the code specified by the TestCase found in Feedback F,
 % and assigns the outputs, files, and plots to the corresponding fields
-% in F. This does NOT grade the code, just runs it. You must caputre
-%
-% R = engine(R) will run all runnables in the Runnable vector R, and will
-% return when they have all finished.
+% in F. This does NOT grade the code, just runs it. You must capture the
+% outputs; the engine does NOT modify the inputs. The output is the same
+% size as the inputs
 %
 %%% Remarks
 %
