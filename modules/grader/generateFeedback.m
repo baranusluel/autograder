@@ -193,8 +193,8 @@ function htmlFeedback = generateFeedback(stud, soln)
     INCORRECT = '<span class="fas fa-times"></span>';
     DIFF_CLASS = ['<p>' INCORRECT ' %s class expected; %s class given.</p>'];
     DIFF_DIM = ['<p>' INCORRECT ' Dimension Mismatch: %s expected; %s given.</p>'];
-    TABLE = ['<p>' INCORRECT ' Value Incorrect:</p><div class="row"><div class="col-md-6"><p>Expected:</p>%s</div>' ...
-        '<div class="col-md-6"><p>Given:</p>%s</div></div>'];
+    TABLE = ['<p>' INCORRECT ' Value Incorrect:</p><div class="flex-container"><div class="flex-element"><p>Expected:</p>%s</div>' ...
+        '<div class="flex-element"><p>Given:</p>%s</div></div>'];
     DIFF_VALUE = '<p>%s expected; %s given.</p>';
     DIFF_ARR_VALUE = '<p>At index (%s): %s</p>';
     DIFF_STC_VALUE = '<p>In field "%s": %s</p>';
