@@ -182,8 +182,8 @@ function Main(varargin)
         for p = 1:numel(solutions)
             problem = problems(p);
             student.gradeProblem(problem);
-            student.generateFeedback();
         end
+        student.generateFeedback();
     end
     
     % If the user requested uploading, do it
