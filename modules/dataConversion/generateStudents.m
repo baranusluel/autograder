@@ -64,16 +64,18 @@ else % if path leads to folder
     else
         % make vector of Students
         CSV_NAME = 'info.csv'; % magic variable for csv filename
-        FULLNAME_COL = 2; % magic number for col with full names
-        GT_USERNAME_COL = 1; % magic number for col with usernames
-        [~, ~, raw] = xlsread([path filesep CSV_NAME]);
-        studentNames = raw(:, FULLNAME_COL);
-        users = raw(:, GT_USERNAME_COL);
+        FULLNAME_COL = 1; % magic number for col with full names
+        GT_USERNAME_COL = 2; % magic number for col with usernames
+        fid = fopen([path filesep CSV_NAME], 'rt');
+        raw = textscan(fid, '%q%q', 'Delimiter', ',');
+        fclose(fid);
+        studentNames = raw{FULLNAME_COL};
+        users = raw{GT_USERNAME_COL};
         for i = length(studs):-1:1
             % Student constructor takes in path to individual student
             % folder and student's full name
             studentPath = fullfile(studs(i).folder, studs(i).name);
-            studentName = studentNames(strcmp(users, studs(i).name));
+            studentName = studentNames{strcmp(users, studs(i).name)};
             processStudentSubmission(studentPath);
             students(i) = Student(studentPath, studentName);
         end

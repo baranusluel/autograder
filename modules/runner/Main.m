@@ -224,7 +224,7 @@ end
 
 function cleanup(settings)
     % Cleanup
-    
+    delete(File.SENTINEL);
     % Restore user's path
     path(settings.userPath{1}, '');
     if ~isempty(settings.userPath{2})
@@ -239,5 +239,4 @@ function cleanup(settings)
     % Restore figure settings
     set(0, 'DefaultFigureVisible', settings.figures);
     % delete SENTINEL
-    delete(File.SENTINEL);
 end

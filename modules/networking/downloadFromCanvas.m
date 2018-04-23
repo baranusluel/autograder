@@ -29,6 +29,7 @@
 %
 %   threw connectionError exception
 function downloadFromCanvas(courseId, assignmentId, token, path)
+    TIMEOUT = 30;
     subs = getSubmissions(courseId, assignmentId, token);
     origPath = cd(path);
     cleaner = onCleanup(@()(cd(origPath)));
@@ -36,8 +37,13 @@ function downloadFromCanvas(courseId, assignmentId, token, path)
     % folder, download submission
     names = cell(1, numel(subs));
     ids = cell(1, numel(subs));
-    parfor s = 1:numel(subs)
-        student = getStudentInfo(subs{s}.user_id, token);
+    for s = 1:numel(subs)
+        try
+            student = getStudentInfo(subs{s}.user_id, token);
+        catch
+            pause(TIMEOUT);
+            student = getStudentInfo(subs{s}.user_id, token);
+        end
         % create folder with name as login_id
         mkdir(student.login_id);
         names{s} = student.name;
@@ -49,6 +55,9 @@ function downloadFromCanvas(courseId, assignmentId, token, path)
                     websave([pwd filesep student.login_id filesep subs{s}.attachments(a).filename], ...
                         subs{s}.attachments(a).url);
                 catch reason
+                    pause(TIMEOUT);
+                    websave([pwd filesep student.login_id filesep subs{s}.attachments(a).filename], ...
+                        subs{s}.attachments(a).url);
                     e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
                     e = addCause(e, reason);
                     throw(e);
@@ -71,6 +80,7 @@ function subs = getSubmissions(courseId, assignmentId, token)
     API = 'https://gatech.instructure.com/api/v1';
     opts = weboptions;
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
+    opts.Timeout = 30;
     try
         subs = webread([API '/courses/' courseId '/assignments/' assignmentId '/submissions/'], 'per_page', '10000', opts);
     catch reason
@@ -84,6 +94,7 @@ function info = getStudentInfo(userId, token)
     API = 'https://gatech.instructure.com/api/v1';
     opts = weboptions;
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
+    opts.Timeout = 30;
     try
         info = webread([API '/users/' num2str(userId) '/profile/'], opts);
     catch reason
