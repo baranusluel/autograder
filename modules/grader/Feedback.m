@@ -148,7 +148,7 @@ classdef Feedback < handle
                         html = [html '<p>Number of outputs don''t match.</p>'];
                     else
                         for i = 1:length(fnSoln)
-                            html = [html '<div><code>' fnSoln{i} ': </code>' generateFeedback(this.outputs.(fnSoln{i}), solnOutputs.(fnSoln{i})) '</div>'];
+                            html = [html '<div><span class="variable-name">' fnSoln{i} ': </span>' generateFeedback(this.outputs.(fnSoln{i}), solnOutputs.(fnSoln{i})) '</div>'];
                         end
                     end
                 end
