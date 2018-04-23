@@ -180,7 +180,7 @@ function Main(varargin)
     for s = 1:numel(students)
         student = students(s);
         for p = 1:numel(solutions)
-            problem = problems(p);
+            problem = solutions(p);
             student.gradeProblem(problem);
         end
         student.generateFeedback();
