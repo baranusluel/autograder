@@ -38,12 +38,7 @@ function downloadFromCanvas(courseId, assignmentId, token, path)
     names = cell(1, numel(subs));
     ids = cell(1, numel(subs));
     for s = 1:numel(subs)
-        try
-            student = getStudentInfo(subs{s}.user_id, token);
-        catch
-            pause(TIMEOUT);
-            student = getStudentInfo(subs{s}.user_id, token);
-        end
+        student = getStudentInfo(subs{s}.user_id, token);
         % create folder with name as login_id
         mkdir(student.login_id);
         names{s} = student.name;

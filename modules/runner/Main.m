@@ -79,6 +79,7 @@ function Main(varargin)
     % start up application
     app = Autograder();
     uiwait(app.UIFigure);
+    settings.app = app;
     if ~isvalid(app)
         return;
     end

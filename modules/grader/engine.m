@@ -197,6 +197,9 @@ function runnables = engine(runnables)
             'Input were not valid runnables');
         e.throw();
     end
+    if isempty(runnables)
+        return;
+    end
     isTestCase = isa(runnables(1), 'TestCase');
     
     origLoads = cell(size(runnables));

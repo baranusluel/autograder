@@ -232,15 +232,18 @@ classdef Student < handle
             this.problems = [this.problems problem];
             isRunnable = false(1, numel(problem.testCases));
             for i = numel(problem.testCases):-1:1
-                feeds(i) = Feedback(problem.testCases(i));
+                feeds(i) = Feedback(problem.testCases(i), this.path);
                 % check if even submitted
                 % assume name is problem name
                 if any(strncmp(problem.name, this.submissions, length(problem.name)))
                     isRunnable(i) = true;
                 else
                     isRunnable(i) = false;
-                    feeds(i).exception = MEXCEPTION('AUTOGRADER:Student:fileNotSubmitted', ...
-                        'File %s wasn''t submitted, so the engine was not run.', [problem.name '.m']);
+                    e = MException('AUTOGRADER:Student:fileNotSubmitted', ...
+                        'Student did not submit file');
+                    feeds(i).exception = ...
+                        e.addCause(MException('STUDENT:fileNotSubmitted', ...
+                        'File %s wasn''t submitted, so the function was not graded.', [problem.name '.m']));
                 end
             end
             feeds(isRunnable) = engine(feeds(isRunnable));
@@ -373,6 +376,11 @@ classdef Student < handle
                     feedback.plots = [studFound studNotFound];
 
                     feedback.points = points;
+                    if feedback.points == feedback.testCase.points
+                        feedback.hasPassed = true;
+                    else
+                        feedback.hasPassed = false;
+                    end
                 end
             end
             this.feedbacks = [this.feedbacks {feeds}];
@@ -423,7 +431,7 @@ classdef Student < handle
             end
             % Header info
             this.html = {'<!DOCTYPE html>', '<html>', '<head>', '</head>', ...
-                '<body>', '</body>', '</html>'};
+                '<body>', '<div class="container-fluid">', '</div>', '</body>', '</html>'};
             resources = {
                 '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">', ...
                 '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>', ...
@@ -433,6 +441,15 @@ classdef Student < handle
                 };
             styles = {
                 '<style>', ...
+                '.fa-check {', ...
+                '    color: forestgreen;', ...
+                '}', ...
+                '.fa-times {', ...
+                '    color: darkred;', ...
+                '}', ...
+                '.display-1 {', ...
+                '    font-size: 2.5em;', ...
+                '}', ...
                 '</style>'
                 };
             scripts = {
@@ -440,25 +457,25 @@ classdef Student < handle
                 '</script>'
                 };
             % Splice recs, styles, and scripts:
-            spliceHead(resources, styles, scripts);
+            this.spliceHead(resources, styles, scripts);
 
             % Add Student's name
-            name = {'<div class="row text-left">', '<div class="col-12">', ...
+            name = {'<div class="row text-center">', '<div class="col-12">', ...
                 '<h1 class="display-1">', ...
                 ['Feedback for ' this.name ' (' this.id ')'], '</h1>', ...
                 '</div>', '</div>'};
             this.appendRow(name);
 
             % Generate Table
-            generateTable();
+            this.generateTable();
 
             % For each problem, gen feedback
             for i = 1:numel(this.problems)
-                generateProblem(this.problems(i), this.feedbacks{i});
+                this.generateProblem(this.problems(i), this.feedbacks{i});
             end
 
             % Join with new lines and write to feedback.html
-            [fid, msg] = fopen([this.path 'feedback.html'], 'wt');
+            [fid, msg] = fopen([this.path filesep 'feedback.html'], 'wt');
             if fid == -1
                 % throw error
                 throw(MException('AUTOGRADER:Student:generateFeedback:fileIO', ...
@@ -490,7 +507,8 @@ classdef Student < handle
             %   Problem Name
             %   Pts Possible
             %   Pts Earned
-            table = {'<table>', '<thead>', '<tr>' '<th>', '', '</th>', ...
+            table = {'<table class="table table-striped table-bordered table-hover">', ...
+                '<thead>', '<tr>' '<th>', '', '</th>', ...
                 '<th>', 'Problem', '</th>', '<th>', 'Points Possible', ...
                 '</th>', '<th>', 'Points Earned', '</th>', '</tr>', ...
                 '</thead>', '</table>'};
@@ -500,7 +518,7 @@ classdef Student < handle
             % For each problem, list:
             for i = 1:numel(this.problems)
                 tCases = [this.problems(i).testCases];
-                feeds = this.feedbacks(i);
+                feeds = this.feedbacks{i};
                 num = {'<td>', '<p>', num2str(i), '</p>', '</td>'};
                 name = {'<td>', '<p>', this.problems(i).name, '</p>', '</td>'};
                 poss = {'<td>', '<p>', num2str(sum([tCases.points])), '</p>', '</td>'};
@@ -514,14 +532,14 @@ classdef Student < handle
             end
 
             % Add totals row
-            totals = {'<tr>', '<td>', '</td>', '<td>', '</td>', '<td>', ...
+            totals = {'<tr>', '<td colspan="2">','<strong>Total</strong>', '</td>', '<td>', ...
                 '<p>', num2str(totalPts), '</p>', '</td>', '<td>', ...
                 '<p>', num2str(totalEarn), '</p>', '</td>', '</tr>'};
             appendRow(totals);
 
             % Splice table into body
-            table = [{'<div class="row text-center">', '<div class="col-12">'}, ...
-                table, {'</div>', '</div>'}];
+            table = [{'<div class="row text-center">', '<div class="col-12">', '<div class="table-responsive">'}, ...
+                table, {'</div>', '</div>', '</div>'}];
             this.appendRow(table);
             % Appends a row
             function appendRow(row)
@@ -539,7 +557,7 @@ classdef Student < handle
                 feed = feedbacks(i);
 
                 % if passed, marker is green
-                if feed.isPassed
+                if feed.hasPassed
                     marker = {'<div class="col-1">', ...
                         Feedback.CORRECT_MARK, '</div>'};
                 else
@@ -548,8 +566,8 @@ classdef Student < handle
                 end
 
                 % Show call
-                call = [marker {'<div class="col-md-4">', '<pre class="call">', ...
-                    feed.testCase.call, '</pre>', '</div>'}];
+                call = [marker {'<div class="col-md-10">', '<code class="call">', ...
+                    feed.testCase.call, '</code>', '</div>'}];
                 headerRow = [{'<div class="row test-header">'}, call, {'</div>'}];
 
                 % Get feedback message

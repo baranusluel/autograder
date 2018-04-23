@@ -128,11 +128,10 @@ classdef Feedback < handle
         %
         function html = generateFeedback(this)
             %Check if testCase was passed and output empty div
-            if this.hasPassed
-                html = '<div class="container feedback">';
-            elseif ~isempty(this.exception)
-                html = ['<div class="container feedback"><p class="exception">' 
-                        this.exception.identifier ":" this.exception.message '</p>'];
+            if ~isempty(this.exception)
+                html = ['<div class="container feedback"><p class="exception">', ... 
+                        this.exception.cause{1}.identifier ": ", ...
+                        this.exception.cause{1}.message '</p>'];
             else
                 html = '<div class="container feedback">';
                 %Get solution outputs for testCase
@@ -149,7 +148,7 @@ classdef Feedback < handle
                         html = [html '<p>Number of outputs don''t match.</p>'];
                     else
                         for i = 1:length(fnSoln)
-                            html = [html generateFeedback(this.outputs.(fnSoln{i}), solnOutputs.(fnSoln{i}))];
+                            html = [html '<div><code>' fnSoln{i} ': </code>' generateFeedback(this.outputs.(fnSoln{i}), solnOutputs.(fnSoln{i})) '</div>'];
                         end
                     end
                 end

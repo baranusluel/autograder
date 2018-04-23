@@ -189,7 +189,7 @@
 
 %#ok<*AGROW>
 function htmlFeedback = generateFeedback(stud, soln)
-    PASSING = '<span class="fas fa-check></span>';
+    PASSING = '<span class="fas fa-check"></span>';
     INCORRECT = '<span class="fas fa-times"></span>';
     DIFF_CLASS = ['<p>' INCORRECT ' %s class expected; %s class given.</p>'];
     DIFF_DIM = ['<p>' INCORRECT ' Dimension Mismatch: %s expected; %s given.</p>'];
@@ -343,7 +343,7 @@ function str = visualizePrimitive(val)
         str = sprintf('%g', val);
     elseif islogical(val)
         bools = {'false', 'true'};
-        str = bools{soln+1};
+        str = bools{val+1};
     end
 end
 
