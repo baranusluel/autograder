@@ -558,16 +558,14 @@ classdef Student < handle
 
                 % if passed, marker is green
                 if feed.hasPassed
-                    marker = {'<div class="col-1">', ...
-                        Feedback.CORRECT_MARK, '</div>'};
+                    marker = Feedback.CORRECT_MARK;
                 else
-                    marker = {'<div class="col-1">', ...
-                        Feedback.INCORRECT_MARK, '</div>'};
+                    marker = Feedback.INCORRECT_MARK;
                 end
 
                 % Show call
-                call = [marker {'<div class="col-md-10">', '<code class="call">', ...
-                    feed.testCase.call, '</code>', '</div>'}];
+                call = [marker {'<div class="col-12">', '<code class="call">', ...
+                    marker, ' ', feed.testCase.call, '</code>', '</div>'}];
                 headerRow = [{'<div class="row test-header">'}, call, {'</div>'}];
 
                 % Get feedback message

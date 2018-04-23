@@ -129,11 +129,11 @@ classdef Feedback < handle
         function html = generateFeedback(this)
             %Check if testCase was passed and output empty div
             if ~isempty(this.exception)
-                html = ['<div class="container feedback"><p class="exception">', ... 
+                html = ['<div class="container-fluid"><div class="container feedback"><p class="exception">', ... 
                         this.exception.cause{1}.identifier ": ", ...
                         this.exception.cause{1}.message '</p>'];
             else
-                html = '<div class="container feedback">';
+                html = '<div class="container-fluid"><div class="container feedback">';
                 %Get solution outputs for testCase
                 solnOutputs = this.testCase.outputs;
                 solnFiles = this.testCase.files;
@@ -203,7 +203,7 @@ classdef Feedback < handle
                     end
                 end
             end
-            html = sprintf('%s<p>Points earned for this test case: %0.2f/%0.2f</p></div>',...
+            html = sprintf('%s</div><p>Points earned for this test case: %0.2f/%0.2f</p></div>',...
                             html, this.points, this.testCase.points);
         end
     end
