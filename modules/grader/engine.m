@@ -200,7 +200,14 @@ function runnables = engine(runnables)
     if isempty(runnables)
         return;
     end
-    isTestCase = isa(runnables(1), 'TestCase');
+    if isa(runnables, 'TestCase')
+        isTestCase = true;
+    elseif isa(runnables, 'Feedback')
+        isTestCase = false;
+    else
+        throw(MException('AUTOGRADER:engine:invalidRunnable', ...
+            'Input was not a runnable type'));
+    end
     
     origLoads = cell(size(runnables));
     origPaths = cell(size(runnables));
