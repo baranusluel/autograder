@@ -197,6 +197,15 @@ function runnables = engine(runnables)
             'Input were not valid runnables');
         e.throw();
     end
+    if isa(runnables, 'TestCase')
+        isTestCase = true;
+    elseif is(runnables, 'Feedback')
+        isTestCase = false;
+    else
+        throw(MException('AUTOGRADER:engine:invalidRunnable', ...
+            'Input was not a runnable type'));
+    end
+        
     isTestCase = isa(runnables(1), 'TestCase');
     
     origLoads = cell(size(runnables));
