@@ -470,6 +470,10 @@ classdef Student < handle
                 '.variable-value {', ...
                 '    font-family: "Courier New";', ...
                 '}', ...
+                '.problem div {', ...
+                '    padding-left: 10px;', ...
+                '    padding-right: 10px;', ...
+                '}', ...
                 '</style>'
                 };
             scripts = {
@@ -491,7 +495,7 @@ classdef Student < handle
 
             % For each problem, gen feedback
             for i = 1:numel(this.resources.Problems)
-                this.generateProblem(this.resources.Problems(i), this.feedbacks{i});
+                this.generateProblem(this.resources.Problems(i), this.feedbacks{i}, i);
             end
 
             % Join with new lines and write to feedback.html
@@ -569,9 +573,20 @@ classdef Student < handle
         end
 
         % Create feedback for specific problem
-        function generateProblem(this, problem, feedbacks)
-            prob = {'<div class="problem col-12">', '<h2>', problem.name, ...
-                '</h2>', '<div class="tests">', '</div>', '</div>'};
+        function generateProblem(this, problem, feedbacks, num)
+            % print the resources
+            % for each resource, print a link
+            recs = this.resources.resources(num);
+            links = cell(1, numel(recs));
+            for r = 1:numel(recs)
+                rec = recs(r).resources;
+                links{r} = ['<a href="' rec.dataURI '" download="', ...
+                    rec.name, '">' rec.name '</a>'];
+            end
+            prob = [{'<div class="problem col-12">', '<h2>', problem.name, ...
+                '</h2>', '<div class="supporting-files"><h3>Supporting Files</h3>'}, ...
+                links, {'</div>', '<div class="tests">', '<h3 class="test-cases">Test Cases</h3>', ...
+                '</div>', '</div>'}];
             for i = 1:numel(feedbacks)
                 feed = feedbacks(i);
 
