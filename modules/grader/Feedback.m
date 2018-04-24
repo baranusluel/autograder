@@ -126,7 +126,10 @@ classdef Feedback < handle
         % properties of the feedback file
         %
         %
-        function html = generateFeedback(this)
+        function html = generateFeedback(this, showCorrect)
+            if nargin == 1
+                showCorrect = true;
+            end
             %Check if testCase was passed and output empty div
             if ~isempty(this.exception)
                 html = ['<div class="container-fluid"><div class="container feedback"><p class="exception">', ... 
@@ -148,7 +151,13 @@ classdef Feedback < handle
                         html = [html '<p>Number of outputs don''t match.</p>'];
                     else
                         for i = 1:length(fnSoln)
-                            html = [html '<div><span class="variable-name">' fnSoln{i} ': </span>' generateFeedback(this.outputs.(fnSoln{i}), solnOutputs.(fnSoln{i})) '</div>'];
+                            if showCorrect || ~isequaln(this.outputs.(fnSoln{i}), solnOutputs.(fnSoln{i}))
+                                html = [html, ...
+                                    '<div><span class="variable-name">', ...
+                                    fnSoln{i} ': </span>', ...
+                                    generateFeedback(this.outputs.(fnSoln{i}), ...
+                                    solnOutputs.(fnSoln{i})) '</div>'];
+                            end
                         end
                     end
                 end
@@ -203,7 +212,7 @@ classdef Feedback < handle
                     end
                 end
             end
-            html = sprintf('%s</div><p>Points earned for this test case: %0.2f/%0.2f</p></div>',...
+            html = sprintf('%s</div><p>Points earned for this test case: %0.1f/%0.1f</p></div>',...
                             html, this.points, this.testCase.points);
         end
     end

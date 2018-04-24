@@ -177,12 +177,9 @@ function Main(varargin)
     % Also, if we grade and provide feedback all at once, then if either
     % step will fail, it will fail fast (at the first student) rather than
     % after all grading has been done.
-    for s = 1:numel(students)
-        student = students(s);
-        for p = 1:numel(solutions)
-            problem = solutions(p);
-            student.gradeProblem(problem);
-        end
+    students(1).resources.Problems = solutions;
+    for student = students
+        student.asses();
         student.generateFeedback();
     end
     

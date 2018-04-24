@@ -49,6 +49,7 @@
 classdef Student < handle
     properties (Constant)
         TIMEOUT = 30;
+        resources = Resources;
     end
     properties (Access = public)
         name;
@@ -60,7 +61,6 @@ classdef Student < handle
         grade;
     end
     properties (Access=private)
-        problems = [];
         html = {};
     end
     methods (Static)
@@ -174,15 +174,14 @@ classdef Student < handle
         end
     end
     methods (Access=public)
-        function gradeProblem(this, problem)
-        %% gradeProblem: Grades the given problem and records the results
+        function asses(this)
+        %% asses: Grades the student and records the results
         %
-        % gradeProblem is used to evaluate the student code for a given
+        % assess is used to evaluate the student code for a given
         % problem and record the results in the feedbacks field.
         %
-        % gradeProblem(PROBLEM) takes in a valid PROBLEM class,
-        % evaluates the student code, creates a Feedback instance for each
-        % TestCase, which it adds to the feedbacks field.
+        % assess() evaluates the student code, creates a Feedback 
+        % instance for each TestCase, which it adds to the feedbacks field.
         %
         %%% Remarks
         %
@@ -219,31 +218,27 @@ classdef Student < handle
         % Empty submissions will give appropritate score and reason values
         % in the Feedback class.
         % The Feedback classes will then be added to the feedbacks field.
-
-            % For each testCase, create Feedback, run engine.
-            if ~isvalid(problem)
-                throw(MException('AUTOGRADER:Student:gradeProblem:invalidProblem', ...
-                    'Given problem was not a valid Problem object'));
-            elseif numel(problem.testCases) == 0
-                throw(MException('AUTOGRADER:Student:gradeProblem:invalidProblem', ...
-                    'Expected non-zero number of Test Cases; got 0'));
-            end
-            % Add problem to end of our list
-            this.problems = [this.problems problem];
-            isRunnable = false(1, numel(problem.testCases));
-            for i = numel(problem.testCases):-1:1
-                feeds(i) = Feedback(problem.testCases(i), this.path);
-                % check if even submitted
-                % assume name is problem name
-                if any(strncmp(problem.name, this.submissions, length(problem.name)))
-                    isRunnable(i) = true;
-                else
-                    isRunnable(i) = false;
-                    e = MException('AUTOGRADER:Student:fileNotSubmitted', ...
-                        'Student did not submit file');
-                    feeds(i).exception = ...
-                        e.addCause(MException('STUDENT:fileNotSubmitted', ...
-                        'File %s wasn''t submitted, so the function was not graded.', [problem.name '.m']));
+            problems = this.resources.Problems;
+            % for each problem, create ends
+            counter = numel([problems.testCases]);
+            inds = zeros(1, counter);
+            for p = numel(problems):-1:1
+                prob = problems(p);
+                for t = numel(prob.testCases):-1:1
+                    % check if even submitted
+                    feeds(counter) = Feedback(prob.testCases(t), this.path);
+                    if any(strncmp(prob.name, this.submissions, length(prob.name)))
+                        isRunnable(counter) = true;
+                    else
+                        isRunnable(counter) = false;
+                        e = MException('AUTOGRADER:Student:fileNotSubmitted', ...
+                            'Student did not submit file');
+                        feeds(counter).exception = ...
+                            e.addCause(MException('STUDENT:fileNotSubmitted', ...
+                            'File %s wasn''t submitted, so the function was not graded.', [prob.name '.m']));
+                    end
+                    inds(counter) = p;
+                    counter = counter - 1;
                 end
             end
             feeds(isRunnable) = engine(feeds(isRunnable));
@@ -381,7 +376,10 @@ classdef Student < handle
                     end
                 end
             end
-            this.feedbacks = [this.feedbacks {feeds}];
+            this.feedbacks = cell(1, numel(problems));
+            for p = 1:numel(problems)
+                this.feedbacks{p} = feeds(inds == p);
+            end
         end
         function generateFeedback(this)
         %% generateFeedback: Generate HTML feedback for student
@@ -492,8 +490,8 @@ classdef Student < handle
             this.generateTable();
 
             % For each problem, gen feedback
-            for i = 1:numel(this.problems)
-                this.generateProblem(this.problems(i), this.feedbacks{i});
+            for i = 1:numel(this.resources.Problems)
+                this.generateProblem(this.resources.Problems(i), this.feedbacks{i});
             end
 
             % Join with new lines and write to feedback.html
@@ -538,13 +536,13 @@ classdef Student < handle
             totalPts = 0;
             totalEarn = 0;
             % For each problem, list:
-            for i = 1:numel(this.problems)
-                tCases = [this.problems(i).testCases];
+            for i = 1:numel(this.resources.Problems)
+                tCases = [this.resources.Problems(i).testCases];
                 feeds = this.feedbacks{i};
                 num = {'<td>', '<p>', num2str(i), '</p>', '</td>'};
-                name = {'<td>', '<p>', this.problems(i).name, '</p>', '</td>'};
-                poss = {'<td>', '<p>', num2str(sum([tCases.points])), '</p>', '</td>'};
-                earn = {'<td>', '<p>', num2str(sum([feeds.points])), '</p>', '</td>'};
+                name = {'<td>', '<p>', this.resources.Problems(i).name, '</p>', '</td>'};
+                poss = {'<td>', '<p>', sprintf('%0.1f', sum([tCases.points])), '</p>', '</td>'};
+                earn = {'<td>', '<p>', sprintf('%0.1f', sum([feeds.points])), '</p>', '</td>'};
 
                 row = [{'<tr>'}, num, name, poss, earn, {'</tr>'}];
                 appendRow(row);
@@ -555,8 +553,8 @@ classdef Student < handle
 
             % Add totals row
             totals = {'<tr>', '<td colspan="2">','<strong>Total</strong>', '</td>', '<td>', ...
-                '<p>', num2str(totalPts), '</p>', '</td>', '<td>', ...
-                '<p>', num2str(totalEarn), '</p>', '</td>', '</tr>'};
+                '<p>', sprintf('%0.1f', totalPts), '</p>', '</td>', '<td>', ...
+                '<p>', sprintf('%0.1f', totalEarn), '</p>', '</td>', '</tr>'};
             appendRow(totals);
 
             % Splice table into body
@@ -572,15 +570,8 @@ classdef Student < handle
 
         % Create feedback for specific problem
         function generateProblem(this, problem, feedbacks)
-            if all([feedbacks.hasPassed])
-                prob = {'<div class="problem col-12">', '<h2>', ...
-                    Feedback.CORRECT_MARK, ' ', problem.name, ...
-                    '</h2>', '<div class="tests">', '</div>', '</div>'};
-            else
-                prob = {'<div class="problem col-12">', '<h2>', ...
-                    Feedback.INCORRECT_MARK, ' ', problem.name, ...
-                    '</h2>', '<div class="tests">', '</div>', '</div>'};
-            end
+            prob = {'<div class="problem col-12">', '<h2>', problem.name, ...
+                '</h2>', '<div class="tests">', '</div>', '</div>'};
             for i = 1:numel(feedbacks)
                 feed = feedbacks(i);
 
@@ -597,7 +588,11 @@ classdef Student < handle
                 headerRow = [{'<div class="row test-header">'}, call, {'</div>'}];
 
                 % Get feedback message
-                msg = {feed.generateFeedback()};
+                if strncmp(problem.name, 'ABCs', 4)
+                    msg = {feed.generateFeedback(false)};
+                else
+                    msg = {feed.generateFeedback()};
+                end
                 test = [{'<div class="row test-case">'}, headerRow, msg, {'</div>'}];
                 appendTest(test);
             end

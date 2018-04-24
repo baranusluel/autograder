@@ -305,7 +305,7 @@ function runnables = engine(runnables)
                 if strcmp(worker.State, 'finished')
                     runnables(w) = worker.fetchOutputs();
                     delete(worker);
-                elseif now - worker.StartDateTime > seconds(Student.TIMEOUT)
+                elseif ~isempty(worker.StartDateTime) && (now - worker.StartDateTime > seconds(Student.TIMEOUT))
                     cancel(worker);
                     delete(worker);
                     runnables(w).exception = ...
