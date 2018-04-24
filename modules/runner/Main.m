@@ -94,6 +94,12 @@ function Main(varargin)
     fid = fopen(File.SENTINEL, 'wt');
     fwrite(fid, 'SENTINEL');
     fclose(fid);
+    % Make sure figure's don't show
+    settings.figures = get(0, 'DefaultFigureVisible');
+    set(0, 'DefaultFigureVisible', 'off');
+    
+    % Set on cleanup
+    cleaner = onCleanup(@() cleanup(settings));
     
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
@@ -130,13 +136,6 @@ function Main(varargin)
         % unzip the archive
         unzipArchive(app.solutionArchivePath, [pwd filesep 'Solutions']);
     end
-    
-    % Make sure figure's don't show
-    settings.figures = get(0, 'DefaultFigureVisible');
-    set(0, 'DefaultFigureVisible', 'off');
-    
-    % Set on cleanup
-    cleaner = onCleanup(@() cleanup(settings));
     
     % Generate solutions
     try

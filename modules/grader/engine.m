@@ -543,7 +543,6 @@ function [ins, outs, func] = parseFunction(call)
         call(ind:end) = '';
     end
     func = str2func(strip(call));
-
 end
 
 function cleanup()
