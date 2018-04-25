@@ -243,7 +243,7 @@ function runnables = engine(runnables)
             end
         end
         % check banned usage
-        if isempty(runnable.exception)
+        if isTestCase || isempty(runnable.exception)
             if checkBanned([func2str(func) '.m'], [BANNED tCase.banned])
                 if ~isTestCase
                     runnable.exception = MException('AUTOGRADER:engine:banned', ...

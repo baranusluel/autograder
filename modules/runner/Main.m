@@ -111,13 +111,14 @@ function Main(varargin)
         % downloading. We should create new Students folder and download
         % there.
         try
-            progress.Message = 'Fetching Student Information';
+            progress.Message = 'Fetching Submissions';
             progress.Title = 'Canvas Download Progress';
             downloadFromCanvas(app.canvasCourseId, app.canvasHomeworkId, ...
                 app.canvasToken, [pwd filesep 'Students'], progress);
         catch e
             % alert in some way and return
             alert(app, 'Exception %s found when trying to download from Canvas', e.identifier);
+            app.exception = e;
             return;
         end
     else
@@ -140,6 +141,7 @@ function Main(varargin)
             downloadFromDrive(app.driveFolderId, token, [pwd filesep 'Solutions']);
         catch e
             alert(app, 'Exception %s found when trying to download from Google Drive', e.identifier);
+            app.exception = e;
             return;
         end
     else
@@ -159,11 +161,13 @@ function Main(varargin)
         progress.Value = 0;
         solutions = generateSolutions(app.isResubmission, progress);
         cd(orig);
+        app.solutions = solutions;
     catch e
         % Display to user that we failed
         cd(orig);
         alert(app, 'Problem generation failed. Error %s: %s', e.identifier, ...
             e.message);
+        app.exception = e;
         return;
     end
     
@@ -174,48 +178,42 @@ function Main(varargin)
         progress.Title = 'Student Generation';
         progress.Value = 0;
         students = generateStudents([pwd filesep 'Students']);
+        app.students = students;
     catch e
         alert(app, 'Student generation failed. Error %s: %s', e.identifier, ...
             e.message);
+        app.exception = e;
         return;
     end
     
     % Grade students
-    %
-    % There are a couple of ways to do this. I've listed them below:
-    %
-    % * For each student, for each problem, grade the problem and provide
-    % feedback
-    % * For each student, for each problem, grade the problem. For each
-    % student, generate the feedback
-    % * For each problem for each student, grade the problem. For each
-    % student, generate the feedback
-    %
-    % I am going to choose option one. I think this will have a better
-    % performance measure, but that's just a gut decision. If anyone has
-    % any better ideas, I'm all ears!
-    %
-    % Also, if we grade and provide feedback all at once, then if either
-    % step will fail, it will fail fast (at the first student) rather than
-    % after all grading has been done.
     recs = Student.resources;
     recs.Problems = solutions;
     progress.Indeterminate = 'off';
     progress.Value = 0;
     progress.Title = 'Grading Progress';
     progress.Message = 'Student Grading Progress';
-    plotter = uifigure('Title', 'Grade Report');
+    plotter = uifigure('Name', 'Grade Report');
     ax = uiaxes(plotter);
     ax.Position = [10 10 550 400]; % as suggested in example on MATLAB ref page
     title(ax, 'Histogram of Student Grades');
     xlabel(ax, 'Grade (in %)');
     ylabel(ax, 'Number of Students');
+    h = histogram(ax);
+    totalPoints = [solutions.testCases];
+    totalPoints = sum([totalPoints.points]);
+    h.BinEdges = 0:10:max([totalPoints (ceil(totalPoints / 10) * 10)]);
+    h.BinLimits = [0 h.BinEdges(end)];
+    h.Data = zeros(1, numel(students));
+    
+    plotter.Visible = 'on';
     for s = 1:numel(students)
         student = students(s);
         student.assess();
         student.generateFeedback();
         progress.Value = min([progress.Value + 1/numel(students), 1]);
-        histogram(ax, [students(1:s).grade]);
+        h.Data(s) = student.grade;
+        drawnow;
     end
     
     % If the user requested uploading, do it
@@ -235,14 +233,21 @@ function Main(varargin)
     
     % if they want the output, do it
     if ~isempty(app.localOutputPath)
+        progress.Indeterminate = 'on';
+        progress.Title = 'Saving';
+        progress.Message = 'Saving Output';
         % save canvas info in path
         % copy csv, then change accordingly
     end
     if ~isempty(app.localDebugPath)
         % save MAT file
+        progress.Indeterminate = 'on';
+        progress.Title = 'Saving';
+        progress.Message = 'Saving Debugger Information';
         save([app.localDebugPath filesep 'autograder.mat'], ...
             'students', 'solutions', 'settings', 'app');
     end
+    close(progress);
     
 end
 
@@ -270,5 +275,13 @@ function cleanup(settings)
     [~] = rmdir(settings.workingDir, 's');
     % Restore figure settings
     set(0, 'DefaultFigureVisible', settings.figures);
-    % delete SENTINEL
+    % store debugging info
+    app = settings.app;
+    if ~isempty(app.localDebugPath)
+        students = app.students; %#ok<NASGU>
+        solutions = app.solutions; %#ok<NASGU>
+        exception = app.exception; %#ok<NASGU>
+        save([app.localDebugPath filesep 'autograder.mat'], ...
+            'students', 'solutions', 'exception');
+    end
 end

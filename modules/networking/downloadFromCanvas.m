@@ -29,7 +29,7 @@
 %
 %   threw connectionError exception
 function downloadFromCanvas(courseId, assignmentId, token, path, progress)
-    subs = getSubmissions(courseId, assignmentId, token);
+    subs = getSubmissions(courseId, assignmentId, token, progress);
     origPath = cd(path);
     cleaner = onCleanup(@()(cd(origPath)));
     % for each user, get GT Username, create folder, then inside that
@@ -38,15 +38,27 @@ function downloadFromCanvas(courseId, assignmentId, token, path, progress)
     names = cell(1, numStudents);
     ids = cell(1, numStudents);
     % get ids
+    progress.Indeterminate = 'off';
+    progress.Value = 0;
+    progress.Message = 'Fetching Student Information';
     for s = numStudents:-1:1
         workers(s) = parfeval(@getStudentInfo, 1, subs{s}.user_id, token);
     end
-    wait(workers);
+    while ~all([workers.Read])
+        fetchNext(workers);
+        progress.Value = min([progress.Value + 1/numStudents, 1]);
+        if progress.CancelRequested
+            cancel(workers);
+            e = MException('AUTOGRADER:networking:connectionError', ...
+                'User cancelled operation');
+            e.throw();
+        end
+    end
     students = fetchOutputs(workers);
     workers = workers(false);
     progress.Indeterminate = 'off';
     progress.Value = 0;
-    progress.Message = 'Downloading Student Submissions...';
+    progress.Message = 'Downloading Student Submissions';
     for s = numStudents:-1:1
         % create folder with name as login_id
         mkdir(students(s).login_id);
@@ -54,9 +66,10 @@ function downloadFromCanvas(courseId, assignmentId, token, path, progress)
         ids{s} = students(s).login_id;
         % for each attachment, download it here
         if isfield(subs{s}, 'attachments')
-            workers(s) = parfeval(@saveFiles, 0, subs{s}.attachments, students(s).login_id);
+            workers{s} = saveFiles(subs{s}.attachments, students(s).login_id);
         end
     end
+    workers = [workers{:}];
     workers([workers.ID] == -1) = [];
     numToSave = numel(workers);
     while ~all([workers.Read])
@@ -79,9 +92,9 @@ function downloadFromCanvas(courseId, assignmentId, token, path, progress)
     cd(origPath);
 end
 
-function saveFiles(attachments, loginId)
-    for a = 1:numel(attachments)
-        saveFile(attachments(a), [pwd filesep loginId]);
+function workers = saveFiles(attachments, loginId)
+    for a = numel(attachments):-1:1
+        workers(a) = parfeval(@saveFile, 0, attachments(a), [pwd filesep loginId]);
     end
 end
 
@@ -107,11 +120,10 @@ function saveFile(attachment, path, attempt, reason)
     end
 end
 
-function subs = getSubmissions(courseId, assignmentId, token)
+function subs = getSubmissions(courseId, assignmentId, token, progress)
+    API = 'https://gatech.instructure.com/api/v1/courses/';
+    DEFAULT_SUBMISSION_NUM = 1000;
     try
-        counter = 1;
-        DEFAULT_SUBMISSION_NUM = 1000;
-        API = 'https://gatech.instructure.com/api/v1/courses/';
         request = matlab.net.http.RequestMessage;
         request.Header = matlab.net.http.HeaderField;
         request.Header.Name = 'Authorization';
@@ -121,27 +133,45 @@ function subs = getSubmissions(courseId, assignmentId, token)
         % see if last was provided. If so, then we can prealloc (mostly)
         % precisely. Otherwise, just use DEFAULT_SUBMISSION_NUM
         last = next(strcmp([next.rel], "last"));
+        next = next(strcmp([next.rel], "next"));
         if ~isempty(last)
             % get page: ?page=num&
             pgs = regexp(last.link, '(?<=\?page=)\d*', 'match');
             pgs = str2double(pgs{1});
-            perPage = regexp(last.link, '(?<=&per_page=)\d*', 'match');
-            perPage = str2double(perPage{1});
-            subs = cell(1, pgs * perPage);
+            subs = cell(1, pgs-1);
+            subs{1} = response.Body.Data';
+            links = cell(1, pgs-1);
+            links{1} = next.link.extractBetween('<', '>');
+            for l = 2:pgs-1
+                links{l} = regexprep(links{l-1}, '(?<=\?page=)\d*', '${num2str(1+str2double($0))}');
+            end
+            % for each link, fetch it's outputs and store it in subs
+            for l = numel(links):-1:2
+                workers(l-1) = parfeval(@fetchChunk, 1, links{l}, token);
+            end
+            progress.Indeterminate = 'off';
+            progress.Value = 0;
+            while ~all([workers.Read])
+                [idx, sub] = fetchNext(workers);
+                subs{idx + 1} = sub;
+                progress.Value = min([progress.Value + 1/numel(workers), 1]);
+            end
+            subs = [subs{:}];
         else
+            % Can't use our parfor; do the old fashioned way
+            counter = 1;
             subs = cell(1, DEFAULT_SUBMISSION_NUM);
-        end
-        next = next(strcmp([next.rel], "next"));
-        subs(counter:(counter+numel(response.Body.Data)-1)) = response.Body.Data';
-        counter = counter + numel(response.Body.Data);
-        while ~isempty(next)
-            % get the next batch
-            % next.link is the link to ask for
-            response = request.send(next.link.extractBetween('<', '>'));
-            next = response.getFields('Link').parse({'link', 'rel'});
-            next = next(strcmp([next.rel], "next"));
             subs(counter:(counter+numel(response.Body.Data)-1)) = response.Body.Data';
             counter = counter + numel(response.Body.Data);
+            while ~isempty(next)
+                % get the next batch
+                % next.link is the link to ask for
+                response = request.send(next.link.extractBetween('<', '>'));
+                next = response.getFields('Link').parse({'link', 'rel'});
+                next = next(strcmp([next.rel], "next"));
+                subs(counter:(counter+numel(response.Body.Data)-1)) = response.Body.Data';
+                counter = counter + numel(response.Body.Data);
+            end
         end
         subs(cellfun(@isempty, subs)) = [];
     catch reason
@@ -163,4 +193,13 @@ function info = getStudentInfo(userId, token)
         e = addCause(e, reason);
         throw(e);
     end
+end
+
+function chunk = fetchChunk(link, token)
+    request = matlab.net.http.RequestMessage;
+    request.Header = matlab.net.http.HeaderField;
+    request.Header.Name = 'Authorization';
+    request.Header.Value = ['Bearer ' token];
+    response = request.send(link);
+    chunk = response.Body.Data';
 end
