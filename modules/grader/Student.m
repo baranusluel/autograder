@@ -174,8 +174,8 @@ classdef Student < handle
         end
     end
     methods (Access=public)
-        function asses(this)
-        %% asses: Grades the student and records the results
+        function assess(this)
+        %% assess: Grades the student and records the results
         %
         % assess is used to evaluate the student code for a given
         % problem and record the results in the feedbacks field.
@@ -576,10 +576,10 @@ classdef Student < handle
         function generateProblem(this, problem, feedbacks, num)
             % print the resources
             % for each resource, print a link
-            recs = this.resources.resources(num);
+            recs = this.resources.supportingFiles(num);
             links = cell(1, numel(recs));
             for r = 1:numel(recs)
-                rec = recs(r).resources;
+                rec = recs(r).files;
                 links{r} = ['<a href="' rec.dataURI '" download="', ...
                     rec.name, '">' rec.name '</a>'];
             end

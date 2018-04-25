@@ -28,36 +28,45 @@
 %   downloadFromCanvas(C, A, T, P);
 %
 %   threw connectionError exception
-function downloadFromCanvas(courseId, assignmentId, token, path)
-    TIMEOUT = 30;
+function downloadFromCanvas(courseId, assignmentId, token, path, progress)
     subs = getSubmissions(courseId, assignmentId, token);
     origPath = cd(path);
     cleaner = onCleanup(@()(cd(origPath)));
     % for each user, get GT Username, create folder, then inside that
     % folder, download submission
-    names = cell(1, numel(subs));
-    ids = cell(1, numel(subs));
-    for s = 1:numel(subs)
-        student = getStudentInfo(subs{s}.user_id, token);
+    numStudents = numel(subs);
+    names = cell(1, numStudents);
+    ids = cell(1, numStudents);
+    % get ids
+    for s = numStudents:-1:1
+        workers(s) = parfeval(@getStudentInfo, 1, subs{s}.user_id, token);
+    end
+    wait(workers);
+    students = fetchOutputs(workers);
+    workers = workers(false);
+    progress.Indeterminate = 'off';
+    progress.Value = 0;
+    progress.Message = 'Downloading Student Submissions...';
+    for s = numStudents:-1:1
         % create folder with name as login_id
-        mkdir(student.login_id);
-        names{s} = student.name;
-        ids{s} = student.login_id;
+        mkdir(students(s).login_id);
+        names{s} = students(s).name;
+        ids{s} = students(s).login_id;
         % for each attachment, download it here
         if isfield(subs{s}, 'attachments')
-            for a = 1:numel(subs{s}.attachments)
-                try
-                    websave([pwd filesep student.login_id filesep subs{s}.attachments(a).filename], ...
-                        subs{s}.attachments(a).url);
-                catch reason
-                    pause(TIMEOUT);
-                    websave([pwd filesep student.login_id filesep subs{s}.attachments(a).filename], ...
-                        subs{s}.attachments(a).url);
-                    e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
-                    e = addCause(e, reason);
-                    throw(e);
-                end
-            end
+            workers(s) = parfeval(@saveFiles, 0, subs{s}.attachments, students(s).login_id);
+        end
+    end
+    workers([workers.ID] == -1) = [];
+    numToSave = numel(workers);
+    while ~all([workers.Read])
+        fetchNext(workers);
+        progress.Value = min([progress.Value + 1/numToSave, 1]);
+        if progress.CancelRequested
+            cancel(workers);
+            e = MException('AUTOGRADER:networking:connectionError', ...
+                'User cancelled operation');
+            e.throw();
         end
     end
     % write info.csv
@@ -70,14 +79,71 @@ function downloadFromCanvas(courseId, assignmentId, token, path)
     cd(origPath);
 end
 
-function subs = getSubmissions(courseId, assignmentId, token)
-    % get all subs for this assignment. 
-    API = 'https://gatech.instructure.com/api/v1';
-    opts = weboptions;
-    opts.HeaderFields = {'Authorization', ['Bearer ' token]};
-    opts.Timeout = 30;
+function saveFiles(attachments, loginId)
+    for a = 1:numel(attachments)
+        saveFile(attachments(a), [pwd filesep loginId]);
+    end
+end
+
+function saveFile(attachment, path, attempt, reason)
+    MAX_ATTEMPT_NUM = 10;
+    if nargin > 2 && attempt > MAX_ATTEMPT_NUM
+        e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
+        e = addCause(e, reason);
+        throw(e);
+    end
     try
-        subs = webread([API '/courses/' courseId '/assignments/' assignmentId '/submissions/'], 'per_page', '10000', opts);
+        downloader = matlab.net.http.RequestMessage;
+        data = downloader.send(attachment.url);
+        fid = fopen([path filesep attachment.filename], 'wt');
+        fwrite(fid, data.Body.Data);
+        fclose(fid);
+    catch reason
+        if nargin > 2
+            saveFile(attachment, path, attempt + 1, reason);
+        else
+            saveFile(attachment, path, 1, reason);
+        end
+    end
+end
+
+function subs = getSubmissions(courseId, assignmentId, token)
+    try
+        counter = 1;
+        DEFAULT_SUBMISSION_NUM = 1000;
+        API = 'https://gatech.instructure.com/api/v1/courses/';
+        request = matlab.net.http.RequestMessage;
+        request.Header = matlab.net.http.HeaderField;
+        request.Header.Name = 'Authorization';
+        request.Header.Value = ['Bearer ' token];
+        response = request.send([API courseId '/assignments/' assignmentId '/submissions/?per_page=100']);
+        next = response.getFields('Link').parse({'link', 'rel'});
+        % see if last was provided. If so, then we can prealloc (mostly)
+        % precisely. Otherwise, just use DEFAULT_SUBMISSION_NUM
+        last = next(strcmp([next.rel], "last"));
+        if ~isempty(last)
+            % get page: ?page=num&
+            pgs = regexp(last.link, '(?<=\?page=)\d*', 'match');
+            pgs = str2double(pgs{1});
+            perPage = regexp(last.link, '(?<=&per_page=)\d*', 'match');
+            perPage = str2double(perPage{1});
+            subs = cell(1, pgs * perPage);
+        else
+            subs = cell(1, DEFAULT_SUBMISSION_NUM);
+        end
+        next = next(strcmp([next.rel], "next"));
+        subs(counter:(counter+numel(response.Body.Data)-1)) = response.Body.Data';
+        counter = counter + numel(response.Body.Data);
+        while ~isempty(next)
+            % get the next batch
+            % next.link is the link to ask for
+            response = request.send(next.link.extractBetween('<', '>'));
+            next = response.getFields('Link').parse({'link', 'rel'});
+            next = next(strcmp([next.rel], "next"));
+            subs(counter:(counter+numel(response.Body.Data)-1)) = response.Body.Data';
+            counter = counter + numel(response.Body.Data);
+        end
+        subs(cellfun(@isempty, subs)) = [];
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
         e = addCause(e, reason);
@@ -98,4 +164,3 @@ function info = getStudentInfo(userId, token)
         throw(e);
     end
 end
-    

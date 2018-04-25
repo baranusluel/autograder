@@ -84,8 +84,11 @@ function Main(varargin)
         return;
     end
     % Start up parallel pool
+    progress = uiprogressdlg(app.UIFigure, 'Title', 'Progress', ...
+        'Message', 'Starting Parallel Pool', 'Cancelable', 'on', ...
+        'ShowPercentage', true, 'Indeterminate', 'on');
     evalc('gcp');
-    
+    progress.Message = 'Warming up';
     % Get temporary directory
     settings.workingDir = [tempname filesep];
     mkdir(settings.workingDir);
@@ -108,14 +111,18 @@ function Main(varargin)
         % downloading. We should create new Students folder and download
         % there.
         try
+            progress.Message = 'Fetching Student Information';
+            progress.Title = 'Canvas Download Progress';
             downloadFromCanvas(app.canvasCourseId, app.canvasHomeworkId, ...
-                app.canvasToken, [pwd filesep 'Students']);
+                app.canvasToken, [pwd filesep 'Students'], progress);
         catch e
             % alert in some way and return
             alert(app, 'Exception %s found when trying to download from Canvas', e.identifier);
             return;
         end
     else
+        progress.Message = 'Unzipping Student Archive';
+        progress.Title = 'Progress';
         % unzip the archive
         unzipArchive(app.submissionArchivePath, [pwd filesep 'Students']);
     end
@@ -126,6 +133,9 @@ function Main(varargin)
     if app.SolutionChoice.Value == 1
         % downloading
         try
+            progress.Indeterminate = 'on';
+            progress.Message = 'Downloading Rubric from Google Drive';
+            progress.Title = 'Progress';
             token = refresh2access(app.driveToken);
             downloadFromDrive(app.driveFolderId, token, [pwd filesep 'Solutions']);
         catch e
@@ -134,13 +144,20 @@ function Main(varargin)
         end
     else
         % unzip the archive
+        progress.Indeterminate = 'on';
+        progress.Message = 'Unzipping Rubric';
+        progress.Title = 'Progress';
         unzipArchive(app.solutionArchivePath, [pwd filesep 'Solutions']);
     end
     
     % Generate solutions
     try
         orig = cd('Solutions');
-        solutions = generateSolutions(app.isResubmission);
+        progress.Indeterminate = 'off';
+        progress.Message = 'Generating Autograder Solutions';
+        progress.Title = 'Solution Generation';
+        progress.Value = 0;
+        solutions = generateSolutions(app.isResubmission, progress);
         cd(orig);
     catch e
         % Display to user that we failed
@@ -152,6 +169,10 @@ function Main(varargin)
     
     % Generate students
     try
+        progress.Indeterminate = 'off';
+        progress.Message = 'Generating Student Information';
+        progress.Title = 'Student Generation';
+        progress.Value = 0;
         students = generateStudents([pwd filesep 'Students']);
     catch e
         alert(app, 'Student generation failed. Error %s: %s', e.identifier, ...
@@ -177,10 +198,24 @@ function Main(varargin)
     % Also, if we grade and provide feedback all at once, then if either
     % step will fail, it will fail fast (at the first student) rather than
     % after all grading has been done.
-    students(1).resources.Problems = solutions;
-    for student = students
-        student.asses();
+    recs = Student.resources;
+    recs.Problems = solutions;
+    progress.Indeterminate = 'off';
+    progress.Value = 0;
+    progress.Title = 'Grading Progress';
+    progress.Message = 'Student Grading Progress';
+    plotter = uifigure('Title', 'Grade Report');
+    ax = uiaxes(plotter);
+    ax.Position = [10 10 550 400]; % as suggested in example on MATLAB ref page
+    title(ax, 'Histogram of Student Grades');
+    xlabel(ax, 'Grade (in %)');
+    ylabel(ax, 'Number of Students');
+    for s = 1:numel(students)
+        student = students(s);
+        student.assess();
         student.generateFeedback();
+        progress.Value = min([progress.Value + 1/numel(students), 1]);
+        histogram(ax, [students(1:s).grade]);
     end
     
     % If the user requested uploading, do it

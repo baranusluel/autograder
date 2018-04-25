@@ -67,6 +67,7 @@ classdef TestCase < handle
         points;
         supportingFiles;
         loadFiles;
+        inputs;
         banned;
         path;
         outputs;

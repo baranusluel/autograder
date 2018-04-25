@@ -114,7 +114,7 @@ if length(zipFiles) >= 1
         if length(find([files.isdir])) == 3
             % single directory inside the zip
             singleDir = files([files.isdir] & ~strcmp({files.name}, '.') & ~strcmp({files.name}, '..'));
-            moveFiles(singleDir, startPath);
+            movefile(singleDir, startPath);
             % now done with the unzipped folder, so safe to delete
             rmdir(unzipPath, 's'); 
         elseif length(find([files.isdir])) > 3
@@ -125,11 +125,11 @@ if length(zipFiles) >= 1
             % move all the files from each of the new directories to
             % the main folder
             for j = 1:length(newDirs)
-                moveFiles([unzipPath, filesep(), newDirs{i}], startPath);
+                movefile([unzipPath, filesep(), newDirs{i}], startPath);
             end
         else
             % move files from unzipped folder
-            moveFiles(unzipPath, startPath);
+            movefile(unzipPath, startPath);
             % delete the unzipped folder (don't need it anymore)
             rmdir(unzipPath, 's');
 
@@ -140,18 +140,4 @@ end
 
 
 cd(currentDir);
-end % end processStudentSubmission
-
-% Moves files from current dir to dest without overwriting anything
-% moveFiles(FILES, DEST) moves all files from folder SRC to DEST
-function moveFiles(src, dest)
-files = dir(src);
-files = {files.name};
-destFiles = dir(dest);
-destFiles = {destFiles.name};
-for i = 1:length(files)
-    if ~contains(destFiles, files{i}) && ~strcmp(files{i}, '.') && ~strcmp(files{i}, '..')
-        movefile(files{i}, dest);
-    end
-end
 end

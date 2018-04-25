@@ -124,7 +124,7 @@
 %
 %   Threw invalidPath exception
 %
-function solutions = generateSolutions(isResubmission)
+function solutions = generateSolutions(isResubmission, progress)
 %try-catch block to catch any resulting errors.
 try
     %Archive is already unzipped.
@@ -148,6 +148,7 @@ try
         elements = numel(rubric);
         for i = elements:-1:1
             solutions(i) = Problem(rubric(i));
+            progress.Value = min([progress.Value + 1/numel(elements), 1]);
         end
         %The problems output vector should now contain all necessary problems.
     else

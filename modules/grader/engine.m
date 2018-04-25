@@ -209,7 +209,6 @@ function runnables = engine(runnables)
             'Input was not a runnable type'));
     end
     
-    origLoads = cell(size(runnables));
     origPaths = cell(size(runnables));
     parfor r = 1:numel(runnables)
         runnable = runnables(r);
@@ -244,49 +243,52 @@ function runnables = engine(runnables)
             end
         end
         % check banned usage
-        if checkBanned([func2str(func) '.m'], [BANNED tCase.banned])
+        if isempty(runnable.exception)
+            if checkBanned([func2str(func) '.m'], [BANNED tCase.banned])
+                if ~isTestCase
+                    runnable.exception = MException('AUTOGRADER:engine:banned', ...
+                        'File used banned function');
+                else
+                    throw(MException('AUTOGRADER:engine:banned', ...
+                        'File used banned function'));
+                end
+            end
+
+            % copy over supporting files
+            for s = 1:numel(tCase.supportingFiles)
+                copyfile(tCase.supportingFiles{s});
+            end
+
+            % Load the data
+            if isTestCase
+                loads = cell(size(tCase.loadFiles));
+                for l = 1:numel(tCase.loadFiles)
+                    loads{l} = load(tCase.loadFiles{l});
+                end
+                numVars = 0;
+                for l = 1:numel(loads)
+                    numVars = numVars + numel(fieldnames(loads{l}));
+                end
+                varNames = cell(1, numVars);
+                varValues = cell(1, numVars);
+                counter = 1;
+                for l = 1:numel(loads)
+                    valNames = fieldnames(loads{l});
+                    for val = 1:numel(valNames)
+                        varNames{counter} = valNames{val};
+                        varValues{counter} = loads{l}.(valNames{val});
+                        counter = counter + 1;
+                    end
+                end
+                % save the original load files
+                tCase.inputs = [varNames; varValues]; 
+            end
+            cd(origPath);
             if ~isTestCase
-                runnable.exception = MException('AUTOGRADER:engine:banned', ...
-                    'File used banned function');
+                runnable.testCase = tCase;
             else
-                throw(MException('AUTOGRADER:engine:banned', ...
-                    'File used banned function'));
+                runnable = tCase;
             end
-        end
-
-        % copy over supporting files
-        for s = 1:numel(tCase.supportingFiles)
-            copyfile(tCase.supportingFiles{s});
-        end
-
-        % Load the data
-        loads = cell(size(tCase.loadFiles));
-        for l = 1:numel(tCase.loadFiles)
-            loads{l} = load(tCase.loadFiles{l});
-        end
-        numVars = 0;
-        for l = 1:numel(loads)
-            numVars = numVars + numel(fieldnames(loads{l}));
-        end
-        varNames = cell(1, numVars);
-        varValues = cell(1, numVars);
-        counter = 1;
-        for l = 1:numel(loads)
-            valNames = fieldnames(loads{l});
-            for val = 1:numel(valNames)
-                varNames{counter} = valNames{val};
-                varValues{counter} = loads{l}.(valNames{val});
-                counter = counter + 1;
-            end
-        end
-        % save the original load files
-        origLoads{r} = tCase.loadFiles;
-        tCase.loadFiles = [varNames; varValues];
-        cd(origPath);
-        if ~isTestCase
-            runnable.testCase = tCase;
-        else
-            runnable = tCase;
         end
         runnables(r) = runnable;
     end
@@ -319,11 +321,6 @@ function runnables = engine(runnables)
     for r = 1:numel(runnables)
         [~] = rmdir(runnables(r).path);
         runnables(r).path = origPaths{r};
-        if isTestCase
-            runnables(r).loadFiles = origLoads{w};
-        else
-            runnables(r).testCase.loadFiles = origLoads{w};
-        end
     end   
 end
 
@@ -394,7 +391,7 @@ function runnable = runCase(runnable)
     % create sentinel file
     fid = fopen(File.SENTINEL, 'w');
     try
-        [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
+        [outs{:}] = runner(func, init, inNames, tCase.inputs);
     catch e
         if isa(runnable, 'TestCase')
             fclose(fid);

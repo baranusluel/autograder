@@ -45,7 +45,7 @@
 %
 % And then work your way down to 1 from there.
 
-function students = generateStudents(path)
+function students = generateStudents(path, progress)
 
 if ~isfolder(path) % if path doesn't lead to existing folder, exception
     msgID = 'AUTOGRADER:generateStudents:invalidPath';
@@ -71,6 +71,7 @@ else % if path leads to folder
         fclose(fid);
         studentNames = raw{FULLNAME_COL};
         users = raw{GT_USERNAME_COL};
+        progress.Value = 0;
         for i = length(studs):-1:1
             % Student constructor takes in path to individual student
             % folder and student's full name
@@ -78,6 +79,7 @@ else % if path leads to folder
             studentName = studentNames{strcmp(users, studs(i).name)};
             processStudentSubmission(studentPath);
             students(i) = Student(studentPath, studentName);
+            progress.Value = min([progress.Value + 1/length(studs), 1]);
         end
         % alphabetize vector of Students based on GT username
         [~, idx] = sort({students.name});
