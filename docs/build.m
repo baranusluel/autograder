@@ -45,11 +45,12 @@
 %
 % A logical - if true, linting is done before building. If linting returns
 % errors, the build is stopped - no installer or documentation is created.
+% Defaults to true
 %
 % * version
 %
 % A character vector - if blank or not defined, the current version is
-% unchanged. Version numbers follow the SemVer convention:
+% unchanged. Defaults to blank. Version numbers follow the convention:
 % vMAJOR.MINOR.PATH. For more information refer to Semantic Versioning
 % Documentation at <https://semver.org SemVer.org>. Do not include leading
 % 'v'.
@@ -57,20 +58,10 @@
 % * test
 %
 % A logical - if true, building will fail if any unit test fails. If false,
-% testing is not done at all.
+% testing is not done at all. Defaults to true
 
-function problems = build(opts)
-    if ~exist('opts', 'var')
-        % Default correctly
-        % get current branch:
-        opts.branch = '';
-        opts.generateDocs = true;
-        opts.installerPath = ['..' filesep 'bin' filesep];
-        opts.checkSuppressed = false;
-        opts.lint = true;
-        opts.version = '';
-        opts.test = true;
-    end
+function problems = build(varargin)
+    opts = getInputs(varargin{:});
     [path, ~, ~] = fileparts(mfilename('fullpath'));
     thisFolder = cd(path);
 
@@ -78,7 +69,7 @@ function problems = build(opts)
     if ~isempty(opts.branch)
         [status, msg] = system(['git checkout ' opts.branch]);
         if status ~= 0
-            e = MException('AUTOGRADER:BUILD:GITERROR', ...
+            e = MException('AUTOGRADER:build:git', ...
                     'Unable to switch to branch %s\nGit gave this error:\n%s', ...
                     opts.branch, msg);
             if nargout == 0
@@ -92,7 +83,6 @@ function problems = build(opts)
     if opts.lint
         % We are linting. If any errors, stop and throw
         % lint each module.
-        problems = [];
         % get all files to be linted (files under modules/**/*.m)
         files = dir(['..' filesep 'modules' filesep '**' filesep '*.m']);
         folders = {files.folder};
@@ -103,17 +93,16 @@ function problems = build(opts)
         if opts.checkSuppressed
             options = [options {'-notok'}];
         end
-        info = checkcode(files, options{:}, '-struct');
+        [info, paths] = checkcode(files, options{:}, '-struct');
         if ~all(cellfun(@isempty, info, 'uni', true))
             % if requesting output, don't error
-            if nargout == 0
-                e = MException('AUTOGRADER:BUILD:LINTFAILURE', ...
-                    'Files failed lint test');
-                throw(e);
-            else
-                problems = info;
-                return;
+            fprintf(2, 'Files failed lint test\n');
+            if nargout ~= 0
+                problems = [paths, info];
             end
+            return;
+        else
+            fprintf(1, 'Linting finished - no problems found\n');
         end
     end
 
@@ -121,17 +110,19 @@ function problems = build(opts)
         % We'll need to run the unit tests. Fortunately, this is simple -
         % just call unitRunner()
         orig = cd(['..' filesep 'unitTests']);
-        opts.showFeedback = false;
-        opts.completeFeedback = true;
-        opts.output = '';
-        opts.modules = {};
-        [status, html] = autotester(opts);
+        testOpts.showFeedback = false;
+        testOpts.completeFeedback = true;
+        testOpts.output = '';
+        testOpts.modules = {};
+        [status, html] = autotester(testOpts);
         if ~status
-            problems = html;
-            fprintf(2, 'Unit Testing failed\n');
+            fprintf(2, 'Failed Unit Testing\n');
+            if nargout ~= 0
+                problems = html;
+            end
             return;
         else
-            fprintf(1, 'Unit Tests all passed\n');
+            fprintf(1, 'Passed Unit Testing\n');
         end
         cd(orig);
     end
@@ -169,15 +160,25 @@ function problems = build(opts)
         % find <param.icons> and </param.icons>, fill with <file>
         iconS = find(contains(lines, '<param.icons>'), 1);
         iconE = find(contains(lines, '</param.icons>'), 1);
-        sizes = regexprep({'${PROJECT_ROOT}\docs\resources\images\icon_48.png', ...
-            '${PROJECT_ROOT}\docs\resources\images\icon_24.png', ...
-            '${PROJECT_ROOT}\docs\resources\images\icon_16.png'}, ...
-            '\\', '\\\\');
+        if ispc
+            sizes = regexprep({'${PROJECT_ROOT}\docs\resources\images\icon_48.png', ...
+                '${PROJECT_ROOT}\docs\resources\images\icon_24.png', ...
+                '${PROJECT_ROOT}\docs\resources\images\icon_16.png'}, ...
+                '\\', '\\\\');
+        else
+            sizes = {'${PROJECT_ROOT}/docs/resources/images/icon_48.png', ...
+                '${PROJECT_ROOT}/docs/resources/images/icon_24.png', ...
+                '${PROJECT_ROOT}/docs/resources/images/icon_16.png'};
+        end
         for i = (iconS + 1):(iconE - 1)
             % find file tags; replace innards
             lines{i} = regexprep(lines{i}, '(?<=<file>).+(?=<\/file>)', ...
                 ['\' sizes{i - iconS}]);
         end
+        iconLine = find(contains(lines, '<param.icon>'), 1);
+        lines{iconLine} = regexprep(lines{iconLine}, ...
+            '(?<=<param.icon>).+(?=<\/param.icon)', ...
+            ['\' sizes{2}]);
 
         % Included Files
         % should still work correctly, since based on ROOT
@@ -191,12 +192,6 @@ function problems = build(opts)
         outputS = find(contains(lines, '<build-deliverables>'), 1);
         outputE = find(contains(lines, '</build-deliverables>'), 1);
 
-        % It should look like this:
-        %<build-deliverables>
-          %<file location="C:\Users\alexhrao\Documents\autograder"
-          %name="bin" optional="false">
-          %C:\Users\alexhrao\Documents\autograder\bin</file>
-        %</build-deliverables>
         for i = (outputS + 1):(outputE - 1)
             % relace <file location="stuff" with path TO folder, NOT INCLUDING
             % BIN. no trailing \
@@ -225,20 +220,39 @@ function problems = build(opts)
         try
             movefile(['..' filesep '*.mlappinstall'], ['..' filesep 'bin'])
         catch
-            %OK not to catch, since it means it did it correctly (it being
-            %.package();
+            % OK not to catch, since it means it did it correctly (it being
+            % .package();
         end
         % Delete root .prj
-        cd('..');
         % wait for .4 seconds because...windows? Without this pause, delete
         % does not delete the .prj files...
         pause(0.4);
-        delete('*.prj');
+        delete(['..' filesep '*.prj']);
+        fprintf(1, 'Created App Installation Package\n');
     end
 
     if opts.generateDocs
         generateDocs;
+        fprintf(1, 'Generated <a href="https://github.gatech.edu/pages/CS1371/autograder/">Documentation</a>\n');
     end
+    fprintf(1, 'Build Successfully Completed\n');
     cd(thisFolder);
 end
 
+function res = getInputs(varargin)
+    parser = inputParser();
+    parser.addParameter('branch', '', @ischar);
+    parser.addParameter('generateDocs', true, @islogical);
+    parser.addParameter('installerPath', ['..' filesep 'bin' filesep], @(p)(isempty(p) || isfolder(p)));
+    parser.addParameter('checkSuppressed', false, @islogical);
+    parser.addParameter('lint', true, @islogical);
+    parser.addParameter('test', true, @islogical);
+    parser.addParameter('version', '', @(v)(isempty(v) || ischar(v)));
+    
+    parser.CaseSensitive = false;
+    parser.FunctionName = 'build';
+    parser.StructExpand = true;
+    
+    parser.parse(varargin{:});
+    res = parser.Results;
+end
