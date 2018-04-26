@@ -150,6 +150,23 @@ try
             solutions(i) = Problem(rubric(i));
         end
         %The problems output vector should now contain all necessary problems.
+
+        % Put all testcases in a cell array
+        allTestCases = {solutions.testCases};
+        % Create vector of indices, s.t. every TestCase when vectorized
+        % will have a corresponding index for a Problem
+        testCaseIndx = cellfun(@(tc,idx) idx*ones(1,numel(tc)), ...
+            allTestCases, num2cell(1:elements), 'uni', false);
+        allTestCases = [allTestCases{:}];
+        testCaseIndx = [testCaseIndx{:}];
+
+        % Run all testcases with the engine in parallel
+        allTestCases = engine(allTestCases);
+
+        % Put the evaluated testcases back
+        for i = 1:elements
+            solutions(i).testCases = allTestCases(testCaseIndx == i);
+        end
     else
         mE = MException('AUTOGRADER:generateSolutions:invalidInput','The input is not of type logical for isResubmission.');
         throw(mE);
