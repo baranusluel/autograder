@@ -108,32 +108,12 @@ zipFiles = dir('*.zip');
 % there was at least one zip file
 if length(zipFiles) >= 1
     for i = 1:length(zipFiles)
-        unzipPath = unzipArchive(zipFiles(i).name, pwd(), true);
-        % check to see if there was a folder inside the zip archive
-        files = dir(unzipPath);
-        if length(find([files.isdir])) == 3
-            % single directory inside the zip
-            singleDir = files([files.isdir] & ~strcmp({files.name}, '.') & ~strcmp({files.name}, '..'));
-            movefile(singleDir, startPath);
-            % now done with the unzipped folder, so safe to delete
-            rmdir(unzipPath, 's'); 
-        elseif length(find([files.isdir])) > 3
-            % zip file contained more than one directory
-            newDirs = {files([files.isdir]).name};
-            newDirs = newDirs(~strcmp(newDirs, '..') & ~strcmp(newDirs, '.'));
-            
-            % move all the files from each of the new directories to
-            % the main folder
-            for j = 1:length(newDirs)
-                movefile([unzipPath, filesep(), newDirs{i}], startPath);
-            end
-        else
-            % move files from unzipped folder
-            movefile(unzipPath, startPath);
-            % delete the unzipped folder (don't need it anymore)
-            rmdir(unzipPath, 's');
-
+        try
+            unzipArchive(zipFiles(i).name, pwd(), true);
+        catch e
+            save('/Users/alexhrao/Desktop/processException.mat', 'e');
         end
+        % check to see if there was a folder inside the zip archive
         
     end % end for    
 end

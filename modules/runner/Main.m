@@ -41,7 +41,7 @@
 %
 %   Threw AUTOGRADER:invalidPath exception
 %
-function Main(varargin)
+function Main(app)
     % Implementation Notes:
     % 
     % Main() will provide initial checking, and set up all necessary
@@ -77,12 +77,7 @@ function Main(varargin)
     Student.resetPath();
     
     % start up application
-    app = Autograder();
-    uiwait(app.UIFigure);
     settings.app = app;
-    if ~isvalid(app)
-        return;
-    end
     % Start up parallel pool
     progress = uiprogressdlg(app.UIFigure, 'Title', 'Progress', ...
         'Message', 'Starting Parallel Pool', 'Cancelable', 'on', ...
