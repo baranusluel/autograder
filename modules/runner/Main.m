@@ -233,14 +233,18 @@ function Main(app)
         progress.Message = 'Saving Output';
         % save canvas info in path
         % copy csv, then change accordingly
+        % move student folders to output path
+        if ~isfolder(app.localOutputPath)
+            mkdir(app.localOutputPath);
+            copyfile(pwd, app.localOutputPath);
+        end     
     end
     if ~isempty(app.localDebugPath)
         % save MAT file
         progress.Indeterminate = 'on';
         progress.Title = 'Saving';
         progress.Message = 'Saving Debugger Information';
-        save([app.localDebugPath filesep 'autograder.mat'], ...
-            'students', 'solutions', 'settings', 'app');
+        copyfile(pwd, app.localOutputPath);
     end
     close(progress);
     
