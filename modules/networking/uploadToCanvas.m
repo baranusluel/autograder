@@ -60,11 +60,10 @@
 %
 %   Threw connectionError Exception
 
-function uploadToCanvas(students, courseId, assignmentId, token)
+function uploadToCanvas(students, courseId, assignmentId, token, progress)
     if any(~isvalid(students))
         return;
     end
-    API = 'https://gatech.instructure.com/api/v1/';
 
     % set up web options
     apiOpts = weboptions;
@@ -77,27 +76,36 @@ function uploadToCanvas(students, courseId, assignmentId, token)
     putApiOpts = apiOpts;
     putApiOpts.RequestMethod = 'PUT';
 
-    parfor s = 1:numel(students)
-        % get student id
-        id = coveredRead([API 'courses/' courseId '/users'], getApiOpts, 'search_term', students(s).id);
-        id = id.id;
-        data = coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], getApiOpts, 'include[]', 'submission_comments');
-        % check if student was hand graded - if we find a comment that says "REGRADE", don't overwrite
-        comments = data.submission_comments;
-        isRegrade = false;
-        for c = 1:numel(comments)
-            if strcmp(comments(c).comment, 'REGRADE')
-                isRegrade = true;
-                break;
-            end
-        end
-        if ~isRegrade
-        % upload student grade
-            coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], putApiOpts, 'submission[posted_grade]', num2str(s.grade));
-        end
+    for s = numel(students):-1:1
+        workers(s) = parfeval(@uploadGrade, 0, ...
+            courseId, assignmentId, students(s), token);
+    end
+    workers([workers.ID] == -1) = [];
+    while ~all([workers.Read])
+        fetchNext(workers);
+        progress.Value = min([progress.Value + 1/numel(workers), 1]);
     end
 end
 
+function uploadGrade(courseId, assignmentId, student, token)
+    apiOpts = weboptions;
+    apiOpts.RequestMethod = 'GET';
+    apiOpts.HeaderFields = {'Authorization', ['Bearer ' token]};
+    API = 'https://gatech.instructure.com/api/v1/';
+    % for each student, get student ID from GT Username. Then, using id, upload grades.
+    getApiOpts = apiOpts;
+    getApiOpts.RequestMethod = 'GET';
+    putApiOpts = apiOpts;
+    putApiOpts.RequestMethod = 'PUT';
+    id = coveredRead([API 'courses/' courseId '/users'], getApiOpts, 'search_term', student.id);
+    id = id.id;
+    data = coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], getApiOpts, 'include[]', 'submission_comments');
+    % check if student was hand graded - if we find a comment that says "REGRADE", don't overwrite
+    comments = {data.submission_comments.comment};
+    if any(contains(comments, 'REGRADE', 'IgnoreCase', true))
+        coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], putApiOpts, 'submission[posted_grade]', num2str(student.grade));
+    end
+end
 
 function out = coveredRead(url, opts, varargin)
     try

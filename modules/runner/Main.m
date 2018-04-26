@@ -212,15 +212,14 @@ function Main(app)
     end
     
     % If the user requested uploading, do it
+    
     if app.UploadToCanvas.Value
-        opts.token = app.canvasToken;
-        if ~isempty(app.canvasCourseId)
-            opts.courseId = app.canvasCourseId;
-        end
-        if ~isempty(app.canvasHomeworkId)
-            opts.homeworkId = app.canvasHomeworkId;
-        end
-        uploadToCanvas(students, [], opts);
+        progress.Value = 'Upload Progress';
+        progress.Message = 'Uploading Student Grades to Canvas';
+        progress.Indeterminate = 'off';
+        progress.Value = 0;
+        uploadToCanvas(students, app.canvasCourseId, ...
+            app.canvasHomeworkId, app.canvasToken, progress);
     end
     if app.UploadToServer.Value
         
