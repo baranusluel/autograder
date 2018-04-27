@@ -193,14 +193,14 @@ classdef Student < handle
         % reason field already has content in it, the exception ID will be
         % concatenated to the data already found in reason.
         %
-        % If the student code contains an infinite loop, gradeProblem will
+        % If the student code contains an infinite loop, assess will
         % detect it and add a statement to the reason field of Feedback.
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:Student:gradeProblem:invalidProblem exception will
-        % be thrown if PROBLEM is invalid (i.e. if it is empty or
-        % if name or testcases fields of PROBLEM are empty).
+        % An AUTOGRADER:Student:assess:invalidProblem exception will
+        % be thrown if any problem is invalid (i.e. if it is empty or
+        % if name or testcases fields of the problem are empty).
         %
         %%% Unit Tests
         %
