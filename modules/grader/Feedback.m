@@ -83,8 +83,9 @@ classdef Feedback < handle
         %
         %%% Unit Tests
         %
-        %   T = testCase; % Given a valid TestCase:
-        %   F = Feedback(T);
+        %   T = testCase; % Given a valid TestCase
+        %   P = '...'; % valid student path
+        %   F = Feedback(T, P);
         %
         %   F.testCase -> T;
         %
@@ -102,9 +103,12 @@ classdef Feedback < handle
         % The function generates complete HTML feedback for the specific
         % feedback 
         %
-        % H = generateFeedback() generates the complete html
+        % H = generateFeedback(S) generates the complete html
         % feedback for this based on the information stored in the
-        % properties
+        % properties. It uses the logical S to determine what to print - if
+        % S is true, then correct outputs are also printed; otherwise, only
+        % incorrect ones are printed. This is especially useful for the
+        % "ABCs"
         %
         %%% Remarks
         %
