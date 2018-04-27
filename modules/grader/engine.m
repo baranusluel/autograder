@@ -16,7 +16,7 @@
 %
 % For multiple runnables, the engine will wait until all of them have
 % finished, or timed out. However, other than that, there is no requirement
-% that any of them be related to each other - they are all run in parellel.
+% that any of them be related to each other - they are all run in parallel.
 %
 % If there are n cores on the machine, then up to n runnables are run at
 % the same time. Should there be more runnables in R than that, they are
@@ -191,7 +191,7 @@ function runnables = engine(runnables)
         'eval', 'feval', 'assignin', 'evalc', 'evalin', ...
         'input', 'wait', 'uiwait', 'keyboard', 'dbstop', ...
         'cd', 'system', 'restoredefaultpath', 'builtin'};
-    
+
     if any(~isvalid(runnables))
         e = MException('AUTOGRADER:engine:invalidRunnable', ...
             'Input were not valid runnables');
@@ -208,7 +208,7 @@ function runnables = engine(runnables)
         throw(MException('AUTOGRADER:engine:invalidRunnable', ...
             'Input was not a runnable type'));
     end
-    
+
     origPaths = cell(size(runnables));
     parfor r = 1:numel(runnables)
         runnable = runnables(r);
@@ -281,7 +281,7 @@ function runnables = engine(runnables)
                     end
                 end
                 % save the original load files
-                tCase.inputs = [varNames; varValues]; 
+                tCase.inputs = [varNames; varValues];
             end
             cd(origPath);
             if ~isTestCase
@@ -313,7 +313,7 @@ function runnables = engine(runnables)
                     runnables(w).exception = ...
                     MException('AUTOGRADER:timeout', 'Timeout occurred');
                 end
-                
+
             end
         end
     end
@@ -321,7 +321,7 @@ function runnables = engine(runnables)
     for r = 1:numel(runnables)
         [~] = rmdir(runnables(r).path);
         runnables(r).path = origPaths{r};
-    end   
+    end
 end
 
 function populateFiles(runnable, beforeSnap)
