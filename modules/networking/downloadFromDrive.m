@@ -2,9 +2,10 @@
 %
 % downloadFromDrive will download the |grader| folder from Google Drive
 %
-% downloadFromDrive(F, T, P) will use the token in T to download the folder ID
+% downloadFromDrive(F, T, P, B) will use the token in T to download the folder ID
 % in F. It will recursively download everything within that folder. The
-% files will be saved within the same heirarchy in path P.
+% files will be saved within the same heirarchy in path P. Additionally, it
+% will update the progress bar in B.
 %
 %%% Remarks
 %
@@ -22,15 +23,10 @@
 %
 %   T = '...'; % valid access token
 %   F = '...'; % valid FolderID
-%   downloadFromDrive(F, T, pwd);
+%   B is valid uiprogressdlg.
+%   downloadFromDrive(F, T, pwd, B);
 %
 %   There is now a grader folder in the current directory
-%
-%   T = '';
-%   F = '';
-%   downloadFromDrive(F, T, pwd);
-%
-%   threw connectionError exception
 %
 function downloadFromDrive(folderId, token, path, progress)
     workers = downloadFolder(folderId, token, path);
