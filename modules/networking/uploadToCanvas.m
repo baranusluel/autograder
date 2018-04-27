@@ -64,7 +64,9 @@ function uploadToCanvas(students, courseId, assignmentId, token, progress)
     if any(~isvalid(students))
         return;
     end
-
+    progress.Message = 'Uploading Student Grades to Canvas';
+    progress.Indeterminate = 'off';
+    progress.Value = 0;
     % set up web options
     apiOpts = weboptions;
     apiOpts.RequestMethod = 'GET';
@@ -83,6 +85,10 @@ function uploadToCanvas(students, courseId, assignmentId, token, progress)
     workers([workers.ID] == -1) = [];
     while ~all([workers.Read])
         fetchNext(workers);
+        if progress.CancelRequested
+            cancel(workers);
+            throw(MException('AUTOGRADER:userCancellation', 'User Cancelled Operation'));
+        end
         progress.Value = min([progress.Value + 1/numel(workers), 1]);
     end
 end

@@ -188,34 +188,24 @@ function Main(app)
     % If the user requested uploading, do it
 
     if app.UploadToCanvas.Value
-        progress.Value = 'Upload Progress';
-        progress.Message = 'Uploading Student Grades to Canvas';
-        progress.Indeterminate = 'off';
-        progress.Value = 0;
         uploadToCanvas(students, app.canvasCourseId, ...
             app.canvasHomeworkId, app.canvasToken, progress);
     end
     if app.UploadToServer.Value
-
     end
 
     % if they want the output, do it
     if ~isempty(app.localOutputPath)
         progress.Indeterminate = 'on';
-        progress.Title = 'Saving';
         progress.Message = 'Saving Output';
         % save canvas info in path
         % copy csv, then change accordingly
         % move student folders to output path
-        if ~isfolder(app.localOutputPath)
-            mkdir(app.localOutputPath);
-            copyfile(pwd, app.localOutputPath);
-        end
+        copyfile(pwd, app.localOutputPath);
     end
     if ~isempty(app.localDebugPath)
         % save MAT file
         progress.Indeterminate = 'on';
-        progress.Title = 'Saving';
         progress.Message = 'Saving Debugger Information';
         copyfile(pwd, app.localOutputPath);
     end
