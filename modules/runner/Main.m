@@ -43,12 +43,12 @@
 %
 function Main(app)
     % Implementation Notes:
-    % 
+    %
     % Main() will provide initial checking, and set up all necessary
     % processes and environment settings:
     %
     % *Startup*
-    % 
+    %
     % * Start the Parallel Pool
     % * Create the SENTINEL file; assign to the File class
     % * Apply the factory default path, and remove the user's MATLAB path
@@ -63,19 +63,19 @@ function Main(app)
     % * Reapply the path of the original user
     % * Copy any necessary data back from temp folder (?)
     % * Reapply user's settings for figures
-    
+
     % Parse inputs
-        
+
     % Show the app. After it's done (uiresume), we'll extract necessary
     % info and then change to updating. If it's cancelled, we'll exit
     % gracefully.
-    
+
     % add to path
     settings.userPath = {path(), userpath()};
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     clear Student;
     Student.resetPath();
-    
+
     % start up application
     settings.app = app;
     % Start up parallel pool
@@ -83,7 +83,10 @@ function Main(app)
         'Message', 'Starting Parallel Pool', 'Cancelable', 'on', ...
         'ShowPercentage', true, 'Indeterminate', 'on');
     evalc('gcp');
-    progress.Message = 'Warming up';
+    if progress.CancelRequested
+        return;
+    end
+    progress.Message = 'Setting Up Environment';
     % Get temporary directory
     settings.workingDir = [tempname filesep];
     mkdir(settings.workingDir);
@@ -95,10 +98,10 @@ function Main(app)
     % Make sure figure's don't show
     settings.figures = get(0, 'DefaultFigureVisible');
     set(0, 'DefaultFigureVisible', 'off');
-    
+
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
-    
+
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Students');
@@ -106,8 +109,6 @@ function Main(app)
         % downloading. We should create new Students folder and download
         % there.
         try
-            progress.Message = 'Fetching Submissions';
-            progress.Title = 'Canvas Download Progress';
             downloadFromCanvas(app.canvasCourseId, app.canvasHomeworkId, ...
                 app.canvasToken, [pwd filesep 'Students'], progress);
         catch e
@@ -118,20 +119,17 @@ function Main(app)
         end
     else
         progress.Message = 'Unzipping Student Archive';
-        progress.Title = 'Progress';
+        progress.Indeterminate = 'on';
         % unzip the archive
         unzipArchive(app.submissionArchivePath, [pwd filesep 'Students']);
     end
-    
+
     % For solution, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Solutions');
     if app.SolutionChoice.Value == 1
         % downloading
         try
-            progress.Indeterminate = 'on';
-            progress.Message = 'Downloading Rubric from Google Drive';
-            progress.Title = 'Progress';
             token = refresh2access(app.driveToken);
             downloadFromDrive(app.driveFolderId, token, [pwd filesep 'Solutions']);
         catch e
@@ -143,17 +141,12 @@ function Main(app)
         % unzip the archive
         progress.Indeterminate = 'on';
         progress.Message = 'Unzipping Rubric';
-        progress.Title = 'Progress';
         unzipArchive(app.solutionArchivePath, [pwd filesep 'Solutions']);
     end
-    
+
     % Generate solutions
     try
         orig = cd('Solutions');
-        progress.Indeterminate = 'off';
-        progress.Message = 'Generating Autograder Solutions';
-        progress.Title = 'Solution Generation';
-        progress.Value = 0;
         solutions = generateSolutions(app.isResubmission, progress);
         cd(orig);
         app.solutions = solutions;
@@ -165,14 +158,10 @@ function Main(app)
         app.exception = e;
         return;
     end
-    
+
     % Generate students
     try
-        progress.Indeterminate = 'off';
-        progress.Message = 'Generating Student Information';
-        progress.Title = 'Student Generation';
-        progress.Value = 0;
-        students = generateStudents([pwd filesep 'Students']);
+        students = generateStudents([pwd filesep 'Students'], progress);
         app.students = students;
     catch e
         alert(app, 'Student generation failed. Error %s: %s', e.identifier, ...
@@ -180,14 +169,10 @@ function Main(app)
         app.exception = e;
         return;
     end
-    
+
     % Grade students
     recs = Student.resources;
     recs.Problems = solutions;
-    progress.Indeterminate = 'off';
-    progress.Value = 0;
-    progress.Title = 'Grading Progress';
-    progress.Message = 'Student Grading Progress';
     plotter = uifigure('Name', 'Grade Report');
     ax = uiaxes(plotter);
     ax.Position = [10 10 550 400]; % as suggested in example on MATLAB ref page
@@ -199,9 +184,15 @@ function Main(app)
     totalPoints = sum([totalPoints.points]);
     h.BinEdges = 0:10:max([totalPoints (ceil(totalPoints / 10) * 10)]);
     h.BinLimits = [0 h.BinEdges(end)];
-    h.Data = zeros(1, numel(students));
-    
+    h.Data = zeros(1, numel(students)) - 1;
+    ax.YLim = [0 numel(students)];
+    h.XLim = [0 h.BinLimits(end)];
+
     plotter.Visible = 'on';
+
+    progress.Indeterminate = 'off';
+    progress.Value = 0;
+    progress.Message = 'Student Grading Progress';
     for s = 1:numel(students)
         student = students(s);
         student.assess();
@@ -210,9 +201,9 @@ function Main(app)
         h.Data(s) = student.grade;
         drawnow;
     end
-    
+
     % If the user requested uploading, do it
-    
+
     if app.UploadToCanvas.Value
         progress.Value = 'Upload Progress';
         progress.Message = 'Uploading Student Grades to Canvas';
@@ -222,9 +213,9 @@ function Main(app)
             app.canvasHomeworkId, app.canvasToken, progress);
     end
     if app.UploadToServer.Value
-        
+
     end
-    
+
     % if they want the output, do it
     if ~isempty(app.localOutputPath)
         progress.Indeterminate = 'on';
@@ -236,7 +227,7 @@ function Main(app)
         if ~isfolder(app.localOutputPath)
             mkdir(app.localOutputPath);
             copyfile(pwd, app.localOutputPath);
-        end     
+        end
     end
     if ~isempty(app.localDebugPath)
         % save MAT file
@@ -246,7 +237,7 @@ function Main(app)
         copyfile(pwd, app.localOutputPath);
     end
     close(progress);
-    
+
 end
 
 function alert(app, msg, varargin)
@@ -265,10 +256,10 @@ function cleanup(settings)
     if ~isempty(settings.userPath{2})
         userpath(settings.userPath{2});
     end
-    
+
     % cd to user's dir
     cd(settings.userDir);
-    
+
     % Delete our working directory
     [~] = rmdir(settings.workingDir, 's');
     % Restore figure settings

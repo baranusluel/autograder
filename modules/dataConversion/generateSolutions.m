@@ -1,18 +1,18 @@
-%% generateSolutions: Generate the solution values for comparison 
-%   
+%% generateSolutions: Generate the solution values for comparison
+%
 % This will generate the solution values, given a logical value. These solutions are held in a `Problem` array.
 %
 % PROBLEMS = generateSolutions(isResubmission) will return a Problem Array containing
 % the problems for the current homework.
-% 
+%
 %%% Remarks
-% 
-% Any exceptions thrown by the Problem class or sub classes will not be 
+%
+% Any exceptions thrown by the Problem class or sub classes will not be
 % caught by generateSolutions, and will instead by propogated forward.
 % These errors are considered mostly fatal.
-% 
-% The JSON format is strictly enforced. For more information on what 
-% this format should look like, see the central documentation. For 
+%
+% The JSON format is strictly enforced. For more information on what
+% this format should look like, see the central documentation. For
 % convenience, an example is shown below.
 %
 %   {
@@ -93,17 +93,17 @@
 %  }
 %
 %%% Exceptions
-% 
-% generateSolutions throws exception 
+%
+% generateSolutions throws exception
 % AUTOGRADER:generateSolutions:invalidInput if the input is not of type
 % logical.
 %
-% generateSolutions throws exception 
+% generateSolutions throws exception
 % AUTOGRADER:generateSolutions:invalidPath if the path (solutions) are not
 % valid.
-% 
+%
 %%% Unit Tests
-% 
+%
 %   isResubmission = true
 %   PROBLEMS = generateSolutions(isResubmission);
 %
@@ -141,15 +141,19 @@ try
             fclose(fh);
             rubric = jsondecode(json);
         end
-        
+
         %Go through the structure array (vector) that was created from the
         %jsondecode() call and create problem types.
         %Store these in one vector.
+        progress.Indeterminate = 'off';
+        progress.Message = 'Generating Autograder Solutions';
+        progress.Value = 0;
         elements = numel(rubric);
         for i = elements:-1:1
             solutions(i) = Problem(rubric(i));
             progress.Value = min([progress.Value + 1/numel(elements), 1]);
         end
+        progress.Indeterminate = 'on';
         %The problems output vector should now contain all necessary problems.
 
         % Put all testcases in a cell array
@@ -163,7 +167,6 @@ try
 
         % Run all testcases with the engine in parallel
         allTestCases = engine(allTestCases);
-
         % Put the evaluated testcases back
         for i = 1:elements
             solutions(i).testCases = allTestCases(testCaseIndx == i);
@@ -172,12 +175,12 @@ try
         mE = MException('AUTOGRADER:generateSolutions:invalidInput','The input is not of type logical for isResubmission.');
         throw(mE);
     end
-    
+
 catch e
     %Check for the errors that could have been thrown in the try block.
     %The first three conditionals check for the unzipping and file status
     %of the solution archive.
-    
+
     %Check if the solution file is empty or not.
     if fh == -1
         mE = MException('AUTOGRADER:generateSolutions:invalidPath','The path is valid, but the solutions could not be parsed (Perhaps the solutions are not valid, or the archive is unreadable?)');
@@ -203,6 +206,6 @@ catch e
                 throw(mE);
         end
     end
-    
+
 end
 end

@@ -55,7 +55,7 @@ function downloadFromCanvas(courseId, assignmentId, token, path, progress)
         end
     end
     students = fetchOutputs(workers);
-    workers = workers(false);
+    delete(workers);
     progress.Indeterminate = 'off';
     progress.Value = 0;
     progress.Message = 'Downloading Student Submissions';
@@ -124,6 +124,8 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
     API = 'https://gatech.instructure.com/api/v1/courses/';
     DEFAULT_SUBMISSION_NUM = 1000;
     try
+        progress.Indeterminate = 'on';
+        progress.Message = 'Fetching Student Submissions';
         request = matlab.net.http.RequestMessage;
         request.Header = matlab.net.http.HeaderField;
         request.Header.Name = 'Authorization';
@@ -153,17 +155,26 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
             progress.Value = 0;
             while ~all([workers.Read])
                 [idx, sub] = fetchNext(workers);
+                if progress.CancelRequested
+                    cancel(workers);
+                    throw(MException('AUTOGRADER:userCancellation', 'User Cancelled Operation'));
+                end
                 subs{idx + 1} = sub;
                 progress.Value = min([progress.Value + 1/numel(workers), 1]);
             end
             subs = [subs{:}];
         else
             % Can't use our parfor; do the old fashioned way
+            progress.Indeterminate = 'on';
             counter = 1;
             subs = cell(1, DEFAULT_SUBMISSION_NUM);
             subs(counter:(counter+numel(response.Body.Data)-1)) = response.Body.Data';
             counter = counter + numel(response.Body.Data);
             while ~isempty(next)
+                if progress.CancelRequested
+                    cancel(workers);
+                    throw(MException('AUTOGRADER:userCancellation', 'User Cancelled Operation'));
+                end
                 % get the next batch
                 % next.link is the link to ask for
                 response = request.send(next.link.extractBetween('<', '>'));

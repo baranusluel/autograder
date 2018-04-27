@@ -47,6 +47,8 @@
 
 function students = generateStudents(path, progress)
 
+progress.Message = 'Generating Students';
+progress.Indeterminate = 'on';
 if ~isfolder(path) % if path doesn't lead to existing folder, exception
     msgID = 'AUTOGRADER:generateStudents:invalidPath';
     msgtext = 'path is invalid';
@@ -71,6 +73,7 @@ else % if path leads to folder
         fclose(fid);
         studentNames = raw{FULLNAME_COL};
         users = raw{GT_USERNAME_COL};
+        progress.Indeterminate = 'off';
         progress.Value = 0;
         for i = length(studs):-1:1
             % Student constructor takes in path to individual student

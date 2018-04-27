@@ -32,11 +32,23 @@
 %
 %   threw connectionError exception
 %
-function downloadFromDrive(folderId, token, path)
+function downloadFromDrive(folderId, token, path, progress)
+    workers = downloadFolder(folderId, token, path);
+    progress.Indeterminate = 'off';
+    progress.Value = 0;
+    progress.Message = 'Downloading Solution Archive from Google Drive';
+    tot = numel(workers);
+    while ~all([workers.Read])
+        fetchNext(workers);
+        progress.Value = min([progress.Value + 1/tot, 1]);
+    end
+    delete(workers);
+end
+
+function workers = downloadFolder(folderId, token, path)
     FOLDER_TYPE = 'application/vnd.google-apps.folder';
     if nargin == 3
         origPath = cd(path);
-        addpath(origPath);
     else
         origPath = pwd;
     end
@@ -46,29 +58,29 @@ function downloadFromDrive(folderId, token, path)
     % create directory for this root folder and cd to it
     % for all the files inside, download them here
     contents = getFolderContents(folder.id, token);
-    for c = 1:numel(contents)
+    workers = cell(1, numel(contents));
+    for c = numel(contents):-1:1
         content = contents(c);
         if strcmp(content.mimeType, FOLDER_TYPE)
             % folder; call recursively
-            mkdir(content.name);
-            cd(content.name);
-            downloadFromDrive(content.id, token);
-            cd('..');
+            mkdir([path filesep content.name]);
+            workers{c} = downloadFolder(content.id, token, [path filesep content.name]);
         else
             % file; download
-            downloadFile(content, token);
+            workers{c} = parfeval(@downloadFile, 0, content, token, path);
         end
+        workers = [workers{:}];
+        workers([workers.ID == -1]) = [];
     end
-    
 end
 
-function downloadFile(file, token)
+function downloadFile(file, token, path)
     API = 'https://www.googleapis.com/drive/v3/files/';
     opts = weboptions();
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
     url = [API file.id '?alt=media'];
     try
-        websave(file.name, url, opts);
+        websave([path filesep file.name], url, opts);
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', ...
             'Connection was terminated (Are you connected to the internet?');
@@ -103,5 +115,5 @@ function folder = getFolder(folderId, token)
             'Connection was terminated (Are you connected to the internet?');
         e = e.addCause(reason);
         throw(e);
-    end 
+    end
 end
