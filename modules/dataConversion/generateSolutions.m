@@ -2,8 +2,10 @@
 %
 % This will generate the solution values, given a logical value. These solutions are held in a `Problem` array.
 %
-% PROBLEMS = generateSolutions(isResubmission) will return a Problem Array containing
-% the problems for the current homework.
+% P = generateSolutions(R, B) will return a Problem Array P containing
+% the problems for the current homework. It uses |rubrica| if R is false;
+% otherwise, it will use |rubricb|. Additionally, it will attempt to update
+% the progress bar B.
 %
 %%% Remarks
 %
@@ -12,85 +14,7 @@
 % These errors are considered mostly fatal.
 %
 % The JSON format is strictly enforced. For more information on what
-% this format should look like, see the central documentation. For
-% convenience, an example is shown below.
-%
-%   {
-%     "Problems": [
-%       {
-%         "name": "ExampleProblem1",
-%         "banned": [
-%           "fopen",
-%           "fclose",
-%           "fseek",
-%           "frewind"
-%         ],
-%         "TestCases": [
-%           {
-%             "call": "[out1, out2] = myFun(in1, in2);",
-%             "initializer": "",
-%             "points": 3,
-%             "inputs": {
-%               "in1": 5,
-%               "in2": true
-%             },
-%             "supportingFiles": [
-%               "myFile.txt",
-%               "myInputImage.png"
-%             ]
-%           },
-%           {
-%             "call": "[out1, out2] = myFun(in1, in2);",
-%             "initializer": "in2 = supportFunction__;",
-%             "points": 3,
-%             "inputs": {
-%               "in1": 5
-%             },
-%             "supportingFiles": [
-%               "myFile.txt",
-%               "myInputImage.png",
-%               "supportFunction__.m"
-%             ]
-%           }
-%         ]
-%       },
-%       {
-%         "name": "ExampleProblem2",
-%         "banned": [
-%           "size",
-%           "parpool"
-%         ],
-%         "TestCases": [
-%           {
-%             "call": "[out1, out2] = myFun(in1, in2);",
-%             "initializer": "",
-%             "points": 3,
-%             "inputs": {
-%               "in1": 5,
-%               "in2": true
-%             },
-%             "supportingFiles": [
-%               "myFile.txt",
-%               "myInputImage.png"
-%             ]
-%           },
-%           {
-%             "call": "[out1, out2] = myFun(in1, in2);",
-%             "initializer": "in2 = supportFunction__;",
-%             "points": 3,
-%             "inputs": {
-%               "in1": 5
-%             },
-%             "supportingFiles": [
-%               "myFile.txt",
-%               "myInputImage.png",
-%               "supportFunction__.m"
-%             ]
-%           }
-%         ]
-%       }
-%    ]
-%  }
+% this format should look like, see the central documentation.
 %
 %%% Exceptions
 %
@@ -104,23 +28,23 @@
 %
 %%% Unit Tests
 %
-%   isResubmission = true
-%   PROBLEMS = generateSolutions(isResubmission);
+%   R = true
+%   P = generateSolutions(R);
 %
-%   PROBLEMS -> Valid Problem Array
+%   P -> Valid Problem Array
 %
-%   isResubmission = ''; % Invalid Input
-%   PROBLEMS = generateSolutions(isResubmission);
+%   R = ''; % Invalid Input
+%   P = generateSolutions(R);
 %
 %   Threw invalidInput exception
 %
-%   isResubmission = true; % Valid input, invalid solutions!
-%   PROBLEMS = generateSolutions(isResubmission);
+%   R = true; % Valid input, invalid solutions!
+%   P = generateSolutions(R);
 %
 %   TestCase Threw exception <solnException>
 %
-%   isResubmission = false; % Valid input, but incomplete archive
-%   PROBLEMS = generateSolutions(isResubmission);
+%   R = false; % Valid input, but incomplete archive
+%   P = generateSolutions(R);
 %
 %   Threw invalidPath exception
 %
