@@ -3,9 +3,10 @@
 % uploadToCanvas will take in an array of Students, as well as the current assignment,
 % and will upload their grades.
 %
-% uploadToCanvas(S, C, H, T) will use the student array S, the CourseID C,
+% uploadToCanvas(S, C, H, T, B) will use the student array S, the CourseID C,
 % the HomeworkID H, and the Token T to upload student grades to Canvas.
-% This uses the LMS RESTful API.
+% This uses the LMS RESTful API. Additionally, it updates the progress bar
+% B.
 %
 %%% Remarks
 %
@@ -27,38 +28,13 @@
 %%% Unit Tests
 %
 %   S = Student(); % valid student array
-%   H = 'Homework 12 - Recursion'; % valid HW name
-%   uploadToCanvas(S, H);
+%   C = '12345'; % valid courseID
+%   H = '54321'; % valid AssignmentID
+%   T = '2096~...'; % valid token
+%   B = uiprogressdlg;
+%   uploadToCanvas(S, C, H, T, B)
 %
 %   Students' grades are uploaded
-%
-%   S = Student(); % valid student array
-%   H = 'Homework 12 - Resubmission'
-%   uploadToCanvas(S, H);
-%
-%   Students' grades are uploaded
-%
-%   S = Student(); % valid student array
-%   H = 'Homework 12 - Recursion'; % valid HW name
-%   % NO internet connection
-%
-%   uploadToCanvas(S, H)
-%
-%   Threw connection Exception
-%
-%   S = Student(); % valid student array
-%   H = 'Homework 12 - Recursion'; % valid HW name
-%   O = struct('token', '...'); % valid token
-%   uploadToCanvas(S, H, O);
-%
-%   Students' grades are uploaded
-%
-%   S = Student();
-%   H = 'Homework 12 - Resubmission';
-%   O = struct('token', ''); % invalid token
-%   uploadToCanvas(S, H, O);
-%
-%   Threw connectionError Exception
 
 function uploadToCanvas(students, courseId, assignmentId, token, progress)
     if any(~isvalid(students))
