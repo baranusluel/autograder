@@ -3,9 +3,10 @@
 % downloadFromCanvas will download the given assignment to be parsed by the
 % autograder
 %
-% downloadFromCanvas(C, A, T, P) will use the course ID in C, the assignment
+% downloadFromCanvas(C, A, T, P, B) will use the course ID in C, the assignment
 % ID in A, the token in T, and the path in P to download and save the homework submission
-% in an autograder-ready format in the path specified.
+% in an autograder-ready format in the path specified. Additionally, it
+% will update the progress bar B.
 %
 %%% Remarks
 %
@@ -19,15 +20,10 @@
 %
 %%% Unit Tests
 %
-%   % Assume the parameters are correct: C, A, T, P
-%   downloadFromCanvas(C, A, T, P);
+%   % Assume the parameters are correct: C, A, T, P, B
+%   downloadFromCanvas(C, A, T, P, B);
 %
 %   In path P, the student folders are all saved, along with a `grades.csv`
-%
-%   % Assume credentials are incorrect
-%   downloadFromCanvas(C, A, T, P);
-%
-%   threw connectionError exception
 function downloadFromCanvas(courseId, assignmentId, token, path, progress)
     subs = getSubmissions(courseId, assignmentId, token, progress);
     origPath = cd(path);
@@ -172,7 +168,6 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
             counter = counter + numel(response.Body.Data);
             while ~isempty(next)
                 if progress.CancelRequested
-                    cancel(workers);
                     throw(MException('AUTOGRADER:userCancellation', 'User Cancelled Operation'));
                 end
                 % get the next batch
