@@ -19,6 +19,8 @@
 %
 % * |loadFiles|: A string array of complete file paths of MAT files to load
 %
+% * |inputs|: A cell array of input name-value pairs. Loaded at runtime.
+%
 % * |banned|: A string array of names of banned functions for this problem
 %
 % * |outputs|: A structure where the field name is the name of the output, 
@@ -150,12 +152,11 @@ classdef TestCase < handle
             %
             % The constructor throws the |AUTOGRADER:TestCase:ctor:badInfo| if
             % there are problems with the INFO structure. This exception should not
-            % be consumed, because this means the |TestCase| is incomplete. It also
-            % throws this error if |call| or |initializer| has a syntax error.
+            % be consumed, because this means the |TestCase| is incomplete.
             %
             %%% Unit Tests
             %
-            % Assume INFO struct that looks like the example given above.
+            % Assume INFO struct that passes inspection.
             % 
             %   J = '...' % Valid INFO;
             %   P = '...' % Valid path;
@@ -179,25 +180,8 @@ classdef TestCase < handle
             %   T.outputs -> struct('out1', 2, 'out2', 'Hello, World!');
             %   T.files -> File[2]
             %
-            % Now suppose the structure in |J| is similiar to the following JSON:
-            %
-            %   {
-            %       "call": "[out1, out2] = myFun(in1, in2);",
-            %       "initializer": "in2 = supportFunction__",
-            %       "points": 3,
-            %       "supportingFiles": [
-            %           "myFile.txt",
-            %           "myInputImage.png",
-            %           "supportFunction__.m"
-            %           "myTestCases.mat"
-            %       ],
-            %       "banned": [
-            %           "fopen",
-            %           "fclose",
-            %           "fseek",
-            %           "frewind"
-            %       ]
-            %   }
+            % Now suppose the structure in |J| is such that the
+            % |initializer| is set to the string 'supportFunction____()';
             %
             % Note the |initializer| is set. Suppose the following is 
             % found in "supportFunction__.m":
