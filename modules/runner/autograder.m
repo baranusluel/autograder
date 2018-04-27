@@ -24,7 +24,7 @@
 %
 % Unfortunately, there are no "Unit Tests" for this function
 %
-function Main(app)
+function autograder(app)
     % Implementation Notes:
     %
     % Main() will provide initial checking, and set up all necessary
