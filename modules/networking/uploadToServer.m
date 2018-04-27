@@ -30,6 +30,10 @@ function uploadToServer(students, user, pass, hwName, progress)
     progress.Message = 'Uploading Student Data to Server';
     progress.Value = 0;
     progress.Indeterminate = 'on';
+    
+    javaaddpath([fileparts(mfilename('fullpath')) filesep 'JSch.jar']);
+    cleaner = onCleanup(@()...
+        (javarmpath([fileparts(mfilename('fullpath')) filesep 'JSch.jar'])));
     import com.jcraft.jsch.*;
     controller = JSch;
     HOST = 'cs1371.gatech.edu';
