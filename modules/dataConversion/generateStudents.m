@@ -38,7 +38,7 @@
 %
 
 % Notes for implementation:
-% Initializing an array of Student is weird. You have to start with the END first. 
+% Initializing an array of Student is weird. You have to start with the END first.
 % In other words, say you have 1000 students. You should START with the one thousandth student:
 %
 %   students(1000) = Student(inputs);
@@ -77,14 +77,22 @@ else % if path leads to folder
             % folder and student's full name
             studentPath = fullfile(studs(i).folder, studs(i).name);
             studentName = studentNames{strcmp(users, studs(i).name)};
-            processStudentSubmission(studentPath);
-            students(i) = Student(studentPath, studentName);
+            workers(i) = parfeval(@createStudent, 1, studentPath, studentName);
+        end
+        students = cell(1, numel(studentNames));
+        while ~all([workers.Read])
+            [idx, stud] = fetchNext(workers);
+            students{idx} = stud;
             progress.Value = min([progress.Value + 1/length(studs), 1]);
         end
+        students = [students{:}];
         % alphabetize vector of Students based on GT username
         [~, idx] = sort({students.name});
         students = students(idx);
     end
 end
 
+function student = createStudent(path, name)
+    processStudentSubmission(path);
+    student = Student(path, name)
 end
