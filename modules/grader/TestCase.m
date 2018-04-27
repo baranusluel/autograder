@@ -261,11 +261,6 @@ classdef TestCase < handle
                 ME.addCause(e);
                 throw(ME);
             end
-            
-            % Engine can throw parse exceptions for bad |call| or
-            % |initializer|, and bad solution exception. Don't catch,
-            % let it propagate instead
-            this = engine(this);
         end
     end
 end
