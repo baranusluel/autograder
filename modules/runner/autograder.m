@@ -1,19 +1,7 @@
-%% Main: Run the autograder
+%% autograder: Main responsibility for running the autograder
 %
-% Main runs the autograder completely, cleaning up after itself and
-% generally ensuring nothing is changed in the host environment
-%
-% Main() Will prompt the user for the student ZIP file, the solution ZIP
-% file, and will proceed to run the autograder.
-%
-% Main(S, N) will run the autograder for the given student and solution zip
-% archive paths. If the paths are invalid, it will error.
-%
-% Main(___, O) will run the autograder with the given options in O, which
-% is a structure that holds settings for the autograder.
-%
-% Main(___, P1, V1, ...) will run the autograder with the given name-value
-% pairs, detailed in the Remarks section
+% autograder is called by the Autograder class - it is responsible for running the
+% actual steps needed to grade students automatically.
 %
 %%% Remarks
 %
@@ -25,21 +13,16 @@
 %
 % <https://github.gatech.edu/pages/CS1371/autograder Documentation>
 %
-% The options can be one of the following. If in a structure, the field
-% name must match the option. All options are case insensitive.
+% This function should not be called directly, though its help manual
+% may be useful
 %
 %%% Exceptions
 %
-% An AUTOGRADER:INVALIDPATH exception will be thrown if either input paths
-% are invalid.
+% This is guarunteed to never throw an exception; instead, exceptions are reported through the GUI
 %
 %%% Unit Tests
 %
-%   S = ''; % invalid path
-%   N = ''; % invalid path
-%   Main(S, N);
-%
-%   Threw AUTOGRADER:invalidPath exception
+% Unfortunately, there are no "Unit Tests" for this function
 %
 function Main(app)
     % Implementation Notes:
