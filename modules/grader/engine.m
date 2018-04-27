@@ -18,11 +18,9 @@
 % finished, or timed out. However, other than that, there is no requirement
 % that any of them be related to each other - they are all run in parallel.
 %
-% If there are n cores on the machine, then up to n runnables are run at
-% the same time. Should there be more runnables in R than that, they are
-% run in "batches". As such, while it will always be faster to run them in
-% parallel, there are no guarantees made about timing, or which ones will
-% be run first.
+% while it will always be faster to run runnables in parallel, there are no
+% guarantees about timing or order. If you need a specific order, you must
+% run them individually.
 %
 % The engine function is the primary grading mechanism used within the
 % the autograder. It provides a "sandboxed" environment for running code,
