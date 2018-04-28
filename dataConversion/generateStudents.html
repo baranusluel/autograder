@@ -20,7 +20,7 @@ To make changes, update the MATLAB code and republish this document.
 
         // for each occurrence of this in 
       });
-    </script><meta name="DC.date" content="2018-04-22"><meta name="DC.source" content="generateStudents.m"><style type="text/css">
+    </script><meta name="DC.date" content="2018-04-28"><meta name="DC.source" content="generateStudents.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -80,13 +80,14 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="container-fluid"><div class="content"><h1>generateStudents: Generate Student array</h1><!--introduction--><p>generateStudents turns a set of Student Folders into a vector of Students</p><p>[S] = generateStudents(P) will convert all the student folders found in P into Students, and will return a vector in alphabetical order (case insensitive) of the Students, where alphabetical order is based on their ID.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>generateStudents will always expect a correctly-structured archive, and also always assumes that all students have been previously unpacked.</p><h2 id="2">Exceptions</h2><p>An AUTOGRADER:generateStudents:invalidPath exception will be thrown if the path is invalid or if no student folders are found.</p><p>An AUTOGRADER:generateStudents:foldersNotFound exception will be thrown if no student folders are found.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">P = <span class="string">'C:\Users\...\students.zip'</span>; <span class="comment">% Valid path to student folders</span>
-S = generateStudents(P);
+  </style></head><body><div class="container-fluid"><div class="content"><h1>generateStudents: Generate Student array</h1><!--introduction--><p>generateStudents turns a set of Student Folders into a vector of Students</p><p>S = generateStudents(P, B) will convert all the student folders found in P into Students, and will return a vector in alphabetical order (case insensitive) of the Students, where alphabetical order is based on their ID. Additionally, it will attempt to update progress bar B.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>generateStudents will always expect a correctly-structured path.</p><h2 id="2">Exceptions</h2><p>An AUTOGRADER:generateStudents:invalidPath exception will be thrown if the path is invalid or if no student folders are found.</p><p>An AUTOGRADER:generateStudents:foldersNotFound exception will be thrown if no student folders are found.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">For <span class="string">all</span> <span class="string">cases</span>, assume <span class="string">B</span> <span class="string">is</span> <span class="string">a</span> <span class="string">valid</span> <span class="string">uiprogressdlg.</span>
+</pre><pre class="language-matlab">P = <span class="string">'C:\Users\...\students.zip'</span>; <span class="comment">% Valid path to student folders</span>
+S = generateStudents(P, B);
 </pre><pre class="language-matlab">S <span class="string">-&gt;</span> <span class="string">A</span> <span class="string">vector</span> <span class="string">of</span> <span class="string">students</span> <span class="string">in</span> <span class="string">alphabetical</span> <span class="string">order</span>, by <span class="string">their</span> <span class="string">GT</span> <span class="string">Username</span>
 </pre><pre class="language-matlab">P = <span class="string">''</span>; <span class="comment">% Invalid Path</span>
-S = generateStudents(P);
+S = generateStudents(P, B);
 </pre><pre class="language-matlab">Threw <span class="string">invalidPath</span> <span class="string">exception</span>
 </pre><pre class="language-matlab">P = <span class="string">''</span>; <span class="comment">% Valid path, but no student folders are found</span>
-S = generateStudents(P);
+S = generateStudents(P, B);
 </pre><pre class="language-matlab">Threw <span class="string">foldersNotFound</span> <span class="string">exception</span>
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div></div></body></html>

@@ -20,7 +20,7 @@ To make changes, update the MATLAB code and republish this document.
 
         // for each occurrence of this in 
       });
-    </script><meta name="DC.date" content="2018-04-22"><meta name="DC.source" content="getCanvasCourse.m"><style type="text/css">
+    </script><meta name="DC.date" content="2018-04-28"><meta name="DC.source" content="getCanvasCourse.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -80,13 +80,13 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="container-fluid"><div class="content"><h1>getCanvasCourse: Gets the Canvas CourseID associated with the given course</h1><!--introduction--><p>getCanvasCourse will return a courseID to be used when talking with the Canvas API</p><p>C = getCanvasCourse(T) will use the token T to find the most likely candidate for the current course. This is based on name and it still being in progress.</p><p>C = getCanvasCourse(T, N) will use the name N to search for a course with that name. If no exact matches are found, an error is returned</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>This function is used to find the courseID for Canvas - this is used by virtually all other canvas functions</p><h2 id="2">Exceptions</h2><p>If a name is given, but a course isn't found, and AUTOGRADER:getCanvasCourse:notFound exception is thrown.</p><p>As with all the other networking functions, if a connection error occurs, an AUTOGRADER:networking:connectionError exception is thrown</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">T = <span class="string">'..'</span>; <span class="comment">% valid token</span>
+  </style></head><body><div class="container-fluid"><div class="content"><h1>getCanvasCourse: Gets the Canvas CourseID associated with the given course</h1><!--introduction--><p>getCanvasCourse will return a courseID to be used when talking with the Canvas API</p><p>C = getCanvasCourse(T) will use the token T to find the most likely candidate for the current course. This is based on name and it still being in progress.</p><p>C = getCanvasCourse(T, N) will use the name N to search for a course with that name. If no exact matches are found, an error is returned</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>This function is used to find the courseID for Canvas - this is used by virtually all other canvas functions</p><h2 id="2">Exceptions</h2><p>If a name is given, but a course isn't found, and AUTOGRADER:getCanvasCourse:notFound exception is thrown.</p><p>As with all the other networking functions, if a connection error occurs, an AUTOGRADER:networking:connectionError exception is thrown</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">T = <span class="string">'...'</span>; <span class="comment">% valid token</span>
 C = getCanvasCourse(T);
-</pre><pre class="language-matlab">C <span class="string">-&gt;</span> <span class="string">123456</span> <span class="comment">% numeric courseId</span>
-</pre><pre class="language-matlab">T = <span class="string">'..'</span>; <span class="comment">% valid token</span>
+</pre><pre class="language-matlab">C <span class="string">-&gt;</span> <span class="string">'123456'</span>
+</pre><pre class="language-matlab">T = <span class="string">'...'</span>; <span class="comment">% valid token</span>
 N = <span class="string">'CS 1371 SPR18'</span> <span class="comment">% valid exact name</span>
 C = getCanvasCourse(T, N);
-</pre><pre class="language-matlab">C <span class="string">-&gt;</span> <span class="string">123456</span>; <span class="comment">% numeric courseId</span>
+</pre><pre class="language-matlab">C <span class="string">-&gt;</span> <span class="string">'123456'</span> <span class="comment">% numeric courseId</span>
 </pre><pre class="language-matlab">T = <span class="string">'...'</span>; <span class="comment">% valid token</span>
 N = <span class="string">'CS 1371 fdsa'</span>; <span class="comment">% INVALID exact name</span>
 C = getCanvasCourse(T, N);

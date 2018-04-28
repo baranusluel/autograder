@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>generateSolutions: Generate the solution values for comparison</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
+      --><title>autograder: Main responsibility for running the autograder</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
       $(document).ready(function() {
         // get name of class
         // anywhere CLASS name is or METHOD name is, replace with code version
@@ -20,7 +20,7 @@ To make changes, update the MATLAB code and republish this document.
 
         // for each occurrence of this in 
       });
-    </script><meta name="DC.date" content="2018-04-28"><meta name="DC.source" content="generateSolutions.m"><style type="text/css">
+    </script><meta name="DC.date" content="2018-04-28"><meta name="DC.source" content="autograder.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -80,16 +80,4 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="container-fluid"><div class="content"><h1>generateSolutions: Generate the solution values for comparison</h1><!--introduction--><p>This will generate the solution values, given a logical value. These solutions are held in a `Problem` array.</p><p>P = generateSolutions(R, B) will return a Problem Array P containing the problems for the current homework. It uses <code>rubrica</code> if R is false; otherwise, it will use <code>rubricb</code>. Additionally, it will attempt to update the progress bar B.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>Any exceptions thrown by the Problem class or sub classes will not be caught by generateSolutions, and will instead by propogated forward. These errors are considered mostly fatal.</p><p>The JSON format is strictly enforced. For more information on what this format should look like, see the central documentation.</p><h2 id="2">Exceptions</h2><p>generateSolutions throws exception AUTOGRADER:generateSolutions:invalidInput if the input is not of type logical.</p><p>generateSolutions throws exception AUTOGRADER:generateSolutions:invalidPath if the path (solutions) are not valid.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">R = true
-P = generateSolutions(R);
-</pre><pre class="language-matlab">P <span class="string">-&gt;</span> <span class="string">Valid</span> <span class="string">Problem</span> <span class="string">Array</span>
-</pre><pre class="language-matlab">R = <span class="string">''</span>; <span class="comment">% Invalid Input</span>
-P = generateSolutions(R);
-</pre><pre class="language-matlab">Threw <span class="string">invalidInput</span> <span class="string">exception</span>
-</pre><pre class="language-matlab">R = true; <span class="comment">% Valid input, invalid solutions!</span>
-P = generateSolutions(R);
-</pre><pre class="language-matlab">TestCase <span class="string">Threw</span> <span class="string">exception</span> <span class="string">&lt;solnException&gt;</span>
-</pre><pre class="language-matlab">R = false; <span class="comment">% Valid input, but incomplete archive</span>
-P = generateSolutions(R);
-</pre><pre class="language-matlab">Threw <span class="string">invalidPath</span> <span class="string">exception</span>
-</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div></div></body></html>
+  </style></head><body><div class="container-fluid"><div class="content"><h1>autograder: Main responsibility for running the autograder</h1><!--introduction--><p>autograder is called by the Autograder class - it is responsible for running the actual steps needed to grade students automatically.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>Main is the entry point for the Autograder. Main will handle any exceptions, and will always clean up after itself - the user's folder will not be changed!</p><p>Documentation is available. Please go the the autograder's website, at</p><p><a href="https://github.gatech.edu/pages/CS1371/autograder">Documentation</a></p><p>This function should not be called directly, though its help manual may be useful</p><h2 id="2">Exceptions</h2><p>This is guarunteed to never throw an exception; instead, exceptions are reported through the GUI</p><h2 id="3">Unit Tests</h2><p>Unfortunately, there are no "Unit Tests" for this function</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div></div></body></html>

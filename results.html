@@ -211,7 +211,7 @@ Student correctly constructed
 <div class="unit-result row">
 <div class="col-12">
 <h3 class="unit-name">
-<i class="fas fa-check"></i> 
+<i class="fas fa-times"></i> 
 TestCase
 </h3>
 <div class="unit-tests container">
@@ -223,13 +223,13 @@ Constructor
 <div class="col-12">
 <h5 class="test-name">
 <code>
-<i class="fas fa-check"></i>
+<i class="fas fa-times"></i>
 LoadMatFile
 </code>
 </h5>
 <div class="test-message">
 <p>
-TestCase correctly constructed
+outputs not a structure, but should be
 </p>
 </div>
 </div>
@@ -238,13 +238,13 @@ TestCase correctly constructed
 <div class="col-12">
 <h5 class="test-name">
 <code>
-<i class="fas fa-check"></i>
+<i class="fas fa-times"></i>
 ValidTestCase
 </code>
 </h5>
 <div class="test-message">
 <p>
-TestCase correctly constructed
+outputs not a structure, but should be
 </p>
 </div>
 </div>
@@ -270,7 +270,22 @@ Feedback
 </h4>
 <div class="test-message">
 <p>
-<span class="test-error">Test threw exception MATLAB:TooManyInputs: Too many input arguments.
+Output not correctly set; expected 1
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+FilesPassing
+</code>
+</h4>
+<div class="test-message">
+<p>
+Successfully created Data URI string
 </p>
 </div>
 </div>
@@ -285,52 +300,7 @@ InfiniteLoop
 </h4>
 <div class="test-message">
 <p>
-<span class="test-error">Test threw exception MATLAB:TooManyInputs: Too many input arguments.
-</p>
-</div>
-</div>
-</div>
-<div class="row result">
-<div class="col-12">
-<h4 class="test-name">
-<code>
-<i class="fas fa-times"></i>
-InfiniteOpenFiles
-</code>
-</h4>
-<div class="test-message">
-<p>
-<span class="test-error">Test threw exception MATLAB:TooManyInputs: Too many input arguments.
-</p>
-</div>
-</div>
-</div>
-<div class="row result">
-<div class="col-12">
-<h4 class="test-name">
-<code>
-<i class="fas fa-times"></i>
-InvalidRunnable
-</code>
-</h4>
-<div class="test-message">
-<p>
-<span class="test-error">Test threw exception MATLAB:minrhs: Not enough input arguments.
-</p>
-</div>
-</div>
-</div>
-<div class="row result">
-<div class="col-12">
-<h4 class="test-name">
-<code>
-<i class="fas fa-times"></i>
-StudentError
-</code>
-</h4>
-<div class="test-message">
-<p>
-<span class="test-error">Test threw exception MATLAB:TooManyInputs: Too many input arguments.
+Expected "AUTOGRADER:timeout" exception, got "AUTOGRADER:studentCodeError"
 </p>
 </div>
 </div>
@@ -340,12 +310,57 @@ StudentError
 <h4 class="test-name">
 <code>
 <i class="fas fa-check"></i>
+InfiniteOpenFiles
+</code>
+</h4>
+<div class="test-message">
+<p>
+Engine successfully recovered
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+InvalidRunnable
+</code>
+</h4>
+<div class="test-message">
+<p>
+Engine threw correct exception
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+StudentError
+</code>
+</h4>
+<div class="test-message">
+<p>
+Attached correct exception
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-times"></i>
 TestCase
 </code>
 </h4>
 <div class="test-message">
 <p>
-Output correctly created
+Output not correctly set; expected 1
 </p>
 </div>
 </div>
