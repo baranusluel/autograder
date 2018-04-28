@@ -43,6 +43,7 @@ function downloadFromCanvas(courseId, assignmentId, token, path, progress)
     while ~all([workers.Read])
         fetchNext(workers);
         progress.Value = min([progress.Value + 1/numStudents, 1]);
+        drawnow;
         if progress.CancelRequested
             cancel(workers);
             e = MException('AUTOGRADER:networking:connectionError', ...
@@ -52,6 +53,7 @@ function downloadFromCanvas(courseId, assignmentId, token, path, progress)
     end
     students = fetchOutputs(workers);
     delete(workers);
+    workers = cell(1, numStudents);
     progress.Indeterminate = 'off';
     progress.Value = 0;
     progress.Message = 'Downloading Student Submissions';
@@ -71,6 +73,7 @@ function downloadFromCanvas(courseId, assignmentId, token, path, progress)
     while ~all([workers.Read])
         fetchNext(workers);
         progress.Value = min([progress.Value + 1/numToSave, 1]);
+        drawnow;
         if progress.CancelRequested
             cancel(workers);
             e = MException('AUTOGRADER:networking:connectionError', ...
@@ -180,6 +183,7 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
             end
         end
         subs(cellfun(@isempty, subs)) = [];
+        subs = subs(1:50);
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
         e = addCause(e, reason);

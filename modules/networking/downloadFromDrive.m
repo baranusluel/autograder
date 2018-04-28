@@ -28,8 +28,8 @@
 %
 %   There is now a grader folder in the current directory
 %
-function downloadFromDrive(folderId, token, path, progress)
-    workers = downloadFolder(folderId, token, path);
+function downloadFromDrive(folderId, token, path, key, progress)
+    workers = downloadFolder(folderId, token, key, path);
     progress.Indeterminate = 'off';
     progress.Value = 0;
     progress.Message = 'Downloading Solution Archive from Google Drive';
@@ -41,7 +41,7 @@ function downloadFromDrive(folderId, token, path, progress)
     delete(workers);
 end
 
-function workers = downloadFolder(folderId, token, path)
+function workers = downloadFolder(folderId, token, key, path)
     FOLDER_TYPE = 'application/vnd.google-apps.folder';
     if nargin == 3
         origPath = cd(path);
@@ -50,47 +50,57 @@ function workers = downloadFolder(folderId, token, path)
     end
     cleaner = onCleanup(@()(cd(origPath)));
     % get this folder's information
-    folder = getFolder(folderId, token);
+    folder = getFolder(folderId, token, key);
     % create directory for this root folder and cd to it
     % for all the files inside, download them here
-    contents = getFolderContents(folder.id, token);
+    contents = getFolderContents(folder.id, token, key);
     workers = cell(1, numel(contents));
     for c = numel(contents):-1:1
         content = contents(c);
         if strcmp(content.mimeType, FOLDER_TYPE)
             % folder; call recursively
             mkdir([path filesep content.name]);
-            workers{c} = downloadFolder(content.id, token, [path filesep content.name]);
+            workers{c} = downloadFolder(content.id, token, key, [path filesep content.name]);
         else
             % file; download
-            workers{c} = parfeval(@downloadFile, 0, content, token, path);
+            workers{c} = parfeval(@downloadFile, 0, content, token, key, path);
         end
-        workers = [workers{:}];
-        workers([workers.ID == -1]) = [];
     end
+    workers = [workers{:}];
+    workers([workers.ID] == -1) = [];
 end
 
-function downloadFile(file, token, path)
+function downloadFile(file, token, key, path, attemptNum)
+    MAX_ATTEMPT_NUM = 10;
+    WAIT_TIME = 2;
+    if nargin < 5
+        attemptNum = 1;
+    end
     API = 'https://www.googleapis.com/drive/v3/files/';
     opts = weboptions();
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
-    url = [API file.id '?alt=media'];
+    url = [API file.id '?alt=media&key=' key];
     try
         websave([path filesep file.name], url, opts);
     catch reason
-        e = MException('AUTOGRADER:networking:connectionError', ...
-            'Connection was terminated (Are you connected to the internet?');
-        e = e.addCause(reason);
-        throw(e);
+        if attemptNum <= MAX_ATTEMPT_NUM
+            pause(WAIT_TIME);
+            downloadFile(file, token, key, path, attemptNum + 1);
+        else
+            e = MException('AUTOGRADER:networking:connectionError', ...
+                'Connection was terminated (Are you connected to the internet?');
+            e = e.addCause(reason);
+            throw(e);
+        end
     end
 end
 
-function contents = getFolderContents(folderId, token)
+function contents = getFolderContents(folderId, token, key)
     API = 'https://www.googleapis.com/drive/v3/files/';
     opts = weboptions();
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
     try
-        contents = webread(API, 'q', ['''' folderId ''' in parents'], opts);
+        contents = webread(API, 'q', ['''' folderId ''' in parents'], 'key', key, opts);
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', ...
             'Connection was terminated (Are you connected to the internet?');
@@ -100,12 +110,12 @@ function contents = getFolderContents(folderId, token)
     contents = contents.files;
 end
 
-function folder = getFolder(folderId, token)
+function folder = getFolder(folderId, token, key)
     API = 'https://www.googleapis.com/drive/v3/files/';
     opts = weboptions();
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
     try
-        folder = webread([API folderId], opts);
+        folder = webread([API folderId], 'key', key, opts);
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', ...
             'Connection was terminated (Are you connected to the internet?');

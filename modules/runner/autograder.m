@@ -114,7 +114,7 @@ function autograder(app)
         % downloading
         try
             token = refresh2access(app.driveToken);
-            downloadFromDrive(app.driveFolderId, token, [pwd filesep 'Solutions']);
+            downloadFromDrive(app.driveFolderId, token, [pwd filesep 'Solutions'], app.driveKey, progress);
         catch e
             alert(app, 'Exception %s found when trying to download from Google Drive', e.identifier);
             app.exception = e;
