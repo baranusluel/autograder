@@ -192,6 +192,13 @@ function autograder(app)
             app.canvasHomeworkId, app.canvasToken, progress);
     end
     if app.UploadToServer.Value
+        if app.isResubmission
+            name = sprintf('homework%02d_resubmission', app.homeworkNum);
+        else
+            name = sprintf('homework%02d', app.homeworkNum);
+        end
+        uploadToServer(students, app.serverUsername, app.serverPassword, ...
+            name, progress);
     end
 
     % if they want the output, do it
