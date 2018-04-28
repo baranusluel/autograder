@@ -34,24 +34,13 @@ function uploadToServer(students, user, pass, hwName, progress)
     javaaddpath([fileparts(mfilename('fullpath')) filesep 'JSch.jar']);
     cleaner = onCleanup(@()...
         (javarmpath([fileparts(mfilename('fullpath')) filesep 'JSch.jar'])));
+    executeCommand(user, pass, ['rm -rf /httpdocs/homework_files/' hwName]);
     sftp = getSftp(user, pass);
     % for each student we will need to upload their files to their
     % appropriate directory. First, however, we'll need to make those
     % directories!
     % cd to the httpdocs/homework_files
     sftp.cd('/httpdocs/homework_files');
-    % check if already exists?
-    % if it exists, then what do we do? Archive it?
-    
-    exists = false;
-    if exists
-        % We don't really know what to do right now, but the way I see it
-        % is:
-        %
-        % 1. We just delete the previous data.
-        % 2. We download the data, then delete it
-        % 3. We move the data elsewhere
-    end
     sftp.mkdir(hwName);
     sftp.cd(hwName);
     % upload new files
@@ -135,4 +124,28 @@ function sftp = getSftp(user, pass)
     
     sftp = session.openChannel("sftp");
     sftp.connect();
+end
+
+function executeCommand(user, pass, cmd)
+    import com.jcraft.jsch.*;
+    controller = JSch;
+    HOST = 'cs1371.gatech.edu';
+    PORT = 22;
+    session = controller.getSession(user, HOST, PORT);
+    session.setConfig("PreferredAuthentications", "password");
+    session.setConfig("StrictHostKeyChecking", "no");
+    session.setPassword(pass);
+    try
+        session.connect();
+    catch reason
+        e = MException('AUTOGRADER:networking:connectionError', ...
+            'Unable to connect');
+        e = e.addCause(reason);
+        throw(e);
+    end
+    
+    ssh = session.openChannel("exec");
+    ssh.setCommand(cmd);
+    ssh.connect();
+    ssh.disconnect();
 end
