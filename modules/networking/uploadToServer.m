@@ -34,25 +34,7 @@ function uploadToServer(students, user, pass, hwName, progress)
     javaaddpath([fileparts(mfilename('fullpath')) filesep 'JSch.jar']);
     cleaner = onCleanup(@()...
         (javarmpath([fileparts(mfilename('fullpath')) filesep 'JSch.jar'])));
-    import com.jcraft.jsch.*;
-    controller = JSch;
-    HOST = 'cs1371.gatech.edu';
-    PORT = 22;
-    session = controller.getSession(user, HOST, PORT);
-    session.setConfig("PreferredAuthentications", "password");
-    session.setConfig("StrictHostKeyChecking", "no");
-    session.setPassword(pass);
-    try
-        session.connect();
-    catch reason
-        e = MException('AUTOGRADER:networking:connectionError', ...
-            'Unable to connect');
-        e = e.addCause(reason);
-        throw(e);
-    end
-    
-    sftp = session.openChannel("sftp");
-    sftp.connect();
+    sftp = getSftp(user, pass);
     % for each student we will need to upload their files to their
     % appropriate directory. First, however, we'll need to make those
     % directories!
@@ -83,14 +65,17 @@ function uploadToServer(students, user, pass, hwName, progress)
         sftp.mkdir([student.id '/Submission Attachment(s)']);
         % for each of their submissions, make a worker to upload
         for a = numel(student.submissions):-1:1
-            workers{s}(a + 1) = parfeval(@uploadFile, 0, sftp, ...
-                [pwd filesep 'Students' filesep student.id filesep, ...
-                student.submissions{a}], ...
-                [student.id '/Submission Attachment(s)/' student.submissions{a}]);
+            workers{s}(a + 1) = parfeval(@uploadFile, 0, ...
+                [pwd filesep 'Students' filesep student.id filesep student.submissions{a}], ...
+                [char(sftp.pwd) '/' student.id '/Submission Attachment(s)/' student.submissions{a}], ...
+                user, ...
+                pass);
         end
-        workers{s}(1) = parfeval(@uploadFile, 0, sftp, ...
+        workers{s}(1) = parfeval(@uploadFile, 0, ...
             [pwd filesep 'Students' filesep student.id filesep 'feedback.html'], ...
-            [student.id '/Feedback Attachment(s)/feedback.html']);
+            [char(sftp.pwd) '/' student.id '/Feedback Attachment(s)/feedback.html'], ...
+            user, ...
+            pass);
         % upload their feedback
     end
     workers = [workers{:}];
@@ -107,9 +92,42 @@ function uploadToServer(students, user, pass, hwName, progress)
         fetchNext(workers);
         progress.Value = min([progress.Value + 1/tot, 1]);
     end
+    workers = parfevalOnAll(@uploadFile, 0);
+    workers.wait();
+    sftp.disconnect();
 end
 
-function uploadFile(sftp, localPath, remotePath)
+function uploadFile(localPath, remotePath, user, pass)
+    persistent sftp;
+    if nargin == 0 && isempty(sftp)
+        return;
+    elseif nargin == 0 && ~isempty(sftp)
+        sftp.disconnect();
+        return;
+    elseif ~isempty(sftp)
+        sftp = getSftp(user, pass);
+    end
     sftp.put(localPath, remotePath);
 end
+
+function sftp = getSftp(user, pass)
+    import com.jcraft.jsch.*;
+    controller = JSch;
+    HOST = 'cs1371.gatech.edu';
+    PORT = 22;
+    session = controller.getSession(user, HOST, PORT);
+    session.setConfig("PreferredAuthentications", "password");
+    session.setConfig("StrictHostKeyChecking", "no");
+    session.setPassword(pass);
+    try
+        session.connect();
+    catch reason
+        e = MException('AUTOGRADER:networking:connectionError', ...
+            'Unable to connect');
+        e = e.addCause(reason);
+        throw(e);
+    end
     
+    sftp = session.openChannel("sftp");
+    sftp.connect();
+end
