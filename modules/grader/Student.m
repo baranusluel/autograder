@@ -50,6 +50,7 @@ classdef Student < handle
     properties (Constant)
         TIMEOUT = 30;
         resources = Resources;
+        ROUNDOFF_ERROR = 6;
     end
     properties (Access = public)
         name;
@@ -265,6 +266,11 @@ classdef Student < handle
                         soln = solnOutputs.(outs{o});
                         try
                             stud = feedback.outputs.(outs{o});
+                            % if numeric, round to 6
+                            if isnumeric(soln)
+                                soln = round(soln, this.ROUNDOFF_ERROR);
+                                stud = round(stud, this.ROUNDOFF_ERROR);
+                            end
                             if isequaln(soln, stud)
                                 numCorrect = numCorrect + 1;
                             end
