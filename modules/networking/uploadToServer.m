@@ -45,7 +45,12 @@ function uploadToServer(students, user, pass, hwName, progress)
     
     exists = false;
     if exists
-        
+        % We don't really know what to do right now, but the way I see it
+        % is:
+        %
+        % 1. We just delete the previous data.
+        % 2. We download the data, then delete it
+        % 3. We move the data elsewhere
     end
     sftp.mkdir(hwName);
     sftp.cd(hwName);
