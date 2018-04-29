@@ -51,14 +51,24 @@ function generateDocs(email)
         [~] = rmdir([tDir module.name], 's');
         warning('on');
         mkdir([tDir module.name]);
-        sources = dir(['..' filesep 'modules' filesep module.name filesep '*.m']);
+        functions = dir(['..' filesep 'modules' filesep module.name filesep '*.m']);
         modOpts = options;
         modOpts.outputDir = [tDir module.name filesep];
-        for s = sources'
-            publish([s.folder filesep s.name], modOpts);
+        for s = 1:numel(functions)
+            publish([functions(s).folder filesep functions(s).name], modOpts);
+        end
+        marks = dir(['..' filesep 'modules' filesep module.name filesep '*.md']);
+        marks(strncmpi({marks.name}, 'readme', 6)) = [];
+        % for each MD. remove normal published, and replace with MD.
+        for s = 1:numel(marks)
+            html = parseReadme([marks(s).folder filesep marks(s).name], true, ...
+                'https://github.gatech.edu/CS1371/autograder/wiki/');
+            fid = fopen([tDir module.name filesep marks(s).name(1:end-2) 'html'], 'wt');
+            fwrite(fid, strjoin(html, newline));
+            fclose(fid);
         end
         % Generate HTML index for this module
-        description = parseReadme(['..' filesep 'modules' filesep module.name  filesep 'README.md'], ...
+        description = parseReadme(['..' filesep 'modules' filesep module.name filesep 'README.md'], ...
             false, 'https://github.gatech.edu/CS1371/autograder/wiki/');
 
         fid = fopen(['resources' filesep 'module.html'], 'rt');
@@ -74,11 +84,14 @@ function generateDocs(email)
             if contains(line, '<!-- MODULE_NAME -->')
                 line = strrep(line, '<!-- MODULE_NAME -->', camel2normal(module.name));
             elseif contains(line, '<!-- MODULE_DESCRIPTION -->')
-                line = strrep(line, '<!-- MODULE_DESCRIPTION -->', strjoin(description, '\n'));
+                line = strrep(line, '<!-- MODULE_DESCRIPTION -->', strjoin(description, newline));
             elseif contains(line, '<!-- MODULE_FUNCTIONS -->')
                 % Write all functions in divs
-                for s = sources'
-                    fprintf(fid, '<div data-link="%s">%s</div>\n', [s.name(1:end-2) '.html'], s.name(1:end-2));
+                sources = [marks functions];
+                for s = 1:numel(sources)
+                    [~, name, ~] = fileparts(sources(s).name);
+                    fprintf(fid, '<div data-link="%s">%s</div>\n', [name '.html'], ...
+                        name);
                 end
                 line = '';
             end
