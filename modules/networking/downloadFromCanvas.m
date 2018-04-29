@@ -139,6 +139,10 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
             % get page: ?page=num&
             pgs = regexp(last.link, '(?<=\?page=)\d*', 'match');
             pgs = str2double(pgs{1});
+            if pgs == 1
+                subs = response.Body.Data';
+                return;
+            end    
             subs = cell(1, pgs-1);
             subs{1} = response.Body.Data';
             links = cell(1, pgs-1);
@@ -183,7 +187,6 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
             end
         end
         subs(cellfun(@isempty, subs)) = [];
-        subs = subs(1:50);
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
         e = addCause(e, reason);

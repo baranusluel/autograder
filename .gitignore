@@ -34,3 +34,7 @@ Thumbs.db
 *.autograde
 *.mat
 *.mlappinstall
+
+# Temporary Folder #
+###################
+tmp/*
