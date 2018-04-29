@@ -169,7 +169,7 @@ function autograder(app)
     h.BinLimits = [0 h.BinEdges(end)];
     h.Data = zeros(1, numel(students)) - 1;
     ax.YLim = [0 numel(students)];
-    h.XLim = [0 h.BinLimits(end)];
+    ax.XLim = [0 h.BinLimits(end)];
 
     plotter.Visible = 'on';
 
