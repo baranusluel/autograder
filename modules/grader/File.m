@@ -133,9 +133,9 @@ classdef File < handle
                     fclose(fid);
                 case this.IMAGES
                     %read in image array and store in File class
-                    this.data = imread(name);
+                    this.data = imread([name ext]);
                 case this.EXCEL
-                    [~,~,this.data] = xlsread(name);
+                    [~,~,this.data] = xlsread([name ext]);
                 otherwise
                     fid = fopen([this.name this.extension]); %binary reading
                     this.data = fread(fid);

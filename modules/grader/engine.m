@@ -242,7 +242,7 @@ function runnables = engine(runnables)
         end
         % check banned usage
         if isTestCase || isempty(runnable.exception)
-            if checkBanned([func2str(func) '.m'], [BANNED tCase.banned])
+            if checkBanned([func2str(func) '.m'], [BANNED tCase.banned(:)'])
                 if ~isTestCase
                     runnable.exception = MException('AUTOGRADER:engine:banned', ...
                         'File used banned function');
@@ -360,6 +360,9 @@ function populatePlots(runnable)
         end
         runnable.plots = plots;
     end
+    h = findall(0, 'type', 'figure');
+    close(h);
+    delete(h);
 end
 
 

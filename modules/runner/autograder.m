@@ -62,10 +62,12 @@ function autograder(app)
     % start up application
     settings.app = app;
     % Start up parallel pool
-    progress = uiprogressdlg(app.UIFigure, 'Title', 'Progress', ...
+    progress = uiprogressdlg(app.UIFigure, 'Title', 'Autograder Progress', ...
         'Message', 'Starting Parallel Pool', 'Cancelable', 'on', ...
         'ShowPercentage', true, 'Indeterminate', 'on');
     evalc('gcp');
+    app.UIFigure.Visible = 'off';
+    app.UIFigure.Visible = 'on';
     if progress.CancelRequested
         return;
     end
@@ -176,6 +178,7 @@ function autograder(app)
     progress.Indeterminate = 'off';
     progress.Value = 0;
     progress.Message = 'Student Grading Progress';
+    tic;
     for s = 1:numel(students)
         student = students(s);
         student.assess();
@@ -184,6 +187,8 @@ function autograder(app)
         h.Data(s) = student.grade;
         drawnow;
     end
+    t = toc;
+    disp(t);
 
     % If the user requested uploading, do it
 

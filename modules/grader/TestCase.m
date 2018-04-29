@@ -235,7 +235,7 @@ classdef TestCase < handle
                 
                 % contains() errors if supportingFiles is empty
                 if ~isempty(info.supportingFiles)
-                    toLoad = endsWith(info.supportingFiles, '_rubrica.mat') || ...
+                    toLoad = endsWith(info.supportingFiles, '_rubrica.mat') | ...
                         endsWith(info.supportingFiles, '_rubricb.mat');
                     this.loadFiles = info.supportingFiles(toLoad);
                     this.supportingFiles = info.supportingFiles(~toLoad);
