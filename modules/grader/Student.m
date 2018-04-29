@@ -49,6 +49,7 @@
 classdef Student < handle
     properties (Constant)
         TIMEOUT = 30;
+        resources = Resources;
         ROUNDOFF_ERROR = 6;
     end
     properties (Access = public)
@@ -61,7 +62,6 @@ classdef Student < handle
         grade;
     end
     properties (Access=private)
-        problems = [];
         html = {};
     end
     methods (Static)
@@ -70,7 +70,7 @@ classdef Student < handle
             if isempty(PATH)
                 restoredefaultpath();
                 userpath('clear');
-                addpath(genpath(fileparts(fileparts(mfilename('fullname')))));
+                addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
                 PATH = path();
             else
                 path(PATH, '');
@@ -175,15 +175,14 @@ classdef Student < handle
         end
     end
     methods (Access=public)
-        function gradeProblem(this, problem)
-        %% gradeProblem: Grades the given problem and records the results
+        function assess(this)
+        %% assess: Grades the student and records the results
         %
-        % gradeProblem is used to evaluate the student code for a given
+        % assess is used to evaluate the student code for a given
         % problem and record the results in the feedbacks field.
         %
-        % gradeProblem(PROBLEM) takes in a valid PROBLEM class,
-        % evaluates the student code, creates a Feedback instance for each
-        % TestCase, which it adds to the feedbacks field.
+        % assess() evaluates the student code, creates a Feedback 
+        % instance for each TestCase, which it adds to the feedbacks field.
         %
         %%% Remarks
         %
@@ -195,14 +194,14 @@ classdef Student < handle
         % reason field already has content in it, the exception ID will be
         % concatenated to the data already found in reason.
         %
-        % If the student code contains an infinite loop, gradeProblem will
+        % If the student code contains an infinite loop, assess will
         % detect it and add a statement to the reason field of Feedback.
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:Student:gradeProblem:invalidProblem exception will
-        % be thrown if PROBLEM is invalid (i.e. if it is empty or
-        % if name or testcases fields of PROBLEM are empty).
+        % An AUTOGRADER:Student:assess:invalidProblem exception will
+        % be thrown if any problem is invalid (i.e. if it is empty or
+        % if name or testcases fields of the problem are empty).
         %
         %%% Unit Tests
         %
@@ -220,28 +219,27 @@ classdef Student < handle
         % Empty submissions will give appropritate score and reason values
         % in the Feedback class.
         % The Feedback classes will then be added to the feedbacks field.
-
-            % For each testCase, create Feedback, run engine.
-            if ~isvalid(problem)
-                throw(MException('AUTOGRADER:Student:gradeProblem:invalidProblem', ...
-                    'Given problem was not a valid Problem object'));
-            elseif numel(problem.testCases) == 0
-                throw(MException('AUTOGRADER:Student:gradeProblem:invalidProblem', ...
-                    'Expected non-zero number of Test Cases; got 0'));
-            end
-            % Add problem to end of our list
-            this.problems = [this.problems problem];
-            isRunnable = false(1, numel(problem.testCases));
-            for i = numel(problem.testCases):-1:1
-                feeds(i) = Feedback(problem.testCases(i));
-                % check if even submitted
-                % assume name is problem name
-                if any(strncmp(problem.name, this.submissions, length(problem.name)))
-                    isRunnable(i) = true;
-                else
-                    isRunnable(i) = false;
-                    feeds(i).exception = MEXCEPTION('AUTOGRADER:Student:fileNotSubmitted', ...
-                        'File %s wasn''t submitted, so the engine was not run.', [problem.name '.m']);
+            problems = this.resources.Problems;
+            % for each problem, create ends
+            counter = numel([problems.testCases]);
+            inds = zeros(1, counter);
+            for p = numel(problems):-1:1
+                prob = problems(p);
+                for t = numel(prob.testCases):-1:1
+                    % check if even submitted
+                    feeds(counter) = Feedback(prob.testCases(t), this.path);
+                    if any(strncmp(prob.name, this.submissions, length(prob.name)))
+                        isRunnable(counter) = true;
+                    else
+                        isRunnable(counter) = false;
+                        e = MException('AUTOGRADER:Student:fileNotSubmitted', ...
+                            'Student did not submit file');
+                        feeds(counter).exception = ...
+                            e.addCause(MException('STUDENT:fileNotSubmitted', ...
+                            'File %s wasn''t submitted, so the function was not graded.', [prob.name '.m']));
+                    end
+                    inds(counter) = p;
+                    counter = counter - 1;
                 end
             end
             feeds(isRunnable) = engine(feeds(isRunnable));
@@ -257,13 +255,10 @@ classdef Student < handle
                     solnOutputs = feedback.testCase.outputs;
                     solnFiles = feedback.testCase.files;
                     solnPlots = feedback.testCase.plots;
-                    points = feedback.testCase.points;
                     
-                    pointsPerItem = points / ...
-                        sum([numel(fieldnames(solnOutputs)), ...
+                    numTotal = sum([numel(fieldnames(solnOutputs)), ...
                         numel(solnFiles), numel(solnPlots)]);
-                    points = 0;
-                    
+                    numCorrect = 0;
                     % for each output, if isequaln returns true, then give
                     % partial
                     outs = fieldnames(solnOutputs);
@@ -277,7 +272,7 @@ classdef Student < handle
                                 stud = round(stud, this.ROUNDOFF_ERROR);
                             end
                             if isequaln(soln, stud)
-                                points = points + pointsPerItem;
+                                numCorrect = numCorrect + 1;
                             end
                         catch
                         end
@@ -299,7 +294,7 @@ classdef Student < handle
                             if solnFiles{f}.equals(feedback.files(studInds(s)))
                                 studFiles{f} = feedback.files(studInds(s));
                                 matching(f) = true;
-                                points = points + pointsPerItem;
+                                numCorrect = numCorrect + 1;
                                 studInds(s) = [];
                                 break;
                             end
@@ -347,7 +342,7 @@ classdef Student < handle
                             if solnPlots{p}.equals(feedback.plots(studInds(s)))
                                 studPlots{p} = feedback.plots(studInds(s));
                                 matching(p) = true;
-                                points = points + pointsPerItem;
+                                numCorrect = numCorrect + 1;
                                 studInds(s) = [];
                                 break;
                             end
@@ -377,11 +372,20 @@ classdef Student < handle
                     % to make any guarantee about length here
                     feedback.testCase.plots = [solnFound solnNotFound];
                     feedback.plots = [studFound studNotFound];
-
-                    feedback.points = points;
+                    
+                    if numCorrect == numTotal
+                        feedback.hasPassed = true;
+                        feedback.points = feedback.testCase.points;
+                    else
+                        feedback.hasPassed = false;
+                        feedback.points = feedback.testCase.points*numCorrect/numTotal;
+                    end
                 end
             end
-            this.feedbacks = [this.feedbacks {feeds}];
+            this.feedbacks = cell(1, numel(problems));
+            for p = 1:numel(problems)
+                this.feedbacks{p} = feeds(inds == p);
+            end
         end
         function generateFeedback(this)
         %% generateFeedback: Generate HTML feedback for student
@@ -429,8 +433,9 @@ classdef Student < handle
             end
             % Header info
             this.html = {'<!DOCTYPE html>', '<html>', '<head>', '</head>', ...
-                '<body>', '</body>', '</html>'};
+                '<body>', '<div class="container-fluid">', '</div>', '</body>', '</html>'};
             resources = {
+                '<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">', ...
                 '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">', ...
                 '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>', ...
                 '<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>', ...
@@ -439,6 +444,42 @@ classdef Student < handle
                 };
             styles = {
                 '<style>', ...
+                'html {', ...
+                '    font-family: ''Open Sans'';', ...
+                '}', ...
+                '.fa-check {', ...
+                '    color: forestgreen;', ...
+                '}', ...
+                '.fa-times {', ...
+                '    color: darkred;', ...
+                '}', ...
+                '.display-1 {', ...
+                '    font-size: 2.5em;', ...
+                '}', ...
+                '.flex-container {', ...
+                '    display: flex;', ...
+                '    flex-wrap: wrap;', ...
+                '}', ...
+                '.flex-element {', ...
+                '    margin-right: 30px;', ...
+                '    margin-bottom: 20px;', ...
+                '}', ...
+                '.test-header {', ...
+                '    margin-left: 2%;', ...
+                '}', ...
+                '.call {', ...
+                '    font-family: "Courier New";', ...
+                '}', ...
+                '.variable-name {', ...
+                '    font-family: "Courier New";', ...
+                '}', ...
+                '.variable-value {', ...
+                '    font-family: "Courier New";', ...
+                '}', ...
+                '.problem div {', ...
+                '    padding-left: 10px;', ...
+                '    padding-right: 10px;', ...
+                '}', ...
                 '</style>'
                 };
             scripts = {
@@ -446,25 +487,25 @@ classdef Student < handle
                 '</script>'
                 };
             % Splice recs, styles, and scripts:
-            spliceHead(resources, styles, scripts);
+            this.spliceHead(resources, styles, scripts);
 
             % Add Student's name
-            name = {'<div class="row text-left">', '<div class="col-12">', ...
+            name = {'<div class="row text-center">', '<div class="col-12">', ...
                 '<h1 class="display-1">', ...
                 ['Feedback for ' this.name ' (' this.id ')'], '</h1>', ...
                 '</div>', '</div>'};
             this.appendRow(name);
 
             % Generate Table
-            generateTable();
+            this.generateTable();
 
             % For each problem, gen feedback
-            for i = 1:numel(this.problems)
-                generateProblem(this.problems(i), this.feedbacks{i});
+            for i = 1:numel(this.resources.Problems)
+                this.generateProblem(this.resources.Problems(i), this.feedbacks{i}, i);
             end
 
             % Join with new lines and write to feedback.html
-            [fid, msg] = fopen([this.path 'feedback.html'], 'wt');
+            [fid, msg] = fopen([this.path filesep 'feedback.html'], 'wt');
             if fid == -1
                 % throw error
                 throw(MException('AUTOGRADER:Student:generateFeedback:fileIO', ...
@@ -496,7 +537,8 @@ classdef Student < handle
             %   Problem Name
             %   Pts Possible
             %   Pts Earned
-            table = {'<table>', '<thead>', '<tr>' '<th>', '', '</th>', ...
+            table = {'<table class="table table-striped table-bordered table-hover">', ...
+                '<thead>', '<tr>' '<th>', '', '</th>', ...
                 '<th>', 'Problem', '</th>', '<th>', 'Points Possible', ...
                 '</th>', '<th>', 'Points Earned', '</th>', '</tr>', ...
                 '</thead>', '</table>'};
@@ -504,13 +546,13 @@ classdef Student < handle
             totalPts = 0;
             totalEarn = 0;
             % For each problem, list:
-            for i = 1:numel(this.problems)
-                tCases = [this.problems(i).testCases];
-                feeds = this.feedbacks(i);
+            for i = 1:numel(this.resources.Problems)
+                tCases = [this.resources.Problems(i).testCases];
+                feeds = this.feedbacks{i};
                 num = {'<td>', '<p>', num2str(i), '</p>', '</td>'};
-                name = {'<td>', '<p>', this.problems(i).name, '</p>', '</td>'};
-                poss = {'<td>', '<p>', num2str(sum([tCases.points])), '</p>', '</td>'};
-                earn = {'<td>', '<p>', num2str(sum([feeds.points])), '</p>', '</td>'};
+                name = {'<td>', '<p>', this.resources.Problems(i).name, '</p>', '</td>'};
+                poss = {'<td>', '<p>', sprintf('%0.1f', sum([tCases.points])), '</p>', '</td>'};
+                earn = {'<td>', '<p>', sprintf('%0.1f', sum([feeds.points])), '</p>', '</td>'};
 
                 row = [{'<tr>'}, num, name, poss, earn, {'</tr>'}];
                 appendRow(row);
@@ -520,14 +562,14 @@ classdef Student < handle
             end
 
             % Add totals row
-            totals = {'<tr>', '<td>', '</td>', '<td>', '</td>', '<td>', ...
-                '<p>', num2str(totalPts), '</p>', '</td>', '<td>', ...
-                '<p>', num2str(totalEarn), '</p>', '</td>', '</tr>'};
+            totals = {'<tr>', '<td colspan="2">','<strong>Total</strong>', '</td>', '<td>', ...
+                '<p>', sprintf('%0.1f', totalPts), '</p>', '</td>', '<td>', ...
+                '<p>', sprintf('%0.1f', totalEarn), '</p>', '</td>', '</tr>'};
             appendRow(totals);
 
             % Splice table into body
-            table = [{'<div class="row text-center">', '<div class="col-12">'}, ...
-                table, {'</div>', '</div>'}];
+            table = [{'<div class="row text-center">', '<div class="col-12">', '<div class="table-responsive">'}, ...
+                table, {'</div>', '</div>', '</div>'}];
             this.appendRow(table);
             % Appends a row
             function appendRow(row)
@@ -537,29 +579,41 @@ classdef Student < handle
         end
 
         % Create feedback for specific problem
-        function generateProblem(this, problem, feedbacks)
-            prob = {'<div class="problem col-12">', '<h2>', problem.name, ...
-                '</h2>', '<div class="tests">', '</div>', '</div>'};
-
+        function generateProblem(this, problem, feedbacks, num)
+            % print the resources
+            % for each resource, print a link
+            recs = this.resources.supportingFiles(num);
+            links = cell(1, numel(recs));
+            for r = 1:numel(recs)
+                rec = recs(r).files;
+                links{r} = ['<a href="' rec.dataURI '" download="', ...
+                    rec.name, '">' rec.name '</a>'];
+            end
+            prob = [{'<div class="problem col-12">', '<h2>', problem.name, ...
+                '</h2>', '<div class="supporting-files"><h3>Supporting Files</h3>'}, ...
+                links, {'</div>', '<div class="tests">', '<h3 class="test-cases">Test Cases</h3>', ...
+                '</div>', '</div>'}];
             for i = 1:numel(feedbacks)
                 feed = feedbacks(i);
 
                 % if passed, marker is green
-                if feed.isPassed
-                    marker = {'<div class="col-1">', ...
-                        Feedback.CORRECT_MARK, '</div>'};
+                if feed.hasPassed
+                    marker = Feedback.CORRECT_MARK;
                 else
-                    marker = {'<div class="col-1">', ...
-                        Feedback.INCORRECT_MARK, '</div>'};
+                    marker = Feedback.INCORRECT_MARK;
                 end
 
                 % Show call
-                call = [marker {'<div class="col-md-4">', '<pre class="call">', ...
-                    feed.testCase.call, '</pre>', '</div>'}];
+                call = {'<div class="col-12">', '<div class="call">', ...
+                    marker, ' ', feed.testCase.call, '</div>', '</div>'};
                 headerRow = [{'<div class="row test-header">'}, call, {'</div>'}];
 
                 % Get feedback message
-                msg = {feed.generateFeedback()};
+                if strncmp(problem.name, 'ABCs', 4)
+                    msg = {feed.generateFeedback(false)};
+                else
+                    msg = {feed.generateFeedback()};
+                end
                 test = [{'<div class="row test-case">'}, headerRow, msg, {'</div>'}];
                 appendTest(test);
             end

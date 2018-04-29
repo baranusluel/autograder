@@ -83,8 +83,9 @@ classdef Feedback < handle
         %
         %%% Unit Tests
         %
-        %   T = testCase; % Given a valid TestCase:
-        %   F = Feedback(T);
+        %   T = testCase; % Given a valid TestCase
+        %   P = '...'; % valid student path
+        %   F = Feedback(T, P);
         %
         %   F.testCase -> T;
         %
@@ -102,9 +103,12 @@ classdef Feedback < handle
         % The function generates complete HTML feedback for the specific
         % feedback 
         %
-        % H = generateFeedback() generates the complete html
+        % H = generateFeedback(S) generates the complete html
         % feedback for this based on the information stored in the
-        % properties
+        % properties. It uses the logical S to determine what to print - if
+        % S is true, then correct outputs are also printed; otherwise, only
+        % incorrect ones are printed. This is especially useful for the
+        % "ABCs"
         %
         %%% Remarks
         %
@@ -126,15 +130,17 @@ classdef Feedback < handle
         % properties of the feedback file
         %
         %
-        function html = generateFeedback(this)
+        function html = generateFeedback(this, showCorrect)
+            if nargin == 1
+                showCorrect = true;
+            end
             %Check if testCase was passed and output empty div
-            if this.hasPassed
-                html = '<div class="container feedback">';
-            elseif ~isempty(this.exception)
-                html = ['<div class="container feedback"><p class="exception">' 
-                        this.exception.identifier ":" this.exception.message '</p>'];
+            if ~isempty(this.exception)
+                html = ['<div class="container-fluid"><div class="container feedback"><p class="exception">', ... 
+                        this.exception.cause{1}.identifier ": ", ...
+                        this.exception.cause{1}.message '</p>'];
             else
-                html = '<div class="container feedback">';
+                html = '<div class="container-fluid"><div class="container feedback">';
                 %Get solution outputs for testCase
                 solnOutputs = this.testCase.outputs;
                 solnFiles = this.testCase.files;
@@ -149,7 +155,13 @@ classdef Feedback < handle
                         html = [html '<p>Number of outputs don''t match.</p>'];
                     else
                         for i = 1:length(fnSoln)
-                            html = [html generateFeedback(this.outputs.(fnSoln{i}), solnOutputs.(fnSoln{i}))];
+                            if showCorrect || ~isequaln(this.outputs.(fnSoln{i}), solnOutputs.(fnSoln{i}))
+                                html = [html, ...
+                                    '<div><span class="variable-name">', ...
+                                    fnSoln{i} ': </span>', ...
+                                    generateFeedback(this.outputs.(fnSoln{i}), ...
+                                    solnOutputs.(fnSoln{i})) '</div>'];
+                            end
                         end
                     end
                 end
@@ -204,7 +216,7 @@ classdef Feedback < handle
                     end
                 end
             end
-            html = sprintf('%s<p>Points earned for this test case: %0.2f/%0.2f</p></div>',...
+            html = sprintf('%s</div><p>Points earned for this test case: %0.1f/%0.1f</p></div>',...
                             html, this.points, this.testCase.points);
         end
     end
