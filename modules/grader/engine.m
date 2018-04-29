@@ -292,7 +292,12 @@ function runnables = engine(runnables)
     end
     % done with parfor - now run all the cases!
     for w = numel(runnables):-1:1
-        workers(w) = parfeval(@runCase, 1, runnables(w));
+        if ~isTestCase && ~isempty(runnables(w).exception)
+            workers(w) = parfeval(@()(false), 0);
+            delete(workers(w));
+        else
+            workers(w) = parfeval(@runCase, 1, runnables(w));
+        end
     end
     while any(isvalid(workers))
         for w = 1:numel(workers)
