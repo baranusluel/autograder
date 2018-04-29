@@ -98,46 +98,16 @@
 %
 %   Threw invalidPath exception
 function processStudentSubmission(startPath)
-try
-    currentDir = cd(startPath);
-catch
-    throw(MException('AUTOGRADER:processStudentSubmission:invalidPath', ...
-        'Invalid path'));
-end
-zipFiles = dir('*.zip');
-for i = 1:length(zipFiles)
-    unzipPath = unzipArchive(zipFiles(i).name, [], true);
-    % check to see if there was a folder inside the zip archive
-    files = dir(unzipPath);
-    if length(find([files.isdir])) == 3
-        % single directory inside the zip
-        singleDir = files([files.isdir] & ~strcmp({files.name}, '.') & ~strcmp({files.name}, '..'));
-        moveFiles(singleDir, startPath);
-        % now done with the unzipped folder, so safe to delete
-        rmdir(unzipPath, 's'); 
-    elseif length(find([files.isdir])) > 3
-        % zip file contained more than one directory
-        newDirs = {files([files.isdir]).name};
-        newDirs = newDirs(~strcmp(newDirs, '..') & ~strcmp(newDirs, '.'));
-
-        % move all the files from each of the new directories to
-        % the main folder
-        for j = 1:length(newDirs)
-            moveFiles([unzipPath, filesep(), newDirs{i}], startPath);
-        end
-        % check to see if there was a folder inside the zip archive
-        
-        rmdir(unzipPath, 's'); 
-    else
-        % move files from unzipped folder
-        moveFiles(unzipPath, startPath);
-        % delete the unzipped folder (don't need it anymore)
-        rmdir(unzipPath, 's');
-
+    try
+        currentDir = cd(startPath);
+    catch
+        throw(MException('AUTOGRADER:processStudentSubmission:invalidPath', ...
+            'Invalid path'));
     end
+    zipFiles = dir('*.zip');
+    for i = 1:length(zipFiles)
+        [~] = unzipArchive(zipFiles(i).name, pwd, true);
+    end   
 
-end % end for    
-
-
-cd(currentDir);
+    cd(currentDir);
 end
