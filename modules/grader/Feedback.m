@@ -136,6 +136,9 @@ classdef Feedback < handle
             end
             %Check if testCase was passed and output empty div
             if ~isempty(this.exception)
+                if isempty(this.exception.cause)
+                    this.exception = this.exception.addCause(this.exception);
+                end
                 html = ['<div class="container-fluid"><div class="container feedback"><p class="exception">', ... 
                         this.exception.cause{1}.identifier ": ", ...
                         this.exception.cause{1}.message '</p>'];
