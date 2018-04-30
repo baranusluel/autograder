@@ -6,6 +6,7 @@
 % give feedback for the student plot.
 %
 %%% Fields
+%
 % * Title: A String of the title used for the plot
 %
 % * XLabel: A String of the xLabel used for the plot
@@ -170,7 +171,7 @@ classdef Plot < handle
 
             for i = 1:length(lines)
                 line = lines(i);
-                if ~isa(line, 'matlab.graphics.primitive.Line')
+                if ~isa(line, 'matlab.graphics.chart.primitive.Line')
                     continue;
                 end
                 xcell(i) = {line.XData};
