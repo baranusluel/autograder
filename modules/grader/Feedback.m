@@ -56,15 +56,15 @@ classdef Feedback < handle
         INCORRECT_MARK = '<i class="fas fa-times"></i>';
     end
     properties (Access = public)
-        testCase TestCase;
-        hasPassed logical;
-        path char;
+        testCase;
+        hasPassed;
+        path;
         outputs = struct();
-        files File;
-        plots Plot;
-        exception MException;
-        points double = 0;
-        isRecursive logical = false;
+        files;
+        plots;
+        exception;
+        points = 0;
+        isRecursive = false;
     end
     methods
         %% Constructor
