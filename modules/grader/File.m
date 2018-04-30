@@ -268,7 +268,7 @@ classdef File < handle
                         html = [html '</div><div class="col-md-6 text-center soln-image">'];
                         html = [html '<img class="img-thumbnail rounded img-fluid" src="%s">'];
                         html = [html '</div></div>'];
-                        html = sprint(html, studImg, solnImg);
+                        html = sprintf(html, studImg, solnImg);
                     case this.EXCEL
                         html = generateFeedback(this.data, soln.data);
                     otherwise

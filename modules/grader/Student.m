@@ -582,16 +582,17 @@ classdef Student < handle
         function generateProblem(this, problem, feedbacks, num)
             % print the resources
             % for each resource, print a link
-            recs = this.resources.supportingFiles(num);
-            links = cell(1, numel(recs));
-            for r = 1:numel(recs)
-                rec = recs(r).files;
-                links{r} = ['<a href="' rec.dataURI '" download="', ...
-                    rec.name, '">' rec.name '</a>'];
+            files = this.resources.supportingFiles(num).files;
+            links = cell(1, numel(files));
+            for f = 1:numel(files)
+                file = files(f);
+                links{f} = ['<li class="link">', '<a href="' file.dataURI '" download="', ...
+                    file.name, '">' file.name '</a>', '</li>'];
             end
             prob = [{'<div class="problem col-12">', '<h2>', problem.name, ...
                 '</h2>', '<div class="supporting-files"><h3>Supporting Files</h3>'}, ...
-                links, {'</div>', '<div class="tests">', '<h3 class="test-cases">Test Cases</h3>', ...
+                {'<ul class="links">'}, links, {'</ul>'}, ...
+                {'</div>', '<div class="tests">', '<h3 class="test-cases">Test Cases</h3>', ...
                 '</div>', '</div>'}];
             for i = 1:numel(feedbacks)
                 feed = feedbacks(i);

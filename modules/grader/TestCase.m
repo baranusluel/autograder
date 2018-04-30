@@ -72,7 +72,7 @@ classdef TestCase < handle
         inputs;
         banned;
         path;
-        outputs;
+        outputs = struct();
         files;
         plots;
     end

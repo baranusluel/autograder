@@ -40,6 +40,8 @@ classdef Resources < matlab.mixin.SetGet
                     problems(p).testCases(1).loadFiles];
                 rec.files = struct('name', sups, ...
                     'dataURI', '');
+                [~, inds] = sort(upper(sups));
+                sups = sups(inds);
                 for s = 1:numel(sups)
                     % switch on the type
                     file = sups{s};

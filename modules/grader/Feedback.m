@@ -59,7 +59,7 @@ classdef Feedback < handle
         testCase;
         hasPassed;
         path;
-        outputs;
+        outputs = struct();
         files;
         plots;
         exception;
@@ -170,23 +170,23 @@ classdef Feedback < handle
                 if ~isempty(solnFiles)
                     if length(solnFiles) > length(this.files)
                         for i = 1:length(this.files)
-                            html = [html File.generateFeedback(this.files(i), solnFiles(i))];
+                            html = [html this.files(i).generateFeedback(solnFiles(i))];
                         end
                         for i = length(this.files)+1:length(solnFiles)
-                            html = [html '<p>Your code did not produce a file to match ' 
+                            html = [html '<p>Your code did not produce a file to match ', ...
                                     solnFiles(i).name '</p>'];
                         end
                     elseif length(solnFiles) < length(this.files)
                         for i = 1:length(solnFiles)
-                            html = [html File.generateFeedback(this.files(i), solnFiles(i))];
+                            html = [html this.files(i).generateFeedback(solnFiles(i))];
                         end
                         for i = length(solnFiles)+1:length(this.files)
-                            html = [html '<p>The solution did not produce a file to match '
+                            html = [html '<p>The solution did not produce a file to match ', ...
                                     this.files(i).name '</p>'];
                         end
                     else
                         for i = 1:length(solnFiles)
-                            html = [html File.generateFeedback(this.files(i), solnFiles(i))];
+                            html = [html this.files(i).generateFeedback(solnFiles(i))];
                         end
                     end
                 end
@@ -195,7 +195,7 @@ classdef Feedback < handle
                 if ~isempty(solnPlots)
                     if length(solnPlots) > length(this.plots)
                         for i = 1:length(this.plots)
-                            html = [html Plot.generateFeedback(this.plots(i), solnPlots(i))];
+                            html = [html this.plots(i).generateFeedback(solnPlots(i))];
                         end
                         for i = length(this.plots)+1:length(solnPlots)
                             html = [html '<p>Your code did not produce a plot to match ' 
@@ -203,7 +203,7 @@ classdef Feedback < handle
                         end
                     elseif length(solnPlots) < length(this.plots)
                         for i = 1:length(solnPlots)
-                            html = [html Plot.generateFeedback(this.plots(i), solnPlots(i))];
+                            html = [html this.plots(i).generateFeedback(solnPlots(i))];
                         end
                         for i = length(solnPlots)+1:length(this.plots)
                             html = [html '<p>The solution did not produce a plot to match '
@@ -211,7 +211,7 @@ classdef Feedback < handle
                         end
                     else
                         for i = 1:length(solnPlots)
-                            html = [html Plot.generateFeedback(this.plots(i), solnPlots(i))];
+                            html = [html this.plots(i).generateFeedback(solnPlots(i))];
                         end
                     end
                 end
