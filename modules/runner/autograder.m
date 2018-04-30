@@ -181,11 +181,14 @@ function autograder(app)
     tic;
     for s = 1:numel(students)
         student = students(s);
+        progress.Message = sprintf('Assessing Student %s', student.name);
         student.assess();
         student.generateFeedback();
         progress.Value = min([progress.Value + 1/numel(students), 1]);
         h.Data(s) = student.grade;
-        drawnow;
+        if mod(s, 10) == 0
+            drawnow;
+        end
     end
     t = toc;
     disp(t);

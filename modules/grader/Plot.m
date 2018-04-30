@@ -170,6 +170,9 @@ classdef Plot < handle
 
             for i = 1:length(lines)
                 line = lines(i);
+                if ~isa(line, 'matlab.graphics.primitive.Line')
+                    continue;
+                end
                 xcell(i) = {line.XData};
                 ycell(i) = {line.YData};
                 zcell(i) = {line.ZData};
