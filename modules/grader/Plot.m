@@ -170,6 +170,9 @@ classdef Plot < handle
 
             for i = 1:length(lines)
                 line = lines(i);
+                if ~isa(line, 'matlab.graphics.primitive.Line')
+                    continue;
+                end
                 xcell(i) = {line.XData};
                 ycell(i) = {line.YData};
                 zcell(i) = {line.ZData};
@@ -255,8 +258,8 @@ classdef Plot < handle
             throw(ME);
         end
 
-        TitleCheck = strcmp(this.Title,that.Title)...
-            | (isempty(this.Title) & isempty(that.Title));
+        TitleCheck = strcmp(strjoin(cellstr(this.Title), newline), strjoin(cellstr(that.Title), newline)) ...
+            || (isempty(this.Title) && isempty(that.Title));
         if ~TitleCheck
             add{1} = 'Plot Title does not match solution plot';
         end

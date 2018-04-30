@@ -133,9 +133,9 @@ classdef File < handle
                     fclose(fid);
                 case this.IMAGES
                     %read in image array and store in File class
-                    this.data = imread(name);
+                    this.data = imread([name ext]);
                 case this.EXCEL
-                    [~,~,this.data] = xlsread(name);
+                    [~,~,this.data] = xlsread([name ext]);
                 otherwise
                     fid = fopen([this.name this.extension]); %binary reading
                     this.data = fread(fid);
@@ -268,7 +268,7 @@ classdef File < handle
                         html = [html '</div><div class="col-md-6 text-center soln-image">'];
                         html = [html '<img class="img-thumbnail rounded img-fluid" src="%s">'];
                         html = [html '</div></div>'];
-                        html = sprint(html, studImg, solnImg);
+                        html = sprintf(html, studImg, solnImg);
                     case this.EXCEL
                         html = generateFeedback(this.data, soln.data);
                     otherwise

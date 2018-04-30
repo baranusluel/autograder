@@ -48,3 +48,4 @@
 *.mlappinstall  binary
 *.mlpkginstall  binary
 *.mn            binary
+*.mlapp         binary
