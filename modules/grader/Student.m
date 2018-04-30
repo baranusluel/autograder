@@ -24,13 +24,12 @@
 % * isGraded: A logical that indicates whether a student has been graded
 %
 % * grade: The overall score for this student (read-only)
+%
 %%% Methods
 %
 % * Student
 %
-% * gradeProblem
-%
-% * generateFeedback
+% * assess
 %
 %%% Remarks
 %
@@ -386,7 +385,10 @@ classdef Student < handle
             for p = 1:numel(problems)
                 this.feedbacks{p} = feeds(inds == p);
             end
+            this.generateFeedback();
         end
+    end
+    methods (Access=private)
         function generateFeedback(this)
         %% generateFeedback: Generate HTML feedback for student
         %
@@ -516,8 +518,6 @@ classdef Student < handle
             fclose(fid);
             this.isGraded = true;
         end
-    end
-    methods (Access=private)
         % Splice elements to the end of HEAD
         function spliceHead(this, varargin)
             % Find the header

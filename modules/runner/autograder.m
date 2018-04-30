@@ -182,7 +182,6 @@ function autograder(app)
     for s = 1:numel(students)
         student = students(s);
         student.assess();
-        student.generateFeedback();
         progress.Value = min([progress.Value + 1/numel(students), 1]);
         h.Data(s) = student.grade;
         drawnow;
