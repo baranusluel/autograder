@@ -11,8 +11,9 @@ function [passed, msg] = test()
     info.initializer = '';
     info.points = 3;
     info.banned = {};
-    info.supportingFiles = {'vars.mat'};
+    info.supportingFiles = {[p filesep 'vars_rubrica.mat']};
     T = TestCase(info, p);
+    T = engine(T);
     F(1) = Feedback(T, p);
     F(2) = Feedback(T, [pwd filesep 'feedback2']);
     F(3) = Feedback(T, [pwd filesep 'feedback3']);
@@ -26,7 +27,7 @@ function [passed, msg] = test()
                 return;
             elseif ~isequal(F2.outputs.out, 'hello.txt')
                 passed = false;
-                msg = 'Output not correctly set; expected 1';
+                msg = 'Output not correctly set; expected "hello.txt"';
                 return;
             else
                 passed = true;

@@ -11,9 +11,9 @@ function [passed, msg] = test()
     info.initializer = '';
     info.points = 3;
     info.banned = {};
-    info.supportingFiles = {[pwd filesep 'testcase' filesep 'vars.mat']};
+    info.supportingFiles = {[pwd filesep 'testcase' filesep 'vars_rubrica.mat']};
     T = TestCase(info, p);
-    
+
     try
         T2 = engine(T);
         % output should be input (1)
@@ -28,7 +28,7 @@ function [passed, msg] = test()
         else
             passed = true;
             msg = 'Output correctly created';
-        end 
+        end
     catch e
         passed = false;
         msg = sprintf('Expected success; got exception %s', e.identifier);

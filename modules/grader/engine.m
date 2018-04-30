@@ -190,7 +190,7 @@ function runnables = engine(runnables)
         'input', 'wait', 'uiwait', 'keyboard', 'dbstop', ...
         'cd', 'system', 'restoredefaultpath', 'builtin', 'load'};
 
-    if any(~isvalid(allRunnables))
+    if any(~isvalid(runnables))
         e = MException('AUTOGRADER:engine:invalidRunnable', ...
             'Input were not valid runnables');
         e.throw();
@@ -208,7 +208,7 @@ function runnables = engine(runnables)
     end
 
     origPaths = cell(size(runnables));
-    parfor r = 1:numel(runnables)
+    for r = 1:numel(runnables)
         runnable = runnables(r);
         fld = tempname;
         mkdir(fld);
