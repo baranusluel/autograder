@@ -255,8 +255,8 @@ classdef Plot < handle
             throw(ME);
         end
 
-        TitleCheck = strcmp(this.Title,that.Title)...
-            | (isempty(this.Title) & isempty(that.Title));
+        TitleCheck = strcmp(strjoin(cellstr(this.Title), newline), strjoin(cellstr(that.Title), newline)) ...
+            || (isempty(this.Title) && isempty(that.Title));
         if ~TitleCheck
             add{1} = 'Plot Title does not match solution plot';
         end

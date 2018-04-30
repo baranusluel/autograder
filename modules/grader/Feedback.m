@@ -201,7 +201,7 @@ classdef Feedback < handle
                             html = [html this.plots(i).generateFeedback(solnPlots(i))];
                         end
                         for i = length(this.plots)+1:length(solnPlots)
-                            html = [html '<p>Your code did not produce a plot to match ' 
+                            html = [html '<p>Your code did not produce a plot to match ', ...
                                     solnPlots(i).Title '</p>'];
                         end
                     elseif length(solnPlots) < length(this.plots)
@@ -209,7 +209,7 @@ classdef Feedback < handle
                             html = [html this.plots(i).generateFeedback(solnPlots(i))];
                         end
                         for i = length(solnPlots)+1:length(this.plots)
-                            html = [html '<p>The solution did not produce a plot to match '
+                            html = [html '<p>The solution did not produce a plot to match ', ...
                                     this.plots(i).Title '</p>'];
                         end
                     else

@@ -352,9 +352,8 @@ end
 function populatePlots(runnable)
     % Get all handles; since the Position is captured, that can be used
     % for the subplot checking
-    return;
     pHandles = findobj(0, 'type', 'axes');
-    if numel(pHandles) == 0
+    if numel(pHandles) ~= 0
         plots(numel(pHandles)) = Plot(pHandles(end));
         for i = 1:(numel(pHandles) - 1)
             plots(i) = Plot(pHandles(i));
