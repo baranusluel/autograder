@@ -194,7 +194,43 @@ classdef Plot < handle
                     linestyle(i) = {line.LineStyle};
                 end
             end
-
+            % Plot Chaining
+            % First, go through and capture all lines with same marker
+            % style and NO line style
+            i = 1;
+            % for each one, loop through. IF this one has no line style,
+            % then find anyone else with same marker style and combine.
+            % Delete later one
+            while i <= numel(linestyle)
+                if strcmp(linestyle{i}, '')
+                    % good to go. Look for other marker style
+                    mStyle = marker{i};
+                    thisColor = color{i};
+                    for j = numel(linestyle):-1:(i+1)
+                        % if same, combine and delete
+                        if strcmp(marker{j}, mStyle) && ...
+                                strcmp(linestyle{j}, '') && ...
+                                isequal(color{j}, thisColor)
+                            % we have a match! combine and kill
+                            xcell{i} = [xcell{i} xcell{j}];
+                            ycell{i} = [ycell{i} ycell{j}];
+                            zcell{i} = [zcell{i} zcell{j}];
+                            xcell(j) = [];
+                            ycell(j) = [];
+                            zcell(j) = [];
+                            legend(j) = [];
+                            color(j) = [];
+                            marker(j) = [];
+                            linestyle(j) = [];
+                        end
+                    end
+                    % since no line style, we can sort safely
+                    xcell{i} = sort(xcell{i});
+                    ycell{i} = sort(ycell{i});
+                    zcell{i} = sort(zcell{i});
+                end
+                i = i + 1;
+            end
             this.XData = xcell;
             this.YData = ycell;
             this.ZData = zcell;
