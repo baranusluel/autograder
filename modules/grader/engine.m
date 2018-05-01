@@ -322,7 +322,6 @@ function runnables = engine(runnables)
     end
     % reset each runnable
     for r = 1:numel(runnables)
-        [~] = rmdir(runnables(r).path);
         runnables(r).path = origPaths{r};
     end
 end
@@ -559,7 +558,7 @@ function cleanup(origPath)
     close(h);
     delete(h);
     % cd up so our folder can be deleted
-    cd(origPath);
+    [~] = rmdir(cd(origPath), 's');
 end
 
 
