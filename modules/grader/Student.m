@@ -620,7 +620,7 @@ classdef Student < handle
             end
 
             % Append this problem to end of html
-            prob = [{'<div class="row">'}, prob, {'</div>'}];
+            prob = [{'<hr /><div class="row">'}, prob, {'</div>'}];
             this.appendRow(prob);
 
             function appendTest(test)
