@@ -271,8 +271,10 @@ classdef Plot < handle
                         xcell(j) = [];
                         ycell(j) = [];
                         zcell(j) = [];
-                        legend(j) = [];
                         color(j) = [];
+                        if ~isempty(legend)
+                            legend(j) = [];
+                        end
                         marker(j) = [];
                         linestyle(j) = [];
                         j = 0;
@@ -286,13 +288,23 @@ classdef Plot < handle
             for l = 1:numel(linestyle)
                 if isempty(linestyle{l})
                     % sort. Doesn't matter by what, but be consistent
+                    pt = cell(1, 3);
+                    
                     if ~isempty(xcell{l})
-                        [~, inds] = sort(xcell{l});
-                    elseif ~isempty(ycell{l})
-                        [~, inds] = sort(ycell{l});
-                    elseif ~isempty(zcell{l})
-                        [~, inds] = sort(zcell{l});
+                        pt(1) = {arrayfun(@num2str, xcell{l}, 'uni', false)'};
                     end
+                    
+                    if ~isempty(ycell{l})
+                        pt(2) = {arrayfun(@num2str, ycell{l}, 'uni', false)'};
+                    end
+                    if ~isempty(zcell{l})
+                        pt(3) = {arrayfun(@num2str, zcell{l}, 'uni', false)'};
+                    end
+                    % pick out non empty
+                    pt(cellfun(@isempty, pt)) = [];
+                    % now join such that we have 1xN cell array of strings
+                    pt = join([pt{:}], ' ');
+                    [~, inds] = sort(pt);
                     % now we have indices; apply
                     if ~isempty(xcell{l})
                         xcell{l} = xcell{l}(inds);
@@ -305,6 +317,9 @@ classdef Plot < handle
                     end
                 end
             end
+            
+            % Now that all have been chained together, should we sanitize
+            % it? By sanitize what we mean is 
             this.XData = xcell;
             this.YData = ycell;
             this.ZData = zcell;
