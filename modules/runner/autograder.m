@@ -6,7 +6,7 @@
 %%% Remarks
 %
 % Main is the entry point for the Autograder. Main will handle any
-% exceptions, and will always clean up after itself - the user's folder
+% exceptions, and will always clean up afdatater itself - the user's folder
 % will not be changed!
 %
 % Documentation is available. Please go the the autograder's website, at

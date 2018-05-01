@@ -143,16 +143,16 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
                 subs = response.Body.Data';
                 return;
             end    
-            subs = cell(1, pgs-1);
+            subs = cell(1, pgs);
             subs{1} = response.Body.Data';
-            links = cell(1, pgs-1);
+            links = cell(1, pgs - 1);
             links{1} = next.link.extractBetween('<', '>');
-            for l = 2:pgs-1
+            for l = 2:pgs - 1
                 links{l} = regexprep(links{l-1}, '(?<=\?page=)\d*', '${num2str(1+str2double($0))}');
             end
             % for each link, fetch it's outputs and store it in subs
-            for l = numel(links):-1:2
-                workers(l-1) = parfeval(@fetchChunk, 1, links{l}, token);
+            for l = numel(links):-1:1
+                workers(l) = parfeval(@fetchChunk, 1, links{l}, token);
             end
             progress.Indeterminate = 'off';
             progress.Value = 0;
