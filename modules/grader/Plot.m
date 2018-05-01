@@ -160,7 +160,11 @@ classdef Plot < handle
 
 
             lines = allchild(pHandle);
-
+            for i = length(lines):-1:1
+                if ~isa(lines(i), 'matlab.graphics.chart.primitive.Line')
+                    lines(i) = [];
+                end
+            end
             xcell = cell(1,length(lines));
             ycell = cell(1,length(lines));
             zcell = cell(1,length(lines));
@@ -171,13 +175,10 @@ classdef Plot < handle
 
             for i = 1:length(lines)
                 line = lines(i);
-                if ~isa(line, 'matlab.graphics.chart.primitive.Line')
-                    continue;
-                end
                 xcell(i) = {line.XData};
                 ycell(i) = {line.YData};
                 zcell(i) = {line.ZData};
-
+                
                 legend(i) = {line.DisplayName};
 
                 color(i) = {line.Color};
@@ -272,9 +273,7 @@ classdef Plot < handle
                         ycell(j) = [];
                         zcell(j) = [];
                         color(j) = [];
-                        if ~isempty(legend)
-                            legend(j) = [];
-                        end
+                        legend(j) = [];
                         marker(j) = [];
                         linestyle(j) = [];
                         j = 0;
@@ -314,6 +313,66 @@ classdef Plot < handle
                     end
                     if ~isempty(zcell{l})
                         zcell{l} = zcell{l}(inds);
+                    end
+                else
+                    % order the line. By convention, all lines should be
+                    % ordered by X Value, from least to greatest, such that
+                    % the first value is always less than the last value.
+                    % If they're the same, we order it such that the first
+                    % value is less than the second to last value - and so
+                    % on. If the X Values are all the same, then move to Y
+                    % values, then to Z values. If all values are
+                    % identical, then sorting doesn't really matter...
+                    vals = [xcell(l), ycell(l), zcell(l)];
+                    dim = 1;
+                    while isempty(vals{dim})
+                        dim = dim + 1;
+                        if dim == 4
+                            break;
+                        end
+                    end
+                    if dim ~= 4
+                        ind1 = 1;
+                        ind2 = length(vals{dim});
+
+                        val1 = vals{dim}(ind1);
+                        val2 = vals{dim}(ind2);
+                        while val1 == val2
+                            % If they are equal, get the next val
+                            ind1 = ind1 + 1;
+                            ind2 = ind2 - 1;
+                            if ind1 >= ind2
+                                % We've reached end. Move to next value...
+                                % if we've reached last dim, just exit - no
+                                % need to sort since all data is identical...
+
+                                % keep iterating through dims until we find
+                                % non-empty
+                                dim = dim + 1;
+                                while isempty(vals{dim})
+                                    dim = dim + 1;
+                                    if dim == 4
+                                        break;
+                                    end
+                                end
+                                if dim == 4
+                                    break;
+                                else
+                                    ind1 = 1;
+                                    ind2 = length(vals{dim});
+                                end
+                            end
+                            val1 = vals{dim}(ind1);
+                            val2 = vals{dim}(ind2);
+                        end
+
+                        % if vals are equal, data identical; no need to do
+                        % anyting
+                        if val1 > val2
+                            xcell{l} = xcell{l}(end:-1:1);
+                            ycell{l} = ycell{l}(end:-1:1);
+                            zcell{l} = zcell{l}(end:-1:1);
+                        end
                     end
                 end
             end
