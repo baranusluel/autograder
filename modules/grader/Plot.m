@@ -195,44 +195,6 @@ classdef Plot < handle
                 end
             end
             % Plot Chaining
-            % First, go through and capture all lines with same marker
-            % style and NO line style
-            i = 1;
-            % for each one, loop through. IF this one has no line style,
-            % then find anyone else with same marker style and combine.
-            % Delete later one
-            while i <= numel(linestyle)
-                if strcmp(linestyle{i}, '')
-                    % good to go. Look for other marker style
-                    mStyle = marker{i};
-                    thisColor = color{i};
-                    for j = numel(linestyle):-1:(i+1)
-                        % if same, combine and delete
-                        if strcmp(marker{j}, mStyle) && ...
-                                strcmp(linestyle{j}, '') && ...
-                                isequal(color{j}, thisColor)
-                            % we have a match! combine and kill
-                            xcell{i} = [xcell{i} xcell{j}];
-                            ycell{i} = [ycell{i} ycell{j}];
-                            zcell{i} = [zcell{i} zcell{j}];
-                            xcell(j) = [];
-                            ycell(j) = [];
-                            zcell(j) = [];
-                            legend(j) = [];
-                            color(j) = [];
-                            marker(j) = [];
-                            linestyle(j) = [];
-                        end
-                    end
-                    % since no line style, we can sort safely
-                    xcell{i} = sort(xcell{i});
-                    ycell{i} = sort(ycell{i});
-                    zcell{i} = sort(zcell{i});
-                end
-                i = i + 1;
-            end
-            % Now, we have all the same points in all the right places. Now
-            % it gets a bit more complicated.
             % A line by any other name is just as beautiful. Suppose we
             % want the student to plot a line from origin to (1, 1), then
             % from (1, 1) to (0, 2). There's two ways of doing this:
@@ -245,13 +207,17 @@ classdef Plot < handle
             %
             % For each line, search through the list for another line that
             % has these characteristics:
-            %   same line style (NOT '')
+            %   same line style
             %   same marker
             %   same color
             %   The FIRST (x,y,z) of new one matches the LAST (x,y,z) of
             %   current choice
             % if it meets these conditions, we need to combine them and
             % then start the search over.
+            % 
+            % After we're done combining, if there's no line style, we need
+            % to sort the data - this is because we don't care which order
+            % they plotted simple points in.
             i = 1;
             while i <= numel(linestyle)
                 lStyle = linestyle{i};
@@ -292,9 +258,32 @@ classdef Plot < handle
                         j = 0;
                     end
                     j = j + 1;
-                    
                 end
                 i = i + 1;
+            end
+            
+            % for every line that has no line style, we should sort it.
+            for l = 1:numel(linestyle)
+                if isempty(linestyle{l})
+                    % sort. Doesn't matter by what, but be consistent
+                    if ~isempty(xcell{l})
+                        [~, inds] = sort(xcell{l});
+                    elseif ~isempty(ycell{l})
+                        [~, inds] = sort(ycell{l});
+                    elseif ~isempty(zcell{l})
+                        [~, inds] = sort(zcell{l});
+                    end
+                    % now we have indices; apply
+                    if ~isempty(xcell{l})
+                        xcell{l} = xcell{l}(inds);
+                    end
+                    if ~isempty(ycell{l})
+                        ycell{l} = ycell{l}(inds);
+                    end
+                    if ~isempty(zcell{l})
+                        zcell{l} = zcell{l}(inds);
+                    end
+                end
             end
             this.XData = xcell;
             this.YData = ycell;
