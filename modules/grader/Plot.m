@@ -214,6 +214,8 @@ classdef Plot < handle
             %   current choice
             % if it meets these conditions, we need to combine them and
             % then start the search over.
+            % if it has NO line style, then we don't car about first
+            % matching last
             % 
             % After we're done combining, if there's no line style, we need
             % to sort the data - this is because we don't care which order
@@ -223,14 +225,24 @@ classdef Plot < handle
                 lStyle = linestyle{i};
                 mStyle = marker{i};
                 cStyle = color{i};
-                lastSet = getLast(xcell{i}, ycell{i}, zcell{i});
+                % if no line, then just points. Point chaining does not
+                % depend on first, last.
+                if isempty(lStyle)
+                    lastSet = {};
+                else
+                    lastSet = getLast(xcell{i}, ycell{i}, zcell{i});
+                end
                 % We now have the x, y, z data that forms the end of this
                 % line. So, loop through remaining lines. If any of them
                 % match AND their starting points match the ending points,
                 % then engage
                 j = 1;
                 while j <= numel(linestyle)
-                    firstSet = getFirst(xcell{j}, ycell{j}, zcell{j});
+                    if isempty(linestyle{j})
+                        firstSet = {};
+                    else
+                        firstSet = getFirst(xcell{j}, ycell{j}, zcell{j});
+                    end
                     if j ~= i && ...
                             strcmp(lStyle, linestyle{j}) && ...
                             strcmp(mStyle, marker{j}) && ...
@@ -240,9 +252,17 @@ classdef Plot < handle
                         % ok. Since we're combining, reset to 0; it will
                         % get pushed up to 1. This is so we can restart the
                         % search
-                        xcell{i} = [xcell{i}(1:end-1) xcell{j}];
-                        ycell{i} = [ycell{i}(1:end-1) ycell{j}];
-                        zcell{i} = [zcell{i}(1:end-1) zcell{j}];
+                        if isempty(lStyle)
+                            % don't shave off end (points don't share the
+                            % same start-end)
+                            xcell{i} = [xcell{i} xcell{j}];
+                            ycell{i} = [ycell{i} ycell{j}];
+                            zcell{i} = [zcell{i} zcell{j}];
+                        else
+                            xcell{i} = [xcell{i}(1:end-1) xcell{j}];
+                            ycell{i} = [ycell{i}(1:end-1) ycell{j}];
+                            zcell{i} = [zcell{i}(1:end-1) zcell{j}];
+                        end
                         % if i > j, then i is affected by deleting j. Plan
                         % accordingly
                         if i > j
