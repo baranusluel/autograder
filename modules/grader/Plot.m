@@ -231,6 +231,71 @@ classdef Plot < handle
                 end
                 i = i + 1;
             end
+            % Now, we have all the same points in all the right places. Now
+            % it gets a bit more complicated.
+            % A line by any other name is just as beautiful. Suppose we
+            % want the student to plot a line from origin to (1, 1), then
+            % from (1, 1) to (0, 2). There's two ways of doing this:
+            %   plot([0 1 0], [0 1 2], 'STYLE');
+            % OR
+            %   plot([0 1], [0 1], 'STYLE');
+            %   hold on;
+            %   plot([1 0], [1 2], 'STYLE');
+            % We need to handle both. How? By chaining
+            %
+            % For each line, search through the list for another line that
+            % has these characteristics:
+            %   same line style (NOT '')
+            %   same marker
+            %   same color
+            %   The FIRST (x,y,z) of new one matches the LAST (x,y,z) of
+            %   current choice
+            % if it meets these conditions, we need to combine them and
+            % then start the search over.
+            i = 1;
+            while i <= numel(linestyle)
+                lStyle = linestyle{i};
+                mStyle = marker{i};
+                cStyle = color{i};
+                lastSet = getLast(xcell{i}, ycell{i}, zcell{i});
+                % We now have the x, y, z data that forms the end of this
+                % line. So, loop through remaining lines. If any of them
+                % match AND their starting points match the ending points,
+                % then engage
+                j = 1;
+                while j <= numel(linestyle)
+                    firstSet = getFirst(xcell{j}, ycell{j}, zcell{j});
+                    if j ~= i && ...
+                            strcmp(lStyle, linestyle{j}) && ...
+                            strcmp(mStyle, marker{j}) && ...
+                            isequal(cStyle, color{j}) && ...
+                            isequal(lastSet, firstSet)
+                        % Good to go! Combine. We can't sort, but that's
+                        % ok. Since we're combining, reset to 0; it will
+                        % get pushed up to 1. This is so we can restart the
+                        % search
+                        xcell{i} = [xcell{i}(1:end-1) xcell{j}];
+                        ycell{i} = [ycell{i}(1:end-1) ycell{j}];
+                        zcell{i} = [zcell{i}(1:end-1) zcell{j}];
+                        % if i > j, then i is affected by deleting j. Plan
+                        % accordingly
+                        if i > j
+                            i = i - 1;
+                        end
+                        xcell(j) = [];
+                        ycell(j) = [];
+                        zcell(j) = [];
+                        legend(j) = [];
+                        color(j) = [];
+                        marker(j) = [];
+                        linestyle(j) = [];
+                        j = 0;
+                    end
+                    j = j + 1;
+                    
+                end
+                i = i + 1;
+            end
             this.XData = xcell;
             this.YData = ycell;
             this.ZData = zcell;
@@ -239,7 +304,54 @@ classdef Plot < handle
             this.Marker = marker;
             this.LineStyle = linestyle;
 
-
+            function last = getLast(x, y, z)
+                isX = ~isempty(x);
+                isY = ~isempty(y);
+                isZ = ~isempty(z);
+                last = cell(1, 3);
+                % depending on what we have, do different things?
+                if isX && isY && isZ
+                    last{1} = x(end);
+                    last{2} = y(end);
+                    last{3} = z(end);
+                elseif isX && isY && ~isZ
+                    last{1} = x(end);
+                    last{2}  = y(end);
+                    last{3} = [];
+                elseif isX && isZ && ~isY
+                    last{1} = x(end);
+                    last{2} = [];
+                    last{3} = z(end);
+                elseif isY && isZ && ~isX
+                    last{1} = [];
+                    last{2} = y(end);
+                    last{3} = z(end);
+                end
+            end
+            function first = getFirst(x, y, z)
+                isX = ~isempty(x);
+                isY = ~isempty(y);
+                isZ = ~isempty(z);
+                first = cell(1, 3);
+                % depending on what we have, do different things?
+                if isX && isY && isZ
+                    first{1} = x(1);
+                    first{2} = y(1);
+                    first{3} = z(1);
+                elseif isX && isY && ~isZ
+                    first{1} = x(1);
+                    first{2}  = y(1);
+                    first{3} = [];
+                elseif isX && isZ && ~isY
+                    first{1} = x(1);
+                    first{2} = [];
+                    first{3} = z(1);
+                elseif isY && isZ && ~isX
+                    first{1} = [];
+                    first{2} = y(1);
+                    first{3} = z(1);
+                end
+            end
         end
     end
     methods (Access=public)
