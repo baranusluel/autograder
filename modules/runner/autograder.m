@@ -61,6 +61,12 @@ function autograder(app)
 
     % start up application
     settings.app = app;
+    if app.isDebug
+        logger = Logger(app.localDebugPath);
+    else
+        logger = Logger();
+    end
+    settings.logger = logger;
     % Start up parallel pool
     progress = uiprogressdlg(app.UIFigure, 'Title', 'Autograder Progress', ...
         'Message', 'Starting Parallel Pool', 'Cancelable', 'on', ...
@@ -238,8 +244,10 @@ end
 
 function cleanup(settings)
     % Cleanup
+    Logger.log('Deleting Sentinel file');
     delete(File.SENTINEL);
     % Restore user's path
+    Logger.log('Restoring User Path settings');
     path(settings.userPath{1}, '');
     if ~isempty(settings.userPath{2})
         userpath(settings.userPath{2});
@@ -247,7 +255,7 @@ function cleanup(settings)
 
     % cd to user's dir
     cd(settings.userDir);
-
+    Logger.log('Removing Working Directory');
     % Delete our working directory
     [~] = rmdir(settings.workingDir, 's');
     % Restore figure settings
@@ -255,10 +263,11 @@ function cleanup(settings)
     % store debugging info
     app = settings.app;
     if ~isempty(app.localDebugPath)
+        Logger.log('Saving Debug Information');
         students = app.students; %#ok<NASGU>
         solutions = app.solutions; %#ok<NASGU>
         exception = app.exception; %#ok<NASGU>
         save([app.localDebugPath filesep 'autograder.mat'], ...
-            'students', 'solutions', 'exception');
+            'students', 'solutions', 'exception', '-v7.3');
     end
 end
