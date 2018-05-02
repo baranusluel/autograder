@@ -54,6 +54,9 @@ function autograder(app)
     % gracefully.
 
     % add to path
+    % The number of students to wait between before redrawing the histogram
+    DRAW_INTERVAL = 10;
+    
     settings.userPath = {path(), userpath()};
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     clear Student;
@@ -87,6 +90,56 @@ function autograder(app)
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
 
+    % For solution, what are we doing?
+    % if downloading, call, otherwise, unzip
+    mkdir('Solutions');
+    if app.SolutionChoice.Value == 1
+        % downloading
+        try
+            token = refresh2access(app.driveToken);
+            downloadFromDrive(app.driveFolderId, token, [pwd filesep 'Solutions'], app.driveKey, progress);
+        catch e
+            if app.isDebug
+                keyboard;
+            else
+                alert(app, 'Exception %s found when trying to download from Google Drive', e.identifier);
+                app.exception = e;
+                return;
+            end
+        end
+    else
+        % unzip the archive
+        progress.Indeterminate = 'on';
+        progress.Message = 'Unzipping Rubric';
+        try
+            unzipArchive(app.solutionArchivePath, [pwd filesep 'Solutions']);
+        catch e
+            if app.isDebug
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
+    end
+
+    % Generate solutions
+    try
+        orig = cd('Solutions');
+        solutions = generateSolutions(app.isResubmission, progress);
+        cd(orig);
+        app.solutions = solutions;
+    catch e
+        % Display to user that we failed
+        if app.isDebug
+            keyboard;
+        else
+            cd(orig);
+            alert(app, e);
+            return;
+        end
+    end
+
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Students');
@@ -98,61 +151,39 @@ function autograder(app)
                 app.canvasToken, [pwd filesep 'Students'], progress);
         catch e
             % alert in some way and return
-            alert(app, 'Exception %s found when trying to download from Canvas', e.identifier);
-            app.exception = e;
-            return;
+            if app.isDebug
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
         end
     else
         progress.Message = 'Unzipping Student Archive';
         progress.Indeterminate = 'on';
         % unzip the archive
-        unzipArchive(app.submissionArchivePath, [pwd filesep 'Students']);
-    end
-
-    % For solution, what are we doing?
-    % if downloading, call, otherwise, unzip
-    mkdir('Solutions');
-    if app.SolutionChoice.Value == 1
-        % downloading
         try
-            token = refresh2access(app.driveToken);
-            downloadFromDrive(app.driveFolderId, token, [pwd filesep 'Solutions'], app.driveKey, progress);
+            unzipArchive(app.submissionArchivePath, [pwd filesep 'Students']);
         catch e
-            alert(app, 'Exception %s found when trying to download from Google Drive', e.identifier);
-            app.exception = e;
-            return;
+            if app.isDebug
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
         end
-    else
-        % unzip the archive
-        progress.Indeterminate = 'on';
-        progress.Message = 'Unzipping Rubric';
-        unzipArchive(app.solutionArchivePath, [pwd filesep 'Solutions']);
     end
-
-    % Generate solutions
-    try
-        orig = cd('Solutions');
-        solutions = generateSolutions(app.isResubmission, progress);
-        cd(orig);
-        app.solutions = solutions;
-    catch e
-        % Display to user that we failed
-        cd(orig);
-        alert(app, 'Problem generation failed. Error %s: %s', e.identifier, ...
-            e.message);
-        app.exception = e;
-        return;
-    end
-
     % Generate students
     try
         students = generateStudents([pwd filesep 'Students'], progress);
         app.students = students;
     catch e
-        alert(app, 'Student generation failed. Error %s: %s', e.identifier, ...
-            e.message);
-        app.exception = e;
-        return;
+        if app.isDebug
+            keyboard;
+        else
+            alert(app, e);
+            return;
+        end
     end
 
     % Grade students
@@ -178,20 +209,26 @@ function autograder(app)
     progress.Indeterminate = 'off';
     progress.Value = 0;
     progress.Message = 'Student Grading Progress';
-    tic;
     for s = 1:numel(students)
         student = students(s);
         progress.Message = sprintf('Assessing Student %s', student.name);
-        student.assess();
-        student.generateFeedback();
+        try
+            student.assess();
+            student.generateFeedback();
+        catch e
+            if app.isDebug
+                keyboard;
+            else
+                alert(e);
+                return;
+            end
+        end
         progress.Value = min([progress.Value + 1/numel(students), 1]);
         h.Data(s) = student.grade;
-        if mod(s, 10) == 0
+        if mod(s, DRAW_INTERVAL) == 0
             drawnow;
         end
     end
-    t = toc;
-    disp(t);
 
     % If the user requested uploading, do it
 
@@ -228,12 +265,10 @@ function autograder(app)
 
 end
 
-function alert(app, msg, varargin)
-    if nargin == 2
-        uialert(app.UIFigure, msg, 'Autograder');
-    else
-        uialert(app.UIFigure, sprintf(msg, varargin{:}), 'Autograder');
-    end
+function alert(app, e)
+    uialert(app.UIFigure, sprintf('Exception %s: "%s" encountered', ...
+        e.identifier, e.message), 'Autograder Error');
+    app.exception = e;
 end
 
 function cleanup(settings)
