@@ -80,6 +80,7 @@ function autograder(app)
     progress = uiprogressdlg(app.UIFigure, 'Title', 'Autograder Progress', ...
         'Message', 'Starting Parallel Pool', 'Cancelable', 'on', ...
         'ShowPercentage', true, 'Indeterminate', 'on');
+    Logger.log('Starting up parallel pool');
     evalc('gcp');
     app.UIFigure.Visible = 'off';
     app.UIFigure.Visible = 'on';
@@ -87,11 +88,13 @@ function autograder(app)
         return;
     end
     progress.Message = 'Setting Up Environment';
+    Logger.log('Setting up new directory');
     % Get temporary directory
     settings.workingDir = [tempname filesep];
     mkdir(settings.workingDir);
     settings.userDir = cd(settings.workingDir);
     % Create SENTINEL file
+    Logger.log('Creating Sentinel');
     fid = fopen(File.SENTINEL, 'wt');
     fwrite(fid, 'SENTINEL');
     fclose(fid);
@@ -109,6 +112,7 @@ function autograder(app)
         % downloading. We should create new Students folder and download
         % there.
         try
+            Logger.log('Starting download of Student Submissions from Canvas');
             downloadFromCanvas(app.canvasCourseId, app.canvasHomeworkId, ...
                 app.canvasToken, [pwd filesep 'Students'], progress);
         catch e
@@ -121,6 +125,7 @@ function autograder(app)
         progress.Message = 'Unzipping Student Archive';
         progress.Indeterminate = 'on';
         % unzip the archive
+        Logger.log('Unzipping Student Submissions');
         unzipArchive(app.submissionArchivePath, [pwd filesep 'Students']);
     end
 
@@ -130,7 +135,9 @@ function autograder(app)
     if app.SolutionChoice.Value == 1
         % downloading
         try
+            Logger.log('Exchanging refresh token for access token');
             token = refresh2access(app.driveToken);
+            Logger.log('Starting download of solution archive from Google Drive');
             downloadFromDrive(app.driveFolderId, token, [pwd filesep 'Solutions'], app.driveKey, progress);
         catch e
             alert(app, 'Exception %s found when trying to download from Google Drive', e.identifier);
@@ -141,12 +148,14 @@ function autograder(app)
         % unzip the archive
         progress.Indeterminate = 'on';
         progress.Message = 'Unzipping Rubric';
+        Logger.log('Unzipping Solution Archive');
         unzipArchive(app.solutionArchivePath, [pwd filesep 'Solutions']);
     end
 
     % Generate solutions
     try
         orig = cd('Solutions');
+        Logger.log('Generating Solutions');
         solutions = generateSolutions(app.isResubmission, progress);
         cd(orig);
         app.solutions = solutions;
@@ -161,6 +170,7 @@ function autograder(app)
 
     % Generate students
     try
+        Logger.log('Generating Students');
         students = generateStudents([pwd filesep 'Students'], progress);
         app.students = students;
     catch e
@@ -193,6 +203,7 @@ function autograder(app)
     progress.Indeterminate = 'off';
     progress.Value = 0;
     progress.Message = 'Student Grading Progress';
+    Logger.log('Starting student assessment');
     tic;
     for s = 1:numel(students)
         student = students(s);
@@ -211,10 +222,12 @@ function autograder(app)
     % If the user requested uploading, do it
 
     if app.UploadToCanvas.Value
+        Logger.log('Starting upload of student grades');
         uploadToCanvas(students, app.canvasCourseId, ...
             app.canvasHomeworkId, app.canvasToken, progress);
     end
     if app.UploadToServer.Value
+        Logger.log('Starting upload of student files');
         if app.isResubmission
             name = sprintf('homework%02d_resubmission', app.homeworkNum);
         else
@@ -231,16 +244,17 @@ function autograder(app)
         % save canvas info in path
         % copy csv, then change accordingly
         % move student folders to output path
+        Logger.log('Starting copy of local information');
         copyfile(pwd, app.localOutputPath);
     end
     if ~isempty(app.localDebugPath)
         % save MAT file
         progress.Indeterminate = 'on';
         progress.Message = 'Saving Debugger Information';
+        Logger.log('Starting copy of debug information');
         copyfile(pwd, app.localOutputPath);
     end
     close(progress);
-
 end
 
 function alert(app, msg, varargin)
