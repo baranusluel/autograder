@@ -279,4 +279,5 @@ function cleanup(settings)
         save([app.localDebugPath filesep 'autograder.mat'], ...
             'students', 'solutions', 'exception', '-v7.3');
     end
+    settings.logger.delete();
 end
