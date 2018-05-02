@@ -127,6 +127,19 @@ classdef Logger < handle
         %   Logger.log('Not Initialized');
         %
         %   Threw notInitialized exception
+        persistent fid;
+        if nargin > 1 && isnumeric(file)
+            fid = file;
+            return;
+        end
+        
+        if isempty(fid)
+            throw(MException('AUTOGRADER:Logger:notInitialized', ...
+                'Logger not correctly initialized'));
+        end
+        stack = dbstack;
+        fprintf(fid, Logger.RECORD_FORMAT, ...
+            datestr(date),  stack(end).name, message);
         end
     end
 end
