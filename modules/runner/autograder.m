@@ -61,10 +61,19 @@ function autograder(app)
 
     % start up application
     settings.app = app;
-    if app.isDebug
-        logger = Logger(app.localDebugPath);
-    else
-        logger = Logger();
+    try
+        if app.isDebug
+            logger = Logger(app.localDebugPath);
+        else
+            logger = Logger();
+        end
+    catch e
+        if app.isDebug
+            keyboard;
+        else
+            alert(app, e);
+            return;
+        end
     end
     settings.logger = logger;
     % Start up parallel pool
