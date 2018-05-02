@@ -53,9 +53,14 @@ function autograder(app)
     % info and then change to updating. If it's cancelled, we'll exit
     % gracefully.
 
+    %%% Constants
     % add to path
     % The number of students to wait between before redrawing the histogram
     DRAW_INTERVAL = 10;
+    % The label for inspecting students
+    INSPECT_LABEL = 'Inspect the Students';
+    % The label for continuing on
+    CONTINUE_LABEL = 'Continue';
     
     settings.userPath = {path(), userpath()};
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
@@ -229,7 +234,46 @@ function autograder(app)
             drawnow;
         end
     end
-
+    
+    % Before we do anything else, examine the grades. There should be a
+    % good distribution - if not, ask the user
+    
+    % What exactly "is" a good distribution? No idea. For now, we will flag
+    % if:
+    %   Nobody got 100
+    %   Nobody got > 90
+    %   Nobody got a 0
+    %   All values are either 0 or 100
+    %   All values are the same
+    if ~any(h.Data > (.9 * totalPoints))
+        msg = 'No student scored above 90%.';
+    elseif ~any(h.Data == totalPoints)
+        msg = 'No student scored a 100%.';
+    elseif ~any(h.Data == 0)
+        msg = sprintf('Every student scored above 0%; the minimum was %0.2f.', ...
+            min(data));
+    elseif all(h.Data == totalPoints | h.Data == 0)
+        msg = 'All students scored either a 0% or a 100%';
+    else
+        % we have passed... for now.
+        msg = '';
+    end
+    if ~isempty(msg)
+        msg = [msg ' Would you like to inspect the students, or continue?'];
+        selection = uiconfirm(app.UIFigure, msg, 'Autograder', ...
+            'Options', {INSPECT_LABEL, CONTINUE_LABEL}, ...
+            'DefaultOption', 1, 'Icon', 'warning', 'CancelOption', 2);
+        if strcmp(selection, INSPECT_LABEL)
+            stop = true;
+        else
+            stop = false;
+        end
+    else
+        stop = false;
+    end
+    if stop == 1
+        keyboard;
+    end
     % If the user requested uploading, do it
 
     if app.UploadToCanvas.Value
