@@ -90,6 +90,11 @@ classdef Logger < handle
         % This method overrides the normal delete functionality
         %
         % delete(L) closes the file and deletes the logger
+            if this.fid == -1
+                return;
+            else
+                fclose(this.fid);
+            end
         end
     end
     methods (Static, Access=public)
