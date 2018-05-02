@@ -27,7 +27,7 @@
 %
 classdef Logger < handle
     properties (Constant)
-        RECORD_FORMAT char = '%s: %s logged event: %s';
+        RECORD_FORMAT char = '\n%s: %s logged event: %s';
     end
     properties (Access=private)
         fid = -1;
@@ -82,6 +82,26 @@ classdef Logger < handle
         %   Logger(P);
         %
         %   Threw fileIO exception.
+            if nargin == 0
+                % create autograder.log in current path
+                path = [pwd filesep 'autograder.log'];
+            elseif isfolder(path)
+                path(path == '/' | path == '\') = filesep;
+                if path(end) == filesep
+                    path(end) = [];
+                end
+                path = [path filesep 'autograder.log'];
+            end
+            [this.fid, msg] = fopen(path, 'wt');
+            if this.fid == -1
+                throw(MException('AUTOGRADER:Logger:fileIO', ...
+                    'Encountered error "%s" when saving file %s', ...
+                    msg, path));
+            else
+                fprintf(this.fid, 'Logging Session Started at %s\n', ...
+                    datestr(datetime));
+                Logger.log([], this.fid);
+            end
         end
         
         function delete(this)
@@ -90,11 +110,11 @@ classdef Logger < handle
         % This method overrides the normal delete functionality
         %
         % delete(L) closes the file and deletes the logger
-            if this.fid == -1
-                return;
-            else
+            if this.fid ~= -1
+                fprintf('\nLogging Terminated at %s', datestr(datetime));
                 fclose(this.fid);
             end
+            clear Logger;
         end
     end
     methods (Static, Access=public)
@@ -127,19 +147,19 @@ classdef Logger < handle
         %   Logger.log('Not Initialized');
         %
         %   Threw notInitialized exception
-        persistent fid;
-        if nargin > 1 && isnumeric(file)
-            fid = file;
-            return;
-        end
-        
-        if isempty(fid)
-            throw(MException('AUTOGRADER:Logger:notInitialized', ...
-                'Logger not correctly initialized'));
-        end
-        stack = dbstack;
-        fprintf(fid, Logger.RECORD_FORMAT, ...
-            datestr(date),  stack(end).name, message);
-        end
+            persistent fid;
+            if nargin > 1 && isnumeric(file)
+                fid = file;
+                return;
+            end
+
+            if isempty(fid)
+                throw(MException('AUTOGRADER:Logger:notInitialized', ...
+                    'Logger not correctly initialized'));
+            end
+            stack = dbstack;
+            fprintf(fid, Logger.RECORD_FORMAT, ...
+                datestr(datetime),  stack(end).name, message);
+            end
     end
 end
