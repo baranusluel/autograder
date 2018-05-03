@@ -315,6 +315,11 @@ classdef Plot < handle
                         zcell{l} = zcell{l}(inds);
                     end
                 else
+                    % TL;DR: reverse the order of all the points in the 
+                    % line, in all three dimensions, if the student plotted
+                    % in reverse and the larger values came before the 
+                    % smaller ones.
+                    
                     % order the line. By convention, all lines should be
                     % ordered by X Value, from least to greatest, such that
                     % the first value is always less than the last value.
