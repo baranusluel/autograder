@@ -323,7 +323,7 @@ classdef Plot < handle
                     % order the line. By convention, all lines should be
                     % ordered by X Value, from least to greatest, such that
                     % the first value is always less than the last value.
-                    % If they're the same, we order it such that the first
+                    % If they're the same, we order it such that the second
                     % value is less than the second to last value - and so
                     % on. If the X Values are all the same, then move to Y
                     % values, then to Z values. If all values are
