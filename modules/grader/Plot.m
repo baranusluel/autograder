@@ -230,53 +230,58 @@ classdef Plot < handle
                 % depend on first, last.
                 if isempty(lStyle)
                     lastSet = {};
+                    firstSet = {};
                 else
                     lastSet = getLast(xcell{i}, ycell{i}, zcell{i});
+                    firstSet = getFirst(xcell{i}, ycell{i}, zcell{i});
                 end
                 % We now have the x, y, z data that forms the end of this
                 % line. So, loop through remaining lines. If any of them
                 % match AND their starting points match the ending points,
                 % then engage
-                j = 1;
+                j = i + 1;
                 while j <= numel(linestyle)
-                    if isempty(linestyle{j})
-                        firstSet = {};
-                    else
-                        firstSet = getFirst(xcell{j}, ycell{j}, zcell{j});
-                    end
-                    if j ~= i && ...
-                            strcmp(lStyle, linestyle{j}) && ...
+                    if strcmp(lStyle, linestyle{j}) && ...
                             strcmp(mStyle, marker{j}) && ...
-                            isequal(cStyle, color{j}) && ...
-                            isequal(lastSet, firstSet)
-                        % Good to go! Combine. We can't sort, but that's
-                        % ok. Since we're combining, reset to 0; it will
-                        % get pushed up to 1. This is so we can restart the
-                        % search
-                        if isempty(lStyle)
-                            % don't shave off end (points don't share the
-                            % same start-end)
+                            isequal(cStyle, color{j})
+                        % possible match. If last of main line matches
+                        % first of this, or other way around, engage
+                        if isempty(linestyle{j})
+                            % doesn't matter, just match
                             xcell{i} = [xcell{i} xcell{j}];
                             ycell{i} = [ycell{i} ycell{j}];
                             zcell{i} = [zcell{i} zcell{j}];
                         else
-                            xcell{i} = [xcell{i}(1:end-1) xcell{j}];
-                            ycell{i} = [ycell{i}(1:end-1) ycell{j}];
-                            zcell{i} = [zcell{i}(1:end-1) zcell{j}];
+                            thisFirstSet = getFirst(xcell{j}, ycell{j}, zcell{j});
+                            thisLastSet = getLast(xcell{j}, ycell{j}, zcell{j});
+                            % don't worry about messing with i; i will
+                            % always be less than j
+                            if isequal(lastSet, thisFirstSet)
+                                xcell{i} = [xcell{i}(1:end-1) xcell{j}];
+                                ycell{i} = [ycell{i}(1:end-1) ycell{j}];
+                                zcell{i} = [zcell{i}(1:end-1) zcell{j}];
+                                xcell(j) = [];
+                                ycell(j) = [];
+                                zcell(j) = [];
+                                color(j) = [];
+                                legend(j) = [];
+                                marker(j) = [];
+                                linestyle(j) = [];
+                                j = j - 1;
+                            elseif isequal(thisLastSet, firstSet)
+                                xcell{i} = [xcell{j}(1:end-1) xcell{i}];
+                                ycell{i} = [ycell{j}(1:end-1) ycell{i}];
+                                zcell{i} = [zcell{j}(1:end-1) zcell{i}];
+                                xcell(j) = [];
+                                ycell(j) = [];
+                                zcell(j) = [];
+                                color(j) = [];
+                                legend(j) = [];
+                                marker(j) = [];
+                                linestyle(j) = [];
+                                j = j - 1;
+                            end
                         end
-                        % if i > j, then i is affected by deleting j. Plan
-                        % accordingly
-                        if i > j
-                            i = i - 1;
-                        end
-                        xcell(j) = [];
-                        ycell(j) = [];
-                        zcell(j) = [];
-                        color(j) = [];
-                        legend(j) = [];
-                        marker(j) = [];
-                        linestyle(j) = [];
-                        j = 0;
                     end
                     j = j + 1;
                 end
