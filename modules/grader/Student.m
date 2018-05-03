@@ -198,9 +198,7 @@ classdef Student < handle
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:Student:assess:invalidProblem exception will
-        % be thrown if any problem is invalid (i.e. if it is empty or
-        % if name or testcases fields of the problem are empty).
+        % This method will not throw an exception.
         %
         %%% Unit Tests
         %
