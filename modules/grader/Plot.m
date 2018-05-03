@@ -388,50 +388,28 @@ classdef Plot < handle
             this.LineStyle = linestyle;
 
             function last = getLast(x, y, z)
-                isX = ~isempty(x);
-                isY = ~isempty(y);
-                isZ = ~isempty(z);
                 last = cell(1, 3);
                 % depending on what we have, do different things?
-                if isX && isY && isZ
+                if ~isempty(x)
                     last{1} = x(end);
+                end
+                if ~isempty(y)
                     last{2} = y(end);
-                    last{3} = z(end);
-                elseif isX && isY && ~isZ
-                    last{1} = x(end);
-                    last{2}  = y(end);
-                    last{3} = [];
-                elseif isX && isZ && ~isY
-                    last{1} = x(end);
-                    last{2} = [];
-                    last{3} = z(end);
-                elseif isY && isZ && ~isX
-                    last{1} = [];
-                    last{2} = y(end);
+                end
+                if ~isempty(z)
                     last{3} = z(end);
                 end
             end
             function first = getFirst(x, y, z)
-                isX = ~isempty(x);
-                isY = ~isempty(y);
-                isZ = ~isempty(z);
                 first = cell(1, 3);
                 % depending on what we have, do different things?
-                if isX && isY && isZ
+                if ~isempty(x)
                     first{1} = x(1);
+                end
+                if ~isempty(y)
                     first{2} = y(1);
-                    first{3} = z(1);
-                elseif isX && isY && ~isZ
-                    first{1} = x(1);
-                    first{2}  = y(1);
-                    first{3} = [];
-                elseif isX && isZ && ~isY
-                    first{1} = x(1);
-                    first{2} = [];
-                    first{3} = z(1);
-                elseif isY && isZ && ~isX
-                    first{1} = [];
-                    first{2} = y(1);
+                end
+                if ~isempty(z)
                     first{3} = z(1);
                 end
             end
