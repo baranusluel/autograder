@@ -95,6 +95,28 @@ function autograder(app)
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
 
+    % For submission, what are we doing?
+    % if downloading, call, otherwise, unzip
+    mkdir('Students');
+    if app.HomeworkChoice.Value == 1
+        % downloading. We should create new Students folder and download
+        % there.
+        try
+            downloadFromCanvas(app.canvasCourseId, app.canvasHomeworkId, ...
+                app.canvasToken, [pwd filesep 'Students'], progress);
+        catch e
+            % alert in some way and return
+            alert(app, 'Exception %s found when trying to download from Canvas', e.identifier);
+            app.exception = e;
+            return;
+        end
+    else
+        progress.Message = 'Unzipping Student Archive';
+        progress.Indeterminate = 'on';
+        % unzip the archive
+        unzipArchive(app.homeworkArchivePath, [pwd filesep 'Students']);
+    end
+    
     % For solution, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Solutions');
@@ -219,7 +241,6 @@ function autograder(app)
         progress.Message = sprintf('Assessing Student %s', student.name);
         try
             student.assess();
-            student.generateFeedback();
         catch e
             if app.isDebug
                 keyboard;
