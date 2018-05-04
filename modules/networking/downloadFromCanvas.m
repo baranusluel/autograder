@@ -3,9 +3,10 @@
 % downloadFromCanvas will download the given assignment to be parsed by the
 % autograder
 %
-% downloadFromCanvas(C, A, T, P) will use the course ID in C, the assignment
+% downloadFromCanvas(C, A, T, P, B) will use the course ID in C, the assignment
 % ID in A, the token in T, and the path in P to download and save the homework submission
-% in an autograder-ready format in the path specified.
+% in an autograder-ready format in the path specified. Additionally, it
+% will update the progress bar B.
 %
 %%% Remarks
 %
@@ -19,62 +20,173 @@
 %
 %%% Unit Tests
 %
-%   % Assume the parameters are correct: C, A, T, P
-%   downloadFromCanvas(C, A, T, P);
+%   % Assume the parameters are correct: C, A, T, P, B
+%   downloadFromCanvas(C, A, T, P, B);
 %
 %   In path P, the student folders are all saved, along with a `grades.csv`
-%
-%   % Assume credentials are incorrect
-%   downloadFromCanvas(C, A, T, P);
-%
-%   threw connectionError exception
-function downloadFromCanvas(courseId, assignmentId, token, path)
-    subs = getSubmissions(courseId, assignmentId, token);
+function downloadFromCanvas(courseId, assignmentId, token, path, progress)
+    subs = getSubmissions(courseId, assignmentId, token, progress);
     origPath = cd(path);
     cleaner = onCleanup(@()(cd(origPath)));
     % for each user, get GT Username, create folder, then inside that
     % folder, download submission
-    names = cell(2, numel(subs));
-    for s = 1:numel(subs)
-        student = getStudentInfo(subs{s}.user_id, token);
+    numStudents = numel(subs);
+    names = cell(1, numStudents);
+    ids = cell(1, numStudents);
+    % get ids
+    progress.Indeterminate = 'off';
+    progress.Value = 0;
+    progress.Message = 'Fetching Student Information';
+    for s = numStudents:-1:1
+        workers(s) = parfeval(@getStudentInfo, 1, subs{s}.user_id, token);
+    end
+    while ~all([workers.Read])
+        fetchNext(workers);
+        progress.Value = min([progress.Value + 1/numStudents, 1]);
+        drawnow;
+        if progress.CancelRequested
+            cancel(workers);
+            e = MException('AUTOGRADER:networking:connectionError', ...
+                'User cancelled operation');
+            e.throw();
+        end
+    end
+    students = fetchOutputs(workers);
+    delete(workers);
+    workers = cell(1, numStudents);
+    progress.Indeterminate = 'off';
+    progress.Value = 0;
+    progress.Message = 'Downloading Student Submissions';
+    for s = numStudents:-1:1
         % create folder with name as login_id
-        mkdir(student.login_id);
-        names{1, s} = student.name;
-        names{2, s} = student.login_id;
-        orig = cd(student.login_id);
+        mkdir(students(s).login_id);
+        names{s} = students(s).name;
+        ids{s} = students(s).login_id;
         % for each attachment, download it here
         if isfield(subs{s}, 'attachments')
-            for a = 1:numel(subs{s}.attachments)
-                try
-                    websave(subs{s}.attachments(a).filename, ...
-                        subs{s}.attachments(a).url);
-                catch reason
-                    e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
-                    e = addCause(e, reason);
-                    throw(e);
-                end
-            end
+            workers{s} = saveFiles(subs{s}.attachments, students(s).login_id);
         end
-        cd(orig);
+    end
+    workers = [workers{:}];
+    workers([workers.ID] == -1) = [];
+    numToSave = numel(workers);
+    while ~all([workers.Read])
+        fetchNext(workers);
+        progress.Value = min([progress.Value + 1/numToSave, 1]);
+        drawnow;
+        if progress.CancelRequested
+            cancel(workers);
+            e = MException('AUTOGRADER:networking:connectionError', ...
+                'User cancelled operation');
+            e.throw();
+        end
     end
     % write info.csv
-    records = cell(1, size(names, 2));
-    for n = 1:size(names, 2)
-        records{n} = strjoin(names(:, n)', ': ');
-    end
+    names = [names; ids]';
+    names = join(names, '", "');
+    names = ['"' strjoin(names, '"\n"'), '"'];
     fid = fopen('info.csv', 'wt');
-    fwrite(fid, strjoin(records, newline));
+    fwrite(fid, names);
     fclose(fid);
     cd(origPath);
 end
 
-function subs = getSubmissions(courseId, assignmentId, token)
-    % get all subs for this assignment. 
-    API = 'https://gatech.instructure.com/api/v1';
-    opts = weboptions;
-    opts.HeaderFields = {'Authorization', ['Bearer ' token]};
+function workers = saveFiles(attachments, loginId)
+    for a = numel(attachments):-1:1
+        workers(a) = parfeval(@saveFile, 0, attachments(a), [pwd filesep loginId]);
+    end
+end
+
+function saveFile(attachment, path, attempt, reason)
+    MAX_ATTEMPT_NUM = 10;
+    if nargin > 2 && attempt > MAX_ATTEMPT_NUM
+        e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
+        e = addCause(e, reason);
+        throw(e);
+    end
     try
-        subs = webread([API '/courses/' num2str(courseId) '/assignments/' num2str(assignmentId) '/submissions/'], 'per_page', '10000', opts);
+        downloader = matlab.net.http.RequestMessage;
+        data = downloader.send(attachment.url);
+        fid = fopen([path filesep attachment.filename], 'wt');
+        fwrite(fid, data.Body.Data);
+        fclose(fid);
+    catch reason
+        if nargin > 2
+            saveFile(attachment, path, attempt + 1, reason);
+        else
+            saveFile(attachment, path, 1, reason);
+        end
+    end
+end
+
+function subs = getSubmissions(courseId, assignmentId, token, progress)
+    API = 'https://gatech.instructure.com/api/v1/courses/';
+    DEFAULT_SUBMISSION_NUM = 1000;
+    try
+        progress.Indeterminate = 'on';
+        progress.Message = 'Fetching Student Submissions';
+        request = matlab.net.http.RequestMessage;
+        request.Header = matlab.net.http.HeaderField;
+        request.Header.Name = 'Authorization';
+        request.Header.Value = ['Bearer ' token];
+        response = request.send([API courseId '/assignments/' assignmentId '/submissions/?per_page=100']);
+        next = response.getFields('Link').parse({'link', 'rel'});
+        % see if last was provided. If so, then we can prealloc (mostly)
+        % precisely. Otherwise, just use DEFAULT_SUBMISSION_NUM
+        last = next(strcmp([next.rel], "last"));
+        next = next(strcmp([next.rel], "next"));
+        if ~isempty(last)
+            % get page: ?page=num&
+            pgs = regexp(last.link, '(?<=\?page=)\d*', 'match');
+            pgs = str2double(pgs{1});
+            if pgs == 1
+                subs = response.Body.Data';
+                return;
+            end    
+            subs = cell(1, pgs);
+            subs{1} = response.Body.Data';
+            links = cell(1, pgs - 1);
+            links{1} = next.link.extractBetween('<', '>');
+            for l = 2:pgs - 1
+                links{l} = regexprep(links{l-1}, '(?<=\?page=)\d*', '${num2str(1+str2double($0))}');
+            end
+            % for each link, fetch it's outputs and store it in subs
+            for l = numel(links):-1:1
+                workers(l) = parfeval(@fetchChunk, 1, links{l}, token);
+            end
+            progress.Indeterminate = 'off';
+            progress.Value = 0;
+            while ~all([workers.Read])
+                [idx, sub] = fetchNext(workers);
+                if progress.CancelRequested
+                    cancel(workers);
+                    throw(MException('AUTOGRADER:userCancellation', 'User Cancelled Operation'));
+                end
+                subs{idx + 1} = sub;
+                progress.Value = min([progress.Value + 1/numel(workers), 1]);
+            end
+            subs = [subs{:}];
+        else
+            % Can't use our parfor; do the old fashioned way
+            progress.Indeterminate = 'on';
+            counter = 1;
+            subs = cell(1, DEFAULT_SUBMISSION_NUM);
+            subs(counter:(counter+numel(response.Body.Data)-1)) = response.Body.Data';
+            counter = counter + numel(response.Body.Data);
+            while ~isempty(next)
+                if progress.CancelRequested
+                    throw(MException('AUTOGRADER:userCancellation', 'User Cancelled Operation'));
+                end
+                % get the next batch
+                % next.link is the link to ask for
+                response = request.send(next.link.extractBetween('<', '>'));
+                next = response.getFields('Link').parse({'link', 'rel'});
+                next = next(strcmp([next.rel], "next"));
+                subs(counter:(counter+numel(response.Body.Data)-1)) = response.Body.Data';
+                counter = counter + numel(response.Body.Data);
+            end
+        end
+        subs(cellfun(@isempty, subs)) = [];
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
         e = addCause(e, reason);
@@ -86,6 +198,7 @@ function info = getStudentInfo(userId, token)
     API = 'https://gatech.instructure.com/api/v1';
     opts = weboptions;
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
+    opts.Timeout = 30;
     try
         info = webread([API '/users/' num2str(userId) '/profile/'], opts);
     catch reason
@@ -94,4 +207,12 @@ function info = getStudentInfo(userId, token)
         throw(e);
     end
 end
-    
+
+function chunk = fetchChunk(link, token)
+    request = matlab.net.http.RequestMessage;
+    request.Header = matlab.net.http.HeaderField;
+    request.Header.Name = 'Authorization';
+    request.Header.Value = ['Bearer ' token];
+    response = request.send(link);
+    chunk = response.Body.Data';
+end

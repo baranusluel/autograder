@@ -78,20 +78,24 @@ classdef Problem < handle
             end
             try
                 this.name = info.name;
-                this.banned = info.banned;
+                if isempty(info.banned)
+                    this.banned = {};
+                else
+                    this.banned = info.banned;
+                end
                 this.isRecursive = info.isRecursive;
                 
                 for i = length(info.testCases):-1:1
-                    tInfo = info.TestCases(i);
+                    tInfo = info.testCases(i);
                     tInfo.banned = this.banned;
                     % Get the full paths of the supporting files and add to
                     % the test case info struct
-                    tInfo.supportingFiles = cell(1, length(info(i).supportingFiles));
-                    for j = 1:length(info(i).supportingFiles)
-                        tInfo.supportingFiles{j} = [fileparts(fileparts(pwd)) filesep 'SupportingFiles' filesep info(i).supportingFiles{j}];
+                    tInfo.supportingFiles = cell(1, length(info.supportingFiles));
+                    for j = 1:length(info.supportingFiles)
+                        tInfo.supportingFiles{j} = [pwd filesep 'SupportingFiles' filesep info.supportingFiles{j}];
                     end
                     
-                    testCases(i) = TestCase(tInfo, [pwd filesep() 'Solutions']);
+                    testCases(i) = TestCase(tInfo, [pwd filesep 'Solutions']);
                 end
                 this.testCases = testCases;
                 
