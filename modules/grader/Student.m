@@ -24,13 +24,12 @@
 % * isGraded: A logical that indicates whether a student has been graded
 %
 % * grade: The overall score for this student (read-only)
+%
 %%% Methods
 %
 % * Student
 %
-% * gradeProblem
-%
-% * generateFeedback
+% * assess
 %
 %%% Remarks
 %
@@ -80,7 +79,7 @@ classdef Student < handle
     methods
         function grade = get.grade(this)
             if isempty(this.feedbacks)
-                throw(MException('AUTOGRADER:Student:grade:noFeedbacks', 'No feedbacks were found (did you call gradeProblem?)'));
+                throw(MException('AUTOGRADER:Student:grade:noFeedbacks', 'No feedbacks were found (did you call assess?)'));
             end
             grade = sum(cellfun(@(f) sum([f.points]), this.feedbacks));
         end
@@ -199,9 +198,7 @@ classdef Student < handle
         %
         %%% Exceptions
         %
-        % An AUTOGRADER:Student:assess:invalidProblem exception will
-        % be thrown if any problem is invalid (i.e. if it is empty or
-        % if name or testcases fields of the problem are empty).
+        % This method will not throw an exception.
         %
         %%% Unit Tests
         %
@@ -386,7 +383,10 @@ classdef Student < handle
             for p = 1:numel(problems)
                 this.feedbacks{p} = feeds(inds == p);
             end
+            this.generateFeedback();
         end
+    end
+    methods (Access=private)
         function generateFeedback(this)
         %% generateFeedback: Generate HTML feedback for student
         %
@@ -408,7 +408,7 @@ classdef Student < handle
         %
         % An AUTOGRADER:Student:generateFeedback:missingFeedback exception
         % will be thrown if the feedbacks field of the Student is empty
-        % (i.e. if gradeProblem wasn't invoked first).
+        % (i.e. if assess wasn't invoked first).
         %
         % An AUTOGRADER:Student:generateFeedback:fileIO exception will be
         % thrown if there is an error when opening the student's feedback
@@ -429,7 +429,7 @@ classdef Student < handle
             % Check feedbacks is correct
             if isempty(this.feedbacks)
                 throw(MException('AUTOGRADER:Student:generateFeedback:missingFeedback', ...
-                    'No feedbacks present (did you forget to invoke gradeProblem?)'));
+                    'No feedbacks present (did you forget to invoke assess()?)'));
             end
             % Header info
             this.html = {'<!DOCTYPE html>', '<html>', '<head>', '</head>', ...
@@ -516,8 +516,6 @@ classdef Student < handle
             fclose(fid);
             this.isGraded = true;
         end
-    end
-    methods (Access=private)
         % Splice elements to the end of HEAD
         function spliceHead(this, varargin)
             % Find the header

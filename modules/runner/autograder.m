@@ -183,7 +183,6 @@ function autograder(app)
         student = students(s);
         progress.Message = sprintf('Assessing Student %s', student.name);
         student.assess();
-        student.generateFeedback();
         progress.Value = min([progress.Value + 1/numel(students), 1]);
         h.Data(s) = student.grade;
         if mod(s, 10) == 0
