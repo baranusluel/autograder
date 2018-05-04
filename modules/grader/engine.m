@@ -322,7 +322,6 @@ function runnables = engine(runnables)
     end
     % reset each runnable
     for r = 1:numel(runnables)
-        [~] = rmdir(runnables(r).path);
         runnables(r).path = origPaths{r};
     end
 end
@@ -360,17 +359,14 @@ function populatePlots(runnable)
         end
         runnable.plots = plots;
     end
-    h = findall(0, 'type', 'figure');
-    close(h);
-    delete(h);
 end
 
 
 function runnable = runCase(runnable)
     % Setup workspace
     % is this supposed to be here?  -->     cleanup();
-    cleaner = onCleanup(@() cleanup());
     orig = cd(runnable.path);
+    cleaner = onCleanup(@() cleanup(orig));
     beforeSnap = dir();
     beforeSnap = {beforeSnap.name};
     beforeSnap(strncmp(beforeSnap, '.', 1)) = [];
@@ -425,7 +421,6 @@ function runnable = runCase(runnable)
     end
     populateFiles(runnable, beforeSnap);
     populatePlots(runnable);
-    cd(orig);
 end
 
 function varargout = runner(func____, init____, ins, loads____)
@@ -555,9 +550,15 @@ function [ins, outs, func] = parseFunction(call)
     func = str2func(strip(call));
 end
 
-function cleanup()
+function cleanup(origPath)
     % check if runnable is TestCase or Feedback
     fclose('all');
+    
+    h = findall(0, 'type', 'figure');
+    close(h);
+    delete(h);
+    % cd up so our folder can be deleted
+    [~] = rmdir(cd(origPath), 's');
 end
 
 

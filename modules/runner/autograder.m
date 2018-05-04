@@ -6,7 +6,7 @@
 %%% Remarks
 %
 % Main is the entry point for the Autograder. Main will handle any
-% exceptions, and will always clean up after itself - the user's folder
+% exceptions, and will always clean up afdatater itself - the user's folder
 % will not be changed!
 %
 % Documentation is available. Please go the the autograder's website, at
@@ -106,7 +106,7 @@ function autograder(app)
         progress.Message = 'Unzipping Student Archive';
         progress.Indeterminate = 'on';
         % unzip the archive
-        unzipArchive(app.submissionArchivePath, [pwd filesep 'Students']);
+        unzipArchive(app.homeworkArchivePath, [pwd filesep 'Students']);
     end
 
     % For solution, what are we doing?
@@ -183,7 +183,6 @@ function autograder(app)
         student = students(s);
         progress.Message = sprintf('Assessing Student %s', student.name);
         student.assess();
-        student.generateFeedback();
         progress.Value = min([progress.Value + 1/numel(students), 1]);
         h.Data(s) = student.grade;
         if mod(s, 10) == 0

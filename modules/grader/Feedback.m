@@ -140,7 +140,7 @@ classdef Feedback < handle
                     this.exception = this.exception.addCause(this.exception);
                 end
                 html = ['<div class="container-fluid"><div class="container feedback"><p class="exception">', ... 
-                        this.exception.cause{1}.identifier ": ", ...
+                        this.exception.cause{1}.identifier ' - ', ...
                         this.exception.cause{1}.message '</p>'];
             else
                 html = '<div class="container-fluid"><div class="container feedback">';
@@ -172,16 +172,23 @@ classdef Feedback < handle
                 %Check whether files should have been produced by student
                 if ~isempty(solnFiles)
                     if length(solnFiles) > length(this.files)
-                        for i = 1:length(this.files)
-                            html = [html this.files(i).generateFeedback(solnFiles(i))];
+                        for i = 1:length(this.files)                            
+                            if ~this.files(i).equals(solnFiles(i))
+                                html = [html this.files(i).generateFeedback(solnFiles(i))];
+                            end
                         end
                         for i = length(this.files)+1:length(solnFiles)
+                            html = [html ...
+                                sprintf('<div class="row"><div class="col-md-6 text-center"><h2 class="text-center">Your Plot</h2><p>You did not produce a plot</p></div><div class="col-md-6 text-center"><h2 class="text-center"> Solution Plot</h2><img class="img-fluid img-thumbnail" src="%s"></div></div>', ...
+                                img2base64(solnPlot.Image))];
                             html = [html '<p>Your code did not produce a file to match ', ...
                                     solnFiles(i).name '</p>'];
                         end
                     elseif length(solnFiles) < length(this.files)
                         for i = 1:length(solnFiles)
-                            html = [html this.files(i).generateFeedback(solnFiles(i))];
+                            if ~this.files(i).equals(solnFiles(i))
+                                html = [html this.files(i).generateFeedback(solnFiles(i))];
+                            end
                         end
                         for i = length(solnFiles)+1:length(this.files)
                             html = [html '<p>The solution did not produce a file to match ', ...
@@ -189,7 +196,9 @@ classdef Feedback < handle
                         end
                     else
                         for i = 1:length(solnFiles)
-                            html = [html this.files(i).generateFeedback(solnFiles(i))];
+                            if ~this.files(i).equals(solnFiles(i))
+                                html = [html this.files(i).generateFeedback(solnFiles(i))];
+                            end
                         end
                     end
                 end
@@ -198,7 +207,9 @@ classdef Feedback < handle
                 if ~isempty(solnPlots)
                     if length(solnPlots) > length(this.plots)
                         for i = 1:length(this.plots)
-                            html = [html this.plots(i).generateFeedback(solnPlots(i))];
+                            if ~this.plots(i).equals(solnPlots(i))
+                                html = [html this.plots(i).generateFeedback(solnPlots(i))];
+                            end
                         end
                         for i = length(this.plots)+1:length(solnPlots)
                             html = [html '<p>Your code did not produce a plot to match ', ...
@@ -206,7 +217,9 @@ classdef Feedback < handle
                         end
                     elseif length(solnPlots) < length(this.plots)
                         for i = 1:length(solnPlots)
-                            html = [html this.plots(i).generateFeedback(solnPlots(i))];
+                            if ~this.plots(i).equals(solnPlots(i))
+                                html = [html this.plots(i).generateFeedback(solnPlots(i))];
+                            end
                         end
                         for i = length(solnPlots)+1:length(this.plots)
                             html = [html '<p>The solution did not produce a plot to match ', ...
@@ -214,7 +227,9 @@ classdef Feedback < handle
                         end
                     else
                         for i = 1:length(solnPlots)
-                            html = [html this.plots(i).generateFeedback(solnPlots(i))];
+                            if ~this.plots(i).equals(solnPlots(i))
+                                html = [html this.plots(i).generateFeedback(solnPlots(i))];
+                            end
                         end
                     end
                 end

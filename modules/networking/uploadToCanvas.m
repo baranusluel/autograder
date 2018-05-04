@@ -80,11 +80,15 @@ function uploadGrade(courseId, assignmentId, student, token)
     putApiOpts = apiOpts;
     putApiOpts.RequestMethod = 'PUT';
     id = coveredRead([API 'courses/' courseId '/users'], getApiOpts, 'search_term', student.id);
-    id = id.id;
+    id = num2str(id.id);
     data = coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], getApiOpts, 'include[]', 'submission_comments');
     % check if student was hand graded - if we find a comment that says "REGRADE", don't overwrite
-    comments = {data.submission_comments.comment};
-    if any(contains(comments, 'REGRADE', 'IgnoreCase', true))
+    if ~isempty(data.submission_comments)
+        comments = {data.submission_comments.comment};
+    else
+        comments = {''};
+    end
+    if ~any(contains(comments, 'REGRADE', 'IgnoreCase', true))
         coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], putApiOpts, 'submission[posted_grade]', num2str(student.grade));
     end
 end
