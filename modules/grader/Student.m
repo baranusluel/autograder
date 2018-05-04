@@ -79,7 +79,7 @@ classdef Student < handle
     methods
         function grade = get.grade(this)
             if isempty(this.feedbacks)
-                throw(MException('AUTOGRADER:Student:grade:noFeedbacks', 'No feedbacks were found (did you call gradeProblem?)'));
+                throw(MException('AUTOGRADER:Student:grade:noFeedbacks', 'No feedbacks were found (did you call assess?)'));
             end
             grade = sum(cellfun(@(f) sum([f.points]), this.feedbacks));
         end
@@ -408,7 +408,7 @@ classdef Student < handle
         %
         % An AUTOGRADER:Student:generateFeedback:missingFeedback exception
         % will be thrown if the feedbacks field of the Student is empty
-        % (i.e. if gradeProblem wasn't invoked first).
+        % (i.e. if assess wasn't invoked first).
         %
         % An AUTOGRADER:Student:generateFeedback:fileIO exception will be
         % thrown if there is an error when opening the student's feedback
@@ -429,7 +429,7 @@ classdef Student < handle
             % Check feedbacks is correct
             if isempty(this.feedbacks)
                 throw(MException('AUTOGRADER:Student:generateFeedback:missingFeedback', ...
-                    'No feedbacks present (did you forget to invoke gradeProblem?)'));
+                    'No feedbacks present (did you forget to invoke assess()?)'));
             end
             % Header info
             this.html = {'<!DOCTYPE html>', '<html>', '<head>', '</head>', ...
