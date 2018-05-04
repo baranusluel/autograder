@@ -267,7 +267,7 @@ classdef Student < handle
                         try
                             stud = feedback.outputs.(outs{o});
                             % if numeric, round to 6
-                            if isnumeric(soln)
+                            if isfloat(soln)
                                 soln = round(soln, this.ROUNDOFF_ERROR);
                                 stud = round(stud, this.ROUNDOFF_ERROR);
                             end
