@@ -14,11 +14,12 @@
 %   this.path -> PATH
 %   this.outputs -> struct('out1', 'hello', 'out2', 'world');
 function [passed, message] = test()
-    info = struct('call', '[out1, out2] = myFunction(in1, in2);', 'initializer', [], 'points', 3, 'supportingFiles', {{'values.mat'}}, 'banned', '');
+    info = struct('call', '[out1, out2] = myFunction(in1, in2);', 'initializer', [], 'points', 3, 'supportingFiles', {{[pwd filesep 'values_rubrica.mat']}}, 'banned', '');
     id = 'tuser3';
     path = [pwd filesep id];
     try
         tc = TestCase(info, path);
+        tc = engine(tc);
     catch e
         passed = false;
         message = sprintf('Exception Thrown: %s (%s)', e.identifier, e.message);
@@ -40,9 +41,9 @@ function [passed, message] = test()
         passed = false;
         message = 'supportingFiles not empty, when should be empty';
         return;
-    elseif sum(strcmp(tc.loadFiles, 'values.mat')) ~= 1
+    elseif sum(endsWith(tc.loadFiles, 'values_rubrica.mat')) ~= 1
         passed = false;
-        message = 'loadFiles not empty, when should be empty';
+        message = 'loadFiles does not have values_rubrica.mat';
         return;
     elseif ~isempty(tc.banned)
         passed = false;
