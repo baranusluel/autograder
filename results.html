@@ -72,8 +72,8 @@ body {
         </nav>
 <div class="container-fluid">
 <div class="jumbotron text-center">
-<i class="display-1 text-center fas fa-times"></i>
-<h1 class="display-4 text-center">Unit Tests Failed</h1>
+<i class="display-1 text-center fas fa-check"></i>
+<h1 class="display-4 text-center">Unit Tests Passed!</h1>
 <hr />
 <div class="row text-center d-flex justify-content-center">
 <div class="col-md-6 col-12 text-center module-status">
@@ -81,7 +81,7 @@ body {
 Data Conversion
 </div>
 <div class="col-md-6 col-12 text-center module-status">
-<i class="fas fa-times"></i>
+<i class="fas fa-check"></i>
 Grader
 </div>
 </div>
@@ -211,7 +211,7 @@ Student correctly constructed
 <div class="unit-result row">
 <div class="col-12">
 <h3 class="unit-name">
-<i class="fas fa-times"></i> 
+<i class="fas fa-check"></i> 
 TestCase
 </h3>
 <div class="unit-tests container">
@@ -223,13 +223,13 @@ Constructor
 <div class="col-12">
 <h5 class="test-name">
 <code>
-<i class="fas fa-times"></i>
+<i class="fas fa-check"></i>
 LoadMatFile
 </code>
 </h5>
 <div class="test-message">
 <p>
-outputs not a structure, but should be
+TestCase correctly constructed
 </p>
 </div>
 </div>
@@ -238,13 +238,13 @@ outputs not a structure, but should be
 <div class="col-12">
 <h5 class="test-name">
 <code>
-<i class="fas fa-times"></i>
+<i class="fas fa-check"></i>
 ValidTestCase
 </code>
 </h5>
 <div class="test-message">
 <p>
-outputs not a structure, but should be
+TestCase correctly constructed
 </p>
 </div>
 </div>
@@ -256,7 +256,7 @@ outputs not a structure, but should be
 <div class="unit-result row">
 <div class="col-12">
 <h3 class="unit-name">
-<i class="fas fa-times"></i> 
+<i class="fas fa-check"></i> 
 engine
 </h3>
 <div class="unit-tests container">
@@ -264,13 +264,13 @@ engine
 <div class="col-12">
 <h4 class="test-name">
 <code>
-<i class="fas fa-times"></i>
+<i class="fas fa-check"></i>
 Feedback
 </code>
 </h4>
 <div class="test-message">
 <p>
-Output not correctly set; expected 1
+Output correctly created
 </p>
 </div>
 </div>
@@ -280,27 +280,12 @@ Output not correctly set; expected 1
 <h4 class="test-name">
 <code>
 <i class="fas fa-check"></i>
-FilesPassing
-</code>
-</h4>
-<div class="test-message">
-<p>
-Successfully created Data URI string
-</p>
-</div>
-</div>
-</div>
-<div class="row result">
-<div class="col-12">
-<h4 class="test-name">
-<code>
-<i class="fas fa-times"></i>
 InfiniteLoop
 </code>
 </h4>
 <div class="test-message">
 <p>
-Expected "AUTOGRADER:timeout" exception, got "AUTOGRADER:studentCodeError"
+Correctly attached exception
 </p>
 </div>
 </div>
@@ -340,6 +325,81 @@ Engine threw correct exception
 <h4 class="test-name">
 <code>
 <i class="fas fa-check"></i>
+InvalidStudentCode
+</code>
+</h4>
+<div class="test-message">
+<p>
+Exception successfully thrown
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+MultipleFeedback
+</code>
+</h4>
+<div class="test-message">
+<p>
+Output correctly created
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+MultipleFiles
+</code>
+</h4>
+<div class="test-message">
+<p>
+Files passed
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+MultiplePlots
+</code>
+</h4>
+<div class="test-message">
+<p>
+Two plots successfully recorded
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+MultipleTestCase
+</code>
+</h4>
+<div class="test-message">
+<p>
+Output correctly created
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
 StudentError
 </code>
 </h4>
@@ -354,13 +414,28 @@ Attached correct exception
 <div class="col-12">
 <h4 class="test-name">
 <code>
-<i class="fas fa-times"></i>
+<i class="fas fa-check"></i>
 TestCase
 </code>
 </h4>
 <div class="test-message">
 <p>
-Output not correctly set; expected 1
+Output correctly created
+</p>
+</div>
+</div>
+</div>
+<div class="row result">
+<div class="col-12">
+<h4 class="test-name">
+<code>
+<i class="fas fa-check"></i>
+TestCaseError
+</code>
+</h4>
+<div class="test-message">
+<p>
+Correct exception thrown
 </p>
 </div>
 </div>
