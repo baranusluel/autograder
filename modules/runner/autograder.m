@@ -106,15 +106,27 @@ function autograder(app)
                 app.canvasToken, [pwd filesep 'Students'], progress);
         catch e
             % alert in some way and return
-            alert(app, 'Exception %s found when trying to download from Canvas', e.identifier);
-            app.exception = e;
-            return;
+            if app.isDebug
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
         end
     else
         progress.Message = 'Unzipping Student Archive';
         progress.Indeterminate = 'on';
         % unzip the archive
-        unzipArchive(app.homeworkArchivePath, [pwd filesep 'Students']);
+        try
+            unzipArchive(app.homeworkArchivePath, [pwd filesep 'Students']);
+        catch e
+            if app.isDebug
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
     end
     
     % For solution, what are we doing?
@@ -129,8 +141,7 @@ function autograder(app)
             if app.isDebug
                 keyboard;
             else
-                alert(app, 'Exception %s found when trying to download from Google Drive', e.identifier);
-                app.exception = e;
+                alert(app, e);
                 return;
             end
         end
