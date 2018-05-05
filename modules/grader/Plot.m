@@ -159,6 +159,7 @@ classdef Plot < handle
             for i = length(lines):-1:1
                 if ~isa(lines(i), 'matlab.graphics.chart.primitive.Line')
                     lines(i) = [];
+                    this.isAlien = true;
                 end
             end
             xcell = {lines.XData};
@@ -368,8 +369,6 @@ classdef Plot < handle
                 end
             end
             
-            % Now that all have been chained together, should we sanitize
-            % it? By sanitize what we mean is 
             this.XData = xcell;
             this.YData = ycell;
             this.ZData = zcell;
@@ -455,7 +454,10 @@ classdef Plot < handle
                     'input is not a valid instance of Plot');
                 throw(ME);
             end
-
+            if this.isAlien || that.isAlien
+                areEqual = false;
+                return;
+            end
             if ~strcmp(strjoin(cellstr(this.Title), newline), strjoin(cellstr(that.Title), newline))
                 areEqual = false;
                 return;
