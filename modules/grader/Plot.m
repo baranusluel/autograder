@@ -401,7 +401,7 @@ classdef Plot < handle
         end
     end
     methods (Access=public)
-        function [areEqual, message] = equals(this,that)
+        function areEqual = equals(this,that)
         %% equals: Checks if the given plot is equal to this plot
         %
         % equals is used to check a student plot against the solution plot.
@@ -427,101 +427,89 @@ classdef Plot < handle
         %
         % Given that PLOT is a valid instance of Plot equal to this.
         % Given that this is a valid instance of Plot.
-        %   [OK, MSG] = this.equals(PLOT)
+        %   [OK] = this.equals(PLOT)
         %
         %   OK -> true
-        %   MSG -> ''
         %
         % Given that PLOT is a valid instance of Plot not equal to this.
         % Given that this is a valid instance of Plot.
-        %   [OK, MSG] = this.equals(PLOT)
+        %   [OK] = this.equals(PLOT)
         %
         %   OK -> false
-        %   MSG -> 'Reason for inconsistency between plots'
         %
         % Given that PLOT is not a valid instance of Plot.
         % Given that this is a valid instance of Plot.
-        %   [OK, MSG] = equals(this, PLOT)
+        %   [OK] = equals(this, PLOT)
         %
         %   equals threw an exception
         %   AUTOGRADER:Plot:equals:noPlot
         %
-        add = cell(1, 7);
-        if ~isa(that,'Plot')
-            ME = MException('AUTOGRADER:Plot:equals:noPlot',...
-                'input is not a valid instance of Plot');
-            throw(ME);
-        end
+            if ~isa(that,'Plot')
+                ME = MException('AUTOGRADER:Plot:equals:noPlot',...
+                    'input is not a valid instance of Plot');
+                throw(ME);
+            end
 
-        TitleCheck = strcmp(strjoin(cellstr(this.Title), newline), strjoin(cellstr(that.Title), newline)) ...
-            || (isempty(this.Title) && isempty(that.Title));
-        if ~TitleCheck
-            add{1} = 'Plot Title does not match solution plot';
-        end
+            if ~strcmp(strjoin(cellstr(this.Title), newline), strjoin(cellstr(that.Title), newline))
+                areEqual = false;
+                return;
+            end
 
-        XLabelCheck = strcmp(this.XLabel,that.XLabel)...
-            | (isempty(this.XLabel) & isempty(that.XLabel));
-        if ~XLabelCheck
-            add{2} = 'Plot X-Label does not match solution plot';
-        end
+            if ~strcmp(strjoin(cellstr(this.XLabel), newline), strjoin(cellstr(that.XLabel), newline))
+                areEqual = false;
+                return;
+            end
 
-        YLabelCheck = strcmp(this.YLabel,that.YLabel)...
-            | (isempty(this.YLabel) & isempty(that.YLabel));
-        if ~YLabelCheck
-            add{3} = 'Plot Y-Label does not match solution plot';
-        end
+            if ~strcmp(strjoin(cellstr(this.YLabel), newline), strjoin(cellstr(that.YLabel), newline))
+                areEqual = false;
+                return;
+            end
 
-        ZLabelCheck = strcmp(this.ZLabel,that.ZLabel)...
-            | (isempty(this.ZLabel) & isempty(that.ZLabel));
-        if ~ZLabelCheck
-            add{4} = 'Plot Z-Label does not match solution plot';
-        end
+            if ~strcmp(strjoin(cellstr(this.ZLabel), newline), strjoin(cellstr(that.ZLabel), newline))
+                areEqual = false;
+                return;
+            end
 
 
-        PositionCheck = isequal(this.Position,that.Position);
-        if ~PositionCheck
-            add{5} = 'Plot is in wrong position within figure window';
-        end
+            if ~isequal(this.Position,that.Position)
+                areEqual = false;
+                return;
+            end
 
-        PlotBoxCheck = isequal(this.PlotBox,that.PlotBox);
-        if ~PlotBoxCheck
-            add{6} = 'Plot has incorrect Axis ratio settings';
-        end
+            if ~isequal(this.PlotBox,that.PlotBox)
+                areEqual = false;
+                return;
+            end
 
-%       ImageCheck = isequal(this.Image,that.Image);
+            thisStruct = struct('XData', this.XData, 'YData', this.YData,...
+                'ZData', this.ZData, 'Color', this.Color, 'Legend', this.Legend,...
+                'Marker', this.Marker, 'LineStyle', this.LineStyle);
 
-        thisStruct = struct('XData', this.XData, 'YData', this.YData,...
-            'ZData', this.ZData, 'Color', this.Color, 'Legend', this.Legend,...
-            'Marker', this.Marker, 'LineStyle', this.LineStyle);
-
-        thatStruct = struct('XData', that.XData, 'YData', that.YData,...
-            'ZData', that.ZData, 'Color', that.Color, 'Legend', that.Legend,...
-            'Marker', that.Marker, 'LineStyle', that.LineStyle);
-
-        LinePropsCheck = false(1,length(thisStruct));
-        for i = 1:length(thisStruct)
-            for j = 1:length(thatStruct)
-                if isequal(thisStruct(i),thatStruct(j))
-                    LinePropsCheck(i) = true;
-                    break
+            thatStruct = struct('XData', that.XData, 'YData', that.YData,...
+                'ZData', that.ZData, 'Color', that.Color, 'Legend', that.Legend,...
+                'Marker', that.Marker, 'LineStyle', that.LineStyle);
+            if length(thisStruct) ~= length(thatStruct)
+                areEqual = false;
+                return;
+            end
+            
+            LinePropsCheck = false(1,length(thisStruct));
+            for i = 1:length(thisStruct)
+                for j = 1:length(thatStruct)
+                    if isequal(thisStruct(i),thatStruct(j))
+                        LinePropsCheck(i) = true;
+                        break;
+                    end
                 end
             end
-        end
 
-        if ~all(LinePropsCheck)
-            add{7} = 'At least one line in plot has 1 or more incorrect properties';
-        end
-
-
-        areEqual = TitleCheck && XLabelCheck && YLabelCheck &&...
-            ZLabelCheck && PositionCheck && PlotBoxCheck &&... % ImageCheck &...
-            all(LinePropsCheck);
-
-        add = add(~cellfun(@isempty, add));
-        message = strjoin(add, newline);
-
-
-
+            if ~all(LinePropsCheck)
+                areEqual = false;
+                return;
+            else
+                areEqual = true;
+                return;
+            end
         end
         function [html] = generateFeedback(this, that)
         %% generateFeedback: Generates HTML feedback for the student and solution Plot.
