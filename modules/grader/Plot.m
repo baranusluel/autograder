@@ -164,6 +164,12 @@ classdef Plot < handle
             xcell = {lines.XData};
             ycell = {lines.YData};
             zcell = {lines.ZData};
+            
+            % Round data to nearest Student.ROUNDOFF_ERROR
+            xcell = cellfun(@(x)(round(double(x), Student.ROUNDOFF_ERROR)), xcell, 'uni', false);
+            ycell = cellfun(@(y)(round(double(y), Student.ROUNDOFF_ERROR)), ycell, 'uni', false);
+            zcell = cellfun(@(z)(round(double(z), Student.ROUNDOFF_ERROR)), zcell, 'uni', false);
+            
             legend = {lines.DisplayName};
             color = {lines.Color};
             marker = {lines.Marker};
