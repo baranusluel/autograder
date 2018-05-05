@@ -139,11 +139,11 @@ classdef Feedback < handle
                 if isempty(this.exception.cause)
                     this.exception = this.exception.addCause(this.exception);
                 end
-                html = ['<div class="container-fluid"><div class="container feedback"><p class="exception">', ... 
+                html = ['<div class="container-fluid"><div class="feedback"><p class="exception">', ... 
                         this.exception.cause{1}.identifier ' - ', ...
                         this.exception.cause{1}.message '</p>'];
             else
-                html = '<div class="container-fluid"><div class="container feedback">';
+                html = '<div class="container-fluid"><div class="feedback">';
                 %Get solution outputs for testCase
                 solnOutputs = this.testCase.outputs;
                 solnFiles = this.testCase.files;
