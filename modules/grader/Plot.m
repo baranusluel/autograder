@@ -616,7 +616,7 @@ classdef Plot < handle
         studPlot = char(encoder.encode(studBytes))';
         solnPlot = char(encoder.encode(solnBytes))';
 
-        html = sprintf('<div class="row"><div class="col-md-6 text-center"><h2 class="text-center">Your Plot</h2><img class="img-fluid img-thumbnail" src="data:image/jpg;base64,%s"></div><div class="col-md-6 text-center"><h2 class="text-center"> Solution Plot</h2><img class="img-fluid img-thumbnail" src="data:image/jpg;base64,%s"></div></div>',studPlot,solnPlot);
+        html = sprintf('<div class="row"><div class="col-md-6 text-center"><h3 class="text-center">Your Plot</h3><img class="img-fluid img-thumbnail" src="data:image/jpg;base64,%s"></div><div class="col-md-6 text-center"><h3 class="text-center">Solution Plot</h3><img class="img-fluid img-thumbnail" src="data:image/jpg;base64,%s"></div></div>',studPlot,solnPlot);
 
         end
     end
