@@ -562,32 +562,13 @@ classdef Plot < handle
                 'input is not a valid instance of Plot');
             throw(ME);
         end
-
-        imwrite(this.Image,'studPlot.png');
-        imwrite(that.Image,'solnPlot.png');
-
-        fh = fopen('studPlot.png');
-        studBytes = fread(fh);
-        fclose(fh);
-        fh = fopen('solnPlot.png');
-        solnBytes = fread(fh);
-        fclose(fh);
-
-        delete studPlot.png
-        delete solnPlot.png
-
-        %account for windows glitch where file doesn't delete bc it's stupid
-        if exist('studPlot.png','file')
-            pause(0.4);
-            delete studPlot.png
-            delete solnPlot.png
-        end
-
-        encoder = org.apache.commons.codec.binary.Base64;
-        studPlot = char(encoder.encode(studBytes))';
-        solnPlot = char(encoder.encode(solnBytes))';
-
-        html = sprintf('<div class="row"><div class="col-md-6 text-center"><h2 class="text-center">Your Plot</h2><img class="img-fluid img-thumbnail" src="data:image/jpg;base64,%s"></div><div class="col-md-6 text-center"><h2 class="text-center"> Solution Plot</h2><img class="img-fluid img-thumbnail" src="data:image/jpg;base64,%s"></div></div>',studPlot,solnPlot);
+        studPlot = img2base64(this.Image);
+        solnPlot = img2base64(that.Image);
+        html = sprintf(['<div class="row"><div class="col-md-6 text-center">', ...
+            '<h2 class="text-center">Your Plot</h2><img class="img-fluid img-thumbnail" src="%s">', ...
+            '</div><div class="col-md-6 text-center"><h2 class="text-center"> Solution Plot</h2>', ...
+            '<img class="img-fluid img-thumbnail" src="%s"></div></div>'],...
+            studPlot, solnPlot);
 
         end
     end
