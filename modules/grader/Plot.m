@@ -75,11 +75,8 @@ classdef Plot < handle
         Marker;
         LineStyle;
     end
-    properties (Access = private)
-        isTitle = false;
-        isXLabel = false;
-        isYLabel = false;
-        isZLabel = false;
+    properties (Access=private)
+        isAlien logical = false;
     end
     methods
         function this = Plot(pHandle)
@@ -158,43 +155,21 @@ classdef Plot < handle
             imgstruct = getframe(pHandle,rect);
             this.Image = imgstruct.cdata;
 
-
             lines = allchild(pHandle);
             for i = length(lines):-1:1
                 if ~isa(lines(i), 'matlab.graphics.chart.primitive.Line')
                     lines(i) = [];
                 end
             end
-            xcell = cell(1,length(lines));
-            ycell = cell(1,length(lines));
-            zcell = cell(1,length(lines));
-            legend = cell(1,length(lines));
-            color = cell(1,length(lines));
-            marker = cell(1,length(lines));
-            linestyle = cell(1,length(lines));
-
-            for i = 1:length(lines)
-                line = lines(i);
-                xcell(i) = {line.XData};
-                ycell(i) = {line.YData};
-                zcell(i) = {line.ZData};
-                
-                legend(i) = {line.DisplayName};
-
-                color(i) = {line.Color};
-
-                if strcmp(line.Marker,'none')
-                    marker(i) = {''};
-                else
-                    marker(i) = {line.Marker};
-                end
-
-                if strcmp(line.LineStyle,'none')
-                    linestyle(i) = {''};
-                else
-                    linestyle(i) = {line.LineStyle};
-                end
-            end
+            xcell = {lines.XData};
+            ycell = {lines.YData};
+            zcell = {lines.ZData};
+            legend = {lines.DisplayName};
+            color = {lines.Color};
+            marker = {lines.Marker};
+            marker(strcmp(marker, 'none')) = {''};
+            linestyle = {lines.LineStyle};
+            linestyle(strcmp(linestyle, 'none')) = {''};
             % Plot Chaining
             % A line by any other name is just as beautiful. Suppose we
             % want the student to plot a line from origin to (1, 1), then
