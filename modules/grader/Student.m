@@ -569,8 +569,8 @@ classdef Student < handle
             %   Pts Earned
             table = {'<table class="table table-striped table-bordered table-hover">', ...
                 '<thead>', '<tr>' '<th>', '', '</th>', ...
-                '<th>', 'Problem', '</th>', '<th>', 'Points Possible', ...
-                '</th>', '<th>', 'Points Earned', '</th>', '</tr>', ...
+                '<th>', 'Problem', '</th>', '<th>', 'Points Earned', ...
+                '</th>', '<th>', 'Points Possible', '</th>', '</tr>', ...
                 '</thead>', '</table>'};
 
             totalPts = 0;
@@ -584,7 +584,7 @@ classdef Student < handle
                 poss = {'<td>', '<p>', sprintf('%0.1f', sum([tCases.points])), '</p>', '</td>'};
                 earn = {'<td>', '<p>', sprintf('%0.1f', sum([feeds.points])), '</p>', '</td>'};
 
-                row = [{['<tr class="problem-row" data-href="#problem' num2str(i) '">']}, num, name, poss, earn, {'</a>', '</tr>'}];
+                row = [{['<tr class="problem-row" data-href="#problem' num2str(i) '">']}, num, name, earn, poss, {'</a>', '</tr>'}];
                 appendRow(row);
 
                 totalPts = totalPts + sum([tCases.points]);
@@ -593,8 +593,8 @@ classdef Student < handle
 
             % Add totals row
             totals = {'<tr>', '<td>', '</td>', '<td>', '<strong>Total</strong>', '</td>', '<td>', ...
-                '<p>', sprintf('%0.1f', totalPts), '</p>', '</td>', '<td>', ...
-                '<p>', sprintf('%0.1f', totalEarn), '</p>', '</td>', '</tr>'};
+                '<p>', sprintf('%0.1f', totalEarn), '</p>', '</td>', '<td>', ...
+                '<p>', sprintf('%0.1f', totalPts), '</p>', '</td>', '</tr>'};
             appendRow(totals);
 
             % Splice table into body
