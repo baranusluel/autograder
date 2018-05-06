@@ -64,7 +64,11 @@ classdef TestResults < handle
             % for each file, get it's dbstatus, and then do the replacement
             for f = 1:numel(files)
                 file = files(f);
-                status = dbstatus([file.folder filesep file.name], '-completenames');
+                try
+                    status = dbstatus([file.folder filesep file.name], '-completenames');
+                catch
+                    status = [];
+                end
                 relativeFolder = [workDir strrep(file.folder, path, '')];
                 for i = 1:numel(status)
                     status(i).file = [relativeFolder filesep file.name];
@@ -78,7 +82,11 @@ classdef TestResults < handle
             files = dir('../*.m');
             files([files.isdir]) = [];
             for f = 1:numel(files)
-                status = dbstatus([files(f).folder filesep files(f).name], '-completenames');
+                try
+                    status = dbstatus([files(f).folder filesep files(f).name], '-completenames');
+                catch
+                    status = [];
+                end
                 copyfile([files(f).folder filesep files(f).name], workDir);
                 for i = 1:numel(status)
                     status(i).file = [workDir filesep files(f).name];

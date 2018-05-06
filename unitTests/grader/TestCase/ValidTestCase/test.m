@@ -19,6 +19,7 @@ function [passed, message] = test()
     path = [pwd filesep id];
     try
         tc = TestCase(info, path);
+        tc = engine(tc);
     catch e
         passed = false;
         message = sprintf('Exception Thrown: %s (%s)', e.identifier, e.message);

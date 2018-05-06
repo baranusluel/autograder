@@ -188,7 +188,7 @@ function runnables = engine(runnables)
         'cancel', 'parfevalOnAll', 'fetchNext', 'batch', ...
         'eval', 'feval', 'assignin', 'evalc', 'evalin', ...
         'input', 'wait', 'uiwait', 'keyboard', 'dbstop', ...
-        'cd', 'system', 'restoredefaultpath', 'builtin'};
+        'cd', 'system', 'restoredefaultpath', 'builtin', 'load'};
 
     if any(~isvalid(runnables))
         e = MException('AUTOGRADER:engine:invalidRunnable', ...
@@ -308,13 +308,34 @@ function runnables = engine(runnables)
                 now = datetime;
                 now.TimeZone = worker.CreateDateTime.TimeZone;
                 if strcmp(worker.State, 'finished')
-                    runnables(w) = worker.fetchOutputs();
+                    % check error
+                    if ~isempty(worker.Error) && isTestCase
+                        % test Case; throw error
+                        e = MException('AUTOGRADER:engine:testCaseFailure', ...
+                            'TestCase failed, see error for more information');
+                        e = e.addCause(worker.Error.remotecause{1});
+                        e.throw();
+                    elseif ~isempty(worker.Error) && ~isTestCase
+                            e = MException('AUTOGRADER:studentError', ...
+                            'Student Code errored');
+                            runnables(w).exception = ...
+                                e.addCause(worker.Error.remotecause{1});
+                    else
+                        runnables(w) = worker.fetchOutputs();
+                    end
                     delete(worker);
                 elseif ~isempty(worker.StartDateTime) && (now - worker.StartDateTime > seconds(Student.TIMEOUT))
                     cancel(worker);
                     delete(worker);
-                    runnables(w).exception = ...
-                    MException('AUTOGRADER:timeout', 'Timeout occurred');
+                    if ~isTestCase
+                        runnables(w).exception = ...
+                            MException('AUTOGRADER:timeout', 'Timeout occurred');
+                    else
+                        e = MException('AUTOGRADER:engine:testCaseFailure', ...
+                            'TestCase timed out');
+                        e = e.addCause(MException('AUTOGRADER:timeout', 'Timeout occurred'));
+                        e.throw();
+                    end
                 end
 
             end
