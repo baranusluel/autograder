@@ -47,7 +47,8 @@
 % engine uses static checking to check if the function is recursive.
 % Calls are traced to the first instance of a call to a built in function.
 % For each call to a user-supplied function, that function is checked to see
-% if it ever calls itself. Note that it's possible to circumvent this checking
+% if it ever calls itself or anything up the stack. Mutual Recursion is
+% checked. Note that it's possible to circumvent this checking
 % by having the recursive call within an if statement, like so:
 %
 %   function notRecurse()
@@ -56,7 +57,8 @@
 %       end
 %   end
 %
-% engine cannot tell that this isn't actually recursive.
+% engine cannot tell that this isn't actually recursive, since it's not
+% known until runtime that if false will never actually be true.
 %
 % Additionally, banned function usage is also statically checked. Calls are
 % traced to the first instance of a call to a built in function, just like
