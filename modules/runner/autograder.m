@@ -94,40 +94,6 @@ function autograder(app)
 
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
-
-    % For submission, what are we doing?
-    % if downloading, call, otherwise, unzip
-    mkdir('Students');
-    if app.HomeworkChoice.Value == 1
-        % downloading. We should create new Students folder and download
-        % there.
-        try
-            downloadFromCanvas(app.canvasCourseId, app.canvasHomeworkId, ...
-                app.canvasToken, [pwd filesep 'Students'], progress);
-        catch e
-            % alert in some way and return
-            if app.isDebug
-                keyboard;
-            else
-                alert(app, e);
-                return;
-            end
-        end
-    else
-        progress.Message = 'Unzipping Student Archive';
-        progress.Indeterminate = 'on';
-        % unzip the archive
-        try
-            unzipArchive(app.homeworkArchivePath, [pwd filesep 'Students']);
-        catch e
-            if app.isDebug
-                keyboard;
-            else
-                alert(app, e);
-                return;
-            end
-        end
-    end
     
     % For solution, what are we doing?
     % if downloading, call, otherwise, unzip
