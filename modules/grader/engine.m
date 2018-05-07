@@ -583,11 +583,27 @@ function cleanup(origPath)
 end
 
 
-function isRecurring = checkRecur(callInfo, main)
+function isRecurring = checkRecur(callInfo, main, stack)
     % Check if this function calls itself. If so, exit true.
     % If not, check all functions it calls:
     %   If the call is to a builtin, don't investigate
     %   If the call is to something NOT builtin, investigate!
+    % Investigating means calling ourself recursively.
+    %
+    % Checking for mutual recursion:
+    %   To check for mutual recursion, each call, if it calls something in
+    %   the stack, then exit true.
+    %   For example:
+    %       a -> b -> c -> b
+    %       a: stack is {}
+    %       b: stack is {'a'}
+    %       c: stack is {'a', 'b'};
+    %       b: stack is {'a', 'b', 'c'};
+    %       @ a->b->c->b, 'b' is current name AND in stack, so return true!
+    
+    if nargin < 3
+        stack = {};
+    end
 
     % First, check calls for itself.
     mainCall = callInfo(strcmp({callInfo.name}, main));
@@ -597,10 +613,17 @@ function isRecurring = checkRecur(callInfo, main)
         return;
     end
 
+    % if the stack ~isempty, then check ourselves on the stack.
+    if ~isempty(stack) && contains(main, stack)
+        isRecurring = true;
+        return;
+    else
+        stack = [stack {main}];
+    end
     % look at all functions in callInfo that aren't us
     calls = callInfo(~strcmp({callInfo.name}, main));
     for i = 1:numel(calls)
-        if checkRecur(calls(i), calls(i).name)
+        if checkRecur(calls(i), calls(i).name, stack)
             isRecurring = true;
             return;
         end
@@ -615,7 +638,7 @@ function isRecurring = checkRecur(callInfo, main)
         % if external isn't found anywhere in possCalls, don't engage
         if any(strcmp(external{i}, possCalls))
             extCallInfo = getcallinfo([external{i} '.m']);
-            if checkRecur(extCallInfo, external{i})
+            if checkRecur(extCallInfo, external{i}, stack)
                 isRecurring = true;
                 return;
             end
