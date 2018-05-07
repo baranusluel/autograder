@@ -584,7 +584,6 @@ function cleanup(origPath)
     [~] = rmdir(cd(origPath), 's');
 end
 
-
 function isRecurring = checkRecur(callInfo, main, stack)
     % Check if this function calls itself. If so, exit true.
     % If not, check all functions it calls:
@@ -616,7 +615,7 @@ function isRecurring = checkRecur(callInfo, main, stack)
     end
 
     % if the stack ~isempty, then check ourselves on the stack.
-    if ~isempty(stack) && contains(main, stack)
+    if ~isempty(stack) && any(strcmp(stack, main))
         isRecurring = true;
         return;
     else
@@ -631,6 +630,14 @@ function isRecurring = checkRecur(callInfo, main, stack)
         end
     end
 
+    % Iterate over internal calls, checking the stack
+    internal = mainCall.calls.innerCalls.names;
+    for i = 1:numel(internal)
+        if any(strcmp(stack, internal{i}))
+            isRecurring = true;
+            return;
+        end
+    end
     % Iterate over external calls.
     external = mainCall.calls.fcnCalls.names;
     % check local directory for filenames. If not there, builtin!
