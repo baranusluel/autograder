@@ -336,6 +336,6 @@ function cleanup(settings)
         solutions = app.solutions; %#ok<NASGU>
         exception = app.exception; %#ok<NASGU>
         save([app.localDebugPath filesep 'autograder.mat'], ...
-            'students', 'solutions', 'exception');
+            'students', 'solutions', 'exception', '-v7.3');
     end
 end
