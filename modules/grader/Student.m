@@ -62,6 +62,8 @@ classdef Student < handle
     end
     properties (Access=private)
         html = {};
+        submissionTexts;
+        submissionHashes;
     end
     methods (Static)
         function resetPath()
@@ -167,7 +169,17 @@ classdef Student < handle
             % Get all submissions
             subs = dir([path filesep '*.m']);
             this.submissions = {subs.name};
-
+            subText = cell(1, numel(this.submissions));
+            subHashes = zeros(1, numel(subs));
+            for i = 1:numel(subs)
+                fid = fopen([path filesep subs(i).name], 'rt');
+                subText{i} = char(fread(fid)');
+                fclose(fid);
+                % calc hash
+                subHashes(i) = lshhash(subText{i});
+            end
+            this.submissionHashes = subHashes;
+            this.submissionTexts = subText;
             % ID is folder name:
             [~, this.id, ~] = fileparts(path);
             this.path = path;
