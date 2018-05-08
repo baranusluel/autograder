@@ -1,136 +1,60 @@
-%% generateSolutions: Generate the solution values for comparison 
-%   
+%% generateSolutions: Generate the solution values for comparison
+%
 % This will generate the solution values, given a logical value. These solutions are held in a `Problem` array.
 %
-% PROBLEMS = generateSolutions(isResubmission) will return a Problem Array containing
-% the problems for the current homework.
-% 
+% P = generateSolutions(R, B) will return a Problem Array P containing
+% the problems for the current homework. It uses |rubrica| if R is false;
+% otherwise, it will use |rubricb|. Additionally, it will attempt to update
+% the progress bar B.
+%
 %%% Remarks
-% 
-% Any exceptions thrown by the Problem class or sub classes will not be 
+%
+% Any exceptions thrown by the Problem class or sub classes will not be
 % caught by generateSolutions, and will instead by propogated forward.
 % These errors are considered mostly fatal.
-% 
-% The JSON format is strictly enforced. For more information on what 
-% this format should look like, see the central documentation. For 
-% convenience, an example is shown below.
 %
-%   {
-%     "Problems": [
-%       {
-%         "name": "ExampleProblem1",
-%         "banned": [
-%           "fopen",
-%           "fclose",
-%           "fseek",
-%           "frewind"
-%         ],
-%         "TestCases": [
-%           {
-%             "call": "[out1, out2] = myFun(in1, in2);",
-%             "initializer": "",
-%             "points": 3,
-%             "inputs": {
-%               "in1": 5,
-%               "in2": true
-%             },
-%             "supportingFiles": [
-%               "myFile.txt",
-%               "myInputImage.png"
-%             ]
-%           },
-%           {
-%             "call": "[out1, out2] = myFun(in1, in2);",
-%             "initializer": "in2 = supportFunction__;",
-%             "points": 3,
-%             "inputs": {
-%               "in1": 5
-%             },
-%             "supportingFiles": [
-%               "myFile.txt",
-%               "myInputImage.png",
-%               "supportFunction__.m"
-%             ]
-%           }
-%         ]
-%       },
-%       {
-%         "name": "ExampleProblem2",
-%         "banned": [
-%           "size",
-%           "parpool"
-%         ],
-%         "TestCases": [
-%           {
-%             "call": "[out1, out2] = myFun(in1, in2);",
-%             "initializer": "",
-%             "points": 3,
-%             "inputs": {
-%               "in1": 5,
-%               "in2": true
-%             },
-%             "supportingFiles": [
-%               "myFile.txt",
-%               "myInputImage.png"
-%             ]
-%           },
-%           {
-%             "call": "[out1, out2] = myFun(in1, in2);",
-%             "initializer": "in2 = supportFunction__;",
-%             "points": 3,
-%             "inputs": {
-%               "in1": 5
-%             },
-%             "supportingFiles": [
-%               "myFile.txt",
-%               "myInputImage.png",
-%               "supportFunction__.m"
-%             ]
-%           }
-%         ]
-%       }
-%    ]
-%  }
+% The JSON format is strictly enforced. For more information on what
+% this format should look like, see the central documentation.
 %
 %%% Exceptions
-% 
-% generateSolutions throws exception 
+%
+% generateSolutions throws exception
 % AUTOGRADER:generateSolutions:invalidInput if the input is not of type
 % logical.
 %
-% generateSolutions throws exception 
+% generateSolutions throws exception
 % AUTOGRADER:generateSolutions:invalidPath if the path (solutions) are not
 % valid.
-% 
+%
 %%% Unit Tests
-% 
-%   isResubmission = true
-%   PROBLEMS = generateSolutions(isResubmission);
 %
-%   PROBLEMS -> Valid Problem Array
+%   R = true
+%   P = generateSolutions(R);
 %
-%   isResubmission = ''; % Invalid Input
-%   PROBLEMS = generateSolutions(isResubmission);
+%   P -> Valid Problem Array
+%
+%   R = ''; % Invalid Input
+%   P = generateSolutions(R);
 %
 %   Threw invalidInput exception
 %
-%   isResubmission = true; % Valid input, invalid solutions!
-%   PROBLEMS = generateSolutions(isResubmission);
+%   R = true; % Valid input, invalid solutions!
+%   P = generateSolutions(R);
 %
 %   TestCase Threw exception <solnException>
 %
-%   isResubmission = false; % Valid input, but incomplete archive
-%   PROBLEMS = generateSolutions(isResubmission);
+%   R = false; % Valid input, but incomplete archive
+%   P = generateSolutions(R);
 %
 %   Threw invalidPath exception
 %
-function solutions = generateSolutions(isResubmission)
+function solutions = generateSolutions(isResubmission, progress)
 %try-catch block to catch any resulting errors.
 try
     %Archive is already unzipped.
     %Decode the JSON
     if islogical(isResubmission)
-        if isResubmission
+        if ~isResubmission
             fh = fopen('rubrica.json','rt');
             json = char(fread(fh)');
             fclose(fh);
@@ -141,25 +65,46 @@ try
             fclose(fh);
             rubric = jsondecode(json);
         end
-        
+
         %Go through the structure array (vector) that was created from the
         %jsondecode() call and create problem types.
         %Store these in one vector.
+        progress.Indeterminate = 'off';
+        progress.Message = 'Generating Autograder Solutions';
+        progress.Value = 0;
         elements = numel(rubric);
         for i = elements:-1:1
             solutions(i) = Problem(rubric(i));
+            progress.Value = min([progress.Value + 1/numel(elements), 1]);
         end
+        progress.Indeterminate = 'on';
         %The problems output vector should now contain all necessary problems.
+
+        % Put all testcases in a cell array
+        allTestCases = {solutions.testCases};
+        % Create vector of indices, s.t. every TestCase when vectorized
+        % will have a corresponding index for a Problem
+        testCaseIndx = cellfun(@(tc,idx) idx*ones(1,numel(tc)), ...
+            allTestCases, num2cell(1:elements), 'uni', false);
+        allTestCases = [allTestCases{:}];
+        testCaseIndx = [testCaseIndx{:}];
+
+        % Run all testcases with the engine in parallel
+        allTestCases = engine(allTestCases);
+        % Put the evaluated testcases back
+        for i = 1:elements
+            solutions(i).testCases = allTestCases(testCaseIndx == i);
+        end
     else
         mE = MException('AUTOGRADER:generateSolutions:invalidInput','The input is not of type logical for isResubmission.');
         throw(mE);
     end
-    
+
 catch e
     %Check for the errors that could have been thrown in the try block.
     %The first three conditionals check for the unzipping and file status
     %of the solution archive.
-    
+
     %Check if the solution file is empty or not.
     if fh == -1
         mE = MException('AUTOGRADER:generateSolutions:invalidPath','The path is valid, but the solutions could not be parsed (Perhaps the solutions are not valid, or the archive is unreadable?)');
@@ -185,6 +130,6 @@ catch e
                 throw(mE);
         end
     end
-    
+
 end
 end

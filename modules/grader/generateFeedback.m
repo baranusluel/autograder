@@ -189,19 +189,21 @@
 
 %#ok<*AGROW>
 function htmlFeedback = generateFeedback(stud, soln)
-    PASSING = '<span class="fas fa-check></span>';
+    PASSING = '<span class="fas fa-check"></span>';
     INCORRECT = '<span class="fas fa-times"></span>';
-    DIFF_CLASS = ['<p>' INCORRECT ' %s class expected; %s class given.</p>'];
-    DIFF_DIM = ['<p>' INCORRECT ' Dimension Mismatch: %s expected; %s given.</p>'];
-    TABLE = ['<p>' INCORRECT ' Value Incorrect:</p><div class="row"><div class="col-md-6"><p>Expected:</p>%s</div>' ...
-        '<div class="col-md-6"><p>Given:</p>%s</div></div>'];
-    DIFF_VALUE = '<p>%s expected; %s given.</p>';
-    DIFF_ARR_VALUE = '<p>At index (%s): %s</p>';
-    DIFF_STC_VALUE = '<p>In field "%s": %s</p>';
-    DIFF_STC_FIELD = '<p>%s fields expected; %s fields given.</p>';
+    START_SPAN = '<span class="variable-value">';
+    END_SPAN = '</span>';
+    DIFF_CLASS = ['<p>' INCORRECT ' ' START_SPAN '%s' END_SPAN ' class expected; ' START_SPAN '%s' END_SPAN ' class given.</p>'];
+    DIFF_DIM = ['<p>' INCORRECT ' Dimension Mismatch: ' START_SPAN '%s' END_SPAN ' expected; ' START_SPAN '%s' END_SPAN ' given.</p>'];
+    TABLE = [INCORRECT ' Value Incorrect:<div class="flex-container"><div class="flex-element"><p>Expected:</p>' START_SPAN '%s' END_SPAN '</div>' ...
+        '<div class="flex-element"><p>Given:</p>' START_SPAN '%s' END_SPAN '</div></div>'];
+    DIFF_VALUE = ['<p>' START_SPAN '%s' END_SPAN ' expected; ' START_SPAN '%s' END_SPAN ' given.</p>'];
+    DIFF_ARR_VALUE = ['<p>At index (' START_SPAN '%s' END_SPAN '): ' START_SPAN '%s' END_SPAN '</p>'];
+    DIFF_STC_VALUE = ['<p>In field "' START_SPAN '%s' END_SPAN '": ' START_SPAN '%s' END_SPAN '</p>'];
+    DIFF_STC_FIELD = ['<p>' START_SPAN '%s' END_SPAN ' fields expected; ' START_SPAN '%s' END_SPAN ' fields given.</p>'];
     INDENT_BLOCK = '<div style="margin-left: 10px;">%s</div>';
     DIFF_STC = ['<p>struct with fields:</p>' INDENT_BLOCK];
-    DIFF_CELL = '<p>In cell: %s</p>';
+    DIFF_CELL = ['<p>In cell: ' START_SPAN '%s' END_SPAN '</p>'];
     NUM_DIFFS = 5;
     MAX_STR = 1000;
     MAX_VEC_COLS = 50;
@@ -343,7 +345,7 @@ function str = visualizePrimitive(val)
         str = sprintf('%g', val);
     elseif islogical(val)
         bools = {'false', 'true'};
-        str = bools{soln+1};
+        str = bools{val+1};
     end
 end
 

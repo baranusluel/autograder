@@ -33,10 +33,10 @@ function html = parseReadme(var, includeBoiler, baseUrl)
             clear('html');
         end
     else
-        fid = fopen(var, 'r+');
-        lines = textscan(fid, '%s', 'Delimiter', {'\n'}, 'Whitespace', '');
+        fid = fopen(var, 'rt');
+        lines = char(fread(fid)');
         fclose(fid);
-        lines = lines{1};
+        lines = strsplit(lines, newline, 'CollapseDelimiters', false);
         html = parser(lines, includeBoiler, baseUrl);
         if nargout == 0
             [path, name, ~] = fileparts(var);

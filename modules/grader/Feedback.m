@@ -10,6 +10,9 @@
 %
 % * path: The fully qualified path for this student's directory
 %
+% * outputs: A structure where the field name is the name of the output, 
+%            and the field value is the value of the output
+%
 % * files: A File array that represents all the files produced by the
 %          student
 %
@@ -45,6 +48,8 @@
 % Additionally, this class also has many constants that aid when generating 
 % feedback. Of note are |CORRECT_MARK| and |INCORRECT_MARK|, which are the 
 % marks we use to show passing or failing, respectively.
+
+%#ok<*AGROW>
 classdef Feedback < handle
     properties (Constant)
         CORRECT_MARK = '<i class="fas fa-check"></i>';
@@ -54,19 +59,20 @@ classdef Feedback < handle
         testCase;
         hasPassed;
         path;
+        outputs = struct();
         files;
         plots;
-        reason;
-        points;
-        isRecursive;
+        exception;
+        points = 0;
+        isRecursive = false;
     end
     methods
         %% Constructor
         %
-        % The constructor creates a new Feedback from a TestCase. 
+        % The constructor creates a new Feedback from a TestCase and path. 
         %
-        % this = Feedback(T) will return a Feedback with the
-        % T field assigned. The rest of the fields will be
+        % this = Feedback(T,P) will return a Feedback with the
+        % T and P field assigned. The rest of the fields will be
         % assigned by the gradeProblem function
         %
         %%% Remarks
@@ -75,35 +81,34 @@ classdef Feedback < handle
         % To actually _generate_ feedback, the Feedback class will need to 
         % be initialized correctly.
         %
-        %%% Exceptions
-        %
-        % An AUTOGRADER:FEEDBACK:INVALIDTESTCASE exception will be thrown
-        % if the testCase is incorrectly formatted or missing information
-        %
         %%% Unit Tests
         %
-        %   T = testCase; % Given a valid TestCase:
-        %   F = Feedback(T);
+        %   T = testCase; % Given a valid TestCase
+        %   P = '...'; % valid student path
+        %   F = Feedback(T, P);
         %
         %   F.testCase -> T;
         %
-        %   T = [];
-        %   F = Feedback(T);
-        %
-        function [this] = Feedback(aTestCase)
-            this.testCase = aTestCase;
-            this.isRecursive = false;
+        function [this] = Feedback(testCase, path)
+            if nargin == 0
+                return;
+            end
+            this.testCase = testCase;
+            this.path = path;
         end
     end
     methods (Access = public)
         %% generateFeedback: Generates HTML feedback 
         %
-        % The function genreates complete HTML feedback for the specific
+        % The function generates complete HTML feedback for the specific
         % feedback 
         %
-        % H = generateFeedback() generates the complete html
+        % H = generateFeedback(S) generates the complete html
         % feedback for this based on the information stored in the
-        % properties
+        % properties. It uses the logical S to determine what to print - if
+        % S is true, then correct outputs are also printed; otherwise, only
+        % incorrect ones are printed. This is especially useful for the
+        % "ABCs"
         %
         %%% Remarks
         %
@@ -113,12 +118,6 @@ classdef Feedback < handle
         %
         % generateFeedback is guaranteed to never error so long as it has been correctly 
         % initialized.
-        %
-        %%% Exceptions
-        %
-        % An AUTOGRADER:FEEDBACK:GENERATEFEEDBACK:INVALIDFEEDBACK exception
-        % will be thrown if no Feedback is given or the given Feedback has
-        % insufficient or missing data
         %
         %%% Unit Tests
         %
@@ -130,13 +129,113 @@ classdef Feedback < handle
         % a correct and complete html feedback will be output based on the
         % properties of the feedback file
         %
-        % Given an invalid Feedback: 
-        % an AUTOGRADER:FEEDBACK:GENERATEFEEDBACK:INVALIDFEEDBACK exception
-        % will be thrown
         %
-        %
-        function html = generateFeedback(this)
-            
+        function html = generateFeedback(this, showCorrect)
+            if nargin == 1
+                showCorrect = true;
+            end
+            %Check if testCase was passed and output empty div
+            if ~isempty(this.exception)
+                if isempty(this.exception.cause)
+                    this.exception = this.exception.addCause(this.exception);
+                end
+                html = ['<div class="container-fluid"><div class="container feedback"><p class="exception">', ... 
+                        this.exception.cause{1}.identifier ' - ', ...
+                        this.exception.cause{1}.message '</p>'];
+            else
+                html = '<div class="container-fluid"><div class="container feedback">';
+                %Get solution outputs for testCase
+                solnOutputs = this.testCase.outputs;
+                solnFiles = this.testCase.files;
+                solnPlots = this.testCase.plots;
+                
+                %Check whether regular outputs should have been produced
+                %by student
+                if ~isempty(solnOutputs)
+                    fn = fieldnames(this.outputs);
+                    fnSoln = fieldnames(solnOutputs);
+                    if length(fn) ~= length(fnSoln)
+                        html = [html '<p>Number of outputs don''t match.</p>'];
+                    else
+                        for i = 1:length(fnSoln)
+                            if showCorrect || ~isequaln(this.outputs.(fnSoln{i}), solnOutputs.(fnSoln{i}))
+                                html = [html, ...
+                                    '<div><span class="variable-name">', ...
+                                    fnSoln{i} ': </span>', ...
+                                    generateFeedback(this.outputs.(fnSoln{i}), ...
+                                    solnOutputs.(fnSoln{i})) '</div>'];
+                            end
+                        end
+                    end
+                end
+                
+                %Check whether files should have been produced by student
+                if ~isempty(solnFiles)
+                    if length(solnFiles) > length(this.files)
+                        for i = 1:length(this.files)                            
+                            if ~this.files(i).equals(solnFiles(i))
+                                html = [html this.files(i).generateFeedback(solnFiles(i))];
+                            end
+                        end
+                        for i = length(this.files)+1:length(solnFiles)
+                            html = [html ...
+                                sprintf('<div class="row"><div class="col-md-6 text-center"><h2 class="text-center">Your Plot</h2><p>You did not produce a plot</p></div><div class="col-md-6 text-center"><h2 class="text-center"> Solution Plot</h2><img class="img-fluid img-thumbnail" src="%s"></div></div>', ...
+                                img2base64(solnPlot.Image))];
+                            html = [html '<p>Your code did not produce a file to match ', ...
+                                    solnFiles(i).name '</p>'];
+                        end
+                    elseif length(solnFiles) < length(this.files)
+                        for i = 1:length(solnFiles)
+                            if ~this.files(i).equals(solnFiles(i))
+                                html = [html this.files(i).generateFeedback(solnFiles(i))];
+                            end
+                        end
+                        for i = length(solnFiles)+1:length(this.files)
+                            html = [html '<p>The solution did not produce a file to match ', ...
+                                    this.files(i).name '</p>'];
+                        end
+                    else
+                        for i = 1:length(solnFiles)
+                            if ~this.files(i).equals(solnFiles(i))
+                                html = [html this.files(i).generateFeedback(solnFiles(i))];
+                            end
+                        end
+                    end
+                end
+                
+                %Check whether plots should have been produced by student
+                if ~isempty(solnPlots)
+                    if length(solnPlots) > length(this.plots)
+                        for i = 1:length(this.plots)
+                            if ~this.plots(i).equals(solnPlots(i))
+                                html = [html this.plots(i).generateFeedback(solnPlots(i))];
+                            end
+                        end
+                        for i = length(this.plots)+1:length(solnPlots)
+                            html = [html '<p>Your code did not produce a plot to match ', ...
+                                    solnPlots(i).Title '</p>'];
+                        end
+                    elseif length(solnPlots) < length(this.plots)
+                        for i = 1:length(solnPlots)
+                            if ~this.plots(i).equals(solnPlots(i))
+                                html = [html this.plots(i).generateFeedback(solnPlots(i))];
+                            end
+                        end
+                        for i = length(solnPlots)+1:length(this.plots)
+                            html = [html '<p>The solution did not produce a plot to match ', ...
+                                    this.plots(i).Title '</p>'];
+                        end
+                    else
+                        for i = 1:length(solnPlots)
+                            if ~this.plots(i).equals(solnPlots(i))
+                                html = [html this.plots(i).generateFeedback(solnPlots(i))];
+                            end
+                        end
+                    end
+                end
+            end
+            html = sprintf('%s</div><p>Points earned for this test case: %0.1f/%0.1f</p></div>',...
+                            html, this.points, this.testCase.points);
         end
     end
 end

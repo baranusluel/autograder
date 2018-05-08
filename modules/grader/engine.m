@@ -2,18 +2,33 @@
 %
 % The engine function serves as the primary runner of code.
 %
-% engine(T) runs the code specified by the TestCase T, and assigns the
-% outputs, files, and plots to the corresponding fields in T.
+% T = engine(T) runs the code specified by the TestCase T, and assigns the
+% outputs, files, and plots to the corresponding fields in T. The output is
+% the same size as the input
 %
-% engine(F) runs the code specified by the TestCase found in Feedback F,
+% F = engine(F) runs the code specified by the TestCase found in Feedback F,
 % and assigns the outputs, files, and plots to the corresponding fields
-% in F. This does NOT grade the code, just runs it.
+% in F. This does NOT grade the code, just runs it. You must capture the
+% outputs; the engine does NOT modify the inputs. The output is the same
+% size as the inputs
 %
 %%% Remarks
+%
+% For multiple runnables, the engine will wait until all of them have
+% finished, or timed out. However, other than that, there is no requirement
+% that any of them be related to each other - they are all run in parallel.
+%
+% while it will always be faster to run runnables in parallel, there are no
+% guarantees about timing or order. If you need a specific order, you must
+% run them individually.
 %
 % The engine function is the primary grading mechanism used within the
 % the autograder. It provides a "sandboxed" environment for running code,
 % and protects against student errors and timeouts.
+%
+% The student's code is copied to a new folder, and all supporting files
+% are also copied over. It is guaranteed that, though the students are run
+% in parallel, no student's code can ever affect another student's code.
 %
 % Timeouts are handled using a parallel pool of workers. In essence, a
 % student's code is limited to a certain runtime, 30 seconds by default.
@@ -122,7 +137,12 @@
 %
 %   Threw exception invalidRunnable
 %
-function runnable = engine(runnable)
+%   F = []; % assume F is a vector of Feedbacks
+%   A = engine(F);
+%
+%   A is a vector of finished runnables.
+%
+function runnables = engine(runnables)
 
     % For banned functions, we'll need to use static checking, instead of
     % overwriting it in the directory. This is because some functions
@@ -164,139 +184,175 @@ function runnable = engine(runnable)
     % all plots.
 
     %% Setup
-    if ~isvalid(runnable)
+    BANNED = {'parpool', 'gcp', 'parfeval', 'send','fetchOutputs', ...
+        'cancel', 'parfevalOnAll', 'fetchNext', 'batch', ...
+        'eval', 'feval', 'assignin', 'evalc', 'evalin', ...
+        'input', 'wait', 'uiwait', 'keyboard', 'dbstop', ...
+        'cd', 'system', 'restoredefaultpath', 'builtin', 'load'};
+
+    if any(~isvalid(runnables))
         e = MException('AUTOGRADER:engine:invalidRunnable', ...
-        'Input was not valid');
-        throw(e);
+            'Input were not valid runnables');
+        e.throw();
     end
-    if isa(runnable, 'TestCase')
-        tCase = runnable;
-    elseif isa(runnable, 'Feedback')
-        tCase = runnable.testCase;
+    if isempty(runnables)
+        return;
+    end
+    if isa(runnables, 'TestCase')
+        isTestCase = true;
+    elseif isa(runnables, 'Feedback')
+        isTestCase = false;
     else
-        e = MException('AUTOGRADER:engine:invalidRunnable', ...
-        'Input was not of class Runnable');
-        throw(e);
+        throw(MException('AUTOGRADER:engine:invalidRunnable', ...
+            'Input was not a runnable type'));
     end
 
-    % Copy over supporting files
-    supportingFiles = tCase.supportingFiles;
-    origPath = cd(runnable.path);
-    [~, ~, func] = parseFunction(tCase.call);
+    origPaths = cell(size(runnables));
+    parfor r = 1:numel(runnables)
+        runnable = runnables(r);
+        fld = tempname;
+        mkdir(fld);
+        if isTestCase
+            tCase = runnable;
+        else
+            tCase = runnable.testCase;
+        end
+        % copy the student's files to fld
+        copyfile([runnable.path filesep '*.m'], fld);
+        origPaths{r} = runnable.path;
+        runnable.path = fld;
+        origPath = cd(fld);
 
-    allCalls = getcallinfo([func2str(func) '.m']);
-    calls = [allCalls.calls];
-    calls = [calls.fcnCalls];
-    calls = [calls.names];
+        % parse the function call
+        [~, ~, func] = parseFunction(tCase.call);
 
-    % Test for recursion. If any function calls itself, good to go.
-    if isa(runnable, 'Feedback')
-        runnable.isRecursive = checkRecur(allCalls, func2str(func));
-    end
+        % check recursion
+        if ~isTestCase
+            try
+                runnable.isRecursive = ...
+                    checkRecur(getcallinfo([func2str(func) '.m']),...
+                    func2str(func));
+            catch e
+                if isa(runnable, 'Feedback')
+                    runnable.exception = e;
+                else
+                    e.rethrow();
+                end
+            end
+        end
+        % check banned usage
+        if isTestCase || isempty(runnable.exception)
+            if checkBanned([func2str(func) '.m'], [BANNED tCase.banned(:)'])
+                if ~isTestCase
+                    runnable.exception = MException('AUTOGRADER:engine:banned', ...
+                        'File used banned function');
+                else
+                    throw(MException('AUTOGRADER:engine:banned', ...
+                        'File used banned function'));
+                end
+            end
 
-    bannedFunctions = tCase.banned;
-    for i = 1:numel(bannedFunctions)
-        if any(strcmpi(calls, bannedFunctions{i}))
-            if isa(runnable, 'TestCase')
-                throw(MException('AUTOGRADER:engine:invalidSolution', ...
-                    'Solution uses banned functions'));
+            % copy over supporting files
+            for s = 1:numel(tCase.supportingFiles)
+                copyfile(tCase.supportingFiles{s});
+            end
+
+            % Load the data
+            if isTestCase
+                loads = cell(size(tCase.loadFiles));
+                for l = 1:numel(tCase.loadFiles)
+                    loads{l} = load(tCase.loadFiles{l});
+                end
+                numVars = 0;
+                for l = 1:numel(loads)
+                    numVars = numVars + numel(fieldnames(loads{l}));
+                end
+                varNames = cell(1, numVars);
+                varValues = cell(1, numVars);
+                counter = 1;
+                for l = 1:numel(loads)
+                    valNames = fieldnames(loads{l});
+                    for val = 1:numel(valNames)
+                        varNames{counter} = valNames{val};
+                        varValues{counter} = loads{l}.(valNames{val});
+                        counter = counter + 1;
+                    end
+                end
+                % save the original load files
+                tCase.inputs = [varNames; varValues];
+            end
+            cd(origPath);
+            if ~isTestCase
+                runnable.testCase = tCase;
             else
-                runnable.exception = MException('AUTOGRADER:engine:banned', ...
-                    'File used banned function %s.', bannedFunctions{i});
-                return;
+                runnable = tCase;
+            end
+        end
+        runnables(r) = runnable;
+    end
+    % done with parfor - now run all the cases!
+    for w = numel(runnables):-1:1
+        if ~isTestCase && ~isempty(runnables(w).exception)
+            workers(w) = parfeval(@()(false), 0);
+            delete(workers(w));
+        else
+            workers(w) = parfeval(@runCase, 1, runnables(w));
+        end
+    end
+    while any(isvalid(workers))
+        for w = 1:numel(workers)
+            % check the status. If running, that's a timeout!
+            worker = workers(w);
+            % check status. If it's finished, get outputs and delete
+            if isvalid(worker)
+                now = datetime;
+                now.TimeZone = worker.CreateDateTime.TimeZone;
+                if strcmp(worker.State, 'finished')
+                    % check error
+                    if ~isempty(worker.Error) && isTestCase
+                        % test Case; throw error
+                        e = MException('AUTOGRADER:engine:testCaseFailure', ...
+                            'TestCase failed, see error for more information');
+                        e = e.addCause(worker.Error.remotecause{1});
+                        e.throw();
+                    elseif ~isempty(worker.Error) && ~isTestCase
+                            e = MException('AUTOGRADER:studentError', ...
+                            'Student Code errored');
+                            runnables(w).exception = ...
+                                e.addCause(worker.Error.remotecause{1});
+                    else
+                        runnables(w) = worker.fetchOutputs();
+                    end
+                    delete(worker);
+                elseif ~isempty(worker.StartDateTime) && (now - worker.StartDateTime > seconds(Student.TIMEOUT))
+                    cancel(worker);
+                    delete(worker);
+                    if ~isTestCase
+                        runnables(w).exception = ...
+                            MException('AUTOGRADER:timeout', 'Timeout occurred');
+                    else
+                        e = MException('AUTOGRADER:engine:testCaseFailure', ...
+                            'TestCase timed out');
+                        e = e.addCause(MException('AUTOGRADER:timeout', 'Timeout occurred'));
+                        e.throw();
+                    end
+                end
+
             end
         end
     end
+    % reset each runnable
+    for r = 1:numel(runnables)
+        runnables(r).path = origPaths{r};
+    end
+end
 
-    for i = 1:numel(supportingFiles)
-        copyfile(supportingFiles{i});
-        [~, supportingFiles{i}, ext] = fileparts(supportingFiles{i});
-        supportingFiles{i} = [supportingFiles{i}, ext];
-    end
-    % Record starting point
-    beforeSnap = dir();
-    beforeSnap = {beforeSnap.name};
-    beforeSnap(strncmp(beforeSnap, '.', 1)) = [];
-
-    % Load data, load into cell
-    loads = cell(size(tCase.loadFiles));
-    for i = 1:numel(tCase.loadFiles)
-        % throw away result
-        loads{i} = load(tCase.loadFiles{i});
-    end
-    % Collapse into cell array of names and cell array of values
-    numVars = 0;
-    for i = 1:numel(loads)
-        numVars = numVars + numel(fieldnames(loads{i}));
-    end
-    varNames = cell(1, sum(numVars));
-    varValues = cell(1, sum(numVars));
-    counter = 1;
-    for i = 1:numel(loads)
-        valNames = fieldnames(loads{i});
-        for val = 1:numel(valNames)
-            varNames{counter} = valNames{val};
-            varValues{counter} = loads{i}.(valNames{val});
-            counter = counter + 1;
-        end
-    end
-    % Save original loadFile names and assign vars to loadFiles field
-    origFileNames = tCase.loadFiles;
-    tCase.loadFiles = [varNames; varValues];
-    %% Running
-    % Create a new job for the parallel pool
-    test = parfeval(@runCase, 1, runnable);
-
-    % Wait until it's finished, up to 30 seconds
-    isTimeout = ~wait(test, 'finished', Student.TIMEOUT);
-    % Delete the job
-    if isTimeout
-        cancel(test);
-        runnable.exception = MException('AUTOGRADER:timeout', 'Timeout occurred');
-    else
-        runnable = test.fetchOutputs();
-    end
-    tCase.loadFiles = origFileNames;
-    if isa(runnable, 'TestCase')
-        tCase = runnable;
-    else
-        tCase = runnable.testCase;
-    end
-    delete(test);
-
-    % Populate files, plots
+function populateFiles(runnable, beforeSnap)
     afterSnap = dir();
     afterSnap = {afterSnap.name};
     afterSnap(strncmp(afterSnap, '.', 1)) = [];
 
     addedFiles = sort(setdiff(afterSnap, beforeSnap));
-
-    populateFiles(runnable, addedFiles);
-    populatePlots(runnable);
-    %% Cleanup
-    % Delete all files mentioned in the files field
-    for i = 1:numel(runnable.files)
-        % Delete file with name of File
-        delete([runnable.files(i).name runnable.files(i).extension]);
-    end
-
-    % Delete all files that were marked as supporting files
-    for i = 1:numel(supportingFiles)
-        delete(supportingFiles{i});
-    end
-
-    % Close all figures with visible handles?
-    figs = findobj(0, 'type', 'figure');
-    delete(figs);
-    tCase.loadFiles = origFileNames;
-    cd(origPath);
-    % If timeout and TestCase, throw error
-    if isa(runnable, 'TestCase') && isTimeout
-        throw(MException('MATLAB:timeout', 'Solution Code Timed Out'));
-    end
-end
-
-function populateFiles(runnable, addedFiles)
     % Get last file first to prealloc array
     if numel(addedFiles) ~= 0
         files(numel(addedFiles)) = File([pwd() filesep() addedFiles{end}]);
@@ -322,7 +378,6 @@ function populatePlots(runnable)
         for i = 1:(numel(pHandles) - 1)
             plots(i) = Plot(pHandles(i));
         end
-
         runnable.plots = plots;
     end
 end
@@ -331,8 +386,11 @@ end
 function runnable = runCase(runnable)
     % Setup workspace
     % is this supposed to be here?  -->     cleanup();
-    cleaner = onCleanup(@() cleanup());
-
+    orig = cd(runnable.path);
+    cleaner = onCleanup(@() cleanup(orig));
+    beforeSnap = dir();
+    beforeSnap = {beforeSnap.name};
+    beforeSnap(strncmp(beforeSnap, '.', 1)) = [];
     if isa(runnable, 'TestCase')
         tCase = runnable;
     else
@@ -350,16 +408,16 @@ function runnable = runCase(runnable)
     end
 
     % Parse the call
-    origPath = cd(runnable.path);
     [inNames, outNames, func] = parseFunction(tCase.call);
     outs = cell(size(outNames));
     % run the function
     % create sentinel file
-    fid = fopen(File.SENTINEL, 'r');
+    fid = fopen(File.SENTINEL, 'w');
     try
-        [outs{:}] = runner(func, init, inNames, tCase.loadFiles);
+        [outs{:}] = runner(func, init, inNames, tCase.inputs);
     catch e
         if isa(runnable, 'TestCase')
+            fclose(fid);
             rethrow(e);
         else
             me = MException('AUTOGRADER:studentCodeError', ...
@@ -368,7 +426,6 @@ function runnable = runCase(runnable)
             runnable.exception = me;
         end
     end
-    cd(origPath);
     name = fopen(fid);
     fclose(fid);
     if ~strcmp(name, File.SENTINEL)
@@ -383,6 +440,8 @@ function runnable = runCase(runnable)
     for i = 1:numel(outs)
         runnable.outputs.(outNames{i}) = outs{i};
     end
+    populateFiles(runnable, beforeSnap);
+    populatePlots(runnable);
 end
 
 function varargout = runner(func____, init____, ins, loads____)
@@ -510,12 +569,17 @@ function [ins, outs, func] = parseFunction(call)
         call(ind:end) = '';
     end
     func = str2func(strip(call));
-
 end
 
-function cleanup()
+function cleanup(origPath)
     % check if runnable is TestCase or Feedback
     fclose('all');
+    
+    h = findall(0, 'type', 'figure');
+    close(h);
+    delete(h);
+    % cd up so our folder can be deleted
+    [~] = rmdir(cd(origPath), 's');
 end
 
 
@@ -559,4 +623,41 @@ function isRecurring = checkRecur(callInfo, main)
     end
 
     isRecurring = false;
+end
+
+function isBanned = checkBanned(name, banned)
+    isBanned = false;
+    % for each call, we should first check that they didn't use any banned names:
+    calls = getcallinfo(name);
+    for i = 1:numel(calls)
+        possibleCalls = [calls(i).calls.fcnCalls];
+        possibleCalls = [possibleCalls.names];% inner calls are to helper functions, so no worries there
+        % See if ANY banned are found in possibleCalls
+        % for each call, see where it exists. If it exists IN THIS FOLDER,
+        % then check it recursively
+        for j = 1:numel(possibleCalls)
+            location = fileparts(which(possibleCalls{j}));
+            if strcmp(location, pwd)
+                % in current folder. We should recursively check
+                if checkBanned([possibleCalls{j} '.m'], banned)
+                    isBanned = true;
+                    return;
+                end
+            else
+                % see if contained in banned:
+                if any(strcmp(possibleCalls{j}, banned))
+                    isBanned = true;
+                    return;
+                end
+            end
+        end
+    end
+    BANNED_OPS = {'BANG', 'PARFOR', 'SPMD', 'GLOBAL'};
+    info = mtree(name, '-file');
+    for b = 1:numel(BANNED_OPS)
+        if info.anykind(BANNED_OPS{b})
+            isBanned = true;
+            return;
+        end
+    end
 end

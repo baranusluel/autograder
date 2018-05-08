@@ -98,60 +98,16 @@
 %
 %   Threw invalidPath exception
 function processStudentSubmission(startPath)
-try
-    currentDir = cd(startPath);
-catch
-    throw(MException('AUTOGRADER:processStudentSubmission:invalidPath', ...
-        'Invalid path'));
-end
-zipFiles = dir('*.zip');
-% there was at least one zip file
-if length(zipFiles) >= 1
-    for i = 1:length(zipFiles)
-        unzipPath = unzipArchive(zipFiles(i).name, pwd(), true);
-        % check to see if there was a folder inside the zip archive
-        files = dir(unzipPath);
-        if length(find([files.isdir])) == 3
-            % single directory inside the zip
-            singleDir = files([files.isdir] & ~strcmp({files.name}, '.') & ~strcmp({files.name}, '..'));
-            moveFiles(singleDir, startPath);
-            % now done with the unzipped folder, so safe to delete
-            rmdir(unzipPath, 's'); 
-        elseif length(find([files.isdir])) > 3
-            % zip file contained more than one directory
-            newDirs = {files([files.isdir]).name};
-            newDirs = newDirs(~strcmp(newDirs, '..') & ~strcmp(newDirs, '.'));
-            
-            % move all the files from each of the new directories to
-            % the main folder
-            for j = 1:length(newDirs)
-                moveFiles([unzipPath, filesep(), newDirs{i}], startPath);
-            end
-        else
-            % move files from unzipped folder
-            moveFiles(unzipPath, startPath);
-            % delete the unzipped folder (don't need it anymore)
-            rmdir(unzipPath, 's');
-
-        end
-        
-    end % end for    
-end
-
-
-cd(currentDir);
-end % end processStudentSubmission
-
-% Moves files from current dir to dest without overwriting anything
-% moveFiles(FILES, DEST) moves all files from folder SRC to DEST
-function moveFiles(src, dest)
-files = dir(src);
-files = {files.name};
-destFiles = dir(dest);
-destFiles = {destFiles.name};
-for i = 1:length(files)
-    if ~contains(destFiles, files{i}) && ~strcmp(files{i}, '.') && ~strcmp(files{i}, '..')
-        movefile(files{i}, dest);
+    try
+        currentDir = cd(startPath);
+    catch
+        throw(MException('AUTOGRADER:processStudentSubmission:invalidPath', ...
+            'Invalid path'));
     end
-end
+    zipFiles = dir('*.zip');
+    for i = 1:length(zipFiles)
+        [~] = unzipArchive(zipFiles(i).name, pwd, true);
+    end   
+
+    cd(currentDir);
 end
