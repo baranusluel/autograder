@@ -98,16 +98,12 @@
 %
 %   Threw invalidPath exception
 function processStudentSubmission(startPath)
-    try
-        currentDir = cd(startPath);
-    catch
-        throw(MException('AUTOGRADER:processStudentSubmission:invalidPath', ...
-            'Invalid path'));
+    startPath(startPath == '/' | startPath == '\') = filesep;
+    if startPath(end) == filesep
+        startPath(end) = [];
     end
-    zipFiles = dir('*.zip');
+    zipFiles = dir([startPath filesep '*.zip']);
     for i = 1:length(zipFiles)
-        [~] = unzipArchive(zipFiles(i).name, pwd, true);
-    end   
-
-    cd(currentDir);
+        [~] = unzipArchive([startPath filesep zipFiles(i).name], pwd, true);
+    end
 end
