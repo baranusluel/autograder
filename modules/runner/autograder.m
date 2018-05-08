@@ -335,6 +335,9 @@ function cleanup(settings)
     set(0, 'DefaultFigureVisible', settings.figures);
     % store debugging info
     app = settings.app;
+    if isvalid(settings.progress)
+        settings.progress.Message = 'Saving Output for Debugger...';
+    end
     if ~isempty(app.localDebugPath)
         students = app.students; %#ok<NASGU>
         solutions = app.solutions; %#ok<NASGU>
