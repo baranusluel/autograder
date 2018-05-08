@@ -73,6 +73,7 @@ function autograder(app)
     progress = uiprogressdlg(app.UIFigure, 'Title', 'Autograder Progress', ...
         'Message', 'Starting Parallel Pool', 'Cancelable', 'on', ...
         'ShowPercentage', true, 'Indeterminate', 'on');
+    settings.progress = progress;
     evalc('gcp');
     app.UIFigure.Visible = 'off';
     app.UIFigure.Visible = 'on';
@@ -303,8 +304,6 @@ function autograder(app)
         progress.Message = 'Saving Debugger Information';
         copyfile(pwd, app.localDebugPath);
     end
-    close(progress);
-
 end
 
 function alert(app, e)
@@ -314,6 +313,11 @@ function alert(app, e)
 end
 
 function cleanup(settings)
+    if isvalid(settings.progress)
+        settings.progress.Message = 'Cleaning Up';
+        settings.progress.Indeterminate = 'on';
+        settings.progress.Cancelable = 'off';
+    end
     % Cleanup
     delete(File.SENTINEL);
     % Restore user's path
@@ -337,5 +341,8 @@ function cleanup(settings)
         exception = app.exception; %#ok<NASGU>
         save([app.localDebugPath filesep 'autograder.mat'], ...
             'students', 'solutions', 'exception', '-v7.3');
+    end
+    if isvalid(settings.progress)
+        close(settings.progress);
     end
 end
