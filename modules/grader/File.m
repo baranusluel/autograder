@@ -262,13 +262,15 @@ classdef File < handle
                     case this.IMAGES
                         html = '<div class="row image-feedback">';
                         html = [html '<div class="col-md-6 text-center student-image">'];
-                        studImg = img2base64(this.data);
-                        solnImg = img2base64(soln.data);
-                        html = [html '<img class="img-thumbnail rounded img-fluid" src="%s">'];
+                        if size(this.data, 3) ~= 3
+                            html = [html '<p class="exception">Your image could not be read</p>'];
+                        else
+                            html = [html sprintf('<img class="img-thumbnail rounded img-fluid" src="%s">', img2base64(this.data))];
+                        end
+                        
                         html = [html '</div><div class="col-md-6 text-center soln-image">'];
-                        html = [html '<img class="img-thumbnail rounded img-fluid" src="%s">'];
+                        html = [html sprintf('<img class="img-thumbnail rounded img-fluid" src="%s">', img2base64(soln.data))];
                         html = [html '</div></div>'];
-                        html = sprintf(html, studImg, solnImg);
                     case this.EXCEL
                         html = generateFeedback(this.data, soln.data);
                     otherwise
