@@ -301,7 +301,7 @@ function autograder(app)
         % save MAT file
         progress.Indeterminate = 'on';
         progress.Message = 'Saving Debugger Information';
-        copyfile(pwd, app.localOutputPath);
+        copyfile(pwd, app.localDebugPath);
     end
     close(progress);
 
