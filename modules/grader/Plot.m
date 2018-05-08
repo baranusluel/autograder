@@ -146,7 +146,7 @@ classdef Plot < handle
             this.Position = pHandle.Position;
             this.PlotBox = pHandle.PlotBoxAspectRatio;
 
-
+            axis(pHandle, 'equal');
             pHandle.Units = 'pixels';
             pos = pHandle.Position;
             ti = pHandle.TightInset;
@@ -156,6 +156,16 @@ classdef Plot < handle
             this.Image = imgstruct.cdata;
 
             lines = allchild(pHandle);
+            if isempty(lines)
+                this.XData = {};
+                this.YData = {};
+                this.ZData = {};
+                this.Legend = {};
+                this.Color = {};
+                this.Marker = {};
+                this.LineStyle = {};
+                return;
+            end
             for i = length(lines):-1:1
                 if ~isa(lines(i), 'matlab.graphics.chart.primitive.Line')
                     lines(i) = [];
