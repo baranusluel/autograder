@@ -125,15 +125,13 @@ function newPath = canvas2autograder(canvasPath,canvasGradebook)
                  fullfile(cur,'submissions',folderMap(canvasID),tokens{end}));
     end
 
-    % Output Variable
+    % Output Variableg
     newPath = fullfile(cur,'submissions');
 
     % Write info.csv
     fh = fopen(fullfile(newPath,'info.csv'),'wt');
-    for i = 3:size(gradebook,1)-1
-        fprintf(fh,'%s,"%s"\n',gradebook{i,tsquareIDcol},gradebook{i,studentNameCol});
-    end
-    fprintf(fh,'%s,"%s"',gradebook{end,tsquareIDcol},gradebook{end,studentNameCol});
+    toWrite = [strjoin(join(gradebook(:, [tsquareIDcol studentNameCol]), ', "'), '"\n') '"'];
+    fwrite(fh,toWrite);
     fclose(fh);
 end
 
