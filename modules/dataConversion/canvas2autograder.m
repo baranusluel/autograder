@@ -2,10 +2,11 @@
 %
 % Creates correctly formatted student folders from the Canvas download
 %
-% PATH = canvas2autograder(CANVAS,GRADEBOOK) Takes the path in CANVAS and unzips
-% accordingly, reformatting the folder names correctly using the names held
-% in the csv at GRADEBOOK, and ensuring that
-% the contents of the Student folders are always just the student's files.
+% PATH = canvas2autograder(CANVAS,GRADEBOOK,OUTPATH) Takes the path in 
+% CANVAS and unzips accordingly, reformatting the folder names correctly
+% using the names held in the csv at GRADEBOOK, placing them in OUTPATH, 
+% and ensuring that the contents of the Student folders are always just the
+% student's files.
 %
 %%% Remarks
 %
@@ -26,26 +27,26 @@
 %
 %   CANVAS = 'C:\Users\...\Canvas.zip'; % Valid path
 %   GRADEBOOK = 'C:\Users\...\gradebook.csv'; % Valid gradebook
-%   PATH = canvas2autograder(CANVAS,GRADEBOOK);
+%   OUTPATH = 'C:\Users\...\students';
+%   canvas2autograder(CANVAS,GRADEBOOK,OUTPATH);
 %
-%   PATH points to a new, unzipped path that is completely
+%   OUTPATH contains new, unzipped path that is completely
 %   unzipped all student's folders, and the folder names
 %   are correct.
 %
 %   CANVAS = ''; % Invalid Path
 %   GRADEBOOK = 'C:\Users\...\gradebook.csv'; % Valid gradebook
-%   PATH = canvas2autograder(CANVAS);
+%   canvas2autograder(CANVAS);
 %
 %   Threw invalidFile exception
 %
 %   CANVAS = 'C:\Users\...\Canvas.zip'; % Valid path, but INVALID archive!
-%   PATH = canvas2autograder(CANVAS);
+%   canvas2autograder(CANVAS);
 %
 %   Threw invalidFile exception
 %
-function newPath = canvas2autograder(canvasPath,canvasGradebook)
+function canvas2autograder(canvasPath,canvasGradebook,outPath)
 
-    cur = pwd;
     % Canvas Information
     firstStudentRow = 3;
     studentNameCol = 1;
@@ -81,8 +82,8 @@ function newPath = canvas2autograder(canvasPath,canvasGradebook)
 
     % Generate empty folders.
     for key = keys(folderMap)
-        mkdir(fullfile(cur,'submissions',folderMap(key{1})))
-        mkdir(fullfile(cur,'submissions',folderMap(key{1}),'feedback'))
+        mkdir(fullfile(outPath,folderMap(key{1})))
+        mkdir(fullfile(outPath,folderMap(key{1}),'feedback'))
     end
 
     % Format of the canvas file:
@@ -122,14 +123,11 @@ function newPath = canvas2autograder(canvasPath,canvasGradebook)
 
         % Copy the file to new location
         copyfile(fullfile(unzippedCanvas,allFiles(i).name),...
-                 fullfile(cur,'submissions',folderMap(canvasID),tokens{end}));
+                 fullfile(outPath,folderMap(canvasID),tokens{end}));
     end
 
-    % Output Variableg
-    newPath = fullfile(cur,'submissions');
-
     % Write info.csv
-    fh = fopen(fullfile(newPath,'info.csv'),'wt');
+    fh = fopen(fullfile(outPath,'info.csv'),'wt');  
     toWrite = [strjoin(join(gradebook(:, [tsquareIDcol studentNameCol]), ', "'), '"\n') '"'];
     fwrite(fh,toWrite);
     fclose(fh);
