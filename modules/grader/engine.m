@@ -316,10 +316,20 @@ function runnables = engine(runnables)
                         e = e.addCause(worker.Error.remotecause{1});
                         e.throw();
                     elseif ~isempty(worker.Error) && ~isTestCase
-                            e = MException('AUTOGRADER:studentError', ...
+                        e = MException('AUTOGRADER:studentError', ...
                             'Student Code errored');
+                        if isempty(worker.Error.remotecause)
+                            % for now, it seems that opening infinite
+                            % files for reading causes it to error without
+                            % a cause. So the cause should be
+                            % InfiniteOpenFiles.
+                            runnables(w).exception = ...
+                                e.addCause(MException('AUTOGRADER:engine:tooManyOpenFiles', ...
+                                'You opened too many files'));
+                        else
                             runnables(w).exception = ...
                                 e.addCause(worker.Error.remotecause{1});
+                        end
                     else
                         runnables(w) = worker.fetchOutputs();
                     end

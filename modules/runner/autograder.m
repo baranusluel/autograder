@@ -339,11 +339,12 @@ function cleanup(settings)
         settings.progress.Message = 'Saving Output for Debugger...';
     end
     if ~isempty(app.localDebugPath)
+        % Don't compress - takes too long (and likely unnecessary)
         students = app.students; %#ok<NASGU>
         solutions = app.solutions; %#ok<NASGU>
         exception = app.exception; %#ok<NASGU>
         save([app.localDebugPath filesep 'autograder.mat'], ...
-            'students', 'solutions', 'exception', '-v7.3');
+            'students', 'solutions', 'exception', '-v7.3', '-nocompression');
     end
     if isvalid(settings.progress)
         close(settings.progress);

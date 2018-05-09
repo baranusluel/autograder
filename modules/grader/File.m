@@ -259,14 +259,22 @@ classdef File < handle
                         fid = fopen(solnPath, 'wt');
                         fwrite(fid, soln.data);
                         fclose(fid);
-                        html = visdiff(studPath, solnPath, 'text');
-                        html = strrep(html, 'Student File');
-                        html = strrep(html, 'Solution File');
-                        startInd = strfind(html, '<title>');
-                        endInd = strfind(html, '</title>');
-                        startInd = startInd(1) + length('<title>');
-                        endInd = endInd(1) - 1;
-                        html = [html(1:startInd), 'Comparison of Student and Solution Files' html(endInd:end)];
+                        try
+                            html = visdiff(studPath, solnPath);
+                            html = strrep(html, studPath, 'Student File');
+                            html = strrep(html, solnPath, 'Solution File');
+                            [~, studName, ~] = fileparts(studPath);
+                            [~, solnName, ~] = fileparts(solnPath);
+                            html = strrep(html, studName, this.name);
+                            html = strrep(html, solnName, soln.name);
+                            startInd = strfind(html, '<title>');
+                            endInd = strfind(html, '</title>');
+                            startInd = startInd(1) + length('<title>');
+                            endInd = endInd(1) - 1;
+                            html = [html(1:startInd), 'Comparison of Student and Solution Files' html(endInd:end)];
+                        catch
+                            html = '<p>Student file is not a valid text file</p>';
+                        end
                     case this.IMAGES
                         html = '<div class="row image-feedback">';
                         html = [html '<div class="col-md-6 text-center student-image">'];
