@@ -210,7 +210,7 @@ function runnables = engine(runnables)
     end
 
     origPaths = cell(size(runnables));
-    parfor r = 1:numel(runnables)
+    for r = 1:numel(runnables)
         runnable = runnables(r);
         fld = tempname;
         mkdir(fld);
