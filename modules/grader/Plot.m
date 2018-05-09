@@ -177,10 +177,10 @@ classdef Plot < handle
             ycell = {lines.YData};
             zcell = {lines.ZData};
             
-            % Round data to nearest Student.ROUNDOFF_ERROR
-            xcell = cellfun(@(x)(round(double(x), Student.ROUNDOFF_ERROR)), xcell, 'uni', false);
-            ycell = cellfun(@(y)(round(double(y), Student.ROUNDOFF_ERROR)), ycell, 'uni', false);
-            zcell = cellfun(@(z)(round(double(z), Student.ROUNDOFF_ERROR)), zcell, 'uni', false);
+            % Round data to sigfig
+            xcell = cellfun(@(xx)(roundData(xx)), xcell, 'uni', false);
+            ycell = cellfun(@(yy)(roundData(yy)), ycell, 'uni', false);
+            zcell = cellfun(@(zz)(roundData(zz)), zcell, 'uni', false);
             
             legend = {lines.DisplayName};
             color = {lines.Color};
@@ -208,7 +208,7 @@ classdef Plot < handle
             %   current choice
             % if it meets these conditions, we need to combine them and
             % then start the search over.
-            % if it has NO line style, then we don't car about first
+            % if it has NO line style, then we don't care about first
             % matching last
             % 
             % After we're done combining, if there's no line style, we need
@@ -583,4 +583,9 @@ classdef Plot < handle
 
         end
     end
+end
+
+function data = roundData(data)
+    sigs = arrayfun(@(i)(length(num2str(i))), abs(data)) - Student.ROUNDOFF_ERROR;
+    data = arrayfun(@(d, s)(round(double(d), s)), data, sigs);
 end

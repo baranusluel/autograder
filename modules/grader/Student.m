@@ -49,7 +49,7 @@ classdef Student < handle
     properties (Constant)
         TIMEOUT = 30;
         resources = Resources;
-        ROUNDOFF_ERROR = 6;
+        ROUNDOFF_ERROR = 5;
     end
     properties (Access = public)
         name;
