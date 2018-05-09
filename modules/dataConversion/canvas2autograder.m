@@ -128,7 +128,7 @@ function canvas2autograder(canvasPath,canvasGradebook,outPath)
 
     % Write info.csv
     fh = fopen(fullfile(outPath,'info.csv'),'wt');  
-    toWrite = [strjoin(join(gradebook(:, [tsquareIDcol studentNameCol]), ', "'), '"\n') '"'];
+    toWrite = [strjoin(join(gradebook(firstStudnetRow:end, [tsquareIDcol studentNameCol]), ', "'), '"\n') '"'];
     fwrite(fh,toWrite);
     fclose(fh);
 end
