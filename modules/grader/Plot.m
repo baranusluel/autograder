@@ -145,15 +145,16 @@ classdef Plot < handle
             this.ZLabel = pHandle.ZLabel.String;
             this.Position = pHandle.Position;
             this.PlotBox = pHandle.PlotBoxAspectRatio;
-
-            axis(pHandle, 'equal');
-            pHandle.Units = 'pixels';
-            pos = pHandle.Position;
-            ti = pHandle.TightInset;
-            rect = [-ti(1), -ti(2), pos(3)+ti(1)+ti(3), pos(4)+ti(2)+ti(4)];
-
-            imgstruct = getframe(pHandle,rect);
+            
+            tmp = figure();
+            par = pHandle.Parent;
+            pHandle.Parent = tmp;
+            imgstruct = getframe(tmp);
             this.Image = imgstruct.cdata;
+            
+            pHandle.Parent = par;
+            close(tmp);
+            delete(tmp);
 
             lines = allchild(pHandle);
             if isempty(lines)
@@ -514,7 +515,7 @@ classdef Plot < handle
             LinePropsCheck = false(1,length(thisStruct));
             for i = 1:length(thisStruct)
                 for j = 1:length(thatStruct)
-                    if isequal(thisStruct(i),thatStruct(j))
+                    if isequaln(thisStruct(i),thatStruct(j))
                         LinePropsCheck(i) = true;
                         break;
                     end
