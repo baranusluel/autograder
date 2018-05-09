@@ -104,7 +104,7 @@ function student = createStudent(path, name)
     end
     zipFiles = dir([path filesep '*.zip']);
     for i = 1:length(zipFiles)
-        [~] = unzipArchive([path filesep zipFiles(i).name], path, true);
+        unzipArchive([path filesep zipFiles(i).name], path, true);
     end
     student = Student(path, name);
 end
