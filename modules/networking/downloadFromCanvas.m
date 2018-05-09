@@ -107,7 +107,7 @@ function saveFile(attachment, path, attempt, reason)
     try
         downloader = matlab.net.http.RequestMessage;
         data = downloader.send(attachment.url);
-        fid = fopen([path filesep attachment.filename], 'wt');
+        fid = fopen([path filesep attachment.filename], 'w');
         fwrite(fid, data.Body.Data);
         fclose(fid);
     catch reason
