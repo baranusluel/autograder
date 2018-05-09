@@ -46,11 +46,19 @@
 function newPath = canvas2autograder(canvasPath,canvasGradebook)
 
     cur = pwd;
+    % Canvas Information
+    firstStudentRow = 3;
+    studentNameCol = 1;
+    canvasIDcol = 2;
+    tsquareIDcol = 4;
+    
     if ~contains(canvasPath,'.zip')
         throw(MException('AUTOGRADER:canvas2autograder:invalidFile',...
                          'The Path given is not a .zip file'));
     end
-    unzippedCanvas = unzipArchive(canvasPath,'temp',true);
+    unzippedCanvas = strtok(canvasPath,'.');
+    unzip(canvasPath,unzippedCanvas)
+    %unzippedCanvas = unzipArchive(canvasPath,'temp',true);
     if ~contains(canvasGradebook,'.csv')
         throw(MException('AUTOGRADER:canvas2autograder:invalidGradebook',...
                          'The Gradebook given is not a .csv file'));
@@ -68,7 +76,8 @@ function newPath = canvas2autograder(canvasPath,canvasGradebook)
     end
 
     % Generate folders Map
-    folderMap = containers.Map(gradebook(3:end,2),gradebook(3:end,4));
+    folderMap = containers.Map(gradebook(firstStudentRow:end,canvasIDcol),...
+                               gradebook(firstStudentRow:end,tsquareIDcol));
 
     % Generate empty folders.
     for key = keys(folderMap)
@@ -78,54 +87,53 @@ function newPath = canvas2autograder(canvasPath,canvasGradebook)
 
     % Format of the canvas file:
     % lastNamefirstName(_2ndLastName)(_late)_canvasId_hash_fileName-version.ext
-    allFiles = dir(unzippedCanvas);
+    allFiles = dir(fullfile(unzippedCanvas,'*_*_*_*.*'));
 
     % Loop through all files
-    for i = 1:length(allFiles)
+    for i = 3:length(allFiles)
         fileName = allFiles(i).name;
 
-        % Remove if a student submitted after 8:00pm
-        fileName = strrep(fileName,'_late','');
-
-        % Get parts of file name and account for
+        % Get parts of file name
         tokens = strsplit(fileName,'_');
-        if isempty(str2double(tokens{2}))
-            tokens{1} = [tokens{1} '_' tokens{2}];
-            tokens(2) = [];
-        end
-        if length(tokens) == 5
-            tokens{4} = [tokens{4} '_' tokens{5}];
-            tokens(5) = [];
+        
+        % Extract Student ID and file name
+        
+        % Put ABCs filenames back together.
+        if any(strcmp(tokens,'ABCs'))
+            ABCsMask = strcmp(tokens,'ABCs');
+            toCatMask = [false, ABCsMask(1:end-1)];
+            tokens{ABCsMask} = [tokens{ABCsMask} '_' tokens{toCatMask}];
+            tokens(toCatMask) = [];
         end
 
+        % Get Student CanvasID
+        for j = 1:length(tokens)
+            if ~isnan(str2double(tokens{j}))
+                canvasID = str2double(tokens{j});
+                break
+            end
+        end
+        
         % Remove Version tag
-        if contains(token{4},'-')
-            fparts = strsplit(token{4},{'-','.'});
-            token{4} = [fparts{1} '.' fparts{3}];
+        if contains(tokens{end},'-')
+            fparts = strsplit(tokens{end},{'-','.'});
+            tokens{end} = [fparts{1} '.' fparts{3}];
         end
-
-        % Get key
-        key = str2double(tokens{2});
 
         % Copy the file to new location
-        copyfile(fullfile(unzippedCanvas,allfiles(i).name),...
-                 fullfile(cur,'submissions',folderMap(key)));
-    end
-
-    for key = keys(folderMap)
-        % Process student submissions
-        processStudentSubmissions(fullfile(cur,'submissions',folderMap(key{1})));
+        copyfile(fullfile(unzippedCanvas,allFiles(i).name),...
+                 fullfile(cur,'submissions',folderMap(canvasID),tokens{end}));
     end
 
     % Output Variable
     newPath = fullfile(cur,'submissions');
 
     % Write info.csv
-    fh = fopen(fullfile(newPath,'info.csv'),'w');
+    fh = fopen(fullfile(newPath,'info.csv'),'wt');
     for i = 3:size(gradebook,1)-1
-        fprintf(fh,'%s,"%s"\n',gradebook{i,4},gradebook{i,1});
+        fprintf(fh,'%s,"%s"\n',gradebook{i,tsquareIDcol},gradebook{i,studentNameCol});
     end
-    fprintf(fh,'%s,"%s"',gradebook{end,4},gradebook{end,1});
+    fprintf(fh,'%s,"%s"',gradebook{end,tsquareIDcol},gradebook{end,studentNameCol});
     fclose(fh);
 end
 
@@ -142,3 +150,4 @@ function log = isValidCanvas(canvasPath)
     fileNames = {files.name};
     log = ~isempty(fileNames);
 end
+
