@@ -104,6 +104,6 @@ function processStudentSubmission(startPath)
     end
     zipFiles = dir([startPath filesep '*.zip']);
     for i = 1:length(zipFiles)
-        [~] = unzipArchive([startPath filesep zipFiles(i).name], pwd, true);
+        [~] = unzipArchive([startPath filesep zipFiles(i).name], startPath, true);
     end
 end
