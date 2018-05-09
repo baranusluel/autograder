@@ -168,7 +168,7 @@ function autograder(app)
         progress.Indeterminate = 'on';
         % unzip the archive
         try
-            unzipArchive(app.submissionArchivePath, [pwd filesep 'Students']);
+            unzipArchive(app.homeworkArchivePath, [pwd filesep 'Students']);
         catch e
             if app.isDebug
                 keyboard;

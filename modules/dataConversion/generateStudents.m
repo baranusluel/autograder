@@ -98,6 +98,13 @@ function students = generateStudents(path, progress)
 end
 
 function student = createStudent(path, name)
-    processStudentSubmission(path);
+    path(path == '/' | path == '\') = filesep;
+    if path(end) == filesep
+        path(end) = [];
+    end
+    zipFiles = dir([path filesep '*.zip']);
+    for i = 1:length(zipFiles)
+        unzipArchive([path filesep zipFiles(i).name], path, true);
+    end
     student = Student(path, name);
 end
