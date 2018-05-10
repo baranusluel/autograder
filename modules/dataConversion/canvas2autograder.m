@@ -57,7 +57,7 @@ function canvas2autograder(canvasPath,canvasGradebook,outPath)
         throw(MException('AUTOGRADER:canvas2autograder:invalidFile',...
                          'The Path given is not a .zip file'));
     end
-    unzippedCanvas = unzipArchive(canvasPath,'temp',true);
+    unzippedCanvas = unzipArchive(canvasPath,outPath,true);
     if ~contains(canvasGradebook,'.csv')
         throw(MException('AUTOGRADER:canvas2autograder:invalidGradebook',...
                          'The Gradebook given is not a .csv file'));
