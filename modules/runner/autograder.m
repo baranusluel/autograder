@@ -198,7 +198,7 @@ function autograder(app)
     ax = uiaxes(plotter);
     ax.Position = [10 10 550 400]; % as suggested in example on MATLAB ref page
     title(ax, 'Histogram of Student Grades');
-    xlabel(ax, 'Grade (in %)');
+    xlabel(ax, 'Grade');
     ylabel(ax, 'Number of Students');
     h = histogram(ax);
     totalPoints = [solutions.testCases];
@@ -307,7 +307,7 @@ function autograder(app)
         % save MAT file
         progress.Indeterminate = 'on';
         progress.Message = 'Saving Debugger Information';
-        copyfile(pwd, app.localDebugPath);
+        copyfile(settings.workingDir, app.localDebugPath);
     end
 end
 
