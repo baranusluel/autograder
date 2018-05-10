@@ -283,13 +283,13 @@ function runnables = engine(runnables)
                 % save the original load files
                 tCase.inputs = [varNames; varValues];
             end
-            cd(origPath);
             if ~isTestCase
                 runnable.testCase = tCase;
             else
                 runnable = tCase;
             end
         end
+        cd(origPath);
         runnables(r) = runnable;
     end
     % done with parfor - now run all the cases!
