@@ -145,15 +145,16 @@ classdef Plot < handle
             this.ZLabel = pHandle.ZLabel.String;
             this.Position = pHandle.Position;
             this.PlotBox = pHandle.PlotBoxAspectRatio;
-
-            axis(pHandle, 'equal');
-            pHandle.Units = 'pixels';
-            pos = pHandle.Position;
-            ti = pHandle.TightInset;
-            rect = [-ti(1), -ti(2), pos(3)+ti(1)+ti(3), pos(4)+ti(2)+ti(4)];
-
-            imgstruct = getframe(pHandle,rect);
+            
+            tmp = figure();
+            par = pHandle.Parent;
+            pHandle.Parent = tmp;
+            imgstruct = getframe(tmp);
             this.Image = imgstruct.cdata;
+            
+            pHandle.Parent = par;
+            close(tmp);
+            delete(tmp);
 
             lines = allchild(pHandle);
             if isempty(lines)
@@ -176,10 +177,10 @@ classdef Plot < handle
             ycell = {lines.YData};
             zcell = {lines.ZData};
             
-            % Round data to nearest Student.ROUNDOFF_ERROR
-            xcell = cellfun(@(x)(round(double(x), Student.ROUNDOFF_ERROR)), xcell, 'uni', false);
-            ycell = cellfun(@(y)(round(double(y), Student.ROUNDOFF_ERROR)), ycell, 'uni', false);
-            zcell = cellfun(@(z)(round(double(z), Student.ROUNDOFF_ERROR)), zcell, 'uni', false);
+            % Round data to sigfig
+            xcell = cellfun(@(xx)(round(double(xx), Student.ROUNDOFF_ERROR)), xcell, 'uni', false);
+            ycell = cellfun(@(yy)(round(double(yy), Student.ROUNDOFF_ERROR)), ycell, 'uni', false);
+            zcell = cellfun(@(zz)(round(double(zz), Student.ROUNDOFF_ERROR)), zcell, 'uni', false);
             
             legend = {lines.DisplayName};
             color = {lines.Color};
@@ -207,7 +208,7 @@ classdef Plot < handle
             %   current choice
             % if it meets these conditions, we need to combine them and
             % then start the search over.
-            % if it has NO line style, then we don't car about first
+            % if it has NO line style, then we don't care about first
             % matching last
             % 
             % After we're done combining, if there's no line style, we need
@@ -514,7 +515,7 @@ classdef Plot < handle
             LinePropsCheck = false(1,length(thisStruct));
             for i = 1:length(thisStruct)
                 for j = 1:length(thatStruct)
-                    if isequal(thisStruct(i),thatStruct(j))
+                    if isequaln(thisStruct(i),thatStruct(j))
                         LinePropsCheck(i) = true;
                         break;
                     end
@@ -576,7 +577,7 @@ classdef Plot < handle
         solnPlot = img2base64(that.Image);
         html = sprintf(['<div class="row"><div class="col-md-6 text-center">', ...
             '<h2 class="text-center">Your Plot</h2><img class="img-fluid img-thumbnail" src="%s">', ...
-            '</div><div class="col-md-6 text-center"><h2 class="text-center"> Solution Plot</h2>', ...
+            '</div><div class="col-md-6 text-center"><h2 class="text-center">Solution Plot</h2>', ...
             '<img class="img-fluid img-thumbnail" src="%s"></div></div>'],...
             studPlot, solnPlot);
 

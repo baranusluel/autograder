@@ -133,9 +133,17 @@ classdef File < handle
                     fclose(fid);
                 case this.IMAGES
                     %read in image array and store in File class
-                    this.data = imread([name ext]);
+                    try
+                        this.data = imread([name ext]);
+                    catch
+                        this.data = [];
+                    end
                 case this.EXCEL
-                    [~,~,this.data] = xlsread([name ext]);
+                    try
+                        [~,~,this.data] = xlsread([name ext]);
+                    catch
+                        this.data = {};
+                    end
                 otherwise
                     fid = fopen([this.name this.extension]); %binary reading
                     this.data = fread(fid);
@@ -251,24 +259,34 @@ classdef File < handle
                         fid = fopen(solnPath, 'wt');
                         fwrite(fid, soln.data);
                         fclose(fid);
-                        html = visdiff(studPath, solnPath, 'text');
-                        html = strrep(html, 'Student File');
-                        html = strrep(html, 'Solution File');
-                        startInd = strfind(html, '<title>');
-                        endInd = strfind(html, '</title>');
-                        startInd = startInd(1) + length('<title>');
-                        endInd = endInd(1) - 1;
-                        html = [html(1:startInd), 'Comparison of Student and Solution Files' html(endInd:end)];
+                        try
+                            html = visdiff(studPath, solnPath);
+                            html = strrep(html, studPath, 'Student File');
+                            html = strrep(html, solnPath, 'Solution File');
+                            [~, studName, ~] = fileparts(studPath);
+                            [~, solnName, ~] = fileparts(solnPath);
+                            html = strrep(html, studName, this.name);
+                            html = strrep(html, solnName, soln.name);
+                            startInd = strfind(html, '<title>');
+                            endInd = strfind(html, '</title>');
+                            startInd = startInd(1) + length('<title>');
+                            endInd = endInd(1) - 1;
+                            html = [html(1:startInd), 'Comparison of Student and Solution Files' html(endInd:end)];
+                        catch
+                            html = '<p>Student file is not a valid text file</p>';
+                        end
                     case this.IMAGES
                         html = '<div class="row image-feedback">';
                         html = [html '<div class="col-md-6 text-center student-image">'];
-                        studImg = img2base64(this.data);
-                        solnImg = img2base64(soln.data);
-                        html = [html '<img class="img-thumbnail rounded img-fluid" src="%s">'];
+                        if size(this.data, 3) ~= 3
+                            html = [html '<p class="exception">Your image could not be read</p>'];
+                        else
+                            html = [html sprintf('<img class="img-thumbnail rounded img-fluid" src="%s">', img2base64(this.data))];
+                        end
+                        
                         html = [html '</div><div class="col-md-6 text-center soln-image">'];
-                        html = [html '<img class="img-thumbnail rounded img-fluid" src="%s">'];
+                        html = [html sprintf('<img class="img-thumbnail rounded img-fluid" src="%s">', img2base64(soln.data))];
                         html = [html '</div></div>'];
-                        html = sprintf(html, studImg, solnImg);
                     case this.EXCEL
                         html = generateFeedback(this.data, soln.data);
                     otherwise
