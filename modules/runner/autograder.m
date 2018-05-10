@@ -69,10 +69,26 @@ function autograder(app)
 
     % start up application
     settings.app = app;
+    try
+        if app.isDebug
+            logger = Logger(app.localDebugPath);
+        else
+            logger = Logger();
+        end
+    catch e
+        if app.isDebug
+            keyboard;
+        else
+            alert(app, e);
+            return;
+        end
+    end
+    settings.logger = logger;
     % Start up parallel pool
     progress = uiprogressdlg(app.UIFigure, 'Title', 'Autograder Progress', ...
         'Message', 'Starting Parallel Pool', 'Cancelable', 'on', ...
         'ShowPercentage', true, 'Indeterminate', 'on');
+    Logger.log('Starting up parallel pool');
     settings.progress = progress;
     evalc('gcp');
     app.UIFigure.Visible = 'off';
@@ -81,11 +97,13 @@ function autograder(app)
         return;
     end
     progress.Message = 'Setting Up Environment';
+    Logger.log('Setting up new directory');
     % Get temporary directory
     settings.workingDir = [tempname filesep];
     mkdir(settings.workingDir);
     settings.userDir = cd(settings.workingDir);
     % Create SENTINEL file
+    Logger.log('Creating Sentinel');
     fid = fopen(File.SENTINEL, 'wt');
     fwrite(fid, 'SENTINEL');
     fclose(fid);
@@ -95,14 +113,15 @@ function autograder(app)
 
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
-    
     % For solution, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Solutions');
     if app.SolutionChoice.Value == 1
         % downloading
         try
+            Logger.log('Exchanging refresh token for access token');
             token = refresh2access(app.driveToken);
+            Logger.log('Starting download of solution archive from Google Drive');
             downloadFromDrive(app.driveFolderId, token, [pwd filesep 'Solutions'], app.driveKey, progress);
         catch e
             if app.isDebug
@@ -116,6 +135,7 @@ function autograder(app)
         % unzip the archive
         progress.Indeterminate = 'on';
         progress.Message = 'Unzipping Rubric';
+        Logger.log('Unzipping Solution Archive');
         try
             unzipArchive(app.solutionArchivePath, [pwd filesep 'Solutions']);
         catch e
@@ -131,6 +151,7 @@ function autograder(app)
     % Generate solutions
     try
         orig = cd('Solutions');
+        Logger.log('Generating Solutions');
         solutions = generateSolutions(app.isResubmission, progress);
         cd(orig);
         app.solutions = solutions;
@@ -180,6 +201,7 @@ function autograder(app)
     end
     % Generate students
     try
+        Logger.log('Generating Students');
         students = generateStudents([pwd filesep 'Students'], progress);
         app.students = students;
     catch e
@@ -214,10 +236,12 @@ function autograder(app)
     progress.Indeterminate = 'off';
     progress.Value = 0;
     progress.Message = 'Student Grading Progress';
+    Logger.log('Starting student assessment');
     for s = 1:numel(students)
         student = students(s);
         progress.Message = sprintf('Assessing Student %s', student.name);
         try
+            Logger.log(sprintf('Assessing Student %s (%s)', student.name, student.id));
             student.assess();
         catch e
             if app.isDebug
@@ -281,10 +305,12 @@ function autograder(app)
     % If the user requested uploading, do it
 
     if app.UploadToCanvas.Value
+        Logger.log('Starting upload of student grades');
         uploadToCanvas(students, app.canvasCourseId, ...
             app.canvasHomeworkId, app.canvasToken, progress);
     end
     if app.UploadToServer.Value
+        Logger.log('Starting upload of student files');
         if app.isResubmission
             name = sprintf('homework%02d_resubmission', app.homeworkNum);
         else
@@ -301,12 +327,14 @@ function autograder(app)
         % save canvas info in path
         % copy csv, then change accordingly
         % move student folders to output path
+        Logger.log('Starting copy of local information');
         copyfile(pwd, app.localOutputPath);
     end
     if ~isempty(app.localDebugPath)
         % save MAT file
         progress.Indeterminate = 'on';
         progress.Message = 'Saving Debugger Information';
+        Logger.log('Starting copy of debug information');
         copyfile(settings.workingDir, app.localDebugPath);
     end
 end
@@ -324,8 +352,10 @@ function cleanup(settings)
         settings.progress.Cancelable = 'off';
     end
     % Cleanup
+    Logger.log('Deleting Sentinel file');
     delete(File.SENTINEL);
     % Restore user's path
+    Logger.log('Restoring User Path settings');
     path(settings.userPath{1}, '');
     if ~isempty(settings.userPath{2})
         userpath(settings.userPath{2});
@@ -333,7 +363,7 @@ function cleanup(settings)
 
     % cd to user's dir
     cd(settings.userDir);
-
+    Logger.log('Removing Working Directory');
     % Delete our working directory
     [~] = rmdir(settings.workingDir, 's');
     % Restore figure settings
@@ -344,6 +374,7 @@ function cleanup(settings)
         settings.progress.Message = 'Saving Output for Debugger...';
     end
     if ~isempty(app.localDebugPath)
+        Logger.log('Saving Debug Information');
         % Don't compress - takes too long (and likely unnecessary)
         students = app.students; %#ok<NASGU>
         solutions = app.solutions; %#ok<NASGU>
@@ -354,4 +385,5 @@ function cleanup(settings)
     if isvalid(settings.progress)
         close(settings.progress);
     end
+    settings.logger.delete();
 end
