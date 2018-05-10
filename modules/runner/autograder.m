@@ -232,6 +232,11 @@ function autograder(app)
         if mod(s, DRAW_INTERVAL) == 0
             drawnow;
         end
+        if progress.CancelRequested
+            e = MException('AUTOGRADER:userCancelled', 'User Cancelled Operation');
+            alert(e);
+            return;
+        end
     end
     
     % Before we do anything else, examine the grades. There should be a
