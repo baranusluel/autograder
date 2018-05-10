@@ -49,7 +49,7 @@ classdef Student < handle
     properties (Constant)
         TIMEOUT = 30;
         resources = Resources;
-        ROUNDOFF_ERROR = 6;
+        ROUNDOFF_ERROR = 5;
     end
     properties (Access = public)
         name;
@@ -234,7 +234,7 @@ classdef Student < handle
                             'Student did not submit file');
                         feeds(counter).exception = ...
                             e.addCause(MException('STUDENT:fileNotSubmitted', ...
-                            'File %s wasn''t submitted, so the function was not graded.', [prob.name '.m']));
+                            'File <code>%s</code> wasn''t submitted, so the function was not graded.', [prob.name '.m']));
                     end
                     inds(counter) = p;
                     isRecursive(counter) = prob.isRecursive;
