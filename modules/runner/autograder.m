@@ -168,7 +168,7 @@ function autograder(app)
         progress.Indeterminate = 'on';
         % unzip the archive
         try
-            unzipArchive(app.submissionArchivePath, [pwd filesep 'Students']);
+            unzipArchive(app.homeworkArchivePath, [pwd filesep 'Students']);
         catch e
             if app.isDebug
                 keyboard;
@@ -231,6 +231,11 @@ function autograder(app)
         h.Data(s) = student.grade;
         if mod(s, DRAW_INTERVAL) == 0
             drawnow;
+        end
+        if progress.CancelRequested
+            e = MException('AUTOGRADER:userCancelled', 'User Cancelled Operation');
+            alert(e);
+            return;
         end
     end
     
@@ -335,12 +340,16 @@ function cleanup(settings)
     set(0, 'DefaultFigureVisible', settings.figures);
     % store debugging info
     app = settings.app;
+    if isvalid(settings.progress)
+        settings.progress.Message = 'Saving Output for Debugger...';
+    end
     if ~isempty(app.localDebugPath)
+        % Don't compress - takes too long (and likely unnecessary)
         students = app.students; %#ok<NASGU>
         solutions = app.solutions; %#ok<NASGU>
         exception = app.exception; %#ok<NASGU>
         save([app.localDebugPath filesep 'autograder.mat'], ...
-            'students', 'solutions', 'exception', '-v7.3');
+            'students', 'solutions', 'exception', '-v7.3', '-nocompression');
     end
     if isvalid(settings.progress)
         close(settings.progress);

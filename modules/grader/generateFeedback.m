@@ -195,8 +195,8 @@ function htmlFeedback = generateFeedback(stud, soln)
     END_SPAN = '</span>';
     DIFF_CLASS = ['<p>' INCORRECT ' ' START_SPAN '%s' END_SPAN ' class expected; ' START_SPAN '%s' END_SPAN ' class given.</p>'];
     DIFF_DIM = ['<p>' INCORRECT ' Dimension Mismatch: ' START_SPAN '%s' END_SPAN ' expected; ' START_SPAN '%s' END_SPAN ' given.</p>'];
-    TABLE = [INCORRECT ' Value Incorrect:<div class="flex-container"><div class="flex-element"><p>Expected:</p>' START_SPAN '%s' END_SPAN '</div>' ...
-        '<div class="flex-element"><p>Given:</p>' START_SPAN '%s' END_SPAN '</div></div>'];
+    TABLE = [INCORRECT ' Value Incorrect:<div class="flex-container"><div class="flex-element">Expected:<p>' START_SPAN '%s' END_SPAN '</p></div>' ...
+        '<div class="flex-element">Given:<p>' START_SPAN '%s' END_SPAN '</p></div></div>'];
     DIFF_VALUE = ['<p>' START_SPAN '%s' END_SPAN ' expected; ' START_SPAN '%s' END_SPAN ' given.</p>'];
     DIFF_ARR_VALUE = ['<p>At index (' START_SPAN '%s' END_SPAN '): ' START_SPAN '%s' END_SPAN '</p>'];
     DIFF_STC_VALUE = ['<p>In field "' START_SPAN '%s' END_SPAN '": ' START_SPAN '%s' END_SPAN '</p>'];
