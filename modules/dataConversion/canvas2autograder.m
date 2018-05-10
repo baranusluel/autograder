@@ -57,9 +57,7 @@ function canvas2autograder(canvasPath,canvasGradebook,outPath)
         throw(MException('AUTOGRADER:canvas2autograder:invalidFile',...
                          'The Path given is not a .zip file'));
     end
-    unzippedCanvas = strtok(canvasPath,'.');
-    unzip(canvasPath,unzippedCanvas)
-    %unzippedCanvas = unzipArchive(canvasPath,'temp',true);
+    unzippedCanvas = unzipArchive(canvasPath,'temp',true);
     if ~contains(canvasGradebook,'.csv')
         throw(MException('AUTOGRADER:canvas2autograder:invalidGradebook',...
                          'The Gradebook given is not a .csv file'));
@@ -91,7 +89,7 @@ function canvas2autograder(canvasPath,canvasGradebook,outPath)
     allFiles = dir(fullfile(unzippedCanvas,'*_*_*_*.*'));
 
     % Loop through all files
-    for i = 3:length(allFiles)
+    for i = 1:length(allFiles)
         fileName = allFiles(i).name;
 
         % Get parts of file name
