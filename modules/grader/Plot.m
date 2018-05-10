@@ -75,11 +75,8 @@ classdef Plot < handle
         Marker;
         LineStyle;
     end
-    properties (Access = private)
-        isTitle = false;
-        isXLabel = false;
-        isYLabel = false;
-        isZLabel = false;
+    properties (Access=private)
+        isAlien logical = false;
     end
     methods
         function this = Plot(pHandle)
@@ -148,53 +145,49 @@ classdef Plot < handle
             this.ZLabel = pHandle.ZLabel.String;
             this.Position = pHandle.Position;
             this.PlotBox = pHandle.PlotBoxAspectRatio;
-
-
-            pHandle.Units = 'pixels';
-            pos = pHandle.Position;
-            ti = pHandle.TightInset;
-            rect = [-ti(1), -ti(2), pos(3)+ti(1)+ti(3), pos(4)+ti(2)+ti(4)];
-
-            imgstruct = getframe(pHandle,rect);
+            
+            tmp = figure();
+            par = pHandle.Parent;
+            pHandle.Parent = tmp;
+            imgstruct = getframe(tmp);
             this.Image = imgstruct.cdata;
-
+            
+            pHandle.Parent = par;
+            close(tmp);
+            delete(tmp);
 
             lines = allchild(pHandle);
+            if isempty(lines)
+                this.XData = {};
+                this.YData = {};
+                this.ZData = {};
+                this.Legend = {};
+                this.Color = {};
+                this.Marker = {};
+                this.LineStyle = {};
+                return;
+            end
             for i = length(lines):-1:1
                 if ~isa(lines(i), 'matlab.graphics.chart.primitive.Line')
                     lines(i) = [];
+                    this.isAlien = true;
                 end
             end
-            xcell = cell(1,length(lines));
-            ycell = cell(1,length(lines));
-            zcell = cell(1,length(lines));
-            legend = cell(1,length(lines));
-            color = cell(1,length(lines));
-            marker = cell(1,length(lines));
-            linestyle = cell(1,length(lines));
-
-            for i = 1:length(lines)
-                line = lines(i);
-                xcell(i) = {line.XData};
-                ycell(i) = {line.YData};
-                zcell(i) = {line.ZData};
-                
-                legend(i) = {line.DisplayName};
-
-                color(i) = {line.Color};
-
-                if strcmp(line.Marker,'none')
-                    marker(i) = {''};
-                else
-                    marker(i) = {line.Marker};
-                end
-
-                if strcmp(line.LineStyle,'none')
-                    linestyle(i) = {''};
-                else
-                    linestyle(i) = {line.LineStyle};
-                end
-            end
+            xcell = {lines.XData};
+            ycell = {lines.YData};
+            zcell = {lines.ZData};
+            
+            % Round data to sigfig
+            xcell = cellfun(@(xx)(round(double(xx), Student.ROUNDOFF_ERROR)), xcell, 'uni', false);
+            ycell = cellfun(@(yy)(round(double(yy), Student.ROUNDOFF_ERROR)), ycell, 'uni', false);
+            zcell = cellfun(@(zz)(round(double(zz), Student.ROUNDOFF_ERROR)), zcell, 'uni', false);
+            
+            legend = {lines.DisplayName};
+            color = {lines.Color};
+            marker = {lines.Marker};
+            marker(strcmp(marker, 'none')) = {''};
+            linestyle = {lines.LineStyle};
+            linestyle(strcmp(linestyle, 'none')) = {''};
             % Plot Chaining
             % A line by any other name is just as beautiful. Suppose we
             % want the student to plot a line from origin to (1, 1), then
@@ -215,7 +208,7 @@ classdef Plot < handle
             %   current choice
             % if it meets these conditions, we need to combine them and
             % then start the search over.
-            % if it has NO line style, then we don't car about first
+            % if it has NO line style, then we don't care about first
             % matching last
             % 
             % After we're done combining, if there's no line style, we need
@@ -387,8 +380,6 @@ classdef Plot < handle
                 end
             end
             
-            % Now that all have been chained together, should we sanitize
-            % it? By sanitize what we mean is 
             this.XData = xcell;
             this.YData = ycell;
             this.ZData = zcell;
@@ -426,7 +417,7 @@ classdef Plot < handle
         end
     end
     methods (Access=public)
-        function [areEqual, message] = equals(this,that)
+        function areEqual = equals(this,that)
         %% equals: Checks if the given plot is equal to this plot
         %
         % equals is used to check a student plot against the solution plot.
@@ -452,101 +443,92 @@ classdef Plot < handle
         %
         % Given that PLOT is a valid instance of Plot equal to this.
         % Given that this is a valid instance of Plot.
-        %   [OK, MSG] = this.equals(PLOT)
+        %   [OK] = this.equals(PLOT)
         %
         %   OK -> true
-        %   MSG -> ''
         %
         % Given that PLOT is a valid instance of Plot not equal to this.
         % Given that this is a valid instance of Plot.
-        %   [OK, MSG] = this.equals(PLOT)
+        %   [OK] = this.equals(PLOT)
         %
         %   OK -> false
-        %   MSG -> 'Reason for inconsistency between plots'
         %
         % Given that PLOT is not a valid instance of Plot.
         % Given that this is a valid instance of Plot.
-        %   [OK, MSG] = equals(this, PLOT)
+        %   [OK] = equals(this, PLOT)
         %
         %   equals threw an exception
         %   AUTOGRADER:Plot:equals:noPlot
         %
-        add = cell(1, 7);
-        if ~isa(that,'Plot')
-            ME = MException('AUTOGRADER:Plot:equals:noPlot',...
-                'input is not a valid instance of Plot');
-            throw(ME);
-        end
+            if ~isa(that,'Plot')
+                ME = MException('AUTOGRADER:Plot:equals:noPlot',...
+                    'input is not a valid instance of Plot');
+                throw(ME);
+            end
+            if this.isAlien || that.isAlien
+                areEqual = false;
+                return;
+            end
+            if ~strcmp(strjoin(cellstr(this.Title), newline), strjoin(cellstr(that.Title), newline))
+                areEqual = false;
+                return;
+            end
 
-        TitleCheck = strcmp(strjoin(cellstr(this.Title), newline), strjoin(cellstr(that.Title), newline)) ...
-            || (isempty(this.Title) && isempty(that.Title));
-        if ~TitleCheck
-            add{1} = 'Plot Title does not match solution plot';
-        end
+            if ~strcmp(strjoin(cellstr(this.XLabel), newline), strjoin(cellstr(that.XLabel), newline))
+                areEqual = false;
+                return;
+            end
 
-        XLabelCheck = strcmp(this.XLabel,that.XLabel)...
-            | (isempty(this.XLabel) & isempty(that.XLabel));
-        if ~XLabelCheck
-            add{2} = 'Plot X-Label does not match solution plot';
-        end
+            if ~strcmp(strjoin(cellstr(this.YLabel), newline), strjoin(cellstr(that.YLabel), newline))
+                areEqual = false;
+                return;
+            end
 
-        YLabelCheck = strcmp(this.YLabel,that.YLabel)...
-            | (isempty(this.YLabel) & isempty(that.YLabel));
-        if ~YLabelCheck
-            add{3} = 'Plot Y-Label does not match solution plot';
-        end
-
-        ZLabelCheck = strcmp(this.ZLabel,that.ZLabel)...
-            | (isempty(this.ZLabel) & isempty(that.ZLabel));
-        if ~ZLabelCheck
-            add{4} = 'Plot Z-Label does not match solution plot';
-        end
+            if ~strcmp(strjoin(cellstr(this.ZLabel), newline), strjoin(cellstr(that.ZLabel), newline))
+                areEqual = false;
+                return;
+            end
 
 
-        PositionCheck = isequal(this.Position,that.Position);
-        if ~PositionCheck
-            add{5} = 'Plot is in wrong position within figure window';
-        end
+            if ~isequal(this.Position,that.Position)
+                areEqual = false;
+                return;
+            end
 
-        PlotBoxCheck = isequal(this.PlotBox,that.PlotBox);
-        if ~PlotBoxCheck
-            add{6} = 'Plot has incorrect Axis ratio settings';
-        end
+            if ~isequal(this.PlotBox,that.PlotBox)
+                areEqual = false;
+                return;
+            end
 
-%       ImageCheck = isequal(this.Image,that.Image);
+            thisStruct = struct('XData', this.XData, 'YData', this.YData,...
+                'ZData', this.ZData, 'Color', this.Color, 'Legend', this.Legend,...
+                'Marker', this.Marker, 'LineStyle', this.LineStyle);
 
-        thisStruct = struct('XData', this.XData, 'YData', this.YData,...
-            'ZData', this.ZData, 'Color', this.Color, 'Legend', this.Legend,...
-            'Marker', this.Marker, 'LineStyle', this.LineStyle);
-
-        thatStruct = struct('XData', that.XData, 'YData', that.YData,...
-            'ZData', that.ZData, 'Color', that.Color, 'Legend', that.Legend,...
-            'Marker', that.Marker, 'LineStyle', that.LineStyle);
-
-        LinePropsCheck = false(1,length(thisStruct));
-        for i = 1:length(thisStruct)
-            for j = 1:length(thatStruct)
-                if isequal(thisStruct(i),thatStruct(j))
-                    LinePropsCheck(i) = true;
-                    break
+            thatStruct = struct('XData', that.XData, 'YData', that.YData,...
+                'ZData', that.ZData, 'Color', that.Color, 'Legend', that.Legend,...
+                'Marker', that.Marker, 'LineStyle', that.LineStyle);
+            if length(thisStruct) ~= length(thatStruct)
+                areEqual = false;
+                return;
+            end
+            
+            LinePropsCheck = false(1,length(thisStruct));
+            for i = 1:length(thisStruct)
+                for j = 1:length(thatStruct)
+                    if isequaln(thisStruct(i),thatStruct(j))
+                        LinePropsCheck(i) = true;
+                        break;
+                    end
                 end
             end
-        end
 
-        if ~all(LinePropsCheck)
-            add{7} = 'At least one line in plot has 1 or more incorrect properties';
-        end
-
-
-        areEqual = TitleCheck && XLabelCheck && YLabelCheck &&...
-            ZLabelCheck && PositionCheck && PlotBoxCheck &&... % ImageCheck &...
-            all(LinePropsCheck);
-
-        add = add(~cellfun(@isempty, add));
-        message = strjoin(add, newline);
-
-
-
+            if ~all(LinePropsCheck)
+                areEqual = false;
+                return;
+            else
+                areEqual = true;
+                return;
+            end
         end
         function [html] = generateFeedback(this, that)
         %% generateFeedback: Generates HTML feedback for the student and solution Plot.
@@ -591,32 +573,13 @@ classdef Plot < handle
                 'input is not a valid instance of Plot');
             throw(ME);
         end
-
-        imwrite(this.Image,'studPlot.png');
-        imwrite(that.Image,'solnPlot.png');
-
-        fh = fopen('studPlot.png');
-        studBytes = fread(fh);
-        fclose(fh);
-        fh = fopen('solnPlot.png');
-        solnBytes = fread(fh);
-        fclose(fh);
-
-        delete studPlot.png
-        delete solnPlot.png
-
-        %account for windows glitch where file doesn't delete bc it's stupid
-        if exist('studPlot.png','file')
-            pause(0.4);
-            delete studPlot.png
-            delete solnPlot.png
-        end
-
-        encoder = org.apache.commons.codec.binary.Base64;
-        studPlot = char(encoder.encode(studBytes))';
-        solnPlot = char(encoder.encode(solnBytes))';
-
-        html = sprintf('<div class="row"><div class="col-md-6 text-center"><h2 class="text-center">Your Plot</h2><img class="img-fluid img-thumbnail" src="data:image/jpg;base64,%s"></div><div class="col-md-6 text-center"><h2 class="text-center"> Solution Plot</h2><img class="img-fluid img-thumbnail" src="data:image/jpg;base64,%s"></div></div>',studPlot,solnPlot);
+        studPlot = img2base64(this.Image);
+        solnPlot = img2base64(that.Image);
+        html = sprintf(['<div class="row"><div class="col-md-6 text-center">', ...
+            '<h2 class="text-center">Your Plot</h2><img class="img-fluid img-thumbnail" src="%s">', ...
+            '</div><div class="col-md-6 text-center"><h2 class="text-center">Solution Plot</h2>', ...
+            '<img class="img-fluid img-thumbnail" src="%s"></div></div>'],...
+            studPlot, solnPlot);
 
         end
     end

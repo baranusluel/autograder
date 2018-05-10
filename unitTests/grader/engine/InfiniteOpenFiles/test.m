@@ -6,7 +6,7 @@
 function [passed, msg] = test()
     p = [pwd filesep 'testCase'];
     info.call = '[out] = helloWorld(in);';
-    info.supportingFiles = {'vars.mat'};
+    info.supportingFiles = {[p filesep 'vars_rubrica.mat']};
     info.initializer = '';
     info.points = 3;
     info.banned = {};

@@ -29,10 +29,10 @@
 %   There is now a grader folder in the current directory
 %
 function downloadFromDrive(folderId, token, path, key, progress)
-    workers = downloadFolder(folderId, token, key, path);
     progress.Indeterminate = 'off';
     progress.Value = 0;
     progress.Message = 'Downloading Solution Archive from Google Drive';
+    workers = downloadFolder(folderId, token, key, path);
     tot = numel(workers);
     while ~all([workers.Read])
         fetchNext(workers);
