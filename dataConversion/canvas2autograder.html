@@ -20,7 +20,7 @@ To make changes, update the MATLAB code and republish this document.
 
         // for each occurrence of this in 
       });
-    </script><meta name="DC.date" content="2018-05-04"><meta name="DC.source" content="canvas2autograder.m"><style type="text/css">
+    </script><meta name="DC.date" content="2018-05-10"><meta name="DC.source" content="canvas2autograder.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -80,17 +80,18 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="container-fluid"><div class="content"><h1>canvas2autograder: Converts Canvas files to autograder structure</h1><!--introduction--><p>Creates correctly formatted student folders from the Canvas download</p><p>PATH = canvas2autograder(CANVAS,GRADEBOOK) Takes the path in CANVAS and unzips accordingly, reformatting the folder names correctly using the names held in the csv at GRADEBOOK, and ensuring that the contents of the Student folders are always just the student's files.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>This function will create a series of folders within the working directory of the autograder to ensure that there is no confusion between different student's submitted files as well as create runnable files from Canvas downloaded student code.</p><h2 id="2">Exceptions</h2><p>AUTOGRADER:canvas2autograder:invalidFile if the canvasZipFile either does not contain students or is not in Canvas format.</p><p>AUTOGRADER:canvas2autograder:invalidGradebook if the gradebook either does not exist or is not of correct format.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">CANVAS = <span class="string">'C:\Users\...\Canvas.zip'</span>; <span class="comment">% Valid path</span>
+  </style></head><body><div class="container-fluid"><div class="content"><h1>canvas2autograder: Converts Canvas files to autograder structure</h1><!--introduction--><p>Creates correctly formatted student folders from the Canvas download</p><p>PATH = canvas2autograder(CANVAS,GRADEBOOK,OUTPATH) Takes the path in CANVAS and unzips accordingly, reformatting the folder names correctly using the names held in the csv at GRADEBOOK, placing them in OUTPATH, and ensuring that the contents of the Student folders are always just the student's files.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>This function will create a series of folders within the working directory of the autograder to ensure that there is no confusion between different student's submitted files as well as create runnable files from Canvas downloaded student code.</p><h2 id="2">Exceptions</h2><p>AUTOGRADER:canvas2autograder:invalidFile if the canvasZipFile either does not contain students or is not in Canvas format.</p><p>AUTOGRADER:canvas2autograder:invalidGradebook if the gradebook either does not exist or is not of correct format.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">CANVAS = <span class="string">'C:\Users\...\Canvas.zip'</span>; <span class="comment">% Valid path</span>
 GRADEBOOK = <span class="string">'C:\Users\...\gradebook.csv'</span>; <span class="comment">% Valid gradebook</span>
-PATH = canvas2autograder(CANVAS,GRADEBOOK);
-</pre><pre class="language-matlab">PATH <span class="string">points</span> <span class="string">to</span> <span class="string">a</span> <span class="string">new</span>, unzipped <span class="string">path</span> <span class="string">that</span> <span class="string">is</span> <span class="string">completely</span>
+OUTPATH = <span class="string">'C:\Users\...\students'</span>;
+canvas2autograder(CANVAS,GRADEBOOK,OUTPATH);
+</pre><pre class="language-matlab">OUTPATH <span class="string">contains</span> <span class="string">new</span>, unzipped <span class="string">path</span> <span class="string">that</span> <span class="string">is</span> <span class="string">completely</span>
 unzipped <span class="string">all</span> <span class="untermstring">student's folders, and the folder names</span>
 are <span class="string">correct.</span>
 </pre><pre class="language-matlab">CANVAS = <span class="string">''</span>; <span class="comment">% Invalid Path</span>
 GRADEBOOK = <span class="string">'C:\Users\...\gradebook.csv'</span>; <span class="comment">% Valid gradebook</span>
-PATH = canvas2autograder(CANVAS);
+canvas2autograder(CANVAS);
 </pre><pre class="language-matlab">Threw <span class="string">invalidFile</span> <span class="string">exception</span>
 </pre><pre class="language-matlab">CANVAS = <span class="string">'C:\Users\...\Canvas.zip'</span>; <span class="comment">% Valid path, but INVALID archive!</span>
-PATH = canvas2autograder(CANVAS);
+canvas2autograder(CANVAS);
 </pre><pre class="language-matlab">Threw <span class="string">invalidFile</span> <span class="string">exception</span>
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div></div></body></html>
