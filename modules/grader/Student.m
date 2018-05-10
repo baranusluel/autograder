@@ -220,6 +220,7 @@ classdef Student < handle
             % for each problem, create ends
             counter = numel([problems.testCases]);
             inds = zeros(1, counter);
+            isRecursive = false(1, counter);
             for p = numel(problems):-1:1
                 prob = problems(p);
                 for t = numel(prob.testCases):-1:1
@@ -236,6 +237,7 @@ classdef Student < handle
                             'File %s wasn''t submitted, so the function was not graded.', [prob.name '.m']));
                     end
                     inds(counter) = p;
+                    isRecursive(counter) = prob.isRecursive;
                     counter = counter - 1;
                 end
             end
@@ -247,6 +249,11 @@ classdef Student < handle
                 if ~isempty(feedback.exception)
                     feedback.hasPassed = false;
                     feedback.points = 0;
+                elseif isRecursive(i) && ~feedback.isRecursive
+                    feedback.hasPassed = false;
+                    feedback.points = 0;
+                    feedback.exception = MException('AUTOGRADER:studentDidNotRecurse', ...
+                        'Your code didn''t use recursion, so you did not receive credit.');
                 else
                     % split points evenly among outputs, files, and plots?
                     solnOutputs = feedback.testCase.outputs;
