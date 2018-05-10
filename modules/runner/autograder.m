@@ -241,6 +241,7 @@ function autograder(app)
         student = students(s);
         progress.Message = sprintf('Assessing Student %s', student.name);
         try
+            Logger.log(sprintf('Assessing Student %s (%s)', student.name, student.id));
             student.assess();
         catch e
             if app.isDebug
