@@ -178,9 +178,9 @@ classdef Plot < handle
             zcell = {lines.ZData};
             
             % Round data to sigfig
-            xcell = cellfun(@(xx)(roundData(xx)), xcell, 'uni', false);
-            ycell = cellfun(@(yy)(roundData(yy)), ycell, 'uni', false);
-            zcell = cellfun(@(zz)(roundData(zz)), zcell, 'uni', false);
+            xcell = cellfun(@(xx)(round(xx, Student.ROUNDOFF_ERROR)), xcell, 'uni', false);
+            ycell = cellfun(@(yy)(round(yy, Student.ROUNDOFF_ERROR)), ycell, 'uni', false);
+            zcell = cellfun(@(zz)(round(zz, Student.ROUNDOFF_ERROR)), zcell, 'uni', false);
             
             legend = {lines.DisplayName};
             color = {lines.Color};
@@ -583,9 +583,4 @@ classdef Plot < handle
 
         end
     end
-end
-
-function data = roundData(data)
-    sigs = arrayfun(@(i)(length(num2str(i))), abs(data)) - Student.ROUNDOFF_ERROR;
-    data = arrayfun(@(d, s)(round(double(d), s)), data, sigs);
 end
