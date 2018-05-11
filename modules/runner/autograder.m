@@ -276,8 +276,8 @@ function autograder(app)
         keyboard;
     end
     
-    wait(parfevalOnAll(@getScores, 0, [], students));
     if app.AnalyzeForCheating.Value
+        wait(parfevalOnAll(@getScores, 0, [], students));
         progress.Message = 'Analyzing Students for Cheating';
         progress.Indeterminate = 'off';
         progress.Value = 0;
