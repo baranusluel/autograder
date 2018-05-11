@@ -179,13 +179,13 @@ classdef Student < handle
             for p = 1:numel(this.resources.Problems)
                 prob = this.resources.Problems(p);
                 % see if found
-                if any(contains(this.submissions, prob.name))
+                if any(strcmp(this.submissions, [prob.name '.m']))
                     % submitted. Hash
                     fid = fopen([path filesep prob.name '.m'], 'rt');
-                    texts{p} = char(fread(fid)');
-                    fclose(fid);
-                    lHashes(p) = lshHash(texts{p});
-                    hashes(p) = java.lang.String(texts{p}).hashCode;
+                        texts{p} = char(fread(fid)');
+                        fclose(fid);
+                        lHashes(p) = lshHash(texts{p});
+                        hashes(p) = java.lang.String(texts{p}).hashCode;
                 end
             end
             this.problemLHashes = lHashes;
@@ -249,7 +249,7 @@ classdef Student < handle
                 for t = numel(prob.testCases):-1:1
                     % check if even submitted
                     feeds(counter) = Feedback(prob.testCases(t), this.path);
-                    if any(strncmp(prob.name, this.submissions, length(prob.name)))
+                    if any(strcmp([prob.name '.m'], this.submissions))
                         isRunnable(counter) = true;
                     else
                         isRunnable(counter) = false;

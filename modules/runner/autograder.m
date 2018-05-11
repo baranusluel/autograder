@@ -276,7 +276,7 @@ function autograder(app)
         keyboard;
     end
     
-    wait(parfevalOnAll(@getScores, 0, students));
+    wait(parfevalOnAll(@getScores, 0, [], students));
     if app.AnalyzeForCheating.Value
         progress.Message = 'Analyzing Students for Cheating';
         progress.Indeterminate = 'off';
@@ -303,6 +303,10 @@ function autograder(app)
             progress.Message = 'Generating Report';
             progress.Indeterminate = 'on';
             progress.Cancelable = 'off';
+            % move resources
+            recSource = [fileparts(mfilename('fullpath')) filesep 'resources'];
+            mkdir('resources');
+            copyfile(recSource, [pwd filesep 'resources']);
             CheatDetector(students, solutions, scores);
         end
     end
@@ -387,10 +391,10 @@ function setupRecs(solutions)
     recs.Problems = solutions;
 end
 
-function scores = getScores(stud)
+function scores = getScores(varargin)
     persistent students;
-    if isempty(students)
-        students = stud;
+    if nargin == 2
+        students = varargin{2};
         return;
     end
     scores = cell(1, numel(students));
