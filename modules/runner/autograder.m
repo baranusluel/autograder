@@ -89,9 +89,6 @@ function autograder(app)
     fid = fopen(File.SENTINEL, 'wt');
     fwrite(fid, 'SENTINEL');
     fclose(fid);
-    % Make sure figure's don't show
-    settings.figures = get(0, 'DefaultFigureVisible');
-    set(0, 'DefaultFigureVisible', 'off');
 
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
@@ -144,6 +141,8 @@ function autograder(app)
             return;
         end
     end
+    recs = Student.resources;
+    recs.Problems = solutions;
 
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
@@ -192,8 +191,6 @@ function autograder(app)
     end
 
     % Grade students
-    recs = Student.resources;
-    recs.Problems = solutions;
     plotter = uifigure('Name', 'Grade Report');
     ax = uiaxes(plotter);
     ax.Position = [10 10 550 400]; % as suggested in example on MATLAB ref page
@@ -336,8 +333,6 @@ function cleanup(settings)
 
     % Delete our working directory
     [~] = rmdir(settings.workingDir, 's');
-    % Restore figure settings
-    set(0, 'DefaultFigureVisible', settings.figures);
     % store debugging info
     app = settings.app;
     if isvalid(settings.progress)

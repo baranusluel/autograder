@@ -62,8 +62,9 @@ classdef Student < handle
     end
     properties (Access=private)
         html = {};
-        submissionTexts;
-        submissionHashes;
+        problemTexts;
+        problemLHashes;
+        problemHashes;
     end
     methods (Static)
         function resetPath()
@@ -169,17 +170,27 @@ classdef Student < handle
             % Get all submissions
             subs = dir([path filesep '*.m']);
             this.submissions = {subs.name};
-            subText = cell(1, numel(this.submissions));
-            subHashes = zeros(1, numel(subs));
-            for i = 1:numel(subs)
-                fid = fopen([path filesep subs(i).name], 'rt');
-                subText{i} = char(fread(fid)');
-                fclose(fid);
-                % calc hash
-                subHashes(i) = lshhash(subText{i});
+            
+            % Get all hashes for problems. If wasn't submitted, then don't
+            % hash (0)
+            lHashes = zeros(1, numel(this.resources.Problems));
+            hashes = zeros(1, numel(this.resources.Problems));
+            texts = cell(size(lHashes));
+            for p = 1:numel(this.resources.Problems)
+                prob = this.resources.Problems(p);
+                % see if found
+                if any(contains(subs, prob.name))
+                    % submitted. Hash
+                    fid = fopen([path filesep prob.name '.m'], 'rt');
+                    texts{p} = char(fread(fid)');
+                    fclose(fid);
+                    lHashes(p) = lshHash(texts{p});
+                    hashes(p) = java.lang.String(texts{p}).hashCode;
+                end
             end
-            this.submissionHashes = subHashes;
-            this.submissionTexts = subText;
+            this.problemLHashes = lHashes;
+            this.problemHashes = hashes;
+            this.problemTexts = texts;
             % ID is folder name:
             [~, this.id, ~] = fileparts(path);
             this.path = path;
@@ -403,6 +414,33 @@ classdef Student < handle
                 this.feedbacks{p} = feeds(inds == p);
             end
             this.generateFeedback();
+        end
+        
+        function rank = codeSimilarity(this, that)
+        %% codeSimilarity: Get a vector of similarity scores
+        %
+        % codeSimilarity will create a vector of similarity scores, from 0
+        % to 1, where 1 means most similar and 0 means completely
+        % unrelated.
+        %
+        % R = codeSimilarity(S) will generate a vector of similarity
+        % ratios, one for each problem.
+        %
+        %%% Remarks
+        %
+        % The code similarity score (CSS) is a score that measures how
+        % similar two code files are. The higher the score, the more
+        % similar the two files are.
+        %
+        % As a special case, if either (or both) did not submit the file,
+        % then the score will always be 0.
+        %
+        % If the files are the same, then a score of 1 is returned; if they
+        % are unrelated, a score of 0 is instead returned.
+        rank = zeros(1, numel(this.problemLHashes));
+        mask = this.problemLHashes ~= 0 & that.problemLHashes ~= 0;
+        rank(mask) = abs(this.problemLHashes(mask) - that.problemLHashes(mask)) ...
+            ./ this.problemLHashes(mask);
         end
     end
     methods (Access=private)
