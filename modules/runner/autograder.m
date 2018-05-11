@@ -143,7 +143,7 @@ function autograder(app)
     end
     recs = Student.resources;
     recs.Problems = solutions;
-
+    wait(parfevalOnAll(@setupRecs, 0, solutions));
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Students');
@@ -275,6 +275,37 @@ function autograder(app)
     if stop == 1
         keyboard;
     end
+    
+    wait(parfevalOnAll(@getScores, 0, students));
+    if app.AnalyzeForCheating.Value
+        progress.Message = 'Analyzing Students for Cheating';
+        progress.Indeterminate = 'off';
+        progress.Value = 0;
+        progress.Cancelable = 'on';
+        % for each student, we need to compare to all other students.
+        scores = cell(1, numel(students));
+        for s1 = numel(students):-1:1
+            workers(s1) = parfeval(@getScores, 1, students(s1));
+        end
+        num = numel(workers);
+        stop = false;
+        while ~all([workers.Read])
+            [idx, score] = workers.fetchNext();
+            progress.Value = min([progress.Value + 1/num, 1]);
+            scores{idx} = score;
+            if progress.CancelRequested
+                stop = true;
+                break;
+            end
+        end
+        if ~stop
+            % generate Report
+            progress.Message = 'Generating Report';
+            progress.Indeterminate = 'on';
+            progress.Cancelable = 'off';
+            CheatDetector(students, solutions, scores);
+        end
+    end
     % If the user requested uploading, do it
 
     if app.UploadToCanvas.Value
@@ -348,5 +379,22 @@ function cleanup(settings)
     end
     if isvalid(settings.progress)
         close(settings.progress);
+    end
+end
+
+function setupRecs(solutions)
+    recs = Student.resources;
+    recs.Problems = solutions;
+end
+
+function scores = getScores(stud)
+    persistent students;
+    if isempty(students)
+        students = stud;
+        return;
+    end
+    scores = cell(1, numel(students));
+    for s2 = 1:numel(scores)
+        scores{s2} = students(s2).codeSimilarity(stud);
     end
 end

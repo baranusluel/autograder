@@ -179,7 +179,7 @@ classdef Student < handle
             for p = 1:numel(this.resources.Problems)
                 prob = this.resources.Problems(p);
                 % see if found
-                if any(contains(subs, prob.name))
+                if any(contains(this.submissions, prob.name))
                     % submitted. Hash
                     fid = fopen([path filesep prob.name '.m'], 'rt');
                     texts{p} = char(fread(fid)');
@@ -435,12 +435,18 @@ classdef Student < handle
         % As a special case, if either (or both) did not submit the file,
         % then the score will always be 0.
         %
+        % Additionally, the same person will always return only 0s.
+        %
         % If the files are the same, then a score of 1 is returned; if they
         % are unrelated, a score of 0 is instead returned.
         rank = zeros(1, numel(this.problemLHashes));
+        if strcmp(this.id, that.id)
+            return;
+        end
         mask = this.problemLHashes ~= 0 & that.problemLHashes ~= 0;
-        rank(mask) = abs(this.problemLHashes(mask) - that.problemLHashes(mask)) ...
+        rank(mask) = 1 - abs(this.problemLHashes(mask) - that.problemLHashes(mask)) ...
             ./ this.problemLHashes(mask);
+        rank(this.problemHashes(mask) == that.problemHashes(mask)) = Inf;
         end
     end
     methods (Access=private)
