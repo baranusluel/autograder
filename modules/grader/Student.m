@@ -59,12 +59,10 @@ classdef Student < handle
         feedbacks = {};
         isGraded = false;
         grade;
+        problemPaths;
     end
     properties (Access=private)
         html = {};
-        problemTexts;
-        problemLHashes;
-        problemHashes;
     end
     methods (Static)
         function resetPath()
@@ -171,26 +169,15 @@ classdef Student < handle
             subs = dir([path filesep '*.m']);
             this.submissions = {subs.name};
             
-            % Get all hashes for problems. If wasn't submitted, then don't
-            % hash (0)
-            lHashes = zeros(1, numel(this.resources.Problems));
-            hashes = zeros(1, numel(this.resources.Problems));
-            texts = cell(size(lHashes));
+            paths = cell(1, numel(this.resources.Problems));
             for p = 1:numel(this.resources.Problems)
                 prob = this.resources.Problems(p);
                 % see if found
                 if any(strcmp(this.submissions, [prob.name '.m']))
-                    % submitted. Hash
-                    fid = fopen([path filesep prob.name '.m'], 'rt');
-                        texts{p} = char(fread(fid)');
-                        fclose(fid);
-                        lHashes(p) = lshHash(texts{p});
-                        hashes(p) = java.lang.String(texts{p}).hashCode;
+                    paths{p} = [path filesep prob.name '.m'];
                 end
             end
-            this.problemLHashes = lHashes;
-            this.problemHashes = hashes;
-            % this.problemTexts = texts;
+            this.problemPaths = paths;
             % ID is folder name:
             [~, this.id, ~] = fileparts(path);
             this.path = path;
@@ -414,39 +401,6 @@ classdef Student < handle
                 this.feedbacks{p} = feeds(inds == p);
             end
             this.generateFeedback();
-        end
-        
-        function rank = codeSimilarity(this, that)
-        %% codeSimilarity: Get a vector of similarity scores
-        %
-        % codeSimilarity will create a vector of similarity scores, from 0
-        % to 1, where 1 means most similar and 0 means completely
-        % unrelated.
-        %
-        % R = codeSimilarity(S) will generate a vector of similarity
-        % ratios, one for each problem.
-        %
-        %%% Remarks
-        %
-        % The code similarity score (CSS) is a score that measures how
-        % similar two code files are. The higher the score, the more
-        % similar the two files are.
-        %
-        % As a special case, if either (or both) did not submit the file,
-        % then the score will always be 0.
-        %
-        % Additionally, the same person will always return only 0s.
-        %
-        % If the files are the same, then a score of 1 is returned; if they
-        % are unrelated, a score of 0 is instead returned.
-        rank = zeros(1, numel(this.problemLHashes));
-        if strcmp(this.id, that.id)
-            return;
-        end
-        mask = this.problemLHashes ~= 0 & that.problemLHashes ~= 0;
-        rank(mask) = 1 - abs(this.problemLHashes(mask) - that.problemLHashes(mask)) ...
-            ./ this.problemLHashes(mask);
-        rank(this.problemHashes(mask) == that.problemHashes(mask)) = Inf;
         end
     end
     methods (Access=private)

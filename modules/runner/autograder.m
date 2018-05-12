@@ -74,7 +74,7 @@ function autograder(app)
         'Message', 'Starting Parallel Pool', 'Cancelable', 'on', ...
         'ShowPercentage', true, 'Indeterminate', 'on');
     settings.progress = progress;
-    evalc('gcp');
+    evalc('parpool');
     app.UIFigure.Visible = 'off';
     app.UIFigure.Visible = 'on';
     if progress.CancelRequested
@@ -141,8 +141,7 @@ function autograder(app)
             return;
         end
     end
-    recs = Student.resources;
-    recs.Problems = solutions;
+    setupRecs(solutions);
     wait(parfevalOnAll(@setupRecs, 0, solutions));
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
@@ -277,47 +276,61 @@ function autograder(app)
     end
     
     if app.AnalyzeForCheating.Value
-        wait(parfevalOnAll(@getScores, 0, [], students));
-        progress.Message = 'Analyzing Students for Cheating';
-        progress.Indeterminate = 'off';
+        progress.Message = 'Reading Student Submissions';
+        progress.Indeterminate = 'on';
+        progress.Cancelable = 'off';
+        
+        txts = cell(1, numel(students));
+        for s = numel(students):-1:1
+            workers(s) = parfeval(@getText, 1, students(s).problemPaths);
+        end
+        
         progress.Value = 0;
+        progress.Indeterminate = 'off';
         progress.Cancelable = 'on';
+        num = numel(workers);
+        
+        while ~all([workers.Read])
+            if progress.CancelRequested
+                cancel(workers);
+                return;
+            end
+            [idx, txt] = workers.fetchNext();
+            txts{idx} = txt;
+            progress.Value = min([progress.Value + 1/num, 1]);
+        end
+        
+        wait(parfevalOnAll(@getScores, 0, [], txts));
+        progress.Value = 0;
+        progress.Message = 'Analyzing Submissions... This will take a while';
         % for each student, we need to compare to all other students.
         scores = cell(1, numel(students));
         for s1 = numel(students):-1:1
-            workers(s1) = parfeval(@getScores, 1, students(s1));
+            workers(s1) = parfeval(@getScores, 1, s1);
         end
+        
         num = numel(workers);
-        stop = false;
+        
         while ~all([workers.Read])
-            try
-                [idx, score] = workers.fetchNext();
-            catch e
-                if app.isDebug
-                    keyboard;
-                else
-                    alert(app, e)
-                    return;
-                end
-            end
-            progress.Value = min([progress.Value + 1/num, 1]);
+            [idx, score] = workers.fetchNext();
             scores{idx} = score;
+            progress.Value = min([progress.Value + 1/num, 1]);
             if progress.CancelRequested
-                stop = true;
-                break;
+                cancel(workers);
+                return;
             end
         end
-        if ~stop
-            % generate Report
-            progress.Message = 'Generating Report';
-            progress.Indeterminate = 'on';
-            progress.Cancelable = 'off';
-            % move resources
-            recSource = [fileparts(mfilename('fullpath')) filesep 'resources'];
-            mkdir('resources');
-            copyfile(recSource, [pwd filesep 'resources']);
-            CheatDetector(students, solutions, scores);
-        end
+        
+        % generate Report
+        progress.Message = 'Generating Report';
+        progress.Indeterminate = 'on';
+        progress.Cancelable = 'off';
+        
+        % move resources
+        recSource = [fileparts(mfilename('fullpath')) filesep 'resources'];
+        mkdir('resources');
+        copyfile(recSource, [pwd filesep 'resources']);
+        CheatDetector(students, solutions, scores);
     end
     % If the user requested uploading, do it
 
@@ -393,9 +406,47 @@ function scores = getScores(varargin)
     if nargin == 2
         students = varargin{2};
         return;
+    elseif nargin == 1
+        s1 = varargin{1};
     end
+    subs = students{s1};
+    % students is cell array; each cell is a cell array of size p, and each
+    % entry there is the contents of a single problem and its hash
+    
+    % for each student, for each problem, calculate the jaccard index
     scores = cell(1, numel(students));
     for s2 = 1:numel(scores)
-        scores{s2} = students(s2).codeSimilarity(stud);
+        txts = students{s2};
+        if s1 == s2
+            scores{s2} = zeros(1, numel(txts));
+        else
+            for p = numel(txts):-1:1
+                % get jaccard index
+                if ~isempty(subs{p}{1}) && ~isempty(txts{p}{1})
+                    % compare
+                    if subs{p}{2} == txts{p}{2}
+                        scores{s2}(p) = Inf;
+                    else
+                        [rank1, rank2] = jaccardIndex(subs{p}{1}, txts{p}{1});
+                        scores{s2}(p) = sum(rank1 == rank2) / length(rank1);
+                    end
+                else
+                    scores{s2}(p) = 0;
+                end
+            end
+        end
+    end
+end
+
+function problemTxt = getText(problemPaths)
+    for p = numel(problemPaths):-1:1
+        if isempty(problemPaths{p})
+            problemTxt{p} = '';
+        else
+            fid = fopen(problemPaths{p}, 'rt');
+            problemTxt{p}{1} = char(fread(fid)');
+            problemTxt{p}{2} = java.lang.String(problemTxt{p}{1}).hashCode;
+            fclose(fid);
+        end
     end
 end
