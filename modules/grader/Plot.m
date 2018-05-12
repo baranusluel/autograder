@@ -182,6 +182,36 @@ classdef Plot < handle
             ycell = cellfun(@(yy)(round(double(yy), Student.ROUNDOFF_ERROR)), ycell, 'uni', false);
             zcell = cellfun(@(zz)(round(double(zz), Student.ROUNDOFF_ERROR)), zcell, 'uni', false);
             
+            % Remove data points that have NaN in any axis
+            for i = 1:length(lines) % for each cell / line
+                xdata = xcell{i};
+                ydata = ycell{i};
+                zdata = zcell{i};
+                points = max([length(xdata), length(ydata), length(zdata)]); % number of data points
+                xNaN = false(1,points);
+                yNaN = false(1,points);
+                zNaN = false(1,points);
+                if ~isempty(xdata)
+                    xNaN = isnan(xdata);
+                end
+                if ~isempty(ydata)
+                    yNaN = isnan(ydata);
+                end
+                if ~isempty(zdata)
+                    zNaN = isnan(zdata);
+                end
+                pointNaN = xNaN | yNaN | zNaN;
+                if ~isempty(xdata)
+                    xcell{i} = xdata(~pointNaN);
+                end
+                if ~isempty(ydata)
+                    ycell{i} = ydata(~pointNaN);
+                end
+                if ~isempty(zdata)
+                    zcell{i} = zdata(~pointNaN);
+                end
+            end
+            
             legend = {lines.DisplayName};
             color = {lines.Color};
             marker = {lines.Marker};
