@@ -154,34 +154,35 @@
                             </p>
                             <ul>
                                 <li>
-                                    <p>A folder for each problem</p>
-                                    <ul>
-                                        <li>Folder name must exactly match the problem name</li>
-                                        <li>
-                                            <p>Each folder contains:</p>
-                                            <ul>
-                                                <li>The Solution File</li>
-                                                <li>All necessary Variable Files</li>
-                                                <li>All necessary Initializer Files</li>
-                                                <li>All necessary Supporting Files</li>
-                                            </ul>
-                                        </li>
-                                    </ul>
+				    <p>A folder for the solutions (<code>Solutions</code>). This folder contains all the <code>.m</code> files.</p>
                                 </li>
-                                <li>The JSON specifying the rubric, called <code>rubric.json</code></li>
+				<li>
+				    <p>A folder for the supporting files (<code>SupportingFiles</code>). This folder contains all <code>.mat</code> (variables), as well as any other supporting files.</p>
+				    <p><em>Note that the input variable <code>mat</code> file <strong>must</strong> end with either <code>_rubrica.mat</code> or <code>_rubricb.mat</code>.</em></p>
+				</li>
+                                <li><p>The JSON files specifying the rubric, called <code>rubric&lt;a OR b&gt;.json</code></p></li>
                             </ul>
                             <p>
                                 A visual rendering of this format is shown below:
                             </p>
                             <ul class="list-group">
-                                <li class="list-group-item"><code>rubric.json</code></li>
+                                <li class="list-group-item"><code>rubrica.json</code></li>
                                 <li class="list-group-item">
                                     <i class="far fa-folder-open"></i>
-                                    <code>problemOne</code>
+                                    <code>Solutions</code>
                                     <ul class="list-group">
                                         <li class="list-group-item">
-                                                <i class="far fa-file"></i>
+                                            <i class="far fa-file"></i>
                                             <code>problemOne.m</code><br>
+				            <code>problemTwo.m</code>
+                                        </li>
+                                    </ul>
+                                </li>
+				<li class="list-group-item">
+                                    <i class="far fa-folder-open"></i>
+                                    <code>Solutions</code>
+                                    <ul class="list-group">
+                                        <li class="list-group-item">
                                             <i class="far fa-file-code"></i>
                                             <code>problemOneSupport____.m</code><br>
                                             <i class="far fa-file"></i>
@@ -192,21 +193,6 @@
                                             <code>problemOneImg.png</code>
                                         </li>
                                     </ul>
-                                </li>
-                                <li class="list-group-item">
-                                    <i class="far fa-folder-open"></i>
-                                    <code>nextProblem</code>
-                                    <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <i class="far fa-file-code"></i>
-                                            <code>nextProblem.m</code><br>
-                                            <i class="far fa-file"></i>
-                                            <code>nextProblemInputs.mat</code>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li class="list-group-item">
-                                    <p>...</p>
                                 </li>
                             </ul>
                         </div>
