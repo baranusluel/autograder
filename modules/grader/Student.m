@@ -190,7 +190,7 @@ classdef Student < handle
             end
             this.problemLHashes = lHashes;
             this.problemHashes = hashes;
-            this.problemTexts = texts;
+            % this.problemTexts = texts;
             % ID is folder name:
             [~, this.id, ~] = fileparts(path);
             this.path = path;

@@ -290,7 +290,16 @@ function autograder(app)
         num = numel(workers);
         stop = false;
         while ~all([workers.Read])
-            [idx, score] = workers.fetchNext();
+            try
+                [idx, score] = workers.fetchNext();
+            catch e
+                if app.isDebug
+                    keyboard;
+                else
+                    alert(app, e)
+                    return;
+                end
+            end
             progress.Value = min([progress.Value + 1/num, 1]);
             scores{idx} = score;
             if progress.CancelRequested
