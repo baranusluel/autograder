@@ -228,72 +228,194 @@
                     <div class="container">
                         <div class="col-12 text-left">
                             <pre>
-{
-    "Problems": [
-        {
-            "name": "myFun",
-            "banned": [
-                "fopen",
-                "fclose",
-                "fseek",
-                "frewind"
-            ],
-            "TestCases": [
-                {
-                    "call": "[out1, out2] = myFun(in1, in2);",
-                    "initializer": "",
-                    "points": 3,
-                    "supportingFiles": [
-                        "myFile.txt",
-                        "myInputImage.png",
-                        "ins.mat"
-                    ]
-                },
-                {
-                    "call": "[out1, out2] = myFun(in1, in2);",
-                    "initializer": "in2 = supportFunction__;",
-                    "points": 3,
-                    "supportingFiles": [
-                        "myFile.txt",
-                        "myInputImage.png",
-                        "supportFunction__.m",
-                        "myFun.mat"
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "example2",
-            "banned": [
-                "size",
-                "parpool"
-            ],
-            "TestCases": [
-                {
-                    "call": "[out1, out2] = example2(in1, in2);",
-                    "initializer": "",
-                    "points": 3.4,
-                    "supportingFiles": [
-                        "myFile.txt",
-                        "myInputImage.png",
-                        "inputs.mat"
-                    ]
-                },
-                {
-                    "call": "[out1, out2] = example2(in3, in4);",
-                    "initializer": "in4 = supportFunction__;",
-                    "points": 3,
-                    "supportingFiles": [
-                        "myFile.txt",
-                        "myInputImage.png",
-                        "supportFunction__.m",
-                        "example2.mat"
-                    ]
-                }
-            ]
-        }
-    ]
-}
+[
+	{
+		"name": "ABCs_iteration",
+		"banned": [],
+		"isRecursive": false,
+		"supportingFiles": [
+			"ABCs_iteration_rubrica.mat"
+		],
+		"testCases": [
+			{
+				"call": "[A, B, C, D, E, F, G, H, I] = ABCs_iteration(in1, in2, in3, in4)",
+				"initializer": "",
+				"points": 5
+			}
+		]
+	},
+	{
+		"name": "luge",
+		"banned": [
+			"find",
+			"strfind",
+			"textscan"
+		],
+		"isRecursive": false,
+		"supportingFiles": [
+			"luge_rubrica.mat"
+		],
+		"testCases": [
+			{
+				"call": "[str1] = luge(in1)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[str2] = luge(in2)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[str3] = luge(in3)",
+				"initializer": "",
+				"points": 7
+			}
+		]
+	},
+	{
+		"name": "olympicTorch",
+		"banned": [],
+		"isRecursive": false,
+		"supportingFiles": [
+			"olympicTorch_rubrica.mat"
+		],
+		"testCases": [
+			{
+				"call": "[result1] = olympicTorch(in1, in2)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[result2] = olympicTorch(in3, in4)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[result3] = olympicTorch(in5, in6)",
+				"initializer": "",
+				"points": 7
+			}
+		]
+	},
+	{
+		"name": "zamboni",
+		"banned": [],
+		"isRecursive": false,
+		"supportingFiles": [
+			"zamboni_rubrica.mat",
+			"bruins2.png",
+			"checkerboard2.png",
+			"flag2.png",
+			"spongebobimg2.png"
+		],
+		"testCases": [
+			{
+				"call": "[] = zamboni(in1)",
+				"initializer": "",
+				"points": 4
+			},
+			{
+				"call": "[] = zamboni(in2)",
+				"initializer": "",
+				"points": 5
+			},
+			{
+				"call": "[] = zamboni(in3)",
+				"initializer": "",
+				"points": 5
+			},
+			{
+				"call": "[] = zamboni(in4)",
+				"initializer": "",
+				"points": 5
+			}
+		]
+	},
+	{
+		"name": "pascalsPodium",
+		"banned": [
+			"nchoosek",
+			"pascal"
+		],
+		"isRecursive": false,
+		"supportingFiles": [
+			"pascalsPodium_rubrica.mat"
+		],
+		"testCases": [
+			{
+				"call": "[podium1] = pascalsPodium(in1)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[podium2] = pascalsPodium(in2)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[podium3] = pascalsPodium(in3)",
+				"initializer": "",
+				"points": 7
+			}
+		]
+	},
+	{
+		"name": "roundRobin",
+		"banned": [],
+		"isRecursive": false,
+		"supportingFiles": [
+			"roundRobin_rubrica.mat"
+		],
+		"testCases": [
+			{
+				"call": "[result1] = roundRobin(in1)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[result2] = roundRobin(in2)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[result3] = roundRobin(in3)",
+				"initializer": "",
+				"points": 7
+			}
+		]
+	},
+	{
+		"name": "cryptex",
+		"banned": [],
+		"isRecursive": false,
+		"supportingFiles": [
+			"cryptex_rubrica.mat",
+			"charStruct.mat",
+			"letterChecker.p",
+			"day.png",
+			"funTimesAreFun.png",
+			"scary.png"
+		],
+		"testCases": [
+			{
+				"call": "[] = cryptex(in1, in2)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[] = cryptex(in3, in4)",
+				"initializer": "",
+				"points": 7
+			},
+			{
+				"call": "[] = cryptex(in5, in6)",
+				"initializer": "",
+				"points": 7
+			}
+		]
+	}
+]
                             </pre>
                         </div>
                     </div>
