@@ -39,8 +39,8 @@ function exportCheaters(students, cheaters, scores, problems, path, progress)
         end
         if ~all(cellfun(@isempty, names))
             mask(s) = true;
-            workers(s) = parfeval(@exportStudent, 0, sPath, problems, names, paths, cScores);
         end
+        workers(s) = parfeval(@exportStudent, 0, sPath, problems, names, paths, cScores);
         progress.Value = min([progress.Value + 1/numel(students), 1]);
     end
     
