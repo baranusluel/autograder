@@ -13,7 +13,7 @@ function [passed, msg] = test()
     
     NAME = 'Test User';
     PATH = [pwd filesep 'tuser3'];
-    NUM_SUBMISSIONS
+    NUM_SUBMISSIONS = 2;
     try
         S = Student('Test User', [pwd filesep 'tuser3']);
     catch reason
