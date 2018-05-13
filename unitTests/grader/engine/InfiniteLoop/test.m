@@ -6,7 +6,7 @@
 function [passed, msg] = test()
     p = [pwd filesep 'testCase'];
     info.call = '[out] = helloWorld(in);';
-    info.supportingFiles = {'vars.mat'};
+    info.supportingFiles = {[p filesep 'vars_rubrica.mat']};
     info.initializer = '';
     info.points = 3;
     info.banned = {};
@@ -19,9 +19,9 @@ function [passed, msg] = test()
             passed = false;
             msg = 'Expected exception for Student; got nothing';
             return;
-        elseif ~strcmp('AUTOGRADER:timeout', F2.exception.identifier)
+        elseif ~strcmp('AUTOGRADER:studentCodeError', F2.exception.identifier)
             passed = false;
-            msg = sprintf('Expected "AUTOGRADER:timeout" exception, got "%s"', ...
+            msg = sprintf('Expected "AUTOGRADER:studentCodeError" exception, got "%s"', ...
                 F2.exception.identifier);
             return;
         else

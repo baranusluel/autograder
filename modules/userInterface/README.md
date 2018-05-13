@@ -1,27 +1,13 @@
 # User Interface
 
-This module will be responsible for interacting with the user. Things like printing data to the screen and getting user input will be handled here, but the _logic_ will not.
+This module will be responsible for interacting with the user and starting the autograder with the given settings. It is the user's primary method of starting the autograder.
 
-## Functions
+## Classess
 
-This module will have the following functions:
+The `userInterface` Module has the following classes; all of them represent a `UIFigure`:
 
-- `[void] = refresh();`
-
-Refresh the user interface with any new data.
-
-- `[void] = incrementProgress(double precentage);`
-
-Increment the progress bar by the given percentage (1 = 100%).
-
-- `[void] = updateStep(string stepName);`
-
-Change the name of the step we are on (parsing, grading, converting, etc.)
-
-- `[void] = updateStudent(Student student);`
-
-Change the information for the student we are grading (Name, ID, etc.)
-
-- `[string studentPath, string solut ionPath] = getInputs(*optional* bool failed=false);`
-
-Get the paths for the student submissions and the solutions. If `failed` is given and true, `getInputs` will notify the user that it did receive inputs, _but_, those inputs were invalid.
+- `Autograder`: The main entry point for the autograder. Responsible for calling the main method and adding necessary paths. Additionally, it gets most of the settings
+- `CanvasAuthorizer`: Instructs the user to get a token from `Canvas` and stores it in the settings file.
+- `CanvasHomeworkSelector`: Allows the user to pick which homework to select
+- `GoogleDriveBrowser`: Allows the user to browse his/her folders on Google Drive for the solution archive
+- `ServerAuthorizer`: Fetches the credentials from the user for logging into the server

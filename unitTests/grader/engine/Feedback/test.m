@@ -1,4 +1,4 @@
-% Valid Feedback
+%% Valid Feedback
 %
 %   Assume F is a valid Feedback with a valid TestCase
 %   F = Feedback(...);
@@ -11,8 +11,9 @@ function [passed, msg] = test()
     info.initializer = '';
     info.points = 3;
     info.banned = {};
-    info.supportingFiles = {'vars.mat'};
+    info.supportingFiles = {[p filesep 'vars_rubrica.mat']};
     T = TestCase(info, p);
+    T = engine(T);
     F = Feedback(T, p);
     try
         F2 = engine(F);
@@ -21,7 +22,7 @@ function [passed, msg] = test()
             passed = false;
             msg = 'Output field "out" not created';
             return;
-        elseif ~isequal(F2.outputs.out, 'hello.txt')
+        elseif ~isequal(F2.outputs.out, 1)
             passed = false;
             msg = 'Output not correctly set; expected 1';
             return;

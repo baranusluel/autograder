@@ -47,7 +47,8 @@
 % engine uses static checking to check if the function is recursive.
 % Calls are traced to the first instance of a call to a built in function.
 % For each call to a user-supplied function, that function is checked to see
-% if it ever calls itself. Note that it's possible to circumvent this checking
+% if it ever calls itself or anything up the stack. Mutual Recursion is
+% checked. Note that it's possible to circumvent this checking
 % by having the recursive call within an if statement, like so:
 %
 %   function notRecurse()
@@ -56,7 +57,8 @@
 %       end
 %   end
 %
-% engine cannot tell that this isn't actually recursive.
+% engine cannot tell that this isn't actually recursive, since it's not
+% known until runtime that if false will never actually be true.
 %
 % Additionally, banned function usage is also statically checked. Calls are
 % traced to the first instance of a call to a built in function, just like
@@ -188,7 +190,7 @@ function runnables = engine(runnables)
         'cancel', 'parfevalOnAll', 'fetchNext', 'batch', ...
         'eval', 'feval', 'assignin', 'evalc', 'evalin', ...
         'input', 'wait', 'uiwait', 'keyboard', 'dbstop', ...
-        'cd', 'system', 'restoredefaultpath', 'builtin'};
+        'cd', 'system', 'restoredefaultpath', 'builtin', 'load'};
 
     if any(~isvalid(runnables))
         e = MException('AUTOGRADER:engine:invalidRunnable', ...
@@ -208,7 +210,7 @@ function runnables = engine(runnables)
     end
 
     origPaths = cell(size(runnables));
-    parfor r = 1:numel(runnables)
+    for r = 1:numel(runnables)
         runnable = runnables(r);
         fld = tempname;
         mkdir(fld);
@@ -281,13 +283,13 @@ function runnables = engine(runnables)
                 % save the original load files
                 tCase.inputs = [varNames; varValues];
             end
-            cd(origPath);
             if ~isTestCase
                 runnable.testCase = tCase;
             else
                 runnable = tCase;
             end
         end
+        cd(origPath);
         runnables(r) = runnable;
     end
     % done with parfor - now run all the cases!
@@ -308,13 +310,44 @@ function runnables = engine(runnables)
                 now = datetime;
                 now.TimeZone = worker.CreateDateTime.TimeZone;
                 if strcmp(worker.State, 'finished')
-                    runnables(w) = worker.fetchOutputs();
+                    % check error
+                    if ~isempty(worker.Error) && isTestCase
+                        % test Case; throw error
+                        e = MException('AUTOGRADER:engine:testCaseFailure', ...
+                            'TestCase failed, see error for more information');
+                        e = e.addCause(worker.Error.remotecause{1});
+                        e.throw();
+                    elseif ~isempty(worker.Error) && ~isTestCase
+                        e = MException('AUTOGRADER:studentError', ...
+                            'Student Code errored');
+                        if isempty(worker.Error.remotecause)
+                            % for now, it seems that opening infinite
+                            % files for reading causes it to error without
+                            % a cause. So the cause should be
+                            % InfiniteOpenFiles.
+                            runnables(w).exception = ...
+                                e.addCause(MException('AUTOGRADER:engine:tooManyOpenFiles', ...
+                                'You opened too many files'));
+                        else
+                            runnables(w).exception = ...
+                                e.addCause(worker.Error.remotecause{1});
+                        end
+                    else
+                        runnables(w) = worker.fetchOutputs();
+                    end
                     delete(worker);
                 elseif ~isempty(worker.StartDateTime) && (now - worker.StartDateTime > seconds(Student.TIMEOUT))
                     cancel(worker);
                     delete(worker);
-                    runnables(w).exception = ...
-                    MException('AUTOGRADER:timeout', 'Timeout occurred');
+                    if ~isTestCase
+                        runnables(w).exception = ...
+                            MException('AUTOGRADER:timeout', 'Timeout occurred');
+                    else
+                        e = MException('AUTOGRADER:engine:testCaseFailure', ...
+                            'TestCase timed out');
+                        e = e.addCause(MException('AUTOGRADER:timeout', 'Timeout occurred'));
+                        e.throw();
+                    end
                 end
 
             end
@@ -561,12 +594,27 @@ function cleanup(origPath)
     [~] = rmdir(cd(origPath), 's');
 end
 
-
-function isRecurring = checkRecur(callInfo, main)
+function isRecurring = checkRecur(callInfo, main, stack)
     % Check if this function calls itself. If so, exit true.
     % If not, check all functions it calls:
     %   If the call is to a builtin, don't investigate
     %   If the call is to something NOT builtin, investigate!
+    % Investigating means calling ourself recursively.
+    %
+    % Checking for mutual recursion:
+    %   To check for mutual recursion, each call, if it calls something in
+    %   the stack, then exit true.
+    %   For example:
+    %       a -> b -> c -> b
+    %       a: stack is {}
+    %       b: stack is {'a'}
+    %       c: stack is {'a', 'b'};
+    %       b: stack is {'a', 'b', 'c'};
+    %       @ a->b->c->b, 'b' is current name AND in stack, so return true!
+    
+    if nargin < 3
+        stack = {};
+    end
 
     % First, check calls for itself.
     mainCall = callInfo(strcmp({callInfo.name}, main));
@@ -576,15 +624,30 @@ function isRecurring = checkRecur(callInfo, main)
         return;
     end
 
+    % if the stack ~isempty, then check ourselves on the stack.
+    if ~isempty(stack) && any(strcmp(stack, main))
+        isRecurring = true;
+        return;
+    else
+        stack = [stack {main}];
+    end
     % look at all functions in callInfo that aren't us
     calls = callInfo(~strcmp({callInfo.name}, main));
     for i = 1:numel(calls)
-        if checkRecur(calls(i), calls(i).name)
+        if checkRecur(calls(i), calls(i).name, stack)
             isRecurring = true;
             return;
         end
     end
 
+    % Iterate over internal calls, checking the stack
+    internal = mainCall.calls.innerCalls.names;
+    for i = 1:numel(internal)
+        if any(strcmp(stack, internal{i}))
+            isRecurring = true;
+            return;
+        end
+    end
     % Iterate over external calls.
     external = mainCall.calls.fcnCalls.names;
     % check local directory for filenames. If not there, builtin!
@@ -594,7 +657,7 @@ function isRecurring = checkRecur(callInfo, main)
         % if external isn't found anywhere in possCalls, don't engage
         if any(strcmp(external{i}, possCalls))
             extCallInfo = getcallinfo([external{i} '.m']);
-            if checkRecur(extCallInfo, external{i})
+            if checkRecur(extCallInfo, external{i}, stack)
                 isRecurring = true;
                 return;
             end
@@ -614,16 +677,16 @@ function isBanned = checkBanned(name, banned)
         % See if ANY banned are found in possibleCalls
         % for each call, see where it exists. If it exists IN THIS FOLDER,
         % then check it recursively
+        culprits = dir('*.m');
+        culprits = {culprits.name};
         for j = 1:numel(possibleCalls)
-            location = fileparts(which(possibleCalls{j}));
-            if strcmp(location, pwd)
-                % in current folder. We should recursively check
+            if any(strcmp(possibleCalls{j}(1:end-2), culprits))
                 if checkBanned([possibleCalls{j} '.m'], banned)
                     isBanned = true;
                     return;
                 end
             else
-                % see if contained in banned:
+                % see if banned
                 if any(strcmp(possibleCalls{j}, banned))
                     isBanned = true;
                     return;
