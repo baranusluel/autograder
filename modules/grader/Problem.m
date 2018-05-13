@@ -87,13 +87,18 @@ classdef Problem < handle
                 
                 for i = length(info.testCases):-1:1
                     tInfo = info.testCases(i);
-                    tInfo.banned = this.banned;
-                    % Get the full paths of the supporting files and add to
-                    % the test case info struct
-                    tInfo.supportingFiles = cell(1, length(info.supportingFiles));
-                    for j = 1:length(info.supportingFiles)
-                        tInfo.supportingFiles{j} = [pwd filesep 'SupportingFiles' filesep info.supportingFiles{j}];
+                    % could have supporting files; if it does, then add to
+                    % list
+                    if isfield(tInfo, 'supportingFiles')
+                        sups = unique([info.supportingFiles tInfo.supportingFiles]);
+                    else
+                        sups = unique(info.supportingFiles);
                     end
+                    for j = 1:length(sups)
+                        sups{j} = [pwd filesep 'SupportingFiles' filesep sups{j}];
+                    end
+                    tInfo.supportingFiles = sups;
+                    tInfo.banned = this.banned;
                     
                     testCases(i) = TestCase(tInfo, [pwd filesep 'Solutions']);
                 end

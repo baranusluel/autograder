@@ -283,13 +283,13 @@ function runnables = engine(runnables)
                 % save the original load files
                 tCase.inputs = [varNames; varValues];
             end
-            cd(origPath);
             if ~isTestCase
                 runnable.testCase = tCase;
             else
                 runnable = tCase;
             end
         end
+        cd(origPath);
         runnables(r) = runnable;
     end
     % done with parfor - now run all the cases!
@@ -677,16 +677,16 @@ function isBanned = checkBanned(name, banned)
         % See if ANY banned are found in possibleCalls
         % for each call, see where it exists. If it exists IN THIS FOLDER,
         % then check it recursively
+        culprits = dir('*.m');
+        culprits = {culprits.name};
         for j = 1:numel(possibleCalls)
-            location = fileparts(which(possibleCalls{j}));
-            if strcmp(location, pwd)
-                % in current folder. We should recursively check
+            if any(strcmp(possibleCalls{j}(1:end-2), culprits))
                 if checkBanned([possibleCalls{j} '.m'], banned)
                     isBanned = true;
                     return;
                 end
             else
-                % see if contained in banned:
+                % see if banned
                 if any(strcmp(possibleCalls{j}, banned))
                     isBanned = true;
                     return;
