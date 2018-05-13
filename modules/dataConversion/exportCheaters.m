@@ -9,6 +9,14 @@
 %
 %%% Remarks
 %
+% For each student, exportCheaters will create a folder for them. For each
+% problem that they possibly cheated on, a folder for that problem is
+% created. In that folder is their code file and the code files of anyone
+% who likely cheated. Each code file is renamed to the id of the student.
+%
+% A folder is made for every student, regardless of whether or not it is
+% likely they cheated. However, their "html" is just a blank page. This
+% means that they can be linked to even if they did not cheat.
 %
 %%% Exceptions
 %
