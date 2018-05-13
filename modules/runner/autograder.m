@@ -93,6 +93,10 @@ function autograder(app)
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
     
+    % close all files and plots
+    wait(parfevalOnAll(@()(fclose('all')), 0));
+    wait(parfevalOnAll(@()(delete(findall(0, 'type', 'figure'))), 0));
+    
     % For solution, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Solutions');
@@ -189,7 +193,7 @@ function autograder(app)
         end
     end
 
-    % Grade students
+    % Create Plot
     plotter = uifigure('Name', 'Grade Report');
     ax = uiaxes(plotter);
     ax.Position = [10 10 550 400]; % as suggested in example on MATLAB ref page
@@ -207,6 +211,8 @@ function autograder(app)
 
     plotter.Visible = 'on';
 
+    drawnow;
+    
     progress.Indeterminate = 'off';
     progress.Value = 0;
     progress.Message = 'Student Grading Progress';
@@ -234,6 +240,8 @@ function autograder(app)
             return;
         end
     end
+    
+    drawnow;
     
     % Before we do anything else, examine the grades. There should be a
     % good distribution - if not, ask the user
@@ -271,72 +279,90 @@ function autograder(app)
     else
         stop = false;
     end
-    if stop == 1
+    if stop
         keyboard;
     end
     
     if app.AnalyzeForCheating.Value
-        progress.Message = 'Reading Student Submissions';
-        progress.Indeterminate = 'on';
-        progress.Cancelable = 'off';
-        
-        txts = cell(1, numel(students));
-        for s = numel(students):-1:1
-            workers(s) = parfeval(@getText, 1, students(s).problemPaths);
-        end
-        
-        progress.Value = 0;
-        progress.Indeterminate = 'off';
-        progress.Cancelable = 'on';
-        num = numel(workers);
-        
-        while ~all([workers.Read])
-            if progress.CancelRequested
-                cancel(workers);
+        try
+            progress.Message = 'Reading Student Submissions';
+            progress.Indeterminate = 'on';
+            progress.Cancelable = 'off';
+
+            txts = cell(1, numel(students));
+            for s = numel(students):-1:1
+                workers(s) = parfeval(@getText, 1, students(s).problemPaths);
+            end
+
+            progress.Value = 0;
+            progress.Indeterminate = 'off';
+            progress.Cancelable = 'on';
+            num = numel(workers);
+
+            while ~all([workers.Read])
+                if progress.CancelRequested
+                    cancel(workers);
+                    return;
+                end
+                [idx, txt] = workers.fetchNext();
+                txts{idx} = txt;
+                progress.Value = min([progress.Value + 1/num, 1]);
+            end
+
+            wait(parfevalOnAll(@getScores, 0, [], txts));
+            progress.Value = 0;
+            progress.Message = 'Analyzing Submissions... This will take a while';
+            % for each student, we need to compare to all other students.
+            scores = cell(1, numel(students));
+            for s1 = numel(students):-1:1
+                workers(s1) = parfeval(@getScores, 1, s1);
+            end
+
+            num = numel(workers);
+
+            while ~all([workers.Read])
+                [idx, score] = workers.fetchNext();
+                scores{idx} = score;
+                progress.Value = min([progress.Value + 1/num, 1]);
+                if progress.CancelRequested
+                    cancel(workers);
+                    return;
+                end
+            end
+
+            % generate Report
+            progress.Message = 'Generating Report';
+            progress.Indeterminate = 'on';
+            progress.Cancelable = 'off';
+
+            % move resources
+            recSource = [fileparts(mfilename('fullpath')) filesep 'resources'];
+            mkdir('resources');
+            copyfile(recSource, [pwd filesep 'resources']);
+            CheatDetector(students, solutions, scores);
+        catch e
+            if app.isDebug
+                keyboard;
+            else
+                alert(app, e);
                 return;
             end
-            [idx, txt] = workers.fetchNext();
-            txts{idx} = txt;
-            progress.Value = min([progress.Value + 1/num, 1]);
         end
-        
-        wait(parfevalOnAll(@getScores, 0, [], txts));
-        progress.Value = 0;
-        progress.Message = 'Analyzing Submissions... This will take a while';
-        % for each student, we need to compare to all other students.
-        scores = cell(1, numel(students));
-        for s1 = numel(students):-1:1
-            workers(s1) = parfeval(@getScores, 1, s1);
-        end
-        
-        num = numel(workers);
-        
-        while ~all([workers.Read])
-            [idx, score] = workers.fetchNext();
-            scores{idx} = score;
-            progress.Value = min([progress.Value + 1/num, 1]);
-            if progress.CancelRequested
-                cancel(workers);
-                return;
-            end
-        end
-        
-        % generate Report
-        progress.Message = 'Generating Report';
-        progress.Indeterminate = 'on';
-        progress.Cancelable = 'off';
-        
-        % move resources
-        recSource = [fileparts(mfilename('fullpath')) filesep 'resources'];
-        mkdir('resources');
-        copyfile(recSource, [pwd filesep 'resources']);
-        CheatDetector(students, solutions, scores);
     end
     % If the user requested uploading, do it
 
     if app.UploadToCanvas.Value
-        uploadToCanvas(students, app.canvasCourseId, ...
-            app.canvasHomeworkId, app.canvasToken, progress);
+        try
+            uploadToCanvas(students, app.canvasCourseId, ...
+                app.canvasHomeworkId, app.canvasToken, progress);
+        catch e
+            if app.isDebug
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
     end
     if app.UploadToServer.Value
         if app.isResubmission
@@ -344,8 +370,17 @@ function autograder(app)
         else
             name = sprintf('homework%02d', app.homeworkNum);
         end
-        uploadToServer(students, app.serverUsername, app.serverPassword, ...
-            name, progress);
+        try
+            uploadToServer(students, app.serverUsername, app.serverPassword, ...
+                name, progress);
+        catch e
+            if app.isDebug
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
     end
 
     % if they want the output, do it
@@ -355,13 +390,7 @@ function autograder(app)
         % save canvas info in path
         % copy csv, then change accordingly
         % move student folders to output path
-        copyfile(pwd, app.localOutputPath);
-    end
-    if ~isempty(app.localDebugPath)
-        % save MAT file
-        progress.Indeterminate = 'on';
-        progress.Message = 'Saving Debugger Information';
-        copyfile(settings.workingDir, app.localDebugPath);
+        copyfile(settings.workingDir, app.localOutputPath);
     end
 end
 
@@ -390,7 +419,6 @@ function cleanup(settings)
 
     % Delete our working directory
     [~] = rmdir(settings.workingDir, 's');
-    % store debugging info
     if isvalid(settings.progress)
         close(settings.progress);
     end
