@@ -71,7 +71,7 @@ function autograder(app)
     settings.app = app;
     try
         if app.isDebug
-            logger = Logger(app.localDebugPath);
+            logger = Logger(pwd);
         else
             logger = Logger();
         end
