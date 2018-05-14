@@ -36,8 +36,8 @@ classdef Resources < matlab.mixin.SetGet
                 % for each problem, get the supporting files. rec.resources
                 % = struct(1xn), with fields 'name' and 'dataURI'
                 % just use the first TestCase
-                sups = [problems(p).testCases(1).supportingFiles, ...
-                    problems(p).testCases(1).loadFiles];
+                sups = [problems(p).testCases(1).supportingFiles(:)', ...
+                    problems(p).testCases(1).loadFiles(:)'];
                 rec.files = struct('name', sups, ...
                     'dataURI', '');
                 [~, inds] = sort(upper(sups));
