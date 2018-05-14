@@ -499,7 +499,7 @@ end
 function problemTxt = getText(problemPaths)
     for p = numel(problemPaths):-1:1
         if isempty(problemPaths{p})
-            problemTxt{p} = '';
+            problemTxt{p} = cell(1, 2);
         else
             fid = fopen(problemPaths{p}, 'rt');
             problemTxt{p}{1} = char(fread(fid)');
