@@ -123,7 +123,8 @@ function autograder(app)
             Logger.log('Exchanging refresh token for access token');
             token = refresh2access(app.driveToken);
             Logger.log('Starting download of solution archive from Google Drive');
-            downloadFromDrive(app.driveFolderId, token, [pwd filesep 'Solutions'], app.driveKey, progress);
+            downloadFromDrive(app.driveFolderId, token, ...
+                [pwd filesep 'Solutions'], app.driveKey, progress);
         catch e
             if app.isDebug
                 keyboard;
