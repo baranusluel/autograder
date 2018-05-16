@@ -159,7 +159,7 @@ classdef Logger < handle
             end
             stack = dbstack;
             fprintf(fid, Logger.RECORD_FORMAT, ...
-                datestr(datetime),  stack(end).name, message);
+                datestr(datetime),  stack(1).name, message);
             end
     end
 end
