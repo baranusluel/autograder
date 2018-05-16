@@ -133,7 +133,7 @@ function uploadToServer(students, user, pass, hwName, progress)
     fclose(fid);
     sftp.put([pwd filesep 'grades.csv'], ['/httpdocs/homework_files/' hwName '/grades.csv']);
     
-    % create JSON
+    % create JSON for names
     ids = {students.id};
     names = {students.name};
     
@@ -145,6 +145,7 @@ function uploadToServer(students, user, pass, hwName, progress)
     fwrite(fid, json);
     fclose(fid);
     sftp.put([pwd filesep 'names.json'], '/httpdocs/regrades/json/names.json');
+    delete('names.json');
     %TODO: how to get sections?
     
     sftp.disconnect();
