@@ -1,0 +1,193 @@
+[
+	{
+		"name": "ABCs_sorting",
+		"banned": [],
+		"isRecursive": false,
+		"supportingFiles": [
+			"ABCs_sorting_rubrica.mat"
+		],
+		"testCases": [
+			{
+				"call": "[A, B, C, D, E, F, G, H, I, J] = ABCs_sorting()",
+				"initializer": "",
+				"points": 2
+			}
+		]
+	},
+	{
+		"name": "ABCs_graphTheory",
+		"banned": [],
+		"isRecursive": false,
+		"supportingFiles": [
+			"ABCs_graphTheory_rubrica.mat"
+		],
+		"testCases": [
+			{
+				"call": "[A, B, C, D, E, F] = ABCs_graphTheory()",
+				"initializer": "",
+				"points": 3
+			}
+		]
+	},
+	{
+		"name": "functiony",
+		"banned": [],
+		"isRecursive": false,
+		"supportingFiles": [
+			"functiony_rubrica.mat"
+		],
+		"testCases": [
+			{
+				"call": "[valid1] = functiony(in1)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[valid2] = functiony(in2)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[valid3] = functiony(in3)",
+				"initializer": "",
+				"points": 7
+			}
+		]
+	},
+	{
+		"name": "edgy",
+		"banned": [],
+		"isRecursive": false,
+		"supportingFiles": [
+			"edgy_rubrica.mat",
+			"dms.png",
+			"omar.png",
+			"penguin.png"
+		],
+		"testCases": [
+			{
+				"call": "[] = edgy(in1)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[] = edgy(in2)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[] = edgy(in3)",
+				"initializer": "",
+				"points": 7
+			}
+		]
+	},
+	{
+		"name": "shapey",
+		"banned": [],
+		"isRecursive": false,
+		"supportingFiles": [
+			"shapey_rubrica.mat"
+		],
+		"testCases": [
+			{
+				"call": "[] = shapey(in1, in2)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[] = shapey(in3, in4)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[] = shapey(in5, in6)",
+				"initializer": "",
+				"points": 7
+			}
+		]
+	},
+	{
+		"name": "chessy",
+		"banned": [],
+		"isRecursive": false,
+		"supportingFiles": [
+			"chessy_rubrica.mat",
+			"game4.txt",
+			"game5.txt",
+			"game6.txt"
+		],
+		"testCases": [
+			{
+				"call": "[board1, desc1] = chessy(in1, in2)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[board2, desc2] = chessy(in3, in4)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[board3, desc3] = chessy(in5, in6)",
+				"initializer": "",
+				"points": 7
+			}
+		]
+	},
+	{
+		"name": "wordy",
+		"banned": [],
+		"isRecursive": false,
+		"supportingFiles": [
+			"wordy_rubrica.mat"
+		],
+		"testCases": [
+			{
+				"call": "[out1] = wordy(in1)",
+				"initializer": "",
+				"points": 4
+			},
+			{
+				"call": "[out2] = wordy(in2)",
+				"initializer": "",
+				"points": 5
+			},
+			{
+				"call": "[out3] = wordy(in3)",
+				"initializer": "",
+				"points": 5
+			},
+			{
+				"call": "[out4] = wordy(in4)",
+				"initializer": "",
+				"points": 5
+			}
+		]
+	},
+	{
+		"name": "waldoy",
+		"banned": [],
+		"isRecursive": false,
+		"supportingFiles": [
+			"waldoy_rubrica.mat"
+		],
+		"testCases": [
+			{
+				"call": "[exists1, depth1] = waldoy(in1)",
+				"initializer": "",
+				"points": 6
+			},
+			{
+				"call": "[exists2, depth2] = waldoy(in2)",
+				"initializer": "",
+				"points": 7
+			},
+			{
+				"call": "[exists3, depth3] = waldoy(in3)",
+				"initializer": "",
+				"points": 7
+			}
+		]
+	}
+]
