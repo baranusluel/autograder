@@ -24,13 +24,13 @@ function [passed, msg] = test()
         return;
     end
     % grade should be 2/3 of total
-    if round(120 * S.grade, 2) ~= round(2 * sum([solutions(7).testCases.points]) / 3)
+    if round(1.20 * S.grade, 2) ~= 15.2
         passed = false;
         msg = sprintf('Expected %0.2f points; got %0.2f points', ...
-            round(2 * sum([solutions(7).testCases.points]) / 3), ...
-            round(120 * S.grade, 2));
+            15.2, ...
+            round(1.20 * S.grade, 2));
         return;
-    elseif ~isfile([s.path filesep 'feedback.html'])
+    elseif ~isfile([S.path filesep 'feedback.html'])
         passed = false;
         msg = 'Expected feedback; got none';
         return;

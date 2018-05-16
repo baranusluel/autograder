@@ -15,7 +15,7 @@ function [passed, msg] = test()
     PATH = [pwd filesep 'tuser3'];
     NUM_SUBMISSIONS = 2;
     try
-        S = Student('Test User', [pwd filesep 'tuser3']);
+        S = Student([pwd filesep 'tuser3'], NAME);
     catch reason
         passed = false;
         msg = sprintf('Expected Success; got %s - "%s"', reason.identifier, ...
