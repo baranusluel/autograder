@@ -89,6 +89,14 @@ function uploadToServer(students, user, pass, hwName, progress)
     end
     workers = parfevalOnAll(@uploadFile, 0);
     workers.wait();
+    % create csv
+    ids = {students.id};
+    grades = arrayfun(@num2str, [students.grade], 'uni', false);
+    csv = strjoin(join([ids; grades]', ','), newline);
+    fid = fopen('grades.csv', 'wt');
+    fwrite(fid, csv);
+    fclose(fid);
+    sftp.put([pwd filesep 'grades.csv'], ['/httpdocs/homework_files/' hwName '/grades.csv']);
     sftp.disconnect();
 end
 
