@@ -51,6 +51,7 @@ function uploadToServer(students, user, pass, hwName, progress)
     % So, for each student, create their folders. Then, parfeval their
     % uploads.
     workers = cell(1, numel(students));
+    wait(parfevalOnAll(@()(clear('uploadToServer')), 0));
     for s = numel(students):-1:1
         % create their remote directory and sub directories
         student = students(s);
@@ -67,7 +68,7 @@ function uploadToServer(students, user, pass, hwName, progress)
         end
         workers{s}(1) = parfeval(@uploadFile, 0, ...
             [pwd filesep 'Students' filesep student.id filesep 'feedback.html'], ...
-            [char(sftp.pwd) '/' student.id '/Feedback Attachment(s)/feedback.html'], ...
+            ['/httpdocs/homework_files/' hwName '/' student.id '/Feedback Attachment(s)/feedback.html'], ...
             user, ...
             pass);
         % upload their feedback
@@ -98,7 +99,7 @@ function uploadFile(localPath, remotePath, user, pass)
     elseif nargin == 0 && ~isempty(sftp)
         sftp.disconnect();
         return;
-    elseif ~isempty(sftp)
+    elseif isempty(sftp)
         sftp = getSftp(user, pass);
     end
     sftp.put(localPath, remotePath);
