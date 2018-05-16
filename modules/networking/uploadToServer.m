@@ -109,6 +109,7 @@ function uploadToServer(students, user, pass, hwName, progress)
     [~] = rmdir([pwd filesep hwName filesep 'SupportingFiles'], 's');
     % folder is ready to upload; upload it!
     % initial folder needs to be made: httpdocs/regrades/solutions/hwName
+    executeCommand(user, pass, ['rm -rf /httpdocs/regrades/solutions/Homework' num]);
     sftp.mkdir(['/httpdocs/regrades/solutions/Homework' num]);
     % for each file in folders, upload accordingly. No need to parallelize
     % because this shouldn't take long
@@ -123,7 +124,7 @@ function uploadToServer(students, user, pass, hwName, progress)
     
     [~] = rmdir(hwName, 's');
     
-        % create csv
+    % create csv
     ids = {students.id};
     grades = arrayfun(@num2str, [students.grade], 'uni', false);
     csv = strjoin(join([ids; grades]', ','), newline);
@@ -131,6 +132,20 @@ function uploadToServer(students, user, pass, hwName, progress)
     fwrite(fid, csv);
     fclose(fid);
     sftp.put([pwd filesep 'grades.csv'], ['/httpdocs/homework_files/' hwName '/grades.csv']);
+    
+    % create JSON
+    ids = {students.id};
+    names = {students.name};
+    
+    for s = numel(ids):-1:1
+        json.(ids{s}) = struct('name', names{s});
+    end
+    json = jsonencode(json);
+    fid = fopen('names.json', 'wt');
+    fwrite(fid, json);
+    fclose(fid);
+    sftp.put([pwd filesep 'names.json'], '/httpdocs/regrades/json/names.json');
+    %TODO: how to get sections?
     
     sftp.disconnect();
     workers = parfevalOnAll(@uploadStudent, 0);
