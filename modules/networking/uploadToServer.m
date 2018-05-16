@@ -83,9 +83,47 @@ function uploadToServer(students, user, pass, hwName, progress)
         fetchNext(workers);
         progress.Value = min([progress.Value + 1/tot, 1]);
     end
-    workers = parfevalOnAll(@uploadStudent, 0);
-    workers.wait();
-    % create csv
+    % get HW num
+    num = hwName(hwName >= '0' & hwName <= '9');
+    % Upload solutions
+    solnFolder = [pwd filesep 'Solutions'];
+    mkdir(hwName);
+    newOGName = [pwd filesep hwName filesep 'hw' num 'Rubric.json'];
+    newResubName = [pwd filesep hwName filesep 'hw' num 'Rubric_resub.json'];
+    copyfile(solnFolder, hwName);
+    % rename rubrics and upload
+    movefile([pwd filesep hwName filesep 'rubrica.json'], ...
+        newOGName);
+    movefile([pwd filesep hwName filesep 'rubricb.json'], ...
+        newResubName);
+    % upload these two files to: httpdocs/regrades/rubrics
+    sftp.put(newOGName, '/httpdocs/regrades/rubrics/');
+    sftp.put(newResubName, '/httpdocs/regrades/rubrics/');
+    % delete rubrics
+    delete(newOGName);
+    delete(newResubName);
+    
+    % zip supporting files
+    zip([pwd filesep hwName filesep 'Supporting.zip'], ...
+        [pwd filesep hwName filesep 'SupportingFiles' filesep '*']);
+    [~] = rmdir([pwd filesep hwName filesep 'SupportingFiles'], 's');
+    % folder is ready to upload; upload it!
+    % initial folder needs to be made: httpdocs/regrades/solutions/hwName
+    sftp.mkdir(['/httpdocs/regrades/solutions/Homework' num]);
+    % for each file in folders, upload accordingly. No need to parallelize
+    % because this shouldn't take long
+    solns = dir([pwd filesep hwName filesep 'Solutions' filesep '*.m']);
+    for n = 1:numel(solns)
+        sftp.put([solns(n).folder filesep solns(n).name], ...
+            ['/httpdocs/regrades/solutions/Homework' num '/' solns(n).name]);
+    end
+    % upload supporting.zip
+    sftp.put([pwd filesep hwName filesep 'Supporting.zip'], ...
+        ['/httpdocs/regrades/solutions/Homework' num '/Supporting.zip']);
+    
+    [~] = rmdir(hwName, 's');
+    
+        % create csv
     ids = {students.id};
     grades = arrayfun(@num2str, [students.grade], 'uni', false);
     csv = strjoin(join([ids; grades]', ','), newline);
@@ -93,7 +131,10 @@ function uploadToServer(students, user, pass, hwName, progress)
     fwrite(fid, csv);
     fclose(fid);
     sftp.put([pwd filesep 'grades.csv'], ['/httpdocs/homework_files/' hwName '/grades.csv']);
+    
     sftp.disconnect();
+    workers = parfevalOnAll(@uploadStudent, 0);
+    workers.wait();
 end
 
 function uploadStudent(student, user, pass, startPath)
