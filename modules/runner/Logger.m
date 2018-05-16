@@ -27,7 +27,7 @@
 %
 classdef Logger < handle
     properties (Constant)
-        RECORD_FORMAT char = '\n%s: %s logged event: %s';
+        RECORD_FORMAT char = '\n%s: %s logged event: "%s"';
     end
     properties (Access=private)
         fid = -1;
@@ -111,7 +111,7 @@ classdef Logger < handle
         %
         % delete(L) closes the file and deletes the logger
             if this.fid ~= -1
-                fprintf('\nLogging Terminated at %s', datestr(datetime));
+                fprintf(this.fid, '\nLogging Terminated at %s', datestr(datetime));
                 fclose(this.fid);
             end
             clear Logger;
@@ -159,7 +159,7 @@ classdef Logger < handle
             end
             stack = dbstack;
             fprintf(fid, Logger.RECORD_FORMAT, ...
-                datestr(datetime),  stack(1).name, message);
+                datestr(datetime),  stack(2).name, message);
             end
     end
 end
