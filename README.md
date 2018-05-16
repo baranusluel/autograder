@@ -1,6 +1,7 @@
 # The CS 1371 Autograder
 
-![TeamCity (simple build status)](https://img.shields.io/teamcity/http/teamcity.jetbrains.com/s/bt345.svg)
+
+![Scrutinizer Build](https://img.shields.io/scrutinizer/build/g/filp/whoops.svg)
 ![npm (custom registry)](https://img.shields.io/npm/l/express.svg?registry_uri=https%3A%2F%2Fregistry.npmjs.com)
 ![Github Top Language](https://img.shields.io/badge/language-matlab-red.svg)
 ![OS](https://img.shields.io/badge/OS-Windows%20macOS-blue.svg)
