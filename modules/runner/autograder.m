@@ -90,7 +90,7 @@ function autograder(app)
         'ShowPercentage', true, 'Indeterminate', 'on');
     Logger.log('Starting up parallel pool');
     settings.progress = progress;
-    evalc('parpool');
+    evalc('gcp');
     app.UIFigure.Visible = 'off';
     app.UIFigure.Visible = 'on';
     if progress.CancelRequested
