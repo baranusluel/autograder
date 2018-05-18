@@ -40,7 +40,7 @@ function exportCheaters(students, cheaters, scores, problems, path, progress)
                 paths{p} = {};
                 cScores{p} = {};
             else
-                names{p} = [{cheaters{s}{p}.id}, {students(s).id}];
+                names{p} = [{cheaters{s}{p}.name, students(s).name}; {cheaters{s}{p}.id, students(s).id}];
                 paths{p} = [cellfun(@(pSet)(pSet(p)), {cheaters{s}{p}.problemPaths}), students(s).problemPaths(p)];
                 cScores{p} = scores{s}{p};
             end
@@ -64,7 +64,7 @@ function exportCheaters(students, cheaters, scores, problems, path, progress)
     links = cell(size(suspects));
     for s = 1:numel(suspects)
         links{s} = {'<div class="row"><div class="col-12 text-center">', ['<a href="./' suspects(s).id '/details.html">'], ...
-            '<code>', [suspects(s).name ' - (' suspects(s).id ')'], '</code>', '</a>', '</div></div>'};
+            '<code>', [suspects(s).name ' (' suspects(s).id ')'], '</code>', '</a>', '</div></div>'};
     end
     HEADER = {'<!DOCTYPE html>', '<html>', '<head>', ...
             '<meta charset="utf-8">', ...
@@ -94,14 +94,16 @@ function exportStudent(studentPath, problems, names, paths, scores)
             cd(problems{p});
             % for each file, copy it with name of student
             for f = 1:numel(paths{p})
-                copyfile(paths{p}{f}, [names{p}{f} '.m']);
+                copyfile(paths{p}{f}, [names{p}{2, f} '.m']);
             end
-            names{p}(strcmp(names{p}, myName)) = [];
+            % get real myName
+            prettyName = [strjoin(names{p}(:, strcmp(names{p}(2, :), myName)), ' (') ')'];
+            names{p}(:, strcmp(names{p}(2, :), myName)) = [];
             cd('..');
         end
     end
     % create HTML file
-    writeHtml(problems, names, scores, myName);
+    writeHtml(problems, names, scores, prettyName);
     
     cd(orig);
 end
@@ -111,19 +113,19 @@ function writeHtml(problems, names, scores, myName)
     problemMarkup = cell(size(problems));
     for p = 1:numel(problems)
         if ~isempty(names{p})
-            list = cell(size(names{p}));
+            list = cell(size(names{p}, 2));
             [~, inds] = sort(scores{p});
             inds = inds(end:-1:1);
             scores{p} = scores{p}(inds);
-            names{p} = names{p}(inds);
-            for n = 1:numel(names{p})
+            names{p} = names{p}(:, inds);
+            for n = 1:size(names{p}, 2)
                 if scores{p}(n) == Inf
                     list{n} = {'<li class="cheater"><code>', ...
-                        '<a href="../' names{p}{n} '/details.html">', ...
-                        [names{p}{n} ' - Exact Match'], '</a></code></li>'};
+                        '<a href="../' names{p}{2, n} '/details.html">', ...
+                        [names{p}{1, n} ' (' names{p}{2, n} ') - Exact Match'], '</a></code></li>'};
                 else
-                    list{n} = {'<li class="cheater">', '<a href="../' names{p}{n} '/details.html">', ...
-                        [names{p}{n} ' - ' sprintf('%0.2f', 100*scores{p}(n)) '% Match'], '</a></li>'};
+                    list{n} = {'<li class="cheater">', '<a href="../' names{p}{2, n} '/details.html">', ...
+                        [names{p}{1, n} ' (' names{p}{2, n} ') - ' sprintf('%0.2f', 100*scores{p}(n)) '% Match'], '</a></li>'};
                 end
             end
             problemMarkup{p} = [{'<hr />', '<div class="problem-header row"><div class="col-12">', ...
@@ -140,8 +142,8 @@ function writeHtml(problems, names, scores, myName)
             '<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>', ...
             '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>', ...
             '<title>', ['Cheating Analysis Details for ' myName], '</title>', ...
-            '<style>', 'code a {color: #e83e8c; font-size: 100%;}', '</style>', '</head>', '<body>', '<div class="container">', '<h1 class="display-3 text-center">', ...
-            ['Cheating Analysis for ' myName], '</h1>'};
+            '<style>', 'code a {color: #e83e8c; font-size: 100%;}', '</style>', '</head>', '<body>', '<div class="container-fluid">', '<h1 class="display-3 text-center">', ...
+            ['Cheating Analysis for ' myName], '</h1>', '</div>', '<div class="container">'};
         markup = [HEADER problemMarkup {'</div>', '</body>', '</html>'}];
         fid = fopen('details.html', 'wt');
         fwrite(fid, strjoin(markup, newline));
