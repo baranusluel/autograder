@@ -503,9 +503,14 @@ function problemTxt = getText(problemPaths)
             problemTxt{p} = cell(1, 2);
         else
             fid = fopen(problemPaths{p}, 'rt');
-            problemTxt{p}{1} = char(fread(fid)');
-            problemTxt{p}{2} = java.lang.String(problemTxt{p}{1}).hashCode;
+            code = char(fread(fid)');
             fclose(fid);
+            tree = mtree(code);
+            tmp = strsplit(code, newline, 'CollapseDelimiters', false);
+            % remove comments
+            problemTxt{p}{1} = ...
+                strjoin(tmp(unique(tree.getlastexecutableline)), newline);
+            problemTxt{p}{2} = java.lang.String(code).hashCode;
         end
     end
 end
