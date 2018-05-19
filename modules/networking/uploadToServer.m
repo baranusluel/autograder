@@ -34,13 +34,17 @@ function uploadToServer(students, user, pass, hwName, progress)
     javaaddpath([fileparts(mfilename('fullpath')) filesep 'JSch.jar']);
     cleaner = onCleanup(@()...
         (javarmpath([fileparts(mfilename('fullpath')) filesep 'JSch.jar'])));
-    executeCommand(user, pass, ['rm -rf /httpdocs/homework_files/' hwName]);
     sftp = getSftp(user, pass);
     % for each student we will need to upload their files to their
     % appropriate directory. First, however, we'll need to make those
     % directories!
     % cd to the httpdocs/homework_files
+    % create zip
+    executeCommand(user, pass, ...
+        ['zip -r /httpdocs/previous_homework_files/' hwName '.zip ', ...
+        '/httpdocs/homework_files/' hwName]);
     sftp.cd('/httpdocs/homework_files');
+    executeCommand(user, pass, ['rm -rf /httpdocs/homework_files/' hwName]);
     sftp.mkdir(hwName);
     sftp.cd(hwName);
     % upload new files
@@ -220,4 +224,5 @@ function executeCommand(user, pass, cmd)
     ssh.setCommand(cmd);
     ssh.connect();
     ssh.disconnect();
+    pause(3);
 end
