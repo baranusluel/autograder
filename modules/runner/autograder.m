@@ -63,6 +63,14 @@ function autograder(app)
     CONTINUE_LABEL = 'Continue';
     
     settings.userPath = {path(), userpath()};
+    % change name of overloaded files
+    overloaders = fileparts(mfilename('fullpath'));
+    files = dir([overloaders filesep 'overloader' filesep '*.txt']);
+    for f = 1:numel(files)
+        [~, name, ~] = fileparts(files(f).name);
+        movefile([files(f).folder filesep files(f).name], ...
+            [files(f).folder filesep name '.m']);
+    end
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     clear Student;
     Student.resetPath();
@@ -359,6 +367,14 @@ function cleanup(settings)
     path(settings.userPath{1}, '');
     if ~isempty(settings.userPath{2})
         userpath(settings.userPath{2});
+    end
+    % change name of overloaded files
+    overloaders = fileparts(mfilename('fullpath'));
+    files = dir([overloaders filesep 'overloader' filesep '*.m']);
+    for f = 1:numel(files)
+        [~, name, ~] = fileparts(files(f).name);
+        movefile([files(f).folder filesep files(f).name], ...
+            [files(f).folder filesep name '.txt']);
     end
 
     % cd to user's dir
