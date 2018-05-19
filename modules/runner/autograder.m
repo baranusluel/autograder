@@ -63,6 +63,14 @@ function autograder(app)
     CONTINUE_LABEL = 'Continue';
     
     settings.userPath = {path(), userpath()};
+    % change name of overloaded files
+    overloaders = fileparts(mfilename('fullpath'));
+    files = dir([overloaders filesep 'overloader' filesep '*.txt']);
+    for f = 1:numel(files)
+        [~, name, ~] = fileparts(files(f).name);
+        movefile([files(f).folder filesep files(f).name], ...
+            [files(f).folder filesep name '.m']);
+    end
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     clear Student;
     Student.resetPath();
@@ -71,7 +79,7 @@ function autograder(app)
     settings.app = app;
     try
         if app.isDebug
-            logger = Logger(app.localDebugPath);
+            logger = Logger(pwd);
         else
             logger = Logger();
         end
@@ -107,12 +115,13 @@ function autograder(app)
     fid = fopen(File.SENTINEL, 'wt');
     fwrite(fid, 'SENTINEL');
     fclose(fid);
-    % Make sure figure's don't show
-    settings.figures = get(0, 'DefaultFigureVisible');
-    set(0, 'DefaultFigureVisible', 'off');
 
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
+    
+    % close all files and plots
+    wait(parfevalOnAll(@()(fclose('all')), 0));
+    wait(parfevalOnAll(@()(delete(findall(0, 'type', 'figure'))), 0));
     % For solution, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Solutions');
@@ -122,7 +131,8 @@ function autograder(app)
             Logger.log('Exchanging refresh token for access token');
             token = refresh2access(app.driveToken);
             Logger.log('Starting download of solution archive from Google Drive');
-            downloadFromDrive(app.driveFolderId, token, [pwd filesep 'Solutions'], app.driveKey, progress);
+            downloadFromDrive(app.driveFolderId, token, ...
+                [pwd filesep 'Solutions'], app.driveKey, progress);
         catch e
             if app.isDebug
                 keyboard;
@@ -165,7 +175,8 @@ function autograder(app)
             return;
         end
     end
-
+    setupRecs(solutions);
+    wait(parfevalOnAll(@setupRecs, 0, solutions));
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Students');
@@ -213,9 +224,7 @@ function autograder(app)
         end
     end
 
-    % Grade students
-    recs = Student.resources;
-    recs.Problems = solutions;
+    % Create Plot
     plotter = uifigure('Name', 'Grade Report');
     ax = uiaxes(plotter);
     ax.Position = [10 10 550 400]; % as suggested in example on MATLAB ref page
@@ -233,6 +242,8 @@ function autograder(app)
 
     plotter.Visible = 'on';
 
+    drawnow;
+    
     progress.Indeterminate = 'off';
     progress.Value = 0;
     progress.Message = 'Student Grading Progress';
@@ -262,6 +273,8 @@ function autograder(app)
             return;
         end
     end
+    
+    drawnow;
     
     % Before we do anything else, examine the grades. There should be a
     % good distribution - if not, ask the user
@@ -299,15 +312,91 @@ function autograder(app)
     else
         stop = false;
     end
-    if stop == 1
+    if stop
         keyboard;
+    end
+    
+    if app.AnalyzeForCheating.Value
+        try
+            progress.Message = 'Reading Student Submissions';
+            progress.Indeterminate = 'on';
+            progress.Cancelable = 'off';
+
+            txts = cell(1, numel(students));
+            for s = numel(students):-1:1
+                workers(s) = parfeval(@getText, 1, students(s).problemPaths);
+            end
+
+            progress.Value = 0;
+            progress.Indeterminate = 'off';
+            progress.Cancelable = 'on';
+            num = numel(workers);
+
+            while ~all([workers.Read])
+                if progress.CancelRequested
+                    cancel(workers);
+                    return;
+                end
+                [idx, txt] = workers.fetchNext();
+                txts{idx} = txt;
+                progress.Value = min([progress.Value + 1/num, 1]);
+            end
+
+            wait(parfevalOnAll(@getScores, 0, [], txts));
+            progress.Value = 0;
+            progress.Message = 'Analyzing Submissions... This will take a while';
+            % for each student, we need to compare to all other students.
+            scores = cell(1, numel(students));
+            for s1 = numel(students):-1:1
+                workers(s1) = parfeval(@getScores, 1, s1);
+            end
+
+            num = numel(workers);
+
+            while ~all([workers.Read])
+                [idx, score] = workers.fetchNext();
+                scores{idx} = score;
+                progress.Value = min([progress.Value + 1/num, 1]);
+                if progress.CancelRequested
+                    cancel(workers);
+                    return;
+                end
+            end
+
+            % generate Report
+            progress.Message = 'Generating Report';
+            progress.Indeterminate = 'on';
+            progress.Cancelable = 'off';
+
+            % move resources
+            recSource = [fileparts(mfilename('fullpath')) filesep 'resources'];
+            mkdir('resources');
+            copyfile(recSource, [pwd filesep 'resources']);
+            CheatDetector(students, solutions, scores);
+        catch e
+            if app.isDebug
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
     end
     % If the user requested uploading, do it
 
     if app.UploadToCanvas.Value
-        Logger.log('Starting upload of student grades');
-        uploadToCanvas(students, app.canvasCourseId, ...
-            app.canvasHomeworkId, app.canvasToken, progress);
+        try
+            Logger.log('Starting upload of student grades');
+            uploadToCanvas(students, app.canvasCourseId, ...
+                app.canvasHomeworkId, app.canvasToken, progress);
+        catch e
+            if app.isDebug
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
     end
     if app.UploadToServer.Value
         Logger.log('Starting upload of student files');
@@ -316,8 +405,17 @@ function autograder(app)
         else
             name = sprintf('homework%02d', app.homeworkNum);
         end
-        uploadToServer(students, app.serverUsername, app.serverPassword, ...
-            name, progress);
+        try
+            uploadToServer(students, app.serverUsername, app.serverPassword, ...
+                name, progress);
+        catch e
+            if app.isDebug
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
     end
 
     % if they want the output, do it
@@ -328,14 +426,7 @@ function autograder(app)
         % copy csv, then change accordingly
         % move student folders to output path
         Logger.log('Starting copy of local information');
-        copyfile(pwd, app.localOutputPath);
-    end
-    if ~isempty(app.localDebugPath)
-        % save MAT file
-        progress.Indeterminate = 'on';
-        progress.Message = 'Saving Debugger Information';
-        Logger.log('Starting copy of debug information');
-        copyfile(settings.workingDir, app.localDebugPath);
+        copyfile(settings.workingDir, app.localOutputPath);
     end
 end
 
@@ -360,30 +451,82 @@ function cleanup(settings)
     if ~isempty(settings.userPath{2})
         userpath(settings.userPath{2});
     end
+    % change name of overloaded files
+    overloaders = fileparts(mfilename('fullpath'));
+    files = dir([overloaders filesep 'overloader' filesep '*.m']);
+    for f = 1:numel(files)
+        [~, name, ~] = fileparts(files(f).name);
+        movefile([files(f).folder filesep files(f).name], ...
+            [files(f).folder filesep name '.txt']);
+    end
 
     % cd to user's dir
     cd(settings.userDir);
     Logger.log('Removing Working Directory');
     % Delete our working directory
     [~] = rmdir(settings.workingDir, 's');
-    % Restore figure settings
-    set(0, 'DefaultFigureVisible', settings.figures);
-    % store debugging info
-    app = settings.app;
-    if isvalid(settings.progress)
-        settings.progress.Message = 'Saving Output for Debugger...';
-    end
-    if ~isempty(app.localDebugPath)
-        Logger.log('Saving Debug Information');
-        % Don't compress - takes too long (and likely unnecessary)
-        students = app.students; %#ok<NASGU>
-        solutions = app.solutions; %#ok<NASGU>
-        exception = app.exception; %#ok<NASGU>
-        save([app.localDebugPath filesep 'autograder.mat'], ...
-            'students', 'solutions', 'exception', '-v7.3', '-nocompression');
-    end
     if isvalid(settings.progress)
         close(settings.progress);
     end
     settings.logger.delete();
+end
+
+function setupRecs(solutions)
+    recs = Student.resources;
+    recs.Problems = solutions;
+end
+
+function scores = getScores(varargin)
+    persistent students;
+    if nargin == 2
+        students = varargin{2};
+        return;
+    elseif nargin == 1
+        s1 = varargin{1};
+    end
+    subs = students{s1};
+    % students is cell array; each cell is a cell array of size p, and each
+    % entry there is the contents of a single problem and its hash
+    
+    % for each student, for each problem, calculate the jaccard index
+    scores = cell(1, numel(students));
+    for s2 = 1:numel(scores)
+        txts = students{s2};
+        if s1 == s2
+            scores{s2} = zeros(1, numel(txts));
+        else
+            for p = numel(txts):-1:1
+                % get jaccard index
+                if ~isempty(subs{p}{1}) && ~isempty(txts{p}{1})
+                    % compare
+                    if subs{p}{2} == txts{p}{2}
+                        scores{s2}(p) = Inf;
+                    else
+                        [rank1, rank2] = jaccardIndex(subs{p}{1}, txts{p}{1});
+                        scores{s2}(p) = sum(rank1 == rank2) / length(rank1);
+                    end
+                else
+                    scores{s2}(p) = 0;
+                end
+            end
+        end
+    end
+end
+
+function problemTxt = getText(problemPaths)
+    for p = numel(problemPaths):-1:1
+        if isempty(problemPaths{p})
+            problemTxt{p} = cell(1, 2);
+        else
+            fid = fopen(problemPaths{p}, 'rt');
+            code = char(fread(fid)');
+            fclose(fid);
+            tree = mtree(code);
+            tmp = strsplit(code, newline, 'CollapseDelimiters', false);
+            % remove comments
+            problemTxt{p}{1} = ...
+                strjoin(tmp(unique(tree.getlastexecutableline)), newline);
+            problemTxt{p}{2} = java.lang.String(code).hashCode;
+        end
+    end
 end

@@ -59,6 +59,7 @@ classdef Student < handle
         feedbacks = {};
         isGraded = false;
         grade;
+        problemPaths;
     end
     properties (Access=private)
         html = {};
@@ -167,7 +168,16 @@ classdef Student < handle
             % Get all submissions
             subs = dir([path filesep '*.m']);
             this.submissions = {subs.name};
-
+            
+            paths = cell(1, numel(this.resources.Problems));
+            for p = 1:numel(this.resources.Problems)
+                prob = this.resources.Problems(p);
+                % see if found
+                if any(strcmp(this.submissions, [prob.name '.m']))
+                    paths{p} = [path filesep prob.name '.m'];
+                end
+            end
+            this.problemPaths = paths;
             % ID is folder name:
             [~, this.id, ~] = fileparts(path);
             this.path = path;
@@ -226,7 +236,7 @@ classdef Student < handle
                 for t = numel(prob.testCases):-1:1
                     % check if even submitted
                     feeds(counter) = Feedback(prob.testCases(t), this.path);
-                    if any(strncmp(prob.name, this.submissions, length(prob.name)))
+                    if any(strcmp([prob.name '.m'], this.submissions))
                         isRunnable(counter) = true;
                     else
                         isRunnable(counter) = false;
