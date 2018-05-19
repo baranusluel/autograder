@@ -33,6 +33,7 @@ function exportCheaters(students, cheaters, scores, problems, path, progress)
     mask = false(1, numel(students));
     for s = numel(students):-1:1
         sPath = [pwd filesep students(s).id];
+        prettyName = [students(s).name ' (' students(s).id ')'];
         % construct names & paths
         for p = numel(problems):-1:1
             if isempty(cheaters{s}{p})
@@ -48,7 +49,7 @@ function exportCheaters(students, cheaters, scores, problems, path, progress)
         if ~all(cellfun(@isempty, names))
             mask(s) = true;
         end
-        workers(s) = parfeval(@exportStudent, 0, sPath, problems, names, paths, cScores);
+        workers(s) = parfeval(@exportStudent, 0, sPath, problems, names, paths, cScores, prettyName);
         progress.Value = min([progress.Value + 1/numel(students), 1]);
     end
     
@@ -83,7 +84,7 @@ function exportCheaters(students, cheaters, scores, problems, path, progress)
     cd(orig);
 end
 
-function exportStudent(studentPath, problems, names, paths, scores)
+function exportStudent(studentPath, problems, names, paths, scores, prettyName)
     % for each problem in problems, export the files
     [~, myName, ~] = fileparts(studentPath);
     mkdir(studentPath);
@@ -97,7 +98,6 @@ function exportStudent(studentPath, problems, names, paths, scores)
                 copyfile(paths{p}{f}, [names{p}{2, f} '.m']);
             end
             % get real myName
-            prettyName = [strjoin(names{p}(:, strcmp(names{p}(2, :), myName)), ' (') ')'];
             names{p}(:, strcmp(names{p}(2, :), myName)) = [];
             cd('..');
         end
