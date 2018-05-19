@@ -1,4 +1,4 @@
-%% downloadFromCanvas: Download the ZIP archive from Canvas
+%% downloadFromCanvas: Download the submission archive from Canvas
 %
 % downloadFromCanvas will download the given assignment to be parsed by the
 % autograder
