@@ -524,16 +524,20 @@ classdef Plot < handle
             end
 
 
-            if ~isequal(this.Position,that.Position)
+            if ~isequal(this.Position, that.Position)
                 areEqual = false;
                 return;
             end
 
-            if ~isequal(this.PlotBox,that.PlotBox)
+            if ~isequal(this.PlotBox, that.PlotBox)
                 areEqual = false;
                 return;
             end
-
+            
+            if ~isequal(this.Limits, that.Limits)
+                areEqual = false;
+                return;
+            end
             thisStruct = struct('XData', this.XData, 'YData', this.YData,...
                 'ZData', this.ZData, 'Color', this.Color, 'Legend', this.Legend,...
                 'Marker', this.Marker, 'LineStyle', this.LineStyle);
