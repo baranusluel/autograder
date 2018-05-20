@@ -1,57 +1,46 @@
 %% Valid Student
 %
-% Given a valid PATH to a student folder containing submissions
-% (with filenames FILE1, FILE2, ...):
-%
-%   NAME = 'Hello';
-%   this = Student(PATH, NAME);
-%
-%   this.name -> "Hello"
-%   this.id -> Student's GT username (from name of folder)
-%   this.path -> PATH;
-%   this.submissions -> ["FILE1", "FILE2", ...];
-%   this.feedbacks -> Feedback[];
-%   this.isGraded -> false;
-function [passed, message] = test()
-
-    name = 'Hello';
-    id = 'tuser3';
-    p = [pwd filesep id];
+% Given a valid student folder, this will successfully create that student.
+function [passed, msg] = test()
+    % get solutions
+    progress.CancelRequested = false;
+    cd('Solutions');
+    solutions = generateSolutions(false, progress);
+    cd('..');
+    % create student
+    recs = Student.resources;
+    recs.Problems = solutions;
+    
+    NAME = 'Test User';
+    PATH = [pwd filesep 'tuser3'];
+    NUM_SUBMISSIONS = 2;
     try
-        S = Student(p, name);
-    catch e
+        S = Student([pwd filesep 'tuser3'], NAME);
+    catch reason
         passed = false;
-        message = sprintf('Exception Thrown: %s (%s)', e.identifier, e.message);
+        msg = sprintf('Expected Success; got %s - "%s"', reason.identifier, ...
+            reason.message);
         return;
     end
-    % check S
-    if ~strcmp(S.name, name)
+    if ~strcmp(NAME, S.name)
         passed = false;
-        message = sprintf('Incorrect name; expected %s, got %s', name, S.name);
+        msg = sprintf('Expected name %s; got %s', NAME, S.name);
         return;
-    elseif ~strcmp(S.id, id)
+    elseif ~strcmp(PATH, S.path)
         passed = false;
-        message = sprintf('Incorrect ID; expected %s, got %s', id, S.id);
+        msg = sprintf('Expected path %s; got "%s"', PATH, S.path);
         return;
-    elseif ~strcmp(S.path, p)
+    elseif numel(S.submissions) ~= NUM_SUBMISSIONS
         passed = false;
-        message = sprintf('Path not set correctly; expected "%s", got "%s"', p, S.path);
+        msg = sprintf('Expected %d subissions; got %d instead', NUM_SUBMISSIONS, numel(S.submissions));
         return;
-    elseif S.isGraded
+    elseif ~any(contains(S.submissions, 'helloWorld')) || ~any(contains(S.submissions, 'myFun'))
         passed = false;
-        message = 'isGraded set to true, when should be false';
+        msg = 'Incorrect files found; expected "helloWorld" and "myFun"';
         return;
-    elseif ~isempty(S.feedbacks)
-        passed = false;
-        message = 'feedbacks not empty, when should be empty';
+    else
+        passed = true;
+        msg = 'Student successfully constructed';
         return;
     end
-    % check all files
-    files = {'helloWorld.m', 'myFun.m'};
-    [passed, message] = studentFileChecker(files, S.submissions);
-    if ~passed
-        return;
-    end
-    message = 'Student correctly constructed';
-    passed = true;
 end
