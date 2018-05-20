@@ -42,6 +42,8 @@
 % * LineStyle: A cell array containing the character uses as a marker in
 % the line
 %
+% * Limits: A 1x6 double vector representing the axes limits
+%
 %%% Methods
 %
 % * Plot
@@ -74,6 +76,7 @@ classdef Plot < handle
         Color;
         Marker;
         LineStyle;
+        Limits;
     end
     properties (Access=private)
         isAlien logical = false;
@@ -145,6 +148,7 @@ classdef Plot < handle
             this.ZLabel = pHandle.ZLabel.String;
             this.Position = pHandle.Position;
             this.PlotBox = pHandle.PlotBoxAspectRatio;
+            this.Limits = [pHandle.XLim, pHandle.YLim, pHandle.ZLim];
             
             tmp = figure();
             par = pHandle.Parent;
