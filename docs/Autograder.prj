@@ -1,0 +1,117 @@
+<deployment-project plugin="plugin.apptool" plugin-version="1.0">
+  <configuration build-checksum="471468150" file="prj" location="loc" name="Autograder" target="target.mlapps" target-name="Package App">
+    <param.appname>Autograder</param.appname>
+    <param.authnamewatermark>CS 1371 Software Development</param.authnamewatermark>
+    <param.email>arao81@gatech.edu</param.email>
+    <param.company>Georgia Institute of Technology</param.company>
+    <param.icon>${PROJECT_ROOT}\Autograder_resources\icon_24.png</param.icon>
+    <param.icons>
+      <file>${PROJECT_ROOT}\Autograder_resources\icon_48.png</file>
+      <file>${PROJECT_ROOT}\Autograder_resources\icon_24.png</file>
+      <file>${PROJECT_ROOT}\Autograder_resources\icon_16.png</file>
+    </param.icons>
+    <param.summary>Automatically Grade Homework Submissions for CS 1371</param.summary>
+    <param.description>&lt;b&gt;Autograder&lt;/b&gt;
+&lt;br /&gt;
+The autograder will automatically grade submissions and provide meaningful feedback to students. It takes in the student submissions, solution files, rubrics, and any supporting files, and will return the feedback. In many cases, uploading files is also taken care of, meaning that the user only needs to start it up!
+
+If you're looking for documentation, click &lt;a href="https://github.gatech.edu/pages/CS1371/autograder/"&gt;here&lt;/a&gt;
+&lt;br /&gt;
+&lt;b&gt;Acknowledgements&lt;/b&gt;
+&lt;br /&gt;
+This product was a labor of love from the CS 1371 Software Development Team. You can check us out &lt;a href="https://github.gatech.edu/pages/CS1371/software-development/"&gt;here&lt;/a&gt;. Want to contribute? Fork us on &lt;a href="https://github.gatech.edu/CS1371/autograder"&gt;GitHub&lt;/a&gt;</param.description>
+    <param.screenshot>${PROJECT_ROOT}\resources\images\brand.jpg</param.screenshot>
+    <param.version>0.1.0</param.version>
+    <param.products.name>
+      <item>MATLAB</item>
+      <item>Parallel Computing Toolbox</item>
+    </param.products.name>
+    <param.products.id>
+      <item>1</item>
+      <item>80</item>
+    </param.products.id>
+    <param.products.version>
+      <item>9.4</item>
+      <item>6.12</item>
+    </param.products.version>
+    <param.platforms />
+    <param.output>${PROJECT_ROOT}\bin</param.output>
+    <param.guid>f89e3d97-7398-4d50-8d2b-9641bdb05318</param.guid>
+    <unset>
+      <param.platforms />
+      <param.output />
+    </unset>
+    <fileset.main>
+      <file>${PROJECT_ROOT}\modules\userInterface\Autograder.mlapp</file>
+    </fileset.main>
+    <fileset.depfun />
+    <fileset.resources>
+      <file>${PROJECT_ROOT}\modules\dataConversion</file>
+      <file>${PROJECT_ROOT}\modules\grader</file>
+      <file>${PROJECT_ROOT}\modules\networking</file>
+      <file>${PROJECT_ROOT}\modules\runner</file>
+      <file>${PROJECT_ROOT}\modules\userInterface</file>
+    </fileset.resources>
+    <fileset.package />
+    <build-deliverables>
+      <file location="loc" name="bin" optional="false">name</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2018a</root>
+      <toolboxes>
+        <toolbox name="fixedpoint" />
+        <toolbox name="matlabcoder" />
+        <toolbox name="matlabhdlcoder" />
+        <toolbox name="embeddedcoder" />
+        <toolbox name="gpucoder" />
+        <toolbox name="polyspacebugfinder" />
+      </toolboxes>
+      <toolbox>
+        <fixedpoint>
+          <enabled>true</enabled>
+        </fixedpoint>
+      </toolbox>
+      <toolbox>
+        <matlabcoder>
+          <enabled>true</enabled>
+        </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <matlabhdlcoder>
+          <enabled>true</enabled>
+        </matlabhdlcoder>
+      </toolbox>
+      <toolbox>
+        <embeddedcoder>
+          <enabled>true</enabled>
+        </embeddedcoder>
+      </toolbox>
+      <toolbox>
+        <gpucoder>
+          <enabled>true</enabled>
+        </gpucoder>
+      </toolbox>
+      <toolbox>
+        <polyspacebugfinder>
+          <enabled>true</enabled>
+        </polyspacebugfinder>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>10.0</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>

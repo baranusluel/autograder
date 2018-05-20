@@ -1,7 +1,0 @@
-Function Name: getMessages.m
-Inputs: homeworkZipFilePath* - a string representing the path to the T-Square bulk download
-        rubricZipFilePath* - a string representing the path to the hwrelease download from the Homework Team Drive.
-        destinationFolderPath* - a string representing the path to your destination folder.
-Outputs:
-Specific Uses:
-Description: This is the entry function for the autograder. All functions can eventually trace their caller to runAutograder.m. This function catches all errors and prints them back out onto the console, so that the runner may try to fix it.
