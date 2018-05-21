@@ -410,8 +410,13 @@ classdef Student < handle
             end
             % get comment grades
             for w = numel(workers):-1:1
-                commentGrades(w) = workers(w).fetchOutputs();
+                if ~contains(problems(w).name, 'ABCs')
+                    commentGrades(w) = workers(w).fetchOutputs();
+                else
+                    commentGrades(w) = 0;
+                end
             end
+            delete(workers);
             this.commentGrades = commentGrades;
             this.generateFeedback();
         end
@@ -598,10 +603,9 @@ classdef Student < handle
             %   Pts Possible
             %   Pts Earned
             table = {'<table class="table table-striped table-bordered table-hover">', ...
-                '<thead>', '<tr>' '<th>', '', '</th>', ...
-                '<th>', 'Problem', '</th>', '<th>', 'Points Earned', ...
-                '</th>', '<th>', 'Points Possible', '</th>', ...
-                '<th>', 'Comment Points (EC)', '</th>', '</tr>', ...
+                '<thead>', '<tr>' '<th>', '#', '</th>', ...
+                '<th>', 'Problem', '</th>', '<th>', 'Points Earned (Plus Comments)', ...
+                '</th>', '<th>', 'Points Possible', '</th>', '</tr>', ...
                 '</thead>', '</table>'};
 
             totalPts = 0;
@@ -613,9 +617,9 @@ classdef Student < handle
                 num = {'<td>', '<p>', num2str(i), '</p>', '</td>'};
                 name = {'<td>', '<p>', this.resources.Problems(i).name, '</p>', '</td>'};
                 poss = {'<td>', '<p>', sprintf('%0.1f', sum([tCases.points])), '</p>', '</td>'};
-                earn = {'<td>', '<p>', sprintf('%0.1f', sum([feeds.points])), '</p>', '</td>'};
-                comm = {'<td>', '<p>', sprintf('%0.1f', this.commentGrades(i)), '</p>', '</td>'};
-                row = [{['<tr class="problem-row" data-href="#problem' num2str(i) '">']}, num, name, earn, poss, comm, {'</a>', '</tr>'}];
+                earn = {'<td>', '<p>', sprintf('%0.1f (+%0.1f)', sum([feeds.points]), this.commentGrades(i)), '</p>', '</td>'};
+                
+                row = [{['<tr class="problem-row" data-href="#problem' num2str(i) '">']}, num, name, earn, poss, {'</a>', '</tr>'}];
                 appendRow(row);
 
                 totalPts = totalPts + sum([tCases.points]);
@@ -623,7 +627,7 @@ classdef Student < handle
             end
 
             % Add totals row
-            totals = {'<tr>', '<td>', '</td>', '<td>', '</td>', ...
+            totals = {'<tr>', '<td>', '</td>', ...
                 '<td>', '<strong>Total</strong>', '</td>', '<td>', ...
                 '<p>', sprintf('%0.1f', totalEarn), '</p>', '</td>', '<td>', ...
                 '<p>', sprintf('%0.1f', totalPts), '</p>', '</td>', '</tr>'};
