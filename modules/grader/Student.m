@@ -257,7 +257,7 @@ classdef Student < handle
             end
             feeds(isRunnable) = engine(feeds(isRunnable));
             % while we fill out feedbacks, grade comments
-            for p = 1:numel(problems)
+            for p = numel(problems):-1:1
                 workers(p) = parfeval(@gradeComments, 1, this.problemPaths{p});
             end
             % fill out feedbacks
