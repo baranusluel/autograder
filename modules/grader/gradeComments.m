@@ -53,6 +53,10 @@ function points = gradeComments(file, dict)
     % Minimum # of comments. Must be greater than 1
     MIN_LINE_NUM = 2;
     
+    if isempty(file)
+        points = 0;
+        return;
+    end
     fid = fopen(file, 'rt');
     code = char(fread(fid)');
     fclose(fid);
