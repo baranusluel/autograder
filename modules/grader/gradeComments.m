@@ -28,11 +28,13 @@ function points = gradeComments(file, dict)
     FMT = ' %s ';
     persistent dictionary;
     if nargin == 1
-        dict = [fileparts(mfilename('fullpath')) filesep 'dictionary.mat'];
+        dict = [fileparts(mfilename('fullpath')) filesep 'dictionary.txt'];
     end
     if isempty(dictionary)
-        dictionary = load(dict);
-        dictionary = dictionary.dictionary;
+        fid = fopen(dict, 'rt');
+        dictionary = strsplit(char(fread(fid)'), newline);
+        dictionary(cellfun(@isempty, dictionary)) = [];
+        fclose(fid);
         dictionary = compose(FMT, string(dictionary));
     end
     
