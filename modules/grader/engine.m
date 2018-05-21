@@ -426,6 +426,7 @@ function runnable = runCase(runnable)
     % create sentinel file
     fid = fopen(File.SENTINEL, 'w');
     try
+        rng(1);
         [outs{:}] = runner(func, init, inNames, tCase.inputs);
     catch e
         if isa(runnable, 'TestCase')
