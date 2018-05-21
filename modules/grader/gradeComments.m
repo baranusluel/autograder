@@ -61,12 +61,11 @@ function points = gradeComments(file, dict)
     code = char(fread(fid)');
     fclose(fid);
     % get rid of blank lines
-    code = strsplit(code, newline, 'CollapseDelimiters', true);
-    code = strjoin(code, newline);
+    lines = strsplit(code, newline, 'CollapseDelimiters', true);
+    code = strjoin(lines, newline);
     
     data = mtree(code);
     inds = unique(data.getlastexecutableline);
-    lines = strsplit(code, newline, 'CollapseDelimiters', false);
     codeLines = false(1, numel(lines));
     codeLines(inds) = true;
     commLines = true(1, numel(lines));
@@ -81,7 +80,9 @@ function points = gradeComments(file, dict)
     avgSpread = mean(diff(spreadLines));
     % assign these points
     dist = abs(avgSpread - IDEAL_COMM_DIST);
-    if dist <= MAX_COMM_DIST
+    if avgSpread <= IDEAL_COMM_DIST
+        points = MAX_SPRD_POINTS;
+    elseif dist <= MAX_COMM_DIST
         points = MAX_SPRD_POINTS * (1 - (dist / MAX_COMM_DIST));
     else
         points = 0;
@@ -91,13 +92,13 @@ function points = gradeComments(file, dict)
     if sum(codeLines) == 0
         return;
     end
-    ratio = sum(commLines) / sum(codeLines);
+    ratio = sum(commLines) / numel(lines);
     
-    % if ratio is less than ideal, then cap @ 50% of points.
     if ratio < IDEAL_LINE_RATIO
-        MAX_LINE_POINTS = 0.5 * MAX_LINE_POINTS;
+        dist = abs(ratio - IDEAL_LINE_RATIO) / IDEAL_LINE_RATIO;
+    else
+        dist = 0;
     end
-    dist = abs(ratio - IDEAL_LINE_RATIO) / abs(ratio + IDEAL_LINE_RATIO);
     points = points + MAX_LINE_POINTS * (1 - dist);
         
     lines(codeLines) = [];
@@ -115,7 +116,7 @@ function points = gradeComments(file, dict)
     if ratio >= IDEAL_WORD_RATIO
         points = points + MAX_DICT_POINTS;
     else
-        dist = abs(ratio - IDEAL_WORD_RATIO) / abs(ratio + IDEAL_WORD_RATIO);
+        dist = abs(ratio - IDEAL_WORD_RATIO) / IDEAL_WORD_RATIO;
         points = points + MAX_DICT_POINTS * (1 - dist);
     end
 end
