@@ -180,6 +180,16 @@ classdef Plot < handle
                     this.isAlien = true;
                 end
             end
+            if isempty(lines)
+                this.XData = {};
+                this.YData = {};
+                this.ZData = {};
+                this.Legend = {};
+                this.Color = {};
+                this.Marker = {};
+                this.LineStyle = {};
+                return;
+            end
             xcell = {lines.XData};
             ycell = {lines.YData};
             zcell = {lines.ZData};
