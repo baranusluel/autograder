@@ -60,6 +60,7 @@ classdef Student < handle
         isGraded = false;
         grade;
         problemPaths;
+        commentGrades;
     end
     properties (Access=private)
         html = {};
@@ -178,6 +179,7 @@ classdef Student < handle
                 end
             end
             this.problemPaths = paths;
+            this.commentGrades = zeros(1, numel(paths));
             % ID is folder name:
             [~, this.id, ~] = fileparts(path);
             this.path = path;
@@ -231,6 +233,7 @@ classdef Student < handle
             counter = numel([problems.testCases]);
             inds = zeros(1, counter);
             isRecursive = false(1, counter);
+            isSubmitted = false(1, numel(problems));
             for p = numel(problems):-1:1
                 prob = problems(p);
                 for t = numel(prob.testCases):-1:1
@@ -238,6 +241,7 @@ classdef Student < handle
                     feeds(counter) = Feedback(prob.testCases(t), this.path);
                     if any(strcmp([prob.name '.m'], this.submissions))
                         isRunnable(counter) = true;
+                        isSubmitted(p) = true;
                     else
                         isRunnable(counter) = false;
                         e = MException('AUTOGRADER:Student:fileNotSubmitted', ...
@@ -252,6 +256,10 @@ classdef Student < handle
                 end
             end
             feeds(isRunnable) = engine(feeds(isRunnable));
+            % while we fill out feedbacks, grade comments
+            for p = numel(problems):-1:1
+                workers(p) = parfeval(@gradeComments, 1, this.problemPaths{p});
+            end
             % fill out feedbacks
             for i = 1:numel(feeds)
                 feedback = feeds(i);
@@ -400,6 +408,16 @@ classdef Student < handle
             for p = 1:numel(problems)
                 this.feedbacks{p} = feeds(inds == p);
             end
+            % get comment grades
+            for w = numel(workers):-1:1
+                if ~contains(problems(w).name, 'ABCs')
+                    commentGrades(w) = workers(w).fetchOutputs();
+                else
+                    commentGrades(w) = 0;
+                end
+            end
+            delete(workers);
+            this.commentGrades = commentGrades;
             this.generateFeedback();
         end
     end
@@ -585,8 +603,8 @@ classdef Student < handle
             %   Pts Possible
             %   Pts Earned
             table = {'<table class="table table-striped table-bordered table-hover">', ...
-                '<thead>', '<tr>' '<th>', '', '</th>', ...
-                '<th>', 'Problem', '</th>', '<th>', 'Points Earned', ...
+                '<thead>', '<tr>' '<th>', '#', '</th>', ...
+                '<th>', 'Problem', '</th>', '<th>', 'Points Earned (Plus Comments)', ...
                 '</th>', '<th>', 'Points Possible', '</th>', '</tr>', ...
                 '</thead>', '</table>'};
 
@@ -599,17 +617,18 @@ classdef Student < handle
                 num = {'<td>', '<p>', num2str(i), '</p>', '</td>'};
                 name = {'<td>', '<p>', this.resources.Problems(i).name, '</p>', '</td>'};
                 poss = {'<td>', '<p>', sprintf('%0.1f', sum([tCases.points])), '</p>', '</td>'};
-                earn = {'<td>', '<p>', sprintf('%0.1f', sum([feeds.points])), '</p>', '</td>'};
-
+                earn = {'<td>', '<p>', sprintf('%0.1f (+%0.1f)', sum([feeds.points]), this.commentGrades(i)), '</p>', '</td>'};
+                
                 row = [{['<tr class="problem-row" data-href="#problem' num2str(i) '">']}, num, name, earn, poss, {'</a>', '</tr>'}];
                 appendRow(row);
 
                 totalPts = totalPts + sum([tCases.points]);
-                totalEarn = totalEarn + sum([feeds.points]);
+                totalEarn = totalEarn + sum([feeds.points]) + this.commentGrades(i);
             end
 
             % Add totals row
-            totals = {'<tr>', '<td>', '</td>', '<td>', '<strong>Total</strong>', '</td>', '<td>', ...
+            totals = {'<tr>', '<td>', '</td>', ...
+                '<td>', '<strong>Total</strong>', '</td>', '<td>', ...
                 '<p>', sprintf('%0.1f', totalEarn), '</p>', '</td>', '<td>', ...
                 '<p>', sprintf('%0.1f', totalPts), '</p>', '</td>', '</tr>'};
             appendRow(totals);
