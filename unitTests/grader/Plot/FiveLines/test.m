@@ -50,3 +50,4 @@ function [passed, msg] = test()
         msg = 'Successfully created plot';
         return;
     end
+end
