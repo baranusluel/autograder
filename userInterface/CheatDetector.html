@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>
+Cheat Detection
+</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<style>
+pre.bg-light {
+    border-radius: 5%;
+}
+pre.bg-light {
+    padding-left: 15px;
+}
+</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="container-fluid">
+<div class="row">
+<div class="col-12">
+<h1>
+Cheat Detection
+</h1>
+<p>
+ The goal is to flag students whose code looks similar to others' code. Then, the user should be able to view the detection results, and see what students likely cheated (copied) code from one another.
+</p>
+<h2>
+Tools
+</h2>
+<p>
+ To detect code similarity, we'll use the <strong>l</strong>ocale <strong>s</strong>ensitive <strong>h</strong>ash, or <strong>LSH</strong>. It is a type of hashing algorithm that aims to encourage collisions for similar data.
+</p>
+<h2>
+Interaction with user
+</h2>
+<p>
+ The user should be able to select before grading whether or not they want to test for cheating. If they do, at the end of grading, they should be presented with a report that details how similar two students' code was.
+</p>
+<h2>
+Implementation Notes
+</h2>
+<ul>
+<li>
+<p>
+[ ] Regardless of whether or not cheating detection was asked for, we should still collect the raw data - so that in the future, a person who had the right .mat file could theoretically rerun the report.
+</p>
+</li>
+<li>
+<p>
+[ ] There should be a way for the user to run cheating detection on a student array, even if not currently grading
+</p>
+</li>
+</ul>
+<h2>
+Possible UI Idea
+</h2>
+<p>
+ The user could be presented with a screen that used the <code class="bg-light">uitree</code> and friends. Each student would be in a list (we could provide a search functionality), and it would have their name, ID, and likelihood of cheating. Selecting a student would populate a <code class="bg-light">uitree</code> with nodes for each submitted HW. Expanding each HW would show who they were most similar to (within a certain margin). Additionally, when selected, a text area at the top would populate and say "this student's homework was similar to x's, y's, ..., and z's homework. See below for details".
+</p>
+<p>
+ Additionally, the user should be able to push a button and compare two students fully, seeing if it is likely they cheated.
+</p>
+</div>
+</div>
+</div>
+</body>
+</html>
