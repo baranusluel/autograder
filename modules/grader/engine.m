@@ -263,7 +263,7 @@ function runnables = engine(runnables)
             if isTestCase
                 loads = cell(size(tCase.loadFiles));
                 for l = 1:numel(tCase.loadFiles)
-                    loads{l} = load(tCase.loadFiles{l}); % hello
+                    loads{l} = load(tCase.loadFiles{l});
                 end
                 numVars = 0;
                 for l = 1:numel(loads)
