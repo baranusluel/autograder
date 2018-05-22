@@ -23,6 +23,8 @@
 %
 % * exception: The MException raised by the student's code.
 %
+% * isRecursive: True if the student's code was recursive
+%
 %%% Methods
 %
 % * Feedback

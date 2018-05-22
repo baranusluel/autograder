@@ -21,8 +21,6 @@
 % * feedbacks: A cell array of Feedback arrays. Each cell is a Feedback
 % array representing all test cases for a specific problem.
 %
-% * isGraded: A logical that indicates whether a student has been graded
-%
 % * grade: The overall score for this student (read-only)
 %
 %%% Methods
@@ -57,7 +55,6 @@ classdef Student < handle
         path;
         submissions;
         feedbacks = {};
-        isGraded = false;
         grade;
         problemPaths;
         commentGrades;
@@ -581,7 +578,6 @@ classdef Student < handle
             html = strjoin(this.html, newline);
             fwrite(fid, html);
             fclose(fid);
-            this.isGraded = true;
         end
         % Splice elements to the end of HEAD
         function spliceHead(this, varargin)
