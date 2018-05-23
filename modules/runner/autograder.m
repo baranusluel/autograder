@@ -372,7 +372,7 @@ function autograder(app)
             recSource = [fileparts(mfilename('fullpath')) filesep 'resources'];
             mkdir('resources');
             copyfile(recSource, [pwd filesep 'resources']);
-            CheatDetector(students, solutions, scores);
+            CheatDetector(students, solutions, scores, settings.workingDir);
         catch e
             if app.isDebug
                 keyboard;
@@ -463,8 +463,10 @@ function cleanup(settings)
     % cd to user's dir
     cd(settings.userDir);
     Logger.log('Removing Working Directory');
-    % Delete our working directory
-    [~] = rmdir(settings.workingDir, 's');
+    % Delete our working directory - UNLESS cheat detection is on!
+    if ~settings.app.AnalyzeForCheating.Value
+        [~] = rmdir(settings.workingDir, 's');
+    end
     if isvalid(settings.progress)
         close(settings.progress);
     end
