@@ -358,7 +358,7 @@ function runnables = engine(runnables)
 end
 
 function populateFiles(runnable, beforeSnap)
-    afterSnap = dir();
+    afterSnap = dir(runnable.path);
     afterSnap = {afterSnap.name};
     afterSnap(strncmp(afterSnap, '.', 1)) = [];
 
