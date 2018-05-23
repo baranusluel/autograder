@@ -82,6 +82,18 @@ try
 
         % Put all testcases in a cell array
         allTestCases = {solutions.testCases};
+        % delete any files NOT referenced by any test case
+        saveFiles = arrayfun(@(t)([t.supportingFiles{:}, t.loadFiles{:}]), [allTestCases{:}], 'uni', false);
+        % for each file in folder supporting, if not contained in
+        % saveFiles, delete
+        checkFiles = dir([pwd filesep 'SupportingFiles' filesep]);
+        checkFiles(strncmp({checkFiles.name}, '.', 1)) = [];
+        for c = 1:numel(checkFiles)
+            if ~any(contains([checkFiles(c).folder filesep checkFiles(c).name], saveFiles))
+                % delete
+                delete([checkFiles(c).folder filesep checkFiles(c).name]);
+            end
+        end
         % Create vector of indices, s.t. every TestCase when vectorized
         % will have a corresponding index for a Problem
         testCaseIndx = cellfun(@(tc,idx) idx*ones(1,numel(tc)), ...
@@ -95,6 +107,7 @@ try
         for i = 1:elements
             solutions(i).testCases = allTestCases(testCaseIndx == i);
         end
+        
     else
         mE = MException('AUTOGRADER:generateSolutions:invalidInput','The input is not of type logical for isResubmission.');
         throw(mE);
