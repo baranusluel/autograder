@@ -108,7 +108,12 @@ function uploadToServer(students, user, pass, hwName, progress)
     delete(newResubName);
     
     % zip supporting files
-    zip([pwd filesep hwName filesep 'Supporting.zip'], ...
+    if contains(hwName, 'resubmission')
+        name = 'Supporting_Resub.zip';
+    else
+        name = 'Supporting.zip';
+    end
+    zip([pwd filesep hwName filesep name], ...
         [pwd filesep hwName filesep 'SupportingFiles' filesep '*']);
     [~] = rmdir([pwd filesep hwName filesep 'SupportingFiles'], 's');
     % folder is ready to upload; upload it!
