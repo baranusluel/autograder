@@ -136,7 +136,7 @@ function uploadToServer(students, user, pass, hwName, progress)
     fwrite(fid, csv);
     fclose(fid);
     sftp.put([pwd filesep 'grades.csv'], ['/httpdocs/homework_files/' hwName '/grades.csv']);
-    
+    delete('grades.csv');
     % create JSON for names
     ids = {students.id};
     names = {students.name};

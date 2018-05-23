@@ -39,11 +39,11 @@ function points = gradeComments(file, dict)
     end
     
     % Max # of points to be assigned for # of comment lines
-    MAX_LINE_POINTS = 5;
+    MAX_LINE_POINTS = .5;
     % Max # of points to be assigned for words appearing in dictionary
-    MAX_DICT_POINTS = 3;
+    MAX_DICT_POINTS = .3;
     % Max # of points to be assigned for spread
-    MAX_SPRD_POINTS = 2;
+    MAX_SPRD_POINTS = .2;
     % Ideal ratio for lines of comments to lines of code:
     IDEAL_LINE_RATIO = 1/3;
     % Ideal ratio of in-dictionary words to overall # of words
