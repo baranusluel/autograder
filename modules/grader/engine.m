@@ -223,7 +223,6 @@ function runnables = engine(runnables)
         copyfile([runnable.path filesep '*.m'], fld);
         origPaths{r} = runnable.path;
         runnable.path = fld;
-        origPath = cd(fld);
 
         % parse the function call
         [~, ~, func] = parseFunction(tCase.call);
@@ -232,8 +231,8 @@ function runnables = engine(runnables)
         if ~isTestCase
             try
                 runnable.isRecursive = ...
-                    checkRecur(getcallinfo([func2str(func) '.m']),...
-                    func2str(func));
+                    checkRecur(getcallinfo([origPaths{r} filesep func2str(func) '.m']),...
+                    func2str(func), runnable.path);
             catch e
                 if isa(runnable, 'Feedback')
                     runnable.exception = e;
@@ -244,7 +243,7 @@ function runnables = engine(runnables)
         end
         % check banned usage
         if isTestCase || isempty(runnable.exception)
-            if checkBanned([func2str(func) '.m'], [BANNED tCase.banned(:)'])
+            if checkBanned([func2str(func) '.m'], [BANNED tCase.banned(:)'], origPaths{r})
                 if ~isTestCase
                     runnable.exception = MException('AUTOGRADER:engine:banned', ...
                         'File used banned function');
@@ -289,7 +288,6 @@ function runnables = engine(runnables)
                 runnable = tCase;
             end
         end
-        cd(origPath);
         runnables(r) = runnable;
     end
     % done with parfor - now run all the cases!
@@ -398,9 +396,8 @@ end
 function runnable = runCase(runnable)
     % Setup workspace
     % is this supposed to be here?  -->     cleanup();
-    orig = cd(runnable.path);
-    cleaner = onCleanup(@() cleanup(orig));
-    beforeSnap = dir();
+    currDir = pwd;
+    beforeSnap = dir(runnable.path);
     beforeSnap = {beforeSnap.name};
     beforeSnap(strncmp(beforeSnap, '.', 1)) = [];
     if isa(runnable, 'TestCase')
@@ -427,18 +424,21 @@ function runnable = runCase(runnable)
     fid = fopen(File.SENTINEL, 'w');
     try
         rng(1);
+        cd(runnable.path);
         [outs{:}] = runner(func, init, inNames, tCase.inputs);
     catch e
+        cleanup(currDir);
         if isa(runnable, 'TestCase')
-            fclose(fid);
-            rethrow(e);
+            e.rethrow();
         else
             me = MException('AUTOGRADER:studentCodeError', ...
                 'Student Code Errored');
             me = me.addCause(e);
             runnable.exception = me;
+            return;
         end
     end
+    builtin('cd', currDir);
     name = fopen(fid);
     fclose(fid);
     if ~strcmp(name, File.SENTINEL)
@@ -455,6 +455,7 @@ function runnable = runCase(runnable)
     end
     populateFiles(runnable, beforeSnap);
     populatePlots(runnable);
+    cleanup();
 end
 
 function varargout = runner(func____, init____, ins, loads____)
@@ -585,17 +586,20 @@ function [ins, outs, func] = parseFunction(call)
 end
 
 function cleanup(origPath)
+    if builtin('nargin') > 0
+        currDir = builtin('cd', origPath);
+        [~] = rmdir(currDir, 's');
+    end
     % check if runnable is TestCase or Feedback
     fclose('all');
     
     h = findall(0, 'type', 'figure');
-    close(h);
+    close(h, 'force');
     delete(h);
     % cd up so our folder can be deleted
-    [~] = rmdir(cd(origPath), 's');
 end
 
-function isRecurring = checkRecur(callInfo, main, stack)
+function isRecurring = checkRecur(callInfo, main, path, stack)
     % Check if this function calls itself. If so, exit true.
     % If not, check all functions it calls:
     %   If the call is to a builtin, don't investigate
@@ -613,7 +617,7 @@ function isRecurring = checkRecur(callInfo, main, stack)
     %       b: stack is {'a', 'b', 'c'};
     %       @ a->b->c->b, 'b' is current name AND in stack, so return true!
     
-    if nargin < 3
+    if nargin < 4
         stack = {};
     end
 
@@ -635,7 +639,7 @@ function isRecurring = checkRecur(callInfo, main, stack)
     % look at all functions in callInfo that aren't us
     calls = callInfo(~strcmp({callInfo.name}, main));
     for i = 1:numel(calls)
-        if checkRecur(calls(i), calls(i).name, stack)
+        if checkRecur(calls(i), calls(i).name, path, stack)
             isRecurring = true;
             return;
         end
@@ -652,13 +656,13 @@ function isRecurring = checkRecur(callInfo, main, stack)
     % Iterate over external calls.
     external = mainCall.calls.fcnCalls.names;
     % check local directory for filenames. If not there, builtin!
-    possCalls = dir('**/*.m');
+    possCalls = dir([path filesep '*.m']);
     possCalls = cellfun(@(n)(n(1:(end-2))), {possCalls.name}, 'uni', false);
     for i = 1:numel(external)
         % if external isn't found anywhere in possCalls, don't engage
         if any(strcmp(external{i}, possCalls))
-            extCallInfo = getcallinfo([external{i} '.m']);
-            if checkRecur(extCallInfo, external{i}, stack)
+            extCallInfo = getcallinfo([path filesep external{i} '.m']);
+            if checkRecur(extCallInfo, external{i}, path, stack)
                 isRecurring = true;
                 return;
             end
@@ -668,21 +672,21 @@ function isRecurring = checkRecur(callInfo, main, stack)
     isRecurring = false;
 end
 
-function isBanned = checkBanned(name, banned)
+function isBanned = checkBanned(name, banned, path)
     isBanned = false;
     % for each call, we should first check that they didn't use any banned names:
-    calls = getcallinfo(name);
+    calls = getcallinfo([path filesep name]);
     for i = 1:numel(calls)
         possibleCalls = [calls(i).calls.fcnCalls];
         possibleCalls = [possibleCalls.names];% inner calls are to helper functions, so no worries there
         % See if ANY banned are found in possibleCalls
         % for each call, see where it exists. If it exists IN THIS FOLDER,
         % then check it recursively
-        culprits = dir('*.m');
+        culprits = dir([path filesep '*.m']);
         culprits = {culprits.name};
         for j = 1:numel(possibleCalls)
             if any(strcmp(possibleCalls{j}(1:end-2), culprits))
-                if checkBanned([possibleCalls{j} '.m'], banned)
+                if checkBanned([possibleCalls{j} '.m'], banned, path)
                     isBanned = true;
                     return;
                 end
@@ -696,7 +700,7 @@ function isBanned = checkBanned(name, banned)
         end
     end
     BANNED_OPS = {'BANG', 'PARFOR', 'SPMD', 'GLOBAL'};
-    info = mtree(name, '-file');
+    info = mtree([path filesep name], '-file');
     for b = 1:numel(BANNED_OPS)
         if info.anykind(BANNED_OPS{b})
             isBanned = true;
