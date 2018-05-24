@@ -353,6 +353,8 @@ function runnables = engine(runnables)
     end
     % reset each runnable
     for r = 1:numel(runnables)
+        % remove path
+        [~] = rmdir(runnables(r).path, 's');
         runnables(r).path = origPaths{r};
     end
 end
@@ -397,6 +399,7 @@ function runnable = runCase(runnable)
     % Setup workspace
     % is this supposed to be here?  -->     cleanup();
     currDir = pwd;
+    cleaner = onCleanup(@()(cleanup(currDir)));
     beforeSnap = dir(runnable.path);
     beforeSnap = {beforeSnap.name};
     beforeSnap(strncmp(beforeSnap, '.', 1)) = [];
@@ -427,7 +430,6 @@ function runnable = runCase(runnable)
         cd(runnable.path);
         [outs{:}] = runner(func, init, inNames, tCase.inputs);
     catch e
-        cleanup(currDir);
         if isa(runnable, 'TestCase')
             e.rethrow();
         else
@@ -455,7 +457,7 @@ function runnable = runCase(runnable)
     end
     populateFiles(runnable, beforeSnap);
     populatePlots(runnable);
-    cleanup();
+    cleanup(currDir);
 end
 
 function varargout = runner(func____, init____, ins, loads____)
@@ -586,17 +588,12 @@ function [ins, outs, func] = parseFunction(call)
 end
 
 function cleanup(origPath)
-    if builtin('nargin') > 0
-        currDir = builtin('cd', origPath);
-        [~] = rmdir(currDir, 's');
-    end
-    % check if runnable is TestCase or Feedback
+    builtin('cd', origPath);
     fclose('all');
     
     h = findall(0, 'type', 'figure');
     close(h, 'force');
     delete(h);
-    % cd up so our folder can be deleted
 end
 
 function isRecurring = checkRecur(callInfo, main, path, stack)

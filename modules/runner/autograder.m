@@ -112,12 +112,14 @@ function autograder(app)
     settings.userDir = cd(settings.workingDir);
     % Create SENTINEL file
     Logger.log('Creating Sentinel');
-    fid = fopen(File.SENTINEL, 'wt');
+    sentinel = [tempname '.lock'];
+    fid = fopen(sentinel, 'wt');
     fwrite(fid, 'SENTINEL');
     fclose(fid);
-
+    worker = parfevalOnAll(@File.SENTINEL, 0, sentinel);
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
+    worker.wait();
     
     % close all files and plots
     wait(parfevalOnAll(@()(fclose('all')), 0));
