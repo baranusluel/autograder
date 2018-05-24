@@ -55,8 +55,11 @@ function uploadToCanvas(students, courseId, assignmentId, token, progress)
     putApiOpts.RequestMethod = 'PUT';
 
     for s = numel(students):-1:1
+        stud.name = students(s).name;
+        stud.id = students(s).id;
+        stud.grade = students(s).grade;
         workers(s) = parfeval(@uploadGrade, 0, ...
-            courseId, assignmentId, students(s), token);
+            courseId, assignmentId, stud, token);
     end
     workers([workers.ID] == -1) = [];
     while ~all([workers.Read])
@@ -79,7 +82,7 @@ function uploadGrade(courseId, assignmentId, student, token)
     getApiOpts.RequestMethod = 'GET';
     putApiOpts = apiOpts;
     putApiOpts.RequestMethod = 'PUT';
-    id = coveredRead([API 'courses/' courseId '/users'], getApiOpts, 'search_term', student.id);
+    id = coveredRead([API 'courses/' courseId '/users'], getApiOpts, 'search_term', student.name);
     if ~isempty(id)
         id = num2str(id.id);
         data = coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], getApiOpts, 'include[]', 'submission_comments');
