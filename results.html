@@ -58,7 +58,7 @@ body {
                 <i class="fas fa-arrow-left"></i> Go Back
             </a>
             <a class="navbar-brand" href="index.html">
-                <img src="resources/brand.jpg" class="rounded navbar-logo">
+                <img src="resources/brand.png" class="rounded navbar-logo">
                 Autograder Docs
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar">
@@ -72,8 +72,8 @@ body {
         </nav>
 <div class="container-fluid">
 <div class="jumbotron text-center">
-<i class="display-1 text-center fas fa-check"></i>
-<h1 class="display-4 text-center">Unit Tests Passed!</h1>
+<i class="display-1 text-center fas fa-times"></i>
+<h1 class="display-4 text-center">Unit Tests Failed</h1>
 <hr />
 <div class="row text-center d-flex justify-content-center">
 <div class="col-md-6 col-12 text-center module-status">
@@ -81,7 +81,7 @@ body {
 Data Conversion
 </div>
 <div class="col-md-6 col-12 text-center module-status">
-<i class="fas fa-check"></i>
+<i class="fas fa-times"></i>
 Grader
 </div>
 </div>
@@ -151,7 +151,7 @@ Successfully created Data URI string
 <div class="unit-result row">
 <div class="col-12">
 <h3 class="unit-name">
-<i class="fas fa-check"></i> 
+<i class="fas fa-times"></i> 
 Student
 </h3>
 <div class="unit-tests container">
@@ -163,13 +163,13 @@ Assess
 <div class="col-12">
 <h5 class="test-name">
 <code>
-<i class="fas fa-check"></i>
+<i class="fas fa-times"></i>
 ValidStudent
 </code>
 </h5>
 <div class="test-message">
 <p>
-Student successfully assessed
+<span class="test-error">Test threw exception AUTOGRADER:generateSolutions:invalidPath: There was an error with the generateSolutions method of the autograder.
 </p>
 </div>
 </div>
@@ -183,13 +183,13 @@ Constructor
 <div class="col-12">
 <h5 class="test-name">
 <code>
-<i class="fas fa-check"></i>
+<i class="fas fa-times"></i>
 ValidStudent
 </code>
 </h5>
 <div class="test-message">
 <p>
-Student successfully constructed
+<span class="test-error">Test threw exception AUTOGRADER:generateSolutions:invalidPath: There was an error with the generateSolutions method of the autograder.
 </p>
 </div>
 </div>

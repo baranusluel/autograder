@@ -16,7 +16,7 @@
     <body>
         <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
             <a class="navbar-brand" href="../index.html">
-                <img src="../resources/brand.jpg" class="rounded navbar-logo">
+                <img src="../resources/brand.png" class="rounded navbar-logo">
                 Autograder Docs
             </a>
     
@@ -66,10 +66,26 @@ Data Conversion
  This module is responsible for converting data into necessary forms. This does <em>not</em> actually change the data itself; only the format it is in.
 </p>
 <h2>
+Classes
+</h2>
+<p>
+ This module has one class:
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">Resources</code>
+</p>
+</li>
+</ul>
+<p>
+ Functions as a static resource to be used in grading and constructing feedback
+</p>
+<h2>
 Functions
 </h2>
 <p>
- This module shall have the following functions:
+ This module has the following functions:
 </p>
 <ul>
 <li>
@@ -114,22 +130,52 @@ Functions
 <ul>
 <li>
 <p>
-<code class="bg-light">[Problem[] problems] = generateSolutions(string path);</code>
+<code class="bg-light">[Problem[] problems] = generateSolutions(bool isResub, UIProgressDlg progress);</code>
 </p>
 </li>
 </ul>
 <p>
- This will generate the solution values, given a path to the solution ZIP archive. These solutions are held in a <code class="bg-light">Problem</code> array, which is detailed below.
+ This will generate the solution values. These solutions are held in a <code class="bg-light">Problem</code> array, which is detailed below.
 </p>
 <ul>
 <li>
 <p>
-<code class="bg-light">[void] = processStudentSubmission(string startPath);</code>
+<code class="bg-light">[Student[] students] = generateStudents(string path, UIProgressDlg progress);</code>
 </p>
 </li>
 </ul>
 <p>
- Unpacks a student's submissions into their same folder. If a student submitted a ZIP archive as their attachment, this will unzip that archive <em>and</em> move the files so that they are directly beneath the student's folder. If the student submitted each file separately, this function does nothing.
+ This will generate the student array from their folders.
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[void] = exportCheaters(Student[] students, cell[] cheaters, cell[] scores, cell[] problems, string path, UIProgressDlg progress);</code>
+</p>
+</li>
+</ul>
+<p>
+ This will use the student, cheater, score, and problem names to construct meaningful cheater archives.
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[string base64] = img2base64(uint8[3][][] img);</code>
+</p>
+</li>
+</ul>
+<p>
+ This uses in-memory processes to create a base64 version of the given image
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[double[] rank1, double[] rank2] = jaccardIndex(string txt1, string txt2, double perm);</code>
+</p>
+</li>
+</ul>
+<p>
+ This uses the texts given to find the relative similarity between them
 </p>
 </div>
                     </p>

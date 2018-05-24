@@ -16,7 +16,7 @@
     <body>
         <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
             <a class="navbar-brand" href="../index.html">
-                <img src="../resources/brand.jpg" class="rounded navbar-logo">
+                <img src="../resources/brand.png" class="rounded navbar-logo">
                 Autograder Docs
             </a>
     
@@ -72,22 +72,82 @@ Functions
 <ul>
 <li>
 <p>
-<code class="bg-light">[void] = uploadToCanvas(*optional* string url);</code>
+<code class="bg-light">[string token] = authorizeWithGoogle();</code>
 </p>
 </li>
 </ul>
 <p>
- Uploads appropriate data directly to Canvas. This will implicitly call <code class="bg-light">autograder2Canvas</code>
+ Asks the user for permission to use Google Drive and returns the refresh token
 </p>
 <ul>
 <li>
 <p>
-<code class="bg-light">[void] = uploadToWebsite(*optional* string url);</code>
+<code class="bg-light">[void] = downloadFromCanvas(string courseId, string assignmentId, string token, string path, UIProgressDlg progress);</code>
 </p>
 </li>
 </ul>
 <p>
- Uploads appropriate data directly to the CS 1371 Website. This will implicitly call <code class="bg-light">autograder2Website</code>
+ Downloads the assignment submissions for the given assignment in the given course, using the given path and token. Progress is tracked via the progress dialogue
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[void] = downloadFromDrive(string folderId, string token, string path, string key, UIProgressDlg progress);</code>
+</p>
+</li>
+</ul>
+<p>
+ Downloads the given folder using the given token and key to the given path, updating progress along the way.
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[void] = uploadToCanvas(Student[] students, string courseId, string assignmentId, string token, UIProgressDlg progress);</code>
+</p>
+</li>
+</ul>
+<p>
+ Uploads the grades for the given students to Canvas.
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[void] = uploadToServer(Student[] students, string user, string pass, string hwName, UIProgressDlg progress);</code>
+</p>
+</li>
+</ul>
+<p>
+ Uploads the student's files to the CS 1371 server, using the credentials provided. This function makes use of <code class="bg-light">JSch</code> for quick <code class="bg-light">SFTP</code> communication with the server.
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[string access] = refresh2access(string refresh);</code>
+</p>
+</li>
+</ul>
+<p>
+ Converts a given refresh token to an access token
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[void] = postToCanvas(string courseId, string token, string message);</code>
+</p>
+</li>
+</ul>
+<p>
+ Posts a given message to the given course on Canvas as an announcement
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">[string courseId] = getCanvasCourse(string token, string code);</code>
+</p>
+</li>
+</ul>
+<p>
+ Uses the given code to find the "best match" course ID on Canvas.
 </p>
 </div>
                     </p>
