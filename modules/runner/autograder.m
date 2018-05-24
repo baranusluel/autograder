@@ -116,6 +116,7 @@ function autograder(app)
     fid = fopen(sentinel, 'wt');
     fwrite(fid, 'SENTINEL');
     fclose(fid);
+    File.SENTINEL(sentinel);
     worker = parfevalOnAll(@File.SENTINEL, 0, sentinel);
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));

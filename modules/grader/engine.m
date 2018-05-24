@@ -457,7 +457,6 @@ function runnable = runCase(runnable)
     end
     populateFiles(runnable, beforeSnap);
     populatePlots(runnable);
-    cleanup(currDir);
 end
 
 function varargout = runner(func____, init____, ins, loads____)
