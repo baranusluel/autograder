@@ -16,7 +16,7 @@
     <body>
         <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
             <a class="navbar-brand" href="../index.html">
-                <img src="../resources/brand.jpg" class="rounded navbar-logo">
+                <img src="../resources/brand.png" class="rounded navbar-logo">
                 Autograder Docs
             </a>
     
@@ -50,6 +50,7 @@
 <div data-link="TestCase.html">TestCase</div>
 <div data-link="engine.html">engine</div>
 <div data-link="generateFeedback.html">generateFeedback</div>
+<div data-link="gradeComments.html">gradeComments</div>
 
                         </div>
                     </ul>
@@ -106,6 +107,16 @@ Functions
 </p>
 </li>
 </ul>
+<ul>
+<li>
+<p>
+<code class="bg-light">[double points] = gradeComments(string file);</code>
+</p>
+</li>
+</ul>
+<p>
+ Grade the student's code and return the points
+</p>
 <h2>
 Classes
 </h2>
@@ -119,7 +130,27 @@ Classes
  Represents a single student in the grader.
 </p>
 <p>
- Has the following fields:
+ <code class="bg-light">Student</code> has the following constants:
+</p>
+<ul>
+<li>
+<p>
+<code class="bg-light">ROUNDOFF</em>ERROR</code>: The roundoff to use to avoid rounding errors with miniscule values
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">TIMEOUT</code>: The time, in seconds, to allot any given function to run
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">resources</code>: The student's resources, such as files and the <code class="bg-light">Solutions</code>
+</p>
+</li>
+</ul>
+<p>
+ <code class="bg-light">Student</code> has the following fields:
 </p>
 <ul>
 <li>
@@ -149,7 +180,17 @@ Classes
 </li>
 <li>
 <p>
-<code class="bg-light">isGraded</code>: A logical stating if a student object has been graded
+<code class="bg-light">grade</code>: A computed value that returns the student's grade
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">problemPaths</code>: A cell array of the path to the student's main submission for each problem; empty if the student did not submit
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">commentGrades</code>: A double vector of points for comments
 </p>
 </li>
 </ul>
@@ -159,12 +200,7 @@ Classes
 <ul>
 <li>
 <p>
-<code class="bg-light">void gradeProblem(Problem)</code> - Grades the given problem (copying over the TestCases) and records the results. Does *not* write the HTML feedback
-</p>
-</li>
-<li>
-<p>
-<code class="bg-light">string generateResponse()</code> - Generates complete HTML markup for this student
+<code class="bg-light">void assess</code> - Assesses the student and creates the HTML feedback
 </p>
 </li>
 </ul>
@@ -287,6 +323,11 @@ If you want a custom function to run instead, include it as a supporting file an
 </li>
 <li>
 <p>
+<code class="bg-light">inputs</code>: A cell array of the inputs, as computed from the <code class="bg-light">loadFiles</code>
+</p>
+</li>
+<li>
+<p>
 <code class="bg-light">banned</code>: A string array of names of banned functions for this problem
 </p>
 </li>
@@ -330,7 +371,7 @@ If you want a custom function to run instead, include it as a supporting file an
 </li>
 <li>
 <p>
-<code class="bg-light">isPassed</code>: True if the student passed this test completely
+<code class="bg-light">hasPassed</code>: True if the student passed this test completely
 </p>
 </li>
 <li>
@@ -361,6 +402,11 @@ If you want a custom function to run instead, include it as a supporting file an
 <li>
 <p>
 <code class="bg-light">exception</code>: The exception thrown by the user - empty if no exception occurred.
+</p>
+</li>
+<li>
+<p>
+<code class="bg-light">isRecursive</code>: Whether or not the code was recursive
 </p>
 </li>
 </ul>
@@ -410,7 +456,7 @@ Excel: Cell array for raw output
 <ul>
 <li>
 <p>
-<code class="bg-light">[bool isEqual, string message] = equals(File other)</code>: Checks if the given file is considered equal to this file, which means:
+<code class="bg-light">[bool isEqual] = equals(File other)</code>: Checks if the given file is considered equal to this file, which means:
 </p>
 <ul>
 <li>
@@ -426,11 +472,6 @@ Extensions are the same
 <li>
 <p>
 Data is the same
-</p>
-</li>
-<li>
-<p>
-If <code class="bg-light">isEqual</code> is <code class="bg-light">false</code>, <code class="bg-light">message</code> contains a reason they aren't equal
 </p>
 </li>
 </ul>
@@ -505,12 +546,12 @@ If the File is an Excel file, it will convert the cell array into a "table", and
 </li>
 <li>
 <p>
-<code class="bg-light">Legend</code>: A string array of all the names in the legend
+<code class="bg-light">Legend</code>: A cell array of all the names in the legend
 </p>
 </li>
 <li>
 <p>
-<code class="bg-light">Color</code>: A string array that represents the color used for every line
+<code class="bg-light">Color</code>: A cell array that represents the color used for every line
 </p>
 </li>
 <li>
@@ -523,6 +564,11 @@ If the File is an Excel file, it will convert the cell array into a "table", and
 <code class="bg-light">LineStyle</code>: A cell array of the line styles used, where each entry is a string
 </p>
 </li>
+<li>
+<p>
+<code class="bg-light">Limits</code>: A 1x6 double vector of axes limits
+</p>
+</li>
 </ul>
 <p>
  It has the following methods:
@@ -530,13 +576,10 @@ If the File is an Excel file, it will convert the cell array into a "table", and
 <ul>
 <li>
 <p>
-<code class="bg-light">[bool isEqual, string message] = equals(Plot other)</code>: Checks if the given plot is considered equal to this plot.
+<code class="bg-light">[bool isEqual] = equals(Plot other)</code>: Checks if the given plot is considered equal to this plot.
 </p>
 </li>
 </ul>
-<p>
- If <code class="bg-light">isEqual</code> is <code class="bg-light">false</code>, <code class="bg-light">message</code> contains a reason they aren't equal
-</p>
 <ul>
 <li>
 <p>
