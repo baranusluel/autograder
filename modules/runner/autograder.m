@@ -291,8 +291,8 @@ function autograder(app)
     elseif ~any(h.Data == totalPoints)
         msg = 'No student scored a 100%.';
     elseif ~any(h.Data == 0)
-        msg = sprintf('Every student scored above 0%; the minimum was %0.2f.', ...
-            min(data));
+        msg = sprintf('Every student scored above 0%%; the minimum was %0.2f%%.', ...
+            min(h.Data));
     elseif all(h.Data == totalPoints | h.Data == 0)
         msg = 'All students scored either a 0% or a 100%';
     else

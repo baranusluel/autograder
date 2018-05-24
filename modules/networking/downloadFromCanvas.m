@@ -141,6 +141,9 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
             pgs = str2double(pgs{1});
             if pgs == 1
                 subs = response.Body.Data';
+                if ~iscell(subs)
+                    subs = num2cell(subs);
+                end
                 return;
             end    
             subs = cell(1, pgs);
@@ -185,6 +188,9 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
                 subs(counter:(counter+numel(response.Body.Data)-1)) = response.Body.Data';
                 counter = counter + numel(response.Body.Data);
             end
+        end
+        if ~iscell(subs)
+            subs = num2cell(subs);
         end
         subs(cellfun(@isempty, subs)) = [];
     catch reason
