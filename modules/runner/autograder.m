@@ -417,7 +417,32 @@ function autograder(app)
             end
         end
     end
-
+    if app.PostToCanvas.Value
+        Logger.log('Posting to Canvas');
+        progress.Message = 'Posting to Canvas';
+        progress.Indeterminate = 'on';
+        try
+            if app.isResubmission
+                name = sprintf('homework %d (Resubmission)', app.homeworkNum);
+            else
+                name = sprintf('homework %d', app.homeworkNum);
+            end
+            postToCanvas(app.canvasCourseId, app.canvasToken, 'Homework Grades Posted', ...
+                sprintf(['<h1>Grades for %s posted</h1><br /><p>All,<br />Grades for %s ', ...
+                'have been posted, as well as feedback files. If you have any questions', ...
+                ', feel free to email your TA! If you feel like you deserve a regrade, ', ...
+                'please fill out the regrade form on our website <a href="https://cs1371.gatech.edu/regrades/">here</a>', ...
+                '<br /><br />Best regards,<br /><br />~The CS 1371 TA Team</p>'], ...
+                name, name));
+        catch e
+            if app.isDebug
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
+    end
     % if they want the output, do it
     if ~isempty(app.localOutputPath)
         progress.Indeterminate = 'on';
