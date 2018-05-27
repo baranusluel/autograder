@@ -152,13 +152,10 @@ classdef File < handle
         end
     end
     methods (Static)
-        function s = SENTINEL()
+        function s = SENTINEL(n)
             persistent name;
-            if isempty(name)
-                name = [tempname '.lock'];
-                fid = fopen(name, 'wt');
-                fwrite(fid, 'SENTINEL');
-                fclose(fid);
+            if nargin == 1
+                name = n;
             end
             s = name;
         end
