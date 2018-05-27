@@ -420,7 +420,7 @@ function autograder(app)
             end
         end
     end
-    if app.PostToCanvas.Value
+    if app.PostAnnouncement.Value
         Logger.log('Posting to Canvas');
         progress.Message = 'Posting to Canvas';
         progress.Indeterminate = 'on';
