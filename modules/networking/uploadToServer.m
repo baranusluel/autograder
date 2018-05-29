@@ -128,8 +128,8 @@ function uploadToServer(students, user, pass, hwName, progress)
             ['/httpdocs/regrades/solutions/Homework' num '/' solns(n).name]);
     end
     % upload supporting.zip
-    sftp.put([pwd filesep hwName filesep 'Supporting.zip'], ...
-        ['/httpdocs/regrades/solutions/Homework' num '/Supporting.zip']);
+    sftp.put([pwd filesep hwName filesep name], ...
+        ['/httpdocs/regrades/solutions/Homework' num '/' name]);
     
     [~] = rmdir(hwName, 's');
     
