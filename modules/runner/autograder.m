@@ -132,7 +132,8 @@ function autograder(app)
         % downloading
         try
             Logger.log('Exchanging refresh token for access token');
-            token = refresh2access(app.driveToken);
+            token = refresh2access(app.driveToken, ...
+                app.googleClientId, app.googleClientSecret);
             Logger.log('Starting download of solution archive from Google Drive');
             downloadFromDrive(app.driveFolderId, token, ...
                 [pwd filesep 'Solutions'], app.driveKey, progress);
