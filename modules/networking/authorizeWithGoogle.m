@@ -3,9 +3,8 @@
 % authorizeWithGoogle will perform a one-time authorization to allow the
 % autograder to access that user's folders.
 %
-% R = authorizeWithGoogle() will authorize with the current user, on this
-% machine. Once this authorization is complete, the refresh token can be
-% used anywhere.
+% R = authorizeWithGoogle(I, S) will authorize with the current user using
+% clientID I and client secret S.
 %
 %%% Remarks
 %
@@ -27,18 +26,16 @@
 %
 %   % Assuming user says no:
 %   threw connectionError exception
-function token = authorizeWithGoogle()
+function token = authorizeWithGoogle(clientId, clientSecret)
     SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
     RESP_TYPE = 'code';
     REDIRECT = 'http://127.0.0.1:9004';
-    CLIENT_ID = '995321590274-1msjncpalf2cj5vmqmudjj2pl7npjicd.apps.googleusercontent.com';
-    CLIENT_SECRET = 'finkYqyQBbOC6HFbqEyeeHAn';
     GRANT_TYPE = 'authorization_code';
     
     URL = ['https://accounts.google.com/o/oauth2/v2/auth?scope=', SCOPE, ...
         '&response_type=', RESP_TYPE, ...
         '&redirect_uri=', REDIRECT, ...
-        '&client_id=', CLIENT_ID];
+        '&client_id=', clientId];
     web(URL, '-browser');
     % start up server socket
     server = tcpip('0.0.0.0', 9004, 'NetworkRole', 'server');
@@ -70,8 +67,8 @@ function token = authorizeWithGoogle()
     opts.RequestMethod = 'POST';
     EXCHANGER = 'https://www.googleapis.com/oauth2/v4/token';
     try
-        data = webread(EXCHANGER, 'code', code, 'client_id', CLIENT_ID, ...
-            'client_secret', CLIENT_SECRET, 'redirect_uri', REDIRECT, ...
+        data = webread(EXCHANGER, 'code', code, 'client_id', clientId, ...
+            'client_secret', clientSecret, 'redirect_uri', REDIRECT, ...
             'grant_type', GRANT_TYPE, opts);
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', ...

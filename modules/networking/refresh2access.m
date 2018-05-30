@@ -3,8 +3,8 @@
 % This will convert a given refresh token to it's corresponding access
 % token.
 %
-% A = refresh2access(R) will use the refresh token in R to get the access
-% token A.
+% A = refresh2access(R, I, S) will use the refresh token R, the clientID I,
+% and the client secret S.
 %
 %%% Remarks
 %
@@ -22,17 +22,15 @@
 %   A = refresh2access(R);
 %
 %   A -> Valid Access token
-function access = refresh2access(refresh)
-    CLIENT_ID = '995321590274-1msjncpalf2cj5vmqmudjj2pl7npjicd.apps.googleusercontent.com';
-    CLIENT_SECRET = 'finkYqyQBbOC6HFbqEyeeHAn';
+function access = refresh2access(refresh, clientId, clientSecret)
     GRANT_TYPE = 'refresh_token';
     API = 'https://www.googleapis.com/oauth2/v4/token';
     
     apiOpts = weboptions();
     apiOpts.RequestMethod = 'POST';
     try
-        data = webread(API, 'client_id', CLIENT_ID, ...
-            'client_secret', CLIENT_SECRET, ...
+        data = webread(API, 'client_id', clientId, ...
+            'client_secret', clientSecret, ...
             'refresh_token', refresh, ...
             'grant_type', GRANT_TYPE, ...
             apiOpts);
