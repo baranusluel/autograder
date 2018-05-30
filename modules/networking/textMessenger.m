@@ -52,10 +52,8 @@ CARRIERS = containers.Map({'AT&T', 'Verizon', 'T-Mobile', 'Virgin', 'Sprint'}, .
     end
     
     opts = weboptions('RequestMethod', 'GET');
-    %data = webread(NUM_VERIFIER_API, 'access_key', numToken, ...
-    %    'number', number, 'country_code', 'US', opts);
-    data.valid = true;
-    data.carrier = 'AT&T Mobility';
+    data = webread(NUM_VERIFIER_API, 'access_key', numToken, ...
+        'number', number, 'country_code', 'US', opts);
     if data.valid
         keys = CARRIERS.keys;
         email = '';
