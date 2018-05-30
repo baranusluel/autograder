@@ -551,6 +551,13 @@ function problemTxt = getText(problemPaths)
             fid = fopen(problemPaths{p}, 'rt');
             code = char(fread(fid)');
             fclose(fid);
+            % find all combinations, replace with NULL character.
+            % this is to account for weird encodings that a student used.
+            code = strrep(code, [char(10) char(13)], char(0)); %#ok<*CHARTEN>
+            code = strrep(code, [char(13) char(10)], char(0));
+            code = strrep(code, char(13), char(10));
+            code = strrep(code, char(0), char(10));
+            code = strrep(code, char(10), newline);
             tree = mtree(code);
             tmp = strsplit(code, newline, 'CollapseDelimiters', false);
             % remove comments
