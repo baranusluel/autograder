@@ -132,7 +132,8 @@ function autograder(app)
         % downloading
         try
             Logger.log('Exchanging refresh token for access token');
-            token = refresh2access(app.driveToken);
+            token = refresh2access(app.driveToken, ...
+                app.googleClientId, app.googleClientSecret);
             Logger.log('Starting download of solution archive from Google Drive');
             downloadFromDrive(app.driveFolderId, token, ...
                 [pwd filesep 'Solutions'], app.driveKey, progress);
@@ -551,6 +552,13 @@ function problemTxt = getText(problemPaths)
             fid = fopen(problemPaths{p}, 'rt');
             code = char(fread(fid)');
             fclose(fid);
+            % find all combinations, replace with NULL character.
+            % this is to account for weird encodings that a student used.
+            code = strrep(code, [char(10) char(13)], char(0)); %#ok<*CHARTEN>
+            code = strrep(code, [char(13) char(10)], char(0));
+            code = strrep(code, char(13), char(10));
+            code = strrep(code, char(0), char(10));
+            code = strrep(code, char(10), newline);
             tree = mtree(code);
             tmp = strsplit(code, newline, 'CollapseDelimiters', false);
             % remove comments
