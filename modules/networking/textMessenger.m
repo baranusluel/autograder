@@ -1,13 +1,10 @@
 %% textMessenger: Send a text to a phone number
 %
-% textMessenger(N, S, M, T, G, K) will send a text to the phone number N
-% with the subject S and message M, using the numverify token T, Google
-% token G, and Google API Key K.
+% textMessenger(N, C, J, M, T, K, I, S) will send a text to the phone
+% number N on carrier C, using subject line J and message M. Additionally,
+% it will use token T, key K, ID I, and secret S.
 %
 %%% Remarks
-%
-% This is based on the numverifier API, which allows us to programmatically
-% determine the carrier for a phone number.
 %
 % N can be in a variety of formats; however, it must represent a valid 
 % 10-digit number. 'String' represents a character vector or a string.
@@ -19,11 +16,20 @@
 %
 % This will only work for numbers based in the US.
 %
+% The carrier is pre-selected; however, it can be any one of the following
+% strings:
+%
+% * AT&T
+% * Verizon
+% * T-Mobile
+% * Virgin
+% * Sprint
+%
 %%% Exceptions
 %
 % An AUTOGRADER:networking:textMessenger:invalidNumber exception if the
 % number is invalid
-function textMessenger(number, carrier, subject, message, gmailToken, gmailkey, id, secret)
+function textMessenger(number, carrier, subject, message, gmailToken, gmailKey, id, secret)
 CARRIERS = containers.Map({'AT&T', 'Verizon', 'T-Mobile', 'Virgin', 'Sprint'}, ...
     {'%s@txt.att.net', '%s@vtext.com', '%s@@tmomail.net', ...
     '%s@vmobl.com', '%s@messaging.sprintpcs.com'});
@@ -65,5 +71,5 @@ CARRIERS = containers.Map({'AT&T', 'Verizon', 'T-Mobile', 'Virgin', 'Sprint'}, .
     message = strrep(message, '&', '&amp;');
     message = strrep(message, '<', '&lt;');
     message = strrep(message, '>', '&gt;');
-    emailMessenger(email, subject, message, gmailToken, id, secret, gmailkey);
+    emailMessenger(email, subject, message, gmailToken, id, secret, gmailKey);
 end
