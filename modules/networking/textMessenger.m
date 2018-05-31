@@ -23,7 +23,7 @@
 %
 % An AUTOGRADER:networking:textMessenger:invalidNumber exception if the
 % number is invalid
-function textMessenger(number, subject, message, numToken, gmailToken, gmailkey)
+function textMessenger(number, carrier, subject, message, gmailToken, gmailkey, id, secret)
 NUM_VERIFIER_API = 'http://apilayer.net/api/validate';
 CARRIERS = containers.Map({'AT&T', 'Verizon', 'T-Mobile', 'Virgin', 'Sprint'}, ...
     {'%s@txt.att.net', '%s@vtext.com', '%s@@tmomail.net', ...
@@ -51,27 +51,20 @@ CARRIERS = containers.Map({'AT&T', 'Verizon', 'T-Mobile', 'Virgin', 'Sprint'}, .
             'Number "%s" is invalid (did you include illegal characters?)', number));
     end
     
-    opts = weboptions('RequestMethod', 'GET');
-    data = webread(NUM_VERIFIER_API, 'access_key', numToken, ...
-        'number', number, 'country_code', 'US', opts);
-    if data.valid
-        keys = CARRIERS.keys;
-        email = '';
-        for k = keys
-            if contains(data.carrier, k{1}, 'IgnoreCase', true)
-                email = sprintf(CARRIERS(k{1}), number);
-                break;
-            end
-        end
-        if isempty(email)
-            throw(MException('AUTOGRADER:networking:textMessenger:invalidNumber', ...
-                'Carrier "%s" isn''t recognized...', data.carrier));
-        end
-        message = strrep(message, '&', '&amp;');
-        message = strrep(message, '<', '&lt;');
-        message = strrep(message, '>', '&gt;');
-        emailMessenger(email, subject, message, gmailToken, gmailkey);
-    else
+    keys = CARRIERS.keys;
+    mask = contains(keys, carrier, 'IgnoreCase', true);
+    if ~any(mask)
         throw(MException('AUTOGRADER:networking:textMessenger:invalidNumber', ...
-            'Number "%s" is invalid...', number));
+            'Carrier "%s" isn''t recognized...', data.carrier));
+    else
+        email = sprintf(CARRIERS(keys{find(mask, 1)}), number);
     end
+    if isempty(email)
+        throw(MException('AUTOGRADER:networking:textMessenger:invalidNumber', ...
+            'Carrier "%s" isn''t recognized...', data.carrier));
+    end
+    message = strrep(message, '&', '&amp;');
+    message = strrep(message, '<', '&lt;');
+    message = strrep(message, '>', '&gt;');
+    emailMessenger(email, subject, message, gmailToken, id, secret, gmailkey);
+end
