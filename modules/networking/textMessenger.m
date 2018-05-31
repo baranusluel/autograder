@@ -24,7 +24,6 @@
 % An AUTOGRADER:networking:textMessenger:invalidNumber exception if the
 % number is invalid
 function textMessenger(number, carrier, subject, message, gmailToken, gmailkey, id, secret)
-NUM_VERIFIER_API = 'http://apilayer.net/api/validate';
 CARRIERS = containers.Map({'AT&T', 'Verizon', 'T-Mobile', 'Virgin', 'Sprint'}, ...
     {'%s@txt.att.net', '%s@vtext.com', '%s@@tmomail.net', ...
     '%s@vmobl.com', '%s@messaging.sprintpcs.com'});
