@@ -84,7 +84,7 @@ function autograder(app)
             logger = Logger();
         end
     catch e
-        if app.isDebug
+        if debugger(app, 'Logger initialization Failed')
             keyboard;
         else
             alert(app, e);
@@ -138,7 +138,7 @@ function autograder(app)
             downloadFromDrive(app.driveFolderId, token, ...
                 [pwd filesep 'Solutions'], app.driveKey, progress);
         catch e
-            if app.isDebug
+            if debugger(app, 'Failed to download solution archive from Google Drive')
                 keyboard;
             else
                 alert(app, e);
@@ -153,7 +153,7 @@ function autograder(app)
         try
             unzipArchive(app.solutionArchivePath, [pwd filesep 'Solutions']);
         catch e
-            if app.isDebug
+            if debugger(app, 'Failed to unzip the solution archive')
                 keyboard;
             else
                 alert(app, e);
@@ -171,7 +171,7 @@ function autograder(app)
         app.solutions = solutions;
     catch e
         % Display to user that we failed
-        if app.isDebug
+        if debugger(app, 'Failed to generate solutions')
             keyboard;
         else
             cd(orig);
@@ -192,7 +192,7 @@ function autograder(app)
                 app.canvasToken, [pwd filesep 'Students'], progress);
         catch e
             % alert in some way and return
-            if app.isDebug
+            if debugger(app, 'Failed to download student submissions from Canvas')
                 keyboard;
             else
                 alert(app, e);
@@ -206,7 +206,7 @@ function autograder(app)
         try
             unzipArchive(app.homeworkArchivePath, [pwd filesep 'Students']);
         catch e
-            if app.isDebug
+            if debugger(app, 'Failed to unzip the Student Submission Archive')
                 keyboard;
             else
                 alert(app, e);
@@ -220,7 +220,7 @@ function autograder(app)
         students = generateStudents([pwd filesep 'Students'], progress);
         app.students = students;
     catch e
-        if app.isDebug
+        if debugger(app, 'Failed to generate students from submissions')
             keyboard;
         else
             alert(app, e);
@@ -259,7 +259,7 @@ function autograder(app)
             Logger.log(sprintf('Assessing Student %s (%s)', student.name, student.id));
             student.assess();
         catch e
-            if app.isDebug
+            if debugger(app, 'Failed to assess student')
                 keyboard;
             else
                 alert(e);
@@ -303,8 +303,10 @@ function autograder(app)
         % we have passed... for now.
         msg = '';
     end
+    % if empty, see if we should debug first
     if ~isempty(msg)
         msg = [msg ' Would you like to inspect the students, or continue?'];
+        debugger(app, msg);
         selection = uiconfirm(app.UIFigure, msg, 'Autograder', ...
             'Options', {INSPECT_LABEL, CONTINUE_LABEL}, ...
             'DefaultOption', 1, 'Icon', 'warning', 'CancelOption', 2);
@@ -378,7 +380,7 @@ function autograder(app)
             copyfile(recSource, [pwd filesep 'resources']);
             CheatDetector(students, solutions, scores, settings.workingDir);
         catch e
-            if app.isDebug
+            if debugger(app, 'Failed to analyze submissions for cheating')
                 keyboard;
             else
                 alert(app, e);
@@ -394,7 +396,7 @@ function autograder(app)
             uploadToCanvas(students, app.canvasCourseId, ...
                 app.canvasHomeworkId, app.canvasToken, progress);
         catch e
-            if app.isDebug
+            if debugger(app, 'Failed to upload grades to Canvas')
                 keyboard;
             else
                 alert(app, e);
@@ -413,7 +415,7 @@ function autograder(app)
             uploadToServer(students, app.serverUsername, app.serverPassword, ...
                 name, progress);
         catch e
-            if app.isDebug
+            if debugger(app, 'Failed to upload submission files to server')
                 keyboard;
             else
                 alert(app, e);
@@ -439,7 +441,7 @@ function autograder(app)
                 '<br /><br />Best regards,<br /><br />~The CS 1371 TA Team</p>'], ...
                 name, name));
         catch e
-            if app.isDebug
+            if debugger(app, 'Failed to post announcement')
                 keyboard;
             else
                 alert(app, e);
@@ -462,7 +464,6 @@ end
 function alert(app, e)
     uialert(app.UIFigure, sprintf('Exception %s: "%s" encountered', ...
         e.identifier, e.message), 'Autograder Error');
-    app.exception = e;
 end
 
 function cleanup(settings)
@@ -500,6 +501,19 @@ function cleanup(settings)
         close(settings.progress);
     end
     settings.logger.delete();
+end
+
+function shouldDebug = debugger(app, msg)
+    EMAIL_MESSAGE_FORMAT = 'Hello,\n\nIt appears the autograder failed to finish. Here''s the error message:\n\n%s\n\nBest Regards,\n~The CS 1371 Technology Team';
+    
+    shouldDebug = app.isDebug;
+    % notify
+    if ~isempty(app.email)
+        emailMessenger(app.email, 'Autograder Failure', ...
+            sprintf(EMAIL_MESSAGE_FORMAT, msg), ...
+            app.notifierToken, app.googleClientId, app.googleClientSecret, ...
+            app.driveKey);
+    end
 end
 
 function setupRecs(solutions)

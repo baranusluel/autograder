@@ -1,8 +1,9 @@
 %% emailMessenger: Send an email
 %
-% emailMessenger(E, S, M, T, K, A) will use token T and key K to send an email
-% with message M and subject line S to email E. Additionally, each file
-% path in A will be attached to the email.
+% emailMessenger(E, S, M, T, I, C, K, A) will use token T and key K to send
+% an email with message M and subject line S to email E. Additionally, 
+% each filepath in A will be attached to the email. This uses Notifier
+% client ID I and secret C.
 %
 %%% Remarks
 %
