@@ -168,7 +168,6 @@ function autograder(app)
         Logger.log('Generating Solutions');
         solutions = generateSolutions(app.isResubmission, progress);
         cd(orig);
-        app.solutions = solutions;
     catch e
         % Display to user that we failed
         if app.isDebug
@@ -218,7 +217,6 @@ function autograder(app)
     try
         Logger.log('Generating Students');
         students = generateStudents([pwd filesep 'Students'], progress);
-        app.students = students;
     catch e
         if app.isDebug
             keyboard;
@@ -252,6 +250,7 @@ function autograder(app)
     progress.Value = 0;
     progress.Message = 'Student Grading Progress';
     Logger.log('Starting student assessment');
+    setupRecs(solutions);
     for s = 1:numel(students)
         student = students(s);
         progress.Message = sprintf('Assessing Student %s', student.name);
