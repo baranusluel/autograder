@@ -42,12 +42,14 @@
 % NaN values will be empty cells in the output, following MATLAB's xlswrite
 % implementation.
 %
+% If the file name provided does not have a file extension, xlswrite 
+% applies '.mat'. If any file extension other than '.mat' is specified, 
+% xlswrite will disregard that specified file extension and apply a '.mat'
+% file extension. 
+%
 %%% Exceptions
 %
-% State any exceptions your code throws, and the conditions for those exceptions.
-%
-% functionName throws exception APPNAME:MODULENAME:FUNCTIONNAME:ERROR if condition
-% is met.
+% xlswrite should not throw an exception, as long as two inputs are given.
 %
 %%% Unit Tests
 %
@@ -57,36 +59,28 @@
 % is empty? CaSe SeNsItIvItY? Invalid inputs? Basically, a test case for
 % testing the normal usage, and a test case for each edge case.
 %
-% Test Cases always start with a TAB; this tell's the publisher to mark it as
-% MATLAB code. The basic template is:
 %
-%   S = 'Set Up Your Inputs First';
-%   T = 'It's ok to make your variable names one letter.'
-%   [O, M] = functionName(S, T); % Run your function!
+%   F = 'example.mat;
+%   A = {{[3 4 1 2]}; {'hello'};
+%   [S, M] = xlswrite(F, A);
 %
-%   The output appears on a new line, and describing it looks like this:
-%   O -> MATLAB code that produces output
+%   S -> true;
+%   M -> '';
 %
-%   S = ["Hello"; "WOrld"];
-%   P = 'O';
-%   M = strFound(S, P);
+%   F = 'example.mat';
+%   A = [];
+%   xlswrite(F, A);
 %
-%   M -> [false; true];
+%   Exception Raised: not enough input arguments
 %
-%   S = 'HelloWorld';
-%   P = "w";
-%   M = strFound(S, P);
+%   F = [];
+%   A = {{[3 4 1 2]}; {'hello'};
+%   xlswrite(F, A);
 %
-%   M -> false;
+%   Exception Raised: not enough input arguments
 %
-%   S = {'hello', [1 2 3]};
-%   P = 'wassup';
-%   M = strFound(S, P);
+%   F = [];
+%   A = [];
+%   xlswrite(F, A);
 %
-%   Exception Raised: TEXTS is not uniform
-%
-%   S = {'hello'};
-%   P = {[1 2 3]};
-%   M = strFound(S, P);
-%
-%   Exception Raised: PATTERNS is not uniform
+%   Exception Raised: not enough input arguments
