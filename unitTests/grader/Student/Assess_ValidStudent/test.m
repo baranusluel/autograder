@@ -7,6 +7,13 @@
 function [passed, msg] = test()
     % Create TestCases
     progress.CancelRequested = false;
+    sentinel = [tempname '.lock'];
+    fid = fopen(sentinel, 'wt');
+    fwrite(fid, 'SENTINEL');
+    fclose(fid);
+    File.SENTINEL(sentinel);
+    worker = parfevalOnAll(@File.SENTINEL, 0, sentinel);
+    worker.wait();
     cd('Solutions');
     solutions = generateSolutions(false, progress);
     cd('..');
