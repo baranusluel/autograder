@@ -53,13 +53,6 @@
 %
 %%% Unit Tests
 %
-% This is a place for you to provide tests for your function. Unit Tests
-% need to be exhaustive. What does this mean? It means that it needs to
-% completely enumerate this function's behavior. How does it behave if an input
-% is empty? CaSe SeNsItIvItY? Invalid inputs? Basically, a test case for
-% testing the normal usage, and a test case for each edge case.
-%
-%
 %   F = 'example.mat;
 %   A = {{[3 4 1 2]}; {'hello'};
 %   [S, M] = xlswrite(F, A);
