@@ -448,6 +448,21 @@ function autograder(app)
         Logger.log('Starting copy of local information');
         copyfile(settings.workingDir, app.localOutputPath);
     end
+    
+    % Notify
+    progress.Indeterminate = 'on';
+    progress.Message = 'Sending Notifications';
+    Logger.log('Start Sending of Notifications');
+    try
+        messenger(app, students);
+    catch e
+        if debugger(app, 'Error Sending Notifications')
+            keyboard;
+        else
+            alert(app, e);
+            return;
+        end
+    end
 end
 
 function alert(app, e)
