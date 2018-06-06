@@ -1,7 +1,7 @@
 %% slackMessenger: Send a message in slack
 % 
 % slackMessenger(C,M,T,A) will use the token T to post a message M in
-% the slack channel C. The message will include file attachments A. 
+% the slack channel name C. The message will include file attachments A.  
 %
 %%% Remarks
 %
