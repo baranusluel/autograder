@@ -507,11 +507,18 @@ function shouldDebug = debugger(app, msg)
     
     shouldDebug = app.isDebug;
     % notify
-    if ~isempty(app.email)
-        emailMessenger(app.email, 'Autograder Failure', ...
-            sprintf(EMAIL_MESSAGE_FORMAT, msg), ...
-            app.notifierToken, app.googleClientId, app.googleClientSecret, ...
-            app.driveKey);
+    try
+        if ~isempty(app.email)
+            emailMessenger(app.email, 'Autograder Failure', ...
+                sprintf(EMAIL_MESSAGE_FORMAT, msg), ...
+                app.notifierToken, app.googleClientId, app.googleClientSecret, ...
+                app.driveKey);
+        end
+        if ~isempty(app.phoneNumber)
+            textMessenger(app.phoneNumber, 'Autograder Failed... See your computer for more information', ...
+                app.twilioSid, app.twilioToken, app.twilioOrigin);
+        end
+    catch
     end
 end
 
