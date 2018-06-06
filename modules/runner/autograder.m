@@ -461,7 +461,6 @@ end
 function alert(app, e)
     uialert(app.UIFigure, sprintf('Exception %s: "%s" encountered', ...
         e.identifier, e.message), 'Autograder Error');
-    app.exception = e;
 end
 
 function cleanup(settings)
