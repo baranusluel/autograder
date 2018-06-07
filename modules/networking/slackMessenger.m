@@ -18,9 +18,28 @@
 % with file attachments. Future updates will attempt to implement more
 % formatting and interactive messaging options.
 %
+%
 
 function slackMessenger(channel,message,token,attachments)
+postMessage_API = 'https://slack.com/api/chat.postMessage';
 
+auth = matlab.net.http.HeaderField;
+auth.Name = 'Authorization';
+auth.Value = ['Bearer ' token];
+
+contentType = matlab.net.http.HeaderField;
+contentType.Name = 'Content-Type';
+contentType.Value = 'application/json';
+
+body.channel = channel;
+body.text = message;
+body = matlab.net.http.MessageBody(body);
+
+request.Method = 'Post';
+request.Header = [auth contentType];
+request.Body = body;
+
+r = request.send(postMessage_API);
 
 end
 
