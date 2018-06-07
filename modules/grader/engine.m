@@ -255,7 +255,7 @@ function runnables = engine(runnables)
 
             % copy over supporting files
             for s = 1:numel(tCase.supportingFiles)
-                copyfile(tCase.supportingFiles{s});
+                copyfile(tCase.supportingFiles{s}, runnable.path);
             end
 
             % Load the data
@@ -367,11 +367,10 @@ function populateFiles(runnable, beforeSnap)
     addedFiles = sort(setdiff(afterSnap, beforeSnap));
     % Get last file first to prealloc array
     if numel(addedFiles) ~= 0
-        files(numel(addedFiles)) = File([pwd() filesep() addedFiles{end}]);
         % Iterate over all files (including last one again) so that _soln
         % can be removed if necessary
-        for i = 1:numel(addedFiles)
-            files(i) = File([pwd() filesep() addedFiles{i}]);
+        for i = numel(addedFiles):-1:1
+            files(i) = File([runnable.path filesep addedFiles{i}]);
             if isa(runnable, 'TestCase')
                 % Remove _soln from name
                 files(i).name = strrep(files(i).name, '_soln', '');
