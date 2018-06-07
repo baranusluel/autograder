@@ -448,6 +448,21 @@ function autograder(app)
         Logger.log('Starting copy of local information');
         copyfile(settings.workingDir, app.localOutputPath);
     end
+    
+    % Notify
+    progress.Indeterminate = 'on';
+    progress.Message = 'Sending Notifications';
+    Logger.log('Start Sending of Notifications');
+    try
+        messenger(app, students);
+    catch e
+        if debugger(app, 'Error Sending Notifications')
+            keyboard;
+        else
+            alert(app, e);
+            return;
+        end
+    end
 end
 
 function alert(app, e)
@@ -507,6 +522,9 @@ function shouldDebug = debugger(app, msg)
         if ~isempty(app.phoneNumber)
             textMessenger(app.phoneNumber, 'Autograder Failed... See your computer for more information', ...
                 app.twilioSid, app.twilioToken, app.twilioOrigin);
+        end
+        if ~isempty(app.slackChannel)
+            slackMessenger(app.slackChannel, 'Autograder Failed... See your computer for more information', app.slackToken);
         end
     catch
     end
