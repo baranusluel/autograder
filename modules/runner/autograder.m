@@ -528,6 +528,7 @@ function shouldDebug = debugger(app, msg)
         end
     catch
     end
+    beep;
 end
 
 function setupRecs(solutions)
