@@ -45,7 +45,7 @@
 %
 %   Threw invalidFile exception
 %
-function canvas2autograder(canvasPath,canvasGradebook,outPath)
+function canvas2autograder(canvasPath, canvasGradebook, outPath, progress)
 
     % Canvas Information
     firstStudentRow = 3;
@@ -57,12 +57,25 @@ function canvas2autograder(canvasPath,canvasGradebook,outPath)
         throw(MException('AUTOGRADER:canvas2autograder:invalidFile',...
                          'The Path given is not a .zip file'));
     end
-    unzippedCanvas = unzipArchive(canvasPath,outPath,true);
+    unzippedCanvas = unzipArchive(canvasPath,outPath,false);
     if ~contains(canvasGradebook,'.csv')
         throw(MException('AUTOGRADER:canvas2autograder:invalidGradebook',...
                          'The Gradebook given is not a .csv file'));
     end
-    [~,~,gradebook] = xlsread(canvasGradebook);
+    warning('off');
+    gradebook = readtable(canvasGradebook);
+    warning('on');
+    tmp = table2cell(gradebook);
+    origNames = gradebook.Properties.VariableDescriptions;
+    names = gradebook.Properties.VariableNames;
+    for n = numel(origNames):-1:1
+        if ~isempty(origNames{n})
+            [~, name] = strtok(origNames{n}, '''');
+            name = name(2:end-1);
+            names{1, n} = name;
+        end
+    end
+    gradebook = [names; tmp];
 
     % Validate Inputs
     if ~isValidCanvas(unzippedCanvas)
@@ -89,6 +102,9 @@ function canvas2autograder(canvasPath,canvasGradebook,outPath)
     allFiles = dir(fullfile(unzippedCanvas,'*_*_*_*.*'));
 
     % Loop through all files
+    progress.Indeterminate = 'off';
+    progress.Value = 0;
+    progress.Message = 'Sorting Files';
     for i = 1:length(allFiles)
         fileName = allFiles(i).name;
 
@@ -120,13 +136,14 @@ function canvas2autograder(canvasPath,canvasGradebook,outPath)
         end
 
         % Copy the file to new location
-        copyfile(fullfile(unzippedCanvas,allFiles(i).name),...
+        movefile(fullfile(unzippedCanvas,allFiles(i).name),...
                  fullfile(outPath,folderMap(canvasID),tokens{end}));
+        progress.Value = min([progress.Value + 1/numel(allFiles), 1]);
     end
 
     % Write info.csv
     fh = fopen(fullfile(outPath,'info.csv'),'wt');  
-    toWrite = [strjoin(join(gradebook(firstStudnetRow:end, [tsquareIDcol studentNameCol]), ', "'), '"\n') '"'];
+    toWrite = ['"' strjoin(join(gradebook(firstStudentRow:end, [studentNameCol tsquareIDcol]), '", "'), '"\n"') '"'];
     fwrite(fh,toWrite);
     fclose(fh);
 end
