@@ -203,7 +203,7 @@ function autograder(app)
         progress.Indeterminate = 'on';
         % unzip the archive
         try
-            canvas2autograder(app.homeworkArchivePath, app.homeworkGradebookPath, [pwd filesep 'Students']);
+            canvas2autograder(app.homeworkArchivePath, app.homeworkGradebookPath, [pwd filesep 'Students'], progress);
         catch e
             if app.isDebug
                 keyboard;
