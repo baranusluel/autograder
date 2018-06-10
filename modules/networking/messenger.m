@@ -58,12 +58,11 @@ function messenger(app, students)
     javaaddpath([fileparts(mfilename('fullpath')) filesep 'JCommunique.jar']);
     cleaner = onCleanup(@()(javarmpath([fileparts(mfilename('fullpath')) ...
         filesep 'JCommunique.jar'])));
-    import com.notification.NotificationFactory;
-    import com.notification.NotificationManager;
-    import com.notification.manager.SimpleManager;
-    import com.notification.types.TextNotification;
-    import com.theme.ThemePackagePresets;
-    import com.utils.Time;
+    import com.notification.*;
+    import com.notification.manager.*;
+    import com.notification.types.*;
+    import com.theme.*;
+    import com.utils.*;
     import javax.swing.ImageIcon;
     
     p = [fileparts(fileparts(mfilename('fullpath'))) ...
