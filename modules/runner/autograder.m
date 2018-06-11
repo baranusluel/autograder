@@ -507,6 +507,8 @@ function setupRecs(solutions)
 end
 
 function scores = getScores(varargin)
+    % Minimum number of code lines before we start checking for cheating
+    MIN_LINES = 5;
     persistent students;
     if nargin == 2
         students = varargin{2};
@@ -527,7 +529,7 @@ function scores = getScores(varargin)
         else
             for p = numel(txts):-1:1
                 % get jaccard index
-                if ~isempty(subs{p}{1}) && ~isempty(txts{p}{1})
+                if numel(subs{p}{1}) >= MIN_LINES && numel(txts{p}{1}) >= MIN_LINES
                     % compare
                     if subs{p}{2} == txts{p}{2}
                         scores{s2}(p) = Inf;
