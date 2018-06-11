@@ -88,7 +88,7 @@ function outPath = unzipArchive(archivePath, outPath, deleteArchive)
     contents = dir(tmpPath);
     contents(strncmp({contents.name}, '.', 1)) = [];
     if numel(contents) == 1 && contents.isdir
-        movefile([tmpPath filesep contents.name filesep '*'], tmpPath);
+        moveFile([tmpPath filesep contents.name filesep '*'], tmpPath);
         rmdir([tmpPath filesep contents.name]);
     end
     
@@ -100,12 +100,38 @@ function outPath = unzipArchive(archivePath, outPath, deleteArchive)
         if exist(outPath, 'dir') ~= 7
             mkdir(outPath);
         end
-        movefile([tmpPath filesep '*'], [outPath filesep]);
+        moveFile([tmpPath filesep '*'], [outPath filesep]);
     else
         outPath = tmpPath;
     end
     
     if deleteArchive
         delete(archivePath);
+    end
+end
+
+function moveFile(src, dest)
+    try
+        src(src == '/' | src == '\') = filesep;
+        dest(dest == '/' | dest == '\') = filesep;
+        if dest(end) ~= filesep
+            dest(end+1) = filesep;
+        end
+        movefile(src , dest);
+    catch
+        % arg list too long; move in batches of 20... This only happens
+        % in UNIX!
+
+        batch = dir(fileparts(src));
+        batch(strncmp({batch.name}, '.', 1)) = [];
+        while ~isempty(batch)
+            b = min([500 length(batch)]);
+            files = batch(1:b);
+            if isunix
+                files = ['"' strjoin(join([{files.folder}; {files.name}]', filesep), '" "') '"'];
+                system(['mv ' files ' "' dest '"']);
+            end
+            batch(1:b) = [];
+        end
     end
 end
