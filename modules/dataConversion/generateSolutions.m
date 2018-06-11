@@ -83,7 +83,8 @@ try
         % Put all testcases in a cell array
         allTestCases = {solutions.testCases};
         % delete any files NOT referenced by any test case
-        saveFiles = arrayfun(@(t)([t.supportingFiles{:}, t.loadFiles{:}]), [allTestCases{:}], 'uni', false);
+        saveFiles = arrayfun(@(t)([t.supportingFiles(:)', t.loadFiles(:)']), [allTestCases{:}], 'uni', false);
+        saveFiles = [saveFiles{:}];
         % for each file in folder supporting, if not contained in
         % saveFiles, delete
         checkFiles = dir([pwd filesep 'SupportingFiles' filesep]);

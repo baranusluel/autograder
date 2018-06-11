@@ -128,24 +128,24 @@ classdef File < handle
                     %preallocating. However, Matlab makes even
                     %preallocating look lame af in the presence of the
                     %glorious fread function.
-                    fid = fopen([name ext], 'rt');
+                    fid = fopen(path, 'rt');
                     this.data = char(fread(fid)');
                     fclose(fid);
                 case this.IMAGES
                     %read in image array and store in File class
                     try
-                        this.data = imread([name ext]);
+                        this.data = imread(path);
                     catch
                         this.data = [];
                     end
                 case this.EXCEL
                     try
-                        [~,~,this.data] = xlsread([name ext]);
+                        [~,~,this.data] = xlsread(path);
                     catch
                         this.data = {};
                     end
                 otherwise
-                    fid = fopen([this.name this.extension]); %binary reading
+                    fid = fopen(path, 'r'); %binary reading
                     this.data = fread(fid);
                     fclose(fid);
             end
@@ -257,18 +257,11 @@ classdef File < handle
                         fwrite(fid, soln.data);
                         fclose(fid);
                         try
-                            html = visdiff(studPath, solnPath);
-                            html = strrep(html, studPath, 'Student File');
-                            html = strrep(html, solnPath, 'Solution File');
-                            [~, studName, ~] = fileparts(studPath);
-                            [~, solnName, ~] = fileparts(solnPath);
-                            html = strrep(html, studName, this.name);
-                            html = strrep(html, solnName, soln.name);
-                            startInd = strfind(html, '<title>');
-                            endInd = strfind(html, '</title>');
-                            startInd = startInd(1) + length('<title>');
-                            endInd = endInd(1) - 1;
-                            html = [html(1:startInd), 'Comparison of Student and Solution Files' html(endInd:end)];
+                            html = visdiff(studPath, solnPath, 30);
+                            % extract diff-start div:
+                            inds(1) = strfind(html, '<div id="diffstart">');
+                            inds(2) = strfind(html, '<div id="bottom">') - 1;
+                            html = ['<div class="row text-feedback"><div class="col-6"><h2>Your File</h2></div><div class="col-6"><h2>Solution File</h2></div><div class="col-12">', html(inds(1):inds(2)) '</div>'];
                         catch
                             html = '<p>Student file is not a valid text file</p>';
                         end

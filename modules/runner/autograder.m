@@ -203,7 +203,7 @@ function autograder(app)
         progress.Indeterminate = 'on';
         % unzip the archive
         try
-            unzipArchive(app.homeworkArchivePath, [pwd filesep 'Students']);
+            canvas2autograder(app.homeworkArchivePath, app.homeworkGradebookPath, [pwd filesep 'Students'], progress);
         catch e
             if debugger(app, 'Failed to unzip the Student Submission Archive')
                 keyboard;
@@ -528,6 +528,7 @@ function shouldDebug = debugger(app, msg)
         end
     catch
     end
+    beep;
 end
 
 function setupRecs(solutions)
