@@ -1,7 +1,7 @@
 %% slackMessenger: Send a message in slack
 % 
 % slackMessenger(C,M,T,A) will use the token T to post a message M in
-% the slack channel name C. The message will include file attachments A.  
+% the slack channel ID C. The message will include file attachments A.  
 %
 %%% Remarks
 %
@@ -31,15 +31,19 @@ contentType = matlab.net.http.HeaderField;
 contentType.Name = 'Content-Type';
 contentType.Value = 'application/json';
 
-body.channel = channel;
 body.text = message;
-body = matlab.net.http.MessageBody(body);
 
 request.Method = 'Post';
 request.Header = [auth contentType];
-request.Body = body;
 
-r = request.send(postMessage_API);
+for c = 1:numels(channel)
+    body.channel = channel(c);
+    body = matlab.net.http.MessageBody(body);
+    
+    request.Body = body;
+    
+    r = request.send(postMessage_API);
+end 
 
 end
 
