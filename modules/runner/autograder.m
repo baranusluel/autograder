@@ -526,6 +526,7 @@ function shouldDebug = debugger(app, msg)
         if ~isempty(app.slackChannel)
             slackMessenger(app.slackChannel, 'Autograder Failed... See your computer for more information', app.slackToken);
         end
+        desktopMessenger('Autograder Failed... See MATLAB for more information');
     catch
     end
     beep;
