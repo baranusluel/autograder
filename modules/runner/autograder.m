@@ -524,7 +524,7 @@ function shouldDebug = debugger(app, msg)
                 app.twilioSid, app.twilioToken, app.twilioOrigin);
         end
         if ~isempty(app.slackChannel)
-            slackMessenger(app.slackChannel, 'Autograder Failed... See your computer for more information', app.slackToken);
+            slackMessenger(app.slackToken, app.slackChannel, 'Autograder Failed... See your computer for more information');
         end
     catch
     end
