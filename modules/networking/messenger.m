@@ -54,25 +54,6 @@ function messenger(app, students)
     end
     delete([tmp filesep 'grades.csv']);
     
-    % send notification
-    javaaddpath([fileparts(mfilename('fullpath')) filesep 'JCommunique.jar']);
-    cleaner = onCleanup(@()(javarmpath([fileparts(mfilename('fullpath')) ...
-        filesep 'JCommunique.jar'])));
-    import com.notification.*;
-    import com.notification.manager.*;
-    import com.notification.types.*;
-    import com.theme.*;
-    import com.utils.*;
-    import javax.swing.ImageIcon;
-    
-    p = [fileparts(fileparts(mfilename('fullpath'))) ...
-        'docs' filesep 'resources' filesep 'images' filesep 'icon_48.png'];
-    img = ImageIcon(p);
-    
-    factory = NotificationFactory(ThemePackagePresets.cleanDark());
-    manager = SimpleManager();
-    notification = factory.buildIconNotification('Autograder', 'Autograder Finished!', img);
-    notification.setCloseOnClick(true);
-    manager.addNotification(notification, Time.seconds(100));
+    desktopMessenger('Grading has finished');
     [~] = rmdir(tmp, 's');
 end
