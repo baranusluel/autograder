@@ -1,7 +1,12 @@
 %% slackMessenger: Send a message in slack
 %
-% slackMessenger(C,M,T,A) will use the token T to post a message M in
+% slackMessenger(T,C,M,A) will use the token T to post a message M in
 % the slack channel ID C. The message will include file attachments A.
+%
+% A = slackMessenger(T) will return a structure array containing a list of
+% channels, users, and groups avaliable to recieve messages in the slack
+% workspace
+%
 %
 %%% Remarks
 %
@@ -20,7 +25,7 @@
 %
 %
 
-function slackMessenger(channel,message,token,attachments)
+function slackMessenger(token,channel,message,attachments)
 postMessage_API = 'https://slack.com/api/chat.postMessage';
 fileUpload_API = 'https://slack.com/api/files.upload';
 
