@@ -117,7 +117,8 @@ function autograder(app)
     fwrite(fid, 'SENTINEL');
     fclose(fid);
     File.SENTINEL(sentinel);
-    worker = parfevalOnAll(@File.SENTINEL, 0, sentinel);
+    worker = [parfevalOnAll(@File.SENTINEL, 0, sentinel), ...
+        parfevalOnAll(@gradeComments, 0)];
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
     worker.wait();
