@@ -23,6 +23,8 @@
 function slackMessenger(channel,message,token,attachments)
 postMessage_API = 'https://slack.com/api/chat.postMessage';
 
+request = matlab.net.http.RequestMessage;
+
 auth = matlab.net.http.HeaderField;
 auth.Name = 'Authorization';
 auth.Value = ['Bearer ' token];
@@ -31,18 +33,19 @@ contentType = matlab.net.http.HeaderField;
 contentType.Name = 'Content-Type';
 contentType.Value = 'application/json';
 
-body.text = message;
-
 request.Method = 'Post';
 request.Header = [auth contentType];
 
-for c = 1:numels(channel)
-    body.channel = channel(c);
+for c = 1:numel(channel)
+    body.text = message;
+    body.channel = channel{c};
     body = matlab.net.http.MessageBody(body);
     
     request.Body = body;
     
     r = request.send(postMessage_API);
+    
+    clear body
 end 
 
 end
