@@ -74,5 +74,8 @@ function messenger(app, students)
     notification = factory.buildIconNotification('Autograder', 'Autograder Finished!', img);
     notification.setCloseOnClick(true);
     manager.addNotification(notification, Time.seconds(100));
+    clear factory;
+    clear manager;
+    clear notification;
     [~] = rmdir(tmp, 's');
 end
