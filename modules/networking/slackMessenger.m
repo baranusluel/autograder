@@ -1,7 +1,7 @@
 %% slackMessenger: Send a message in slack
-% 
+%
 % slackMessenger(C,M,T,A) will use the token T to post a message M in
-% the slack channel ID C. The message will include file attachments A.  
+% the slack channel ID C. The message will include file attachments A.
 %
 %%% Remarks
 %
@@ -22,32 +22,53 @@
 
 function slackMessenger(channel,message,token,attachments)
 postMessage_API = 'https://slack.com/api/chat.postMessage';
+fileUpload_API = 'https://slack.com/api/files.upload';
 
-request = matlab.net.http.RequestMessage;
-
+%create authorization header to be used in all requests
 auth = matlab.net.http.HeaderField;
 auth.Name = 'Authorization';
 auth.Value = ['Bearer ' token];
 
-contentType = matlab.net.http.HeaderField;
-contentType.Name = 'Content-Type';
-contentType.Value = 'application/json';
 
-request.Method = 'Post';
-request.Header = [auth contentType];
 
-for c = 1:numel(channel)
-    body.text = message;
-    body.channel = channel{c};
-    body = matlab.net.http.MessageBody(body);
+if ~isempty(message)
+    mrequest = matlab.net.http.RequestMessage;
     
-    request.Body = body;
+    contentType = matlab.net.http.HeaderField;
+    contentType.Name = 'Content-Type';
+    contentType.Value = 'application/json';
     
-    r = request.send(postMessage_API);
+    mrequest.Method = 'Post';
+    mrequest.Header = [auth contentType];
     
-    clear body
-end 
+    for c = 1:numel(channel)
+        body.text = message;
+        body.channel = channel{c};
+        body = matlab.net.http.MessageBody(body);
+        
+        mrequest.Body = body;
+        
+        r = mrequest.send(postMessage_API);
+        
+        clear body
+    end
+end
 
+if nargin == 4
+    arequest = matlab.net.http.RequestMessage;
+    
+    contentType = matlab.net.http.HeaderField;
+    contentType.Name = 'Content-Type';
+    contentType.Value = 'multipart/form-data';
+    
+    fileProv = matlab.net.http.io.FileProvider(attachments);
+    fp = matlab.net.http.io.MultipartFormProvider("channels",channel,"file",fileProv);
+    
+    arequest.Method = 'post';
+    arequest.Header = [auth contentType];
+    arequest.Body = fp;
+    
+    f = arequest.send(fileUpload_API);
 end
 
 
