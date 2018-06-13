@@ -27,7 +27,7 @@
 function points = gradeComments(file, dict)
     FMT = ' %s ';
     persistent dictionary;
-    if nargin == 1
+    if nargin < 2
         dict = [fileparts(mfilename('fullpath')) filesep 'dictionary.txt'];
     end
     if isempty(dictionary)
@@ -37,7 +37,10 @@ function points = gradeComments(file, dict)
         fclose(fid);
         dictionary = compose(FMT, string(dictionary));
     end
-    
+    if nargin == 0 || isempty(file)
+        points = 0;
+        return;
+    end
     % Max # of points to be assigned for # of comment lines
     MAX_LINE_POINTS = .5;
     % Max # of points to be assigned for words appearing in dictionary
@@ -54,11 +57,7 @@ function points = gradeComments(file, dict)
     MAX_COMM_DIST = 10;
     % Minimum # of comments. Must be greater than 1
     MIN_LINE_NUM = 2;
-    
-    if isempty(file)
-        points = 0;
-        return;
-    end
+   
     fid = fopen(file, 'rt');
     code = char(fread(fid)');
     fclose(fid);
