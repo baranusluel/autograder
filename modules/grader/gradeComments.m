@@ -62,6 +62,13 @@ function points = gradeComments(file, dict)
     fid = fopen(file, 'rt');
     code = char(fread(fid)');
     fclose(fid);
+    % find all combinations, replace with NULL character.
+    % this is to account for weird encodings that a student used.
+    code = strrep(code, [char(10) char(13)], char(0)); %#ok<*CHARTEN>
+    code = strrep(code, [char(13) char(10)], char(0));
+    code = strrep(code, char(13), char(10));
+    code = strrep(code, char(0), char(10));
+    code = strrep(code, char(10), newline);
     % get rid of blank lines
     lines = strsplit(code, newline, 'CollapseDelimiters', true);
     code = strjoin(lines, newline);
