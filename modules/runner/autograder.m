@@ -523,8 +523,8 @@ function shouldDebug = debugger(app, msg)
             textMessenger(app.phoneNumber, 'Autograder Failed... See your computer for more information', ...
                 app.twilioSid, app.twilioToken, app.twilioOrigin);
         end
-        if ~isempty(app.slackChannel)
-            slackMessenger(app.slackToken, app.slackChannel, 'Autograder Failed... See your computer for more information');
+        if ~isempty(app.slackRecipients)
+            slackMessenger(app.slackToken, {app.slackRecipents.id}, 'Autograder Failed... See your computer for more information');
         end
     catch
     end

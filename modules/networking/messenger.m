@@ -49,8 +49,8 @@ function messenger(app, students)
     end
     
     % Send slack message
-    if ~isempty(app.slackChannel)
-        slackMessenger(app.slackToken, app.slackChannel, message, [tmp filesep 'grades.csv']);
+    if ~isempty(app.slackRecipients)
+        slackMessenger(app.slackToken, {app.slackRecipients.id}, message, [tmp filesep 'grades.csv']);
     end
     delete([tmp filesep 'grades.csv']);
     
