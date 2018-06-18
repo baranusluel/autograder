@@ -117,7 +117,8 @@ function autograder(app)
     fwrite(fid, 'SENTINEL');
     fclose(fid);
     File.SENTINEL(sentinel);
-    worker = parfevalOnAll(@File.SENTINEL, 0, sentinel);
+    worker = [parfevalOnAll(@File.SENTINEL, 0, sentinel), ...
+        parfevalOnAll(@gradeComments, 0)];
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
     worker.wait();
@@ -523,9 +524,10 @@ function shouldDebug = debugger(app, msg)
             textMessenger(app.phoneNumber, 'Autograder Failed... See your computer for more information', ...
                 app.twilioSid, app.twilioToken, app.twilioOrigin);
         end
-        if ~isempty(app.slackChannel)
-            slackMessenger(app.slackChannel, 'Autograder Failed... See your computer for more information', app.slackToken);
+        if ~isempty(app.slackRecipients)
+            slackMessenger(app.slackToken, {app.slackRecipents.id}, 'Autograder Failed... See your computer for more information');
         end
+        desktopMessenger('Autograder Failed... See MATLAB for more information');
     catch
     end
     beep;
