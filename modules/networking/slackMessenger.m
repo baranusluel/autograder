@@ -100,14 +100,16 @@ if nargin == 4
     contentType.Name = 'Content-Type';
     contentType.Value = 'multipart/form-data';
     
-    fileProv = matlab.net.http.io.FileProvider(attachments);
-    fp = matlab.net.http.io.MultipartFormProvider("channels",channel,"file",fileProv);
-    
     arequest.Method = 'post';
     arequest.Header = [auth contentType];
-    arequest.Body = fp;
-    
-    f = arequest.send(fileUpload_API);
+    for a = 1:numel(attachments)
+        fileProv = matlab.net.http.io.FileProvider(attachments{a});
+        fp = matlab.net.http.io.MultipartFormProvider("channels",channel,"file",fileProv);
+        
+        arequest.Body = fp;
+        
+        f = arequest.send(fileUpload_API);
+    end
 end
 
 
