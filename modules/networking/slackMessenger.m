@@ -25,7 +25,7 @@
 %
 %
 
-function slackMessenger(token,channel,message,attachments)
+function [channels] = slackMessenger(token,channel,message,attachments)
 postMessage_API = 'https://slack.com/api/chat.postMessage';
 fileUpload_API = 'https://slack.com/api/files.upload';
 
@@ -34,7 +34,37 @@ auth = matlab.net.http.HeaderField;
 auth.Name = 'Authorization';
 auth.Value = ['Bearer ' token];
 
+if nargin == 1
+    listChannel_API = 'https://slack.com/api/channels.list';
+    listGroups_API = 'https://slack.com/api/groups.list';
+    listUsers_API = 'https://slack.com/api/users.list';
+    
+    request = matlab.net.http.RequestMessage;
 
+    contentType = matlab.net.http.HeaderField;
+    contentType.Name = 'Content-Type';
+    contentType.Value = 'application/x-www-form-urlencoded';
+    
+    request.Method = 'GET';
+    request.Header = [contentType auth];
+    
+    rc = request.send(listChannel_API);
+    rg = request.send(listGroups_API);
+    ru = request.send(listUsers_API);
+    
+    channels = struct('name',{rc.Body.Data.channels.name},...
+                        'id',{rc.Body.Data.channels.id},...
+                        'type','channel');
+    groups = struct('name',{rg.Body.Data.groups.name},...
+                        'id',{rg.Body.Data.groups.id},...
+                        'type','channel');
+    users = struct('name',{ru.Body.Data.members.name},....
+                        'id',{ru.Body.Data.members.id},...
+                        'type','user');
+    
+    channels = [channels groups users];
+    return
+end 
 
 if ~isempty(message)
     mrequest = matlab.net.http.RequestMessage;
