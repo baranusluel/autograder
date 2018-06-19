@@ -1,20 +1,22 @@
 %% slackMessenger: Send a message in slack
 %
-% slackMessenger(T,C,M,A) will use the token T to post a message M in
-% the slack channel ID C. The message will include file attachments A.
+% slackMessenger(T,C,M,A) will use the token T to post a message M in the
+% slack channel ID C. The message will include file attachments A.
 %
-% A = slackMessenger(T) will return a structure array containing a list of
-% channels, users, and groups avaliable to recieve messages in the slack
+% A = slackMessenger(T) will return a structure array A containing a list
+% of channels, users, and groups avaliable to receive messages in the slack
 % workspace
 %
 %
 %%% Remarks
 %
 % M can be formatted using slack message formatting
-% ? to print bolded text, surround in asterisks. (*bold text*)
-% ? to print italicized text, surround in underscores. (_italicized text_)
-% ? to print code blocks within text, surround in single backtick marks
+%
+% * to print bolded text, surround in asterisks. (*bold text*)
+% * to print italicized text, surround in underscores. (_italicized text_)
+% * to print code blocks within text, surround in single backtick marks
 % (`codeblock`)
+%
 % See
 % https://get.slack.help/hc/en-us/articles/202288908-Format-your-messages
 % for more message formatting options
