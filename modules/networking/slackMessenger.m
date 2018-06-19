@@ -87,7 +87,7 @@ if ~isempty(message)
         
         mrequest.Body = body;
         
-        r = mrequest.send(postMessage_API);
+        r = mrequest.send(postMessage_API); %#ok<NASGU>
         
         clear body
     end
@@ -109,7 +109,7 @@ if nargin == 4
         
         arequest.Body = fp;
         
-        f = arequest.send(fileUpload_API);
+        f = arequest.send(fileUpload_API); %#ok<NASGU>
     end
 end
 
