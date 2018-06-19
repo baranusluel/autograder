@@ -104,7 +104,8 @@ if nargin == 4
     arequest.Header = [auth contentType];
     for a = 1:numel(attachments)
         fileProv = matlab.net.http.io.FileProvider(attachments{a});
-        fp = matlab.net.http.io.MultipartFormProvider("channels",channel,"file",fileProv);
+        
+        fp = matlab.net.http.io.MultipartFormProvider("channels",strjoin(channel,','),"file",fileProv);
         
         arequest.Body = fp;
         
