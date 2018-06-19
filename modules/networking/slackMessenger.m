@@ -1,7 +1,12 @@
 %% slackMessenger: Send a message in slack
-% 
-% slackMessenger(C,M,T,A) will use the token T to post a message M in
-% the slack channel name C. The message will include file attachments A.  
+%
+% slackMessenger(T,C,M,A) will use the token T to post a message M in
+% the slack channel ID C. The message will include file attachments A.
+%
+% A = slackMessenger(T) will return a structure array containing a list of
+% channels, users, and groups avaliable to recieve messages in the slack
+% workspace
+%
 %
 %%% Remarks
 %
@@ -20,27 +25,92 @@
 %
 %
 
-function slackMessenger(channel,message,token,attachments)
+function [channels] = slackMessenger(token,channel,message,attachments)
 postMessage_API = 'https://slack.com/api/chat.postMessage';
+fileUpload_API = 'https://slack.com/api/files.upload';
 
+%create authorization header to be used in all requests
 auth = matlab.net.http.HeaderField;
 auth.Name = 'Authorization';
 auth.Value = ['Bearer ' token];
 
-contentType = matlab.net.http.HeaderField;
-contentType.Name = 'Content-Type';
-contentType.Value = 'application/json';
+if nargin == 1
+    listChannel_API = 'https://slack.com/api/channels.list';
+    listGroups_API = 'https://slack.com/api/groups.list';
+    listUsers_API = 'https://slack.com/api/users.list';
+    
+    request = matlab.net.http.RequestMessage;
 
-body.channel = channel;
-body.text = message;
-body = matlab.net.http.MessageBody(body);
+    contentType = matlab.net.http.HeaderField;
+    contentType.Name = 'Content-Type';
+    contentType.Value = 'application/x-www-form-urlencoded';
+    
+    request.Method = 'GET';
+    request.Header = [contentType auth];
+    
+    rc = request.send(listChannel_API);
+    rg = request.send(listGroups_API);
+    ru = request.send(listUsers_API);
+    rawUsers = ru.Body.Data.members;
+    
+    channels = struct('name',cellstr(compose("#%s",string({rc.Body.Data.channels.name}))),...
+                        'id',{rc.Body.Data.channels.id},...
+                        'type','channel');
+    groups = struct('name',{rg.Body.Data.groups.name},...
+                        'id',{rg.Body.Data.groups.id},...
+                        'type','channel');
+    users = struct('name',{rawUsers.real_name},....
+                        'id',{rawUsers.id},...
+                        'type','user');
+                    
+    toDelete = [rawUsers.is_bot] | [rawUsers.is_app_user] | strcmp({rawUsers.name},'slackbot');
+    users(toDelete) = [];
+    
+    channels = [channels groups users];
+    return
+end 
 
-request.Method = 'Post';
-request.Header = [auth contentType];
-request.Body = body;
+if ~isempty(message)
+    mrequest = matlab.net.http.RequestMessage;
+    
+    contentType = matlab.net.http.HeaderField;
+    contentType.Name = 'Content-Type';
+    contentType.Value = 'application/json';
+    
+    mrequest.Method = 'Post';
+    mrequest.Header = [auth contentType];
+    
+    for c = 1:numel(channel)
+        body.text = message;
+        body.channel = channel{c};
+        body = matlab.net.http.MessageBody(body);
+        
+        mrequest.Body = body;
+        
+        r = mrequest.send(postMessage_API); %#ok<NASGU>
+        
+        clear body
+    end
+end
 
-r = request.send(postMessage_API);
-
+if nargin == 4
+    arequest = matlab.net.http.RequestMessage;
+    
+    contentType = matlab.net.http.HeaderField;
+    contentType.Name = 'Content-Type';
+    contentType.Value = 'multipart/form-data';
+    
+    arequest.Method = 'post';
+    arequest.Header = [auth contentType];
+    for a = 1:numel(attachments)
+        fileProv = matlab.net.http.io.FileProvider(attachments{a});
+        
+        fp = matlab.net.http.io.MultipartFormProvider("channels",strjoin(channel,','),"file",fileProv);
+        
+        arequest.Body = fp;
+        
+        f = arequest.send(fileUpload_API); %#ok<NASGU>
+    end
 end
 
 

@@ -423,13 +423,13 @@ function autograder(app)
             end
         end
     end
-    if ~isempty(app.canvasMessage)
+    if app.PostToCanvas.Value
         Logger.log('Posting to Canvas');
         progress.Message = 'Posting to Canvas';
         progress.Indeterminate = 'on';
         try
             postToCanvas(app.canvasCourseId, app.canvasToken, app.canvasTitle, ...
-                app.canvasMessage);
+                app.canvasHtml);
         catch e
             if debugger(app, 'Failed to post announcement')
                 keyboard;
@@ -524,8 +524,8 @@ function shouldDebug = debugger(app, msg)
             textMessenger(app.phoneNumber, 'Autograder Failed... See your computer for more information', ...
                 app.twilioSid, app.twilioToken, app.twilioOrigin);
         end
-        if ~isempty(app.slackChannel)
-            slackMessenger(app.slackChannel, 'Autograder Failed... See your computer for more information', app.slackToken);
+        if ~isempty(app.slackRecipients)
+            slackMessenger(app.slackToken, {app.slackRecipents.id}, 'Autograder Failed... See your computer for more information');
         end
         desktopMessenger('Autograder Failed... See MATLAB for more information');
     catch
