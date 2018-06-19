@@ -423,13 +423,13 @@ function autograder(app)
             end
         end
     end
-    if ~isempty(app.canvasMessage)
+    if app.PostToCanvas.Value
         Logger.log('Posting to Canvas');
         progress.Message = 'Posting to Canvas';
         progress.Indeterminate = 'on';
         try
             postToCanvas(app.canvasCourseId, app.canvasToken, app.canvasTitle, ...
-                app.canvasMessage);
+                app.canvasHtml);
         catch e
             if debugger(app, 'Failed to post announcement')
                 keyboard;
