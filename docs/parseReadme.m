@@ -40,7 +40,7 @@ function html = parseReadme(var, includeBoiler, baseUrl)
         html = parser(lines, includeBoiler, baseUrl);
         if nargout == 0
             [path, name, ~] = fileparts(var);
-            fid = fopen([path name '.html'], 'w+');
+            fid = fopen([path name '.html'], 'wt');
             fwrite(fid, html);
             fclose(fid);
             clear('html');
