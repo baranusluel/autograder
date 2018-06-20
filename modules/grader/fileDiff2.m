@@ -13,7 +13,7 @@
 %
 % The goal of this function is to create modular HTML markup that utilized
 % Bootstrap's grid to return meaningul and, ultimately, responsive HTML.
-function html = fileDiff(file1, file2, isBoilerplate)
+function html = fileDiff2(file1, file2, isBoilerplate)
 EQUAL = '<span class="diff-equal">%s</span><br />';
 DELETE = '<span class="diff-delete">%s</span><br />';
 INSERT = '<span class="diff-insert">%s</span><br />';
@@ -24,9 +24,10 @@ RESOURCES = {
                 '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>', ...
                 '<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>', ...
                 '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>', ...
+                '<script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>'
                 };
 BOILER = [{'<!DOCTYPE html>', '<html>', '<head>', '<style>', ...
-    'span {font-family: "Courier New"} .diff-equal {background-color: white;} .diff-delete {background-color: #FF8A8A; text-decoration: line-through;} .diff-insert {background-color: lightgreen;} .diff-invisible {color: white}', ...
+    'span {font-family: "Courier New"} .diff-equal {background-color: white;} .diff-delete {background-color: lightgreen;} .diff-insert {background-color: #FF8A8A; text-decoration: line-through;} .diff-invisible {color: white}', ...
     '</style>'}, RESOURCES, {'</head>', '<body>'}];
 EQUAL_COLLAPSE_LINE_NUM = 3;
 if nargin == 2
