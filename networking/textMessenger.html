@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>postToCanvas: Post a message to canvas</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
+      --><title>textMessenger: Send a text to a phone number</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
       $(document).ready(function() {
         // get name of class
         // anywhere CLASS name is or METHOD name is, replace with code version
@@ -20,7 +20,7 @@ To make changes, update the MATLAB code and republish this document.
 
         // for each occurrence of this in 
       });
-    </script><meta name="DC.date" content="2018-06-20"><meta name="DC.source" content="postToCanvas.m"><style type="text/css">
+    </script><meta name="DC.date" content="2018-06-20"><meta name="DC.source" content="textMessenger.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -80,9 +80,4 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="container-fluid"><div class="content"><h1>postToCanvas: Post a message to canvas</h1><!--introduction--><p>postToCanvas will post a message to the course website on Canvas as the specified user</p><p>postToCanvas(C, T, M) will post a message to the course specified by the courseID C, as the poster specified by the token T, using the message M.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>While this is primarily used to post messages about homework grading to Canvas, it can actually be used to post <i>anything</i> to Canvas. Be careful.</p><h2 id="2">Exceptions</h2><p>Like all other networking functions, this will throw an AUTOGRADER:networking:connectionError exception if something goes wrong.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">C = 1234; <span class="comment">% valid CourseID</span>
-T = <span class="string">'...'</span>; <span class="comment">% valid token</span>
-M = <span class="string">'Hello, World!'</span>; <span class="comment">% message</span>
-postToCanvas(C, T, M);
-</pre><pre class="language-matlab">Message <span class="string">'Hello, World!'</span> <span class="string">posted</span>
-</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div></div></body></html>
+  </style></head><body><div class="container-fluid"><div class="content"><h1>textMessenger: Send a text to a phone number</h1><!--introduction--><p>textMessenger(N, M, S, T, O) will send a message with content M to number N, using Twilio SID S, Token T, and origin number O.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li></ul></div><h2 id="1">Remarks</h2><p>N must be a valid phone number; optionally, it can include the country code; however, it must be at LEAST 10 digits long. It can be given as either a string or a character vector.</p><h2 id="2">Exceptions</h2><p>An AUTOGRADER:networking:textMessenger:invalidNumber exception if the number is invalid</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div></div></body></html>

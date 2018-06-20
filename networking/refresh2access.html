@@ -20,7 +20,7 @@ To make changes, update the MATLAB code and republish this document.
 
         // for each occurrence of this in 
       });
-    </script><meta name="DC.date" content="2018-05-24"><meta name="DC.source" content="refresh2access.m"><style type="text/css">
+    </script><meta name="DC.date" content="2018-06-20"><meta name="DC.source" content="refresh2access.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -80,7 +80,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="container-fluid"><div class="content"><h1>refresh2access: Convert a refresh token to an Access token</h1><!--introduction--><p>This will convert a given refresh token to it's corresponding access token.</p><p>A = refresh2access&reg; will use the refresh token in R to get the access token A.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>This is used exclusively with Google and it's API</p><h2 id="2">Exceptions</h2><p>As with all other networking functions, an AUTOGRADER:networking:connectionError exception is thrown if the connection is interrupted</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">R = <span class="string">'..'</span>; <span class="comment">% valid refresh</span>
+  </style></head><body><div class="container-fluid"><div class="content"><h1>refresh2access: Convert a refresh token to an Access token</h1><!--introduction--><p>This will convert a given refresh token to it's corresponding access token.</p><p>A = refresh2access(R, I, S) will use the refresh token R, the clientID I, and the client secret S.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>This is used exclusively with Google and it's API</p><h2 id="2">Exceptions</h2><p>As with all other networking functions, an AUTOGRADER:networking:connectionError exception is thrown if the connection is interrupted</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">R = <span class="string">'..'</span>; <span class="comment">% valid refresh</span>
 A = refresh2access(R);
 </pre><pre class="language-matlab">A <span class="string">-&gt;</span> <span class="string">Valid</span> <span class="string">Access</span> <span class="string">token</span>
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div></div></body></html>
