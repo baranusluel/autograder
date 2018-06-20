@@ -13,6 +13,6 @@
 %
 % The goal of this function is to create modular HTML markup that utilized
 % Bootstrap's grid to return meaningul and, ultimately, responsive HTML.
-function html = fileDiff(txt1, txt2, isBoilerplate)
-
+function html = fileDiff(~, ~, ~)
+    html = 1;
 end

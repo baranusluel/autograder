@@ -417,15 +417,15 @@ function runnable = runCase(runnable, safeDir)
         init = '';
     end
 
-    % Parse the call
-    [inNames, outNames, func] = parseFunction(tCase.call);
-    outs = cell(size(outNames));
     % run the function
     % create sentinel file
     fid = fopen(File.SENTINEL, 'w');
     try
         rng(1);
         cd(runnable.path);
+        % parse the call
+        [inNames, outNames, func] = parseFunction(tCase.call);
+        outs = cell(size(outNames));
         [outs{:}] = runner(func, init, inNames, tCase.inputs);
     catch e
         if isa(runnable, 'TestCase')

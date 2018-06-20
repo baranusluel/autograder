@@ -12,8 +12,10 @@ function [passed, msg] = test()
     info.points = 3;
     info.banned = {};
     info.supportingFiles = {[p filesep 'vars_rubrica.mat']};
+    cd(p);
     T = TestCase(info, p);
     T = engine(T);
+    cd('..');
     F(1) = Feedback(T, p);
     F(2) = Feedback(T, [pwd filesep 'feedback2']);
     F(3) = Feedback(T, [pwd filesep 'feedback3']);
