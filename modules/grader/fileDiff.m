@@ -48,7 +48,7 @@ end
     if isBoilerplate
         html = [BOILER {'<div class="row file-diff">'}];
     else
-        html = {'div class="row file-diff">'};
+        html = {'<div class="row file-diff">'};
     end
     left = {'<div class="col-6 file-diff-left">', '<h2>', sanitize(file1), '</h2>', '<div class="diff-content">', ''};
     right = {'<div class="col-6 file-diff-right">', '<h2>', sanitize(file2), '</h2>', '<div class="diff-content">', ''};
@@ -84,6 +84,7 @@ end
     else
         html = [html left right '</div>'];
     end
+    html = strjoin(html, newline);
     
 end
 
