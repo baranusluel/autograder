@@ -92,6 +92,7 @@ if ~isempty(message)
     for c = 1:numel(channel)
         body.text = message;
         body.channel = channel{c};
+        body.as_user = true;
         body = matlab.net.http.MessageBody(body);
         
         mrequest.Body = body;
