@@ -104,6 +104,9 @@ if ~isempty(message)
 end
 
 if nargin == 4
+    if ~iscell(attachments)
+        attachments = {attachments};
+    end
     arequest = matlab.net.http.RequestMessage;
     
     contentType = matlab.net.http.HeaderField;
