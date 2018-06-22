@@ -1,0 +1,58 @@
+%% xlswrite: overloads xlswrite to work on UNIX
+%
+% xlswrite(F, D) will write data D to file F.
+%
+% xlswrite(F, D, ...) will throw an error, since the students should never
+% use those two inputs
+%
+% [S, M] = xlswrite(___) will return null for both outputs, if requested.
+function varargout = xlswrite(file, data, varargin)
+    % throw error if varargin non null
+    if ~isempty(varargin)
+        throw(MException('MATLAB:xlswrite:tooManyInputs', ...
+            'Too many input arguments'));
+    end
+    
+    % throw error if more than two outputs requested
+    if nargout > 2
+        throw(MException('MATLAB:xlswrite:tooManyOutputs', ...
+            'Too many output arguments'));
+    end
+    
+    % if data as a whole is valid, good to go!
+    % throw error if cell array is invalid
+    if ~validator(data) && ~all(cellfun(@validator, data))
+        throw(MException('MATLAB:xlswrite:invalidData', ...
+            'Input array has invalid data'));
+    end
+    % throw error if invalid path; try opening file!
+    fid = fopen(file, 'wt');
+    if fid == -1
+        throw(MException('MATLAB:xlswrite:invalidFilePath', ...
+            'Path "%s" is invalid', file));
+    else
+        fclose(fid);
+        delete(file);
+    end
+    [path, name, ext] = fileparts(file); %#ok<ASGLU>
+    if isempty(path)
+        path = pwd;
+    end
+    save([path filesep name '.mat'], 'name', 'ext', 'data');
+    
+    varargout = cell(1, nargout);
+end
+
+function isValid = validator(data)
+% data can be:
+%
+% * string
+% * numeric
+% * char
+% * logical
+
+
+isValid = isnumeric(data) || ischar(data) || ...
+    isstring(data) || islogical(data);
+
+end
