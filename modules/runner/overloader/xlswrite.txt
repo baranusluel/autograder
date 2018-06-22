@@ -21,7 +21,7 @@ function varargout = xlswrite(file, data, varargin)
     
     % if data as a whole is valid, good to go!
     % throw error if cell array is invalid
-    if ~validator(data) && ~all(cellfun(@validator, data))
+    if ~validator(data) && ~all(cellfun(@validator, data(:)))
         throw(MException('MATLAB:xlswrite:invalidData', ...
             'Input array has invalid data'));
     end
@@ -38,6 +38,11 @@ function varargout = xlswrite(file, data, varargin)
     if isempty(path)
         path = pwd;
     end
+    ext = lower(ext(2:end));
+    if strcmp(ext, 'xls')
+        ext = 'xlsx';
+    end
+    ext = ['.' ext];
     save([path filesep name '.mat'], 'name', 'ext', 'data');
     
     varargout = cell(1, nargout);
