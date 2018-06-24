@@ -14,7 +14,7 @@
 % The goal of this function is to create modular HTML markup that utilized
 % Bootstrap's grid to return meaningul and, ultimately, responsive HTML.
 
-function html = fileDiff(file1, file2, isBoilerplate)
+function html = fileDiff(txt1, txt2, fName1, fName2, isBoilerplate)
 EQUAL = '<span class="diff-equal">%s</span>';
 DELETE = '<span class="diff-delete">%s</span>';
 INSERT = '<span class="diff-insert">%s</span>';
@@ -38,12 +38,6 @@ end
     javaaddpath([fileparts(mfilename('fullpath')) filesep 'diffMatchPatch.jar']);
     cleaner = onCleanup(@()(...
         javarmpath([fileparts(mfilename('fullpath')) filesep 'diffMatchPatch.jar'])));
-    fid = fopen(file1, 'rt');
-    txt1 = char(fread(fid)');
-    fclose(fid);
-    fid = fopen(file2, 'rt');
-    txt2 = char(fread(fid)');
-    fclose(fid);
     dmp = diff_match_patch();
     diffs = dmp.diff(txt1, txt2);
     
@@ -53,8 +47,6 @@ end
     else
         html = {'<div class="row file-diff">'};
     end
-    [~, fName1, ~] = fileparts(file1);
-    [~, fName2, ~] = fileparts(file2);
     
     left = {'<div class="col-6 file-diff-left">', '<h2>', sanitize(fName1), '</h2>', '<div class="diff-content">', ''};
     right = {'<div class="col-6 file-diff-right">', '<h2>', sanitize(fName2), '</h2>', '<div class="diff-content">', ''};

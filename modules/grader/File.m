@@ -248,17 +248,9 @@ classdef File < handle
             else
                 switch lower(this.extension(2:end))
                     case this.TXT
-                        
-                        studPath = [tempname this.extension];
-                        solnPath = [tempname soln.extension];
-                        fid = fopen(studPath, 'wt');
-                        fwrite(fid, this.data);
-                        fclose(fid);
-                        fid = fopen(solnPath, 'wt');
-                        fwrite(fid, soln.data);
-                        fclose(fid);
                         try
-                            html = fileDiff(studPath, solnPath, false);
+                            html = fileDiff(soln.data, this.data, ...
+                                [soln.name '_soln' soln.extension], [this.name this.extension], false);
                         catch
                             html = '<p>Student file is not a valid text file</p>';
                         end
