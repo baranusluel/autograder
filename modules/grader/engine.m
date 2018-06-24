@@ -190,7 +190,7 @@ function runnables = engine(runnables)
         'cancel', 'parfevalOnAll', 'fetchNext', 'batch', ...
         'eval', 'feval', 'assignin', 'evalc', 'evalin', ...
         'input', 'wait', 'uiwait', 'keyboard', 'dbstop', ...
-        'cd', 'system', 'restoredefaultpath', 'builtin', 'load'};
+        'cd', 'system', 'restoredefaultpath', 'builtin', 'load', 'rmdir', 'delete'};
 
     if any(~isvalid(runnables))
         e = MException('AUTOGRADER:engine:invalidRunnable', ...
@@ -208,7 +208,6 @@ function runnables = engine(runnables)
         throw(MException('AUTOGRADER:engine:invalidRunnable', ...
             'Input was not a runnable type'));
     end
-
     origPaths = cell(size(runnables));
     for r = 1:numel(runnables)
         runnable = runnables(r);
@@ -296,7 +295,7 @@ function runnables = engine(runnables)
             workers(w) = parfeval(@()(false), 0);
             delete(workers(w));
         else
-            workers(w) = parfeval(@runCase, 1, runnables(w));
+            workers(w) = parfeval(@runCase, 1, runnables(w), pwd);
         end
     end
     while any(isvalid(workers))
@@ -394,11 +393,11 @@ function populatePlots(runnable)
 end
 
 
-function runnable = runCase(runnable)
+function runnable = runCase(runnable, safeDir)
     % Setup workspace
     % is this supposed to be here?  -->     cleanup();
-    currDir = pwd;
-    cleaner = onCleanup(@()(cleanup(currDir)));
+    builtin('cd', safeDir);
+    cleaner = onCleanup(@()(cleanup(safeDir)));
     beforeSnap = dir(runnable.path);
     beforeSnap = {beforeSnap.name};
     beforeSnap(strncmp(beforeSnap, '.', 1)) = [];
@@ -418,15 +417,15 @@ function runnable = runCase(runnable)
         init = '';
     end
 
-    % Parse the call
-    [inNames, outNames, func] = parseFunction(tCase.call);
-    outs = cell(size(outNames));
     % run the function
     % create sentinel file
     fid = fopen(File.SENTINEL, 'w');
     try
         rng(1);
         cd(runnable.path);
+        % parse the call
+        [inNames, outNames, func] = parseFunction(tCase.call);
+        outs = cell(size(outNames));
         [outs{:}] = runner(func, init, inNames, tCase.inputs);
     catch e
         if isa(runnable, 'TestCase')
@@ -439,7 +438,7 @@ function runnable = runCase(runnable)
             return;
         end
     end
-    builtin('cd', currDir);
+    builtin('cd', safeDir);
     name = fopen(fid);
     fclose(fid);
     if ~strcmp(name, File.SENTINEL)

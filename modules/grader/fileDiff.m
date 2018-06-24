@@ -13,6 +13,7 @@
 %
 % The goal of this function is to create modular HTML markup that utilized
 % Bootstrap's grid to return meaningul and, ultimately, responsive HTML.
+
 function html = fileDiff(file1, file2, isBoilerplate)
 EQUAL = '<span class="diff-equal">%s</span>';
 DELETE = '<span class="diff-delete">%s</span>';
