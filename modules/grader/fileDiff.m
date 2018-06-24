@@ -14,10 +14,10 @@
 % The goal of this function is to create modular HTML markup that utilized
 % Bootstrap's grid to return meaningul and, ultimately, responsive HTML.
 function html = fileDiff(file1, file2, isBoilerplate)
-EQUAL = '<span class="diff-equal">%s</span><br />';
-DELETE = '<span class="diff-delete">%s</span><br />';
-INSERT = '<span class="diff-insert">%s</span><br />';
-NODISP = '<span class="diff-invisible">%s</span><br />';
+EQUAL = '<span class="diff-equal">%s</span>';
+DELETE = '<span class="diff-delete">%s</span>';
+INSERT = '<span class="diff-insert">%s</span>';
+NODISP = '<span class="diff-invisible">%s</span>';
 RESOURCES = {
                 '<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">', ...
                 '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">', ...
@@ -28,7 +28,8 @@ RESOURCES = {
 BOILER = [{'<!DOCTYPE html>', '<html>', '<head>', '<style>', ...
     'span {font-family: "Courier New"} .diff-equal {background-color: white;} .diff-delete {background-color: #FF8A8A; text-decoration: line-through;} .diff-insert {background-color: lightgreen;} .diff-invisible {color: white}', ...
     '</style>'}, RESOURCES, {'</head>', '<body>'}];
-EQUAL_COLLAPSE_LINE_NUM = 3;
+EQUAL_COLLAPSE_LINE_NUM = 5;
+COLLAPSE_NUM = 2;
 if nargin == 2
     isBoilerplate = true;
 end
@@ -50,8 +51,11 @@ end
     else
         html = {'<div class="row file-diff">'};
     end
-    left = {'<div class="col-6 file-diff-left">', '<h2>', sanitize(file1), '</h2>', '<div class="diff-content">', ''};
-    right = {'<div class="col-6 file-diff-right">', '<h2>', sanitize(file2), '</h2>', '<div class="diff-content">', ''};
+    [~, fName1, ~] = fileparts(file1);
+    [~, fName2, ~] = fileparts(file2);
+    
+    left = {'<div class="col-6 file-diff-left">', '<h2>', sanitize(fName1), '</h2>', '<div class="diff-content">', ''};
+    right = {'<div class="col-6 file-diff-right">', '<h2>', sanitize(fName2), '</h2>', '<div class="diff-content">', ''};
     
     d = 0;
     while d < diffs.size()
@@ -62,8 +66,13 @@ end
         if diff.operation == diff.operation.EQUAL
             % see how many more are equal; if past const, then collapse
             if numel(strfind(txt, newline)) >= EQUAL_COLLAPSE_LINE_NUM
-                txt = sprintf('%d equal lines omitted', ...
-                    numel(strfind(txt, newline)));
+                lns = strsplit(txt, newline);
+                starter = strjoin(lns(1:COLLAPSE_NUM), newline);
+                ender = strjoin(lns(end-COLLAPSE_NUM:end), newline);
+                txt = sprintf('%s\n%d equal lines omitted\n%s', ...
+                    starter, ...
+                    numel(strfind(txt, newline)) - (2 * COLLAPSE_NUM), ...
+                    ender);
             end
             rightLine = sprintf(EQUAL, sanitize(txt));
             leftLine = sprintf(EQUAL, sanitize(txt));
