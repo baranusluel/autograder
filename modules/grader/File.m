@@ -248,6 +248,7 @@ classdef File < handle
             else
                 switch lower(this.extension(2:end))
                     case this.TXT
+                        
                         studPath = [tempname this.extension];
                         solnPath = [tempname soln.extension];
                         fid = fopen(studPath, 'wt');
@@ -257,11 +258,7 @@ classdef File < handle
                         fwrite(fid, soln.data);
                         fclose(fid);
                         try
-                            html = visdiff(studPath, solnPath, 30);
-                            % extract diff-start div:
-                            inds(1) = strfind(html, '<div id="diffstart">');
-                            inds(2) = strfind(html, '<div id="bottom">') - 1;
-                            html = ['<div class="row text-feedback"><div class="col-6"><h2>Your File</h2></div><div class="col-6"><h2>Solution File</h2></div><div class="col-12">', html(inds(1):inds(2)) '</div>'];
+                            html = fileDiff(studPath, solnPath, false);
                         catch
                             html = '<p>Student file is not a valid text file</p>';
                         end
