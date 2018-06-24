@@ -18,6 +18,7 @@ EQUAL = '<span class="diff-equal">%s</span>';
 DELETE = '<span class="diff-delete">%s</span>';
 INSERT = '<span class="diff-insert">%s</span>';
 NODISP = '<span class="diff-invisible">%s</span>';
+COLLAPSE = '%s<br/><br/><span class="diff-omitted">%d equal lines omitted</span><br/><br/>%s';
 RESOURCES = {
                 '<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">', ...
                 '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">', ...
@@ -26,7 +27,7 @@ RESOURCES = {
                 '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>', ...
                 };
 BOILER = [{'<!DOCTYPE html>', '<html>', '<head>', '<style>', ...
-    'span {font-family: "Courier New"} .diff-equal {background-color: white;} .diff-delete {background-color: #FF8A8A; text-decoration: line-through;} .diff-insert {background-color: lightgreen;} .diff-invisible {color: white}', ...
+    'span {font-family: "Courier New"} .diff-equal {background-color: white;} .diff-delete {background-color: #FF8A8A; text-decoration: line-through;} .diff-insert {background-color: lightgreen;} .diff-invisible {color: white;} .diff-omitted {color:#b5b5b5;}', ...
     '</style>'}, RESOURCES, {'</head>', '<body>'}];
 EQUAL_COLLAPSE_LINE_NUM = 5;
 COLLAPSE_NUM = 2;
@@ -69,13 +70,15 @@ end
                 lns = strsplit(txt, newline);
                 starter = strjoin(lns(1:COLLAPSE_NUM), newline);
                 ender = strjoin(lns(end-COLLAPSE_NUM:end), newline);
-                txt = sprintf('%s\n%d equal lines omitted\n%s', ...
-                    starter, ...
+                txt = sprintf(COLLAPSE, ...
+                    sanitize(starter), ...
                     numel(strfind(txt, newline)) - (2 * COLLAPSE_NUM), ...
-                    ender);
+                    sanitize(ender));
+            else
+                txt = sanitize(txt);
             end
-            rightLine = sprintf(EQUAL, sanitize(txt));
-            leftLine = sprintf(EQUAL, sanitize(txt));
+            rightLine = sprintf(EQUAL, txt);
+            leftLine = sprintf(EQUAL, txt);
         elseif diff.operation == diff.operation.DELETE
             rightLine = sprintf(NODISP, sanitize(txt));
             leftLine = sprintf(DELETE, sanitize(txt));
