@@ -37,7 +37,14 @@
 
 function [status, html] = autotester(varargin)
     outs = parseInputs(varargin);
-
+    sentinel = [tempname '.lock'];
+    fid = fopen(sentinel, 'wt');
+    fwrite(fid, 'SENTINEL');
+    fclose(fid);
+    File.SENTINEL(sentinel);
+    evalc('gcp');
+    worker = parfevalOnAll(@File.SENTINEL, 0, sentinel);
+    worker.wait();
     % path is going to be this file's directory
     origPath = cd(fileparts(mfilename('fullpath')));
     userPath = path();

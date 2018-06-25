@@ -13,10 +13,14 @@ function [passed, msg] = test()
     info.banned = {};
     info.supportingFiles = {[p filesep 'vars_rubrica.mat']};
     T = TestCase(info, p);
+    cd(p);
     T = engine(T);
+    cd('..');
     F = Feedback(T, p);
     try
+        cd(p);
         F2 = engine(F);
+        cd('..');
         % output should be input (1)
         if ~isfield(F2.outputs, 'out')
             passed = false;

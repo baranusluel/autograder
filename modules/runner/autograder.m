@@ -104,7 +104,7 @@ function autograder(app)
     if progress.CancelRequested
         return;
     end
-    progress.Message = 'Setting Up Environment';
+    progress.Message = 'Loading Dictionaries & Setting up Environment';
     Logger.log('Setting up new directory');
     % Get temporary directory
     settings.workingDir = [tempname filesep];
@@ -117,6 +117,7 @@ function autograder(app)
     fwrite(fid, 'SENTINEL');
     fclose(fid);
     File.SENTINEL(sentinel);
+    Logger.log('Loading Dictionary');
     worker = [parfevalOnAll(@File.SENTINEL, 0, sentinel), ...
         parfevalOnAll(@gradeComments, 0)];
     % Set on cleanup
