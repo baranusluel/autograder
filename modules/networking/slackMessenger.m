@@ -42,7 +42,7 @@ if nargin == 1
     listUsers_API = 'https://slack.com/api/users.list';
     
     request = matlab.net.http.RequestMessage;
-
+    
     contentType = matlab.net.http.HeaderField;
     contentType.Name = 'Content-Type';
     contentType.Value = 'application/x-www-form-urlencoded';
@@ -58,26 +58,46 @@ if nargin == 1
     rawChannels = rc.Body.Data.channels;
     rawGroups = rg.Body.Data.groups;
     
-    channels = struct('name',cellstr(compose("#%s",string({rawChannels.name}))),...
-                        'id',{rawChannels.id},...
-                        'type','channel');
-    groups = struct('name',cellstr(compose("#%s",string({rawGroups.name}))),...
-                        'id',{rawGroups.id},...
-                        'type','channel');
-    users = struct('name',{rawUsers.real_name},....
-                        'id',{rawUsers.id},...
-                        'type','user');
-                    
-    toDelete = [rawUsers.is_bot] | [rawUsers.is_app_user] | strcmp({rawUsers.name},'slackbot');
-    users(toDelete) = [];
+    if ~isempty(rawChannels)
+        channels = struct('name',cellstr(compose("#%s",string({rawChannels.name}))),...
+            'id',{rawChannels.id},...
+            'type','channel');
+        channels([rawChannels.is_archived]) = [];
+    else
+        channels = [];
+    end
     
-    channels([rawChannels.is_archived]) = [];
-    groups([rawGroups.is_archived]) = [];
+    if ~isempty(rawGroups)
+        groups = struct('name',cellstr(compose("#%s",string({rawGroups.name}))),...
+            'id',{rawGroups.id},...
+            'type','channel');
+        groups([rawGroups.is_archived]) = [];
+    else
+        groups = [];
+    end
     
+    if ~isempty(rawUsers)
+        if ~isstruct(rawUsers)
+            for x = numel(rawUsers):-1:1
+                if rawUsers{x}.deleted
+                    rawUsers(x) = [];
+                end
+            end
+            rawUsers = [rawUsers{:}];
+        end
+        users = struct('name',{rawUsers.real_name},....
+            'id',{rawUsers.id},...
+            'type','user');
+        
+        toDelete = [rawUsers.is_bot] | [rawUsers.is_app_user] | strcmp({rawUsers.name},'slackbot');
+        users(toDelete) = [];
+    else
+        users = [];
+    end
     
     channels = [channels groups users];
     return
-end 
+end
 
 if ~isempty(message)
     mrequest = matlab.net.http.RequestMessage;
