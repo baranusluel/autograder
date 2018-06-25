@@ -77,6 +77,14 @@ if nargin == 1
     end
     
     if ~isempty(rawUsers)
+        if ~isstruct(rawUsers)
+            for x = numel(rawUsers):-1:1
+                if rawUsers{x}.deleted
+                    rawUsers(x) = [];
+                end
+            end
+            rawUsers = [rawUsers{:}];
+        end
         users = struct('name',{rawUsers.real_name},....
             'id',{rawUsers.id},...
             'type','user');
