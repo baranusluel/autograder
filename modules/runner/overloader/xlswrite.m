@@ -31,7 +31,7 @@
 %
 % If ARRAY is a cell array and contains data other than a scalar numeric or
 % a vector or array of type char, the cell in the output will be empty.
-%
+%s
 % The maximum size of the output's cell array is constrained by Excel's 
 % sheet size limits.
 %
@@ -75,3 +75,32 @@
 %   xlswrite(F, A);
 %
 %   Exception Raised: not enough input arguments
+function [status, msg] = xlswrite(filename, arr, varargin)
+truncatedFN = strtok(filename, '.'); %get rid of any superfluous extension
+editedFN = [truncatedFN, '.mat']; % append the appropriate .mat extension
+if iscell(arr)
+    % NEED TO WORK WITH CELL FUN TO clear cells with cells or vectors
+    valids = cellfun(@validateCell, arr)
+    arr(~valids) = {}; % replace invalid cells with empty cells
+elseif ~isnumeric(arr) || ischar(contents) || isstring(contents) 
+    || islogical(contents)
+    
+end
+% NEED TO VALIDATE THE ARRAY INPUT
+
+save(editedFN, 'arr'); % save the cell array as a .mat file
+status = true;
+end
+
+function validCell = validateCell(cellie)
+validCell = false;
+    if length(cellie) <= 1
+        contents = cellie{1};
+        if isnumeric(contents) && length(contents) <= 1
+            validCell = true;
+        elseif ischar(contents) || isstring(contents) 
+            || islogical(contents)
+            validCell = true;
+        end
+    end
+end
