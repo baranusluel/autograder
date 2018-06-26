@@ -424,6 +424,23 @@ function autograder(app)
             end
         end
     end
+    if app.EmailFeedback.Value
+        Logger.log('Emailing Feedback');
+        progress.Message = 'Emailing Feedback';
+        progress.Indeterminate = 'on';
+        try
+            emailFeedback(app.notifierToken, app.driveKey, ...
+                app.googleClientId, app.googleClientSecret, ...
+                students, strjoin(app.emailMessage, newline), progress);
+        catch e
+            if debugger(app, 'Failed to email feedback files')
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
+    end
     if app.PostToCanvas.Value
         Logger.log('Posting to Canvas');
         progress.Message = 'Posting to Canvas';
