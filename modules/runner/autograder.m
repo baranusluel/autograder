@@ -431,7 +431,7 @@ function autograder(app)
         try
             emailFeedback(app.notifierToken, app.driveKey, ...
                 app.googleClientId, app.googleClientSecret, ...
-                strjoin(app.emailMessage, newline), students, progress);
+                students, strjoin(app.emailMessage, newline), progress);
         catch e
             if debugger(app, 'Failed to email feedback files')
                 keyboard;
