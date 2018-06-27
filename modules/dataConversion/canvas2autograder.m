@@ -76,15 +76,25 @@ function canvas2autograder(canvasPath, canvasGradebook, outPath, progress)
         end
     end
     gradebook = [names; tmp];
+    if ~isValidGradebook(gradebook)
+        % see if we can fix; as long as we have name, canvas, and tsquare,
+        % we're good
+        canvasId = gradebook(:, strcmp(gradebook(1, :), 'ID'));
+        names = gradebook(:, strcmp(gradebook(1, :), 'Student'));
+        gtUsername = gradebook(:, strcmp(gradebook(1, :), 'SIS Login ID'));
+        if isempty(canvasId) || isempty(names) || isempty(gtUsername)
+            % unfixable; die and fail
+            throw(MException('AUTOGRADER:canvas2autograder:invalidGradebook',...
+                         'The Gradebook given is not a valid canvas csv'));
+        else
+            gradebook = [names, canvasId, canvasId, gtUsername];
+        end
+    end
 
     % Validate Inputs
     if ~isValidCanvas(unzippedCanvas)
         throw(MException('AUTOGRADER:canvas2autograder:invalidFile',...
                          'The Path given does not contain any valid student submissions'));
-    end
-    if ~isValidGradebook(gradebook)
-        throw(MException('AUTOGRADER:canvas2autograder:invalidGradebook',...
-                         'The Gradebook given is not a valid canvas csv'));
     end
 
     % Generate folders Map
