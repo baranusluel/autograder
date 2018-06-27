@@ -44,63 +44,79 @@
 % applies '.mat'. If any file extension other than '.mat' is specified, 
 % xlswrite will disregard that specified file extension and apply a '.mat'
 % file extension. 
-%
-%%% Exceptions
-%
-% xlswrite should not throw an exception, as long as two inputs are given.
-%
-%%% Unit Tests
-%
-%   F = 'example.mat;
-%   A = {{[3 4 1 2]}; {'hello'};
-%   [S, M] = xlswrite(F, A);
-%
-%   S -> true;
-%   M -> '';
-%
-%   F = 'example.mat';
-%   A = [];
-%   xlswrite(F, A);
-%
-%   Exception Raised: not enough input arguments
-%
-%   F = [];
-%   A = {{[3 4 1 2]}; {'hello'};
-%   xlswrite(F, A);
-%
-%   Exception Raised: not enough input arguments
-%
-%   F = [];
-%   A = [];
-%   xlswrite(F, A);
-%
-%   Exception Raised: not enough input arguments
-function [status, msg] = xlswrite(filename, arr, varargin)
-truncatedFN = strtok(filename, '.'); %get rid of any superfluous extension
-editedFN = [truncatedFN, '.mat']; % append the appropriate .mat extension
-if iscell(arr)
-    % NEED TO WORK WITH CELL FUN TO clear cells with cells or vectors
-    valids = cellfun(@validateCell, arr)
-    arr(~valids) = {}; % replace invalid cells with empty cells
-elseif ~isnumeric(arr) || ischar(contents) || isstring(contents) 
-    || islogical(contents)
-    
-end
-% NEED TO VALIDATE THE ARRAY INPUT
-
-save(editedFN, 'arr'); % save the cell array as a .mat file
-status = true;
-end
-
-function validCell = validateCell(cellie)
-validCell = false;
-    if length(cellie) <= 1
-        contents = cellie{1};
-        if isnumeric(contents) && length(contents) <= 1
-            validCell = true;
-        elseif ischar(contents) || isstring(contents) 
-            || islogical(contents)
-            validCell = true;
-        end
+function varargout = xlswrite(file, data, varargin)
+    % throw error if varargin non null
+    if ~isempty(varargin)
+        throw(MException('MATLAB:xlswrite:tooManyInputs', ...
+            'Too many input arguments'));
     end
+    
+    % throw error if more than two outputs requested
+    if nargout > 2
+        throw(MException('MATLAB:xlswrite:tooManyOutputs', ...
+            'Too many output arguments'));
+    end
+    
+    % if data as a whole is valid, good to go!
+    % throw error if cell array is invalid
+    if isnumeric(data) || islogical(data)
+        data = num2cell(data);
+    elseif ischar(data)
+        data = {data};
+    elseif isstring(data)
+        data = cellstr(data);
+    end
+    
+    data = cellfun(@validator, data, 'uni', false); %#ok<*NASGU>
+    
+    % throw error if invalid path; try opening file!
+    fid = fopen(file, 'wt');
+    if fid == -1
+        throw(MException('MATLAB:xlswrite:invalidFilePath', ...
+            'Path "%s" is invalid', file));
+    else
+        fclose(fid);
+        delete(file);
+    end
+    [path, name, ext] = fileparts(file);
+    if isempty(path)
+        path = pwd;
+    end
+    ext = lower(ext(2:end));
+    if strcmp(ext, 'xls')
+        ext = 'xlsx';
+    end
+    ext = ['.' ext];
+    save([path filesep name '.mat'], 'name', 'ext', 'data');
+    
+    varargout = cell(1, nargout);
+end
+
+function data = validator(data)
+% data can be:
+%
+% * string
+% * numeric
+% * char
+% * logical
+EXCEL_MAX_VAL = 65536;
+e = MException('MATLAB:xlswrite:invalidData', 'Data is invalid');
+if isnumeric(data)
+    % must be scalar
+    if ~isscalar(data)
+        e.throw();
+    elseif isnan(data)
+        data = [];
+    elseif isinf(data)
+        data = sign(data) * EXCEL_MAX_VAL;
+    end
+elseif islogical(data)
+    tmp = [0 1];
+    data = tmp(data + 1);
+elseif isstring(data)
+    data = char(data);
+elseif ~ischar(data)
+    e.throw();
+end
+
 end
