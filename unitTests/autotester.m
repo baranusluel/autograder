@@ -118,7 +118,7 @@ function [status, html] = autotester(varargin)
         fid = fopen(file, 'wt');
         fwrite(fid, completeHtml);
         fclose(fid);
-        web(['file:///' file]);
+        web(['file:///' file], '-browser');
     end
 
     if ~isempty(outs.output)
