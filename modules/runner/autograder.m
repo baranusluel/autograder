@@ -267,7 +267,7 @@ function autograder(app)
                 return;
             end
         end
-        progress.Value = min(s/numel(students));
+        progress.Value = s/numel(students);
         h.Data(s) = student.grade;
         if mod(s, DRAW_INTERVAL) == 0
             drawnow;
