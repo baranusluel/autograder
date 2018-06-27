@@ -38,7 +38,7 @@ function downloadFromCanvas(courseId, assignmentId, token, path, progress)
     progress.Value = 0;
     progress.Message = 'Fetching Student Information';
     for s = numStudents:-1:1
-        workers(s) = parfeval(@getStudentInfo, 1, subs{s}.user_id, token);
+        workers(s) = parfeval(@getStudentInfo, 1, subs(s).user_id, token);
     end
     while ~all([workers.Read])
         fetchNext(workers);
@@ -63,8 +63,8 @@ function downloadFromCanvas(courseId, assignmentId, token, path, progress)
         names{s} = students(s).name;
         ids{s} = students(s).login_id;
         % for each attachment, download it here
-        if isfield(subs{s}, 'attachments')
-            workers{s} = saveFiles(subs{s}.attachments, students(s).login_id);
+        if ~isempty(subs(s).attachments)
+            workers{s} = saveFiles(subs(s).attachments, students(s).login_id);
         end
     end
     workers = [workers{:}];
@@ -121,7 +121,7 @@ end
 
 function subs = getSubmissions(courseId, assignmentId, token, progress)
     API = 'https://gatech.instructure.com/api/v1/courses/';
-    DEFAULT_SUBMISSION_NUM = 1000;
+    DEFAULT_SUBMISSION_NUM = 10;
     try
         progress.Indeterminate = 'on';
         progress.Message = 'Fetching Student Submissions';
@@ -147,7 +147,7 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
                 return;
             end    
             subs = cell(1, pgs);
-            subs{1} = response.Body.Data';
+            subs{1} = sanitizeData(response.Body.Data');
             links = cell(1, pgs - 1);
             links{1} = next.link.extractBetween('<', '>');
             for l = 2:pgs - 1
@@ -172,9 +172,9 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
         else
             % Can't use our parfor; do the old fashioned way
             progress.Indeterminate = 'on';
-            counter = 1;
+            counter = 2;
             subs = cell(1, DEFAULT_SUBMISSION_NUM);
-            subs(counter:(counter+numel(response.Body.Data)-1)) = response.Body.Data';
+            subs{1} = sanitizeData(response.Body.Data');
             counter = counter + numel(response.Body.Data);
             while ~isempty(next)
                 if progress.CancelRequested
@@ -185,14 +185,12 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
                 response = request.send(next.link.extractBetween('<', '>'));
                 next = response.getFields('Link').parse({'link', 'rel'});
                 next = next(strcmp([next.rel], "next"));
-                subs(counter:(counter+numel(response.Body.Data)-1)) = response.Body.Data';
-                counter = counter + numel(response.Body.Data);
+                subs{counter} = sanitizeData(response.Body.Data');
+                counter = counter + 1;
             end
+            subs(cellfun(@isempty, subs)) = [];
+            subs = [subs{:}];
         end
-        if ~iscell(subs)
-            subs = num2cell(subs);
-        end
-        subs(cellfun(@isempty, subs)) = [];
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
         e = addCause(e, reason);
@@ -220,5 +218,19 @@ function chunk = fetchChunk(link, token)
     request.Header.Name = 'Authorization';
     request.Header.Value = ['Bearer ' token];
     response = request.send(link);
-    chunk = response.Body.Data';
+    chunk = sanitizeData(response.Body.Data');
+end
+
+function data = sanitizeData(data)
+    if iscell(data)
+        for c = 1:numel(data)
+            if ~isfield(data{c}, 'attachments')
+                data{c}.attachments = [];
+            end
+            data{c} = orderfields(data{c});
+        end
+        data = [data{:}];
+    elseif isstruct(data) && ~isfield(data, 'attachments')
+        data(1).attachments = [];
+    end
 end
