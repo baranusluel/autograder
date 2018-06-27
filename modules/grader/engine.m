@@ -439,12 +439,17 @@ function runnable = runCase(runnable, safeDir)
         end
     end
     builtin('cd', safeDir);
-    name = fopen(fid);
-    fclose(fid);
-    if ~strcmp(name, File.SENTINEL)
-        % Communicate that user called fclose all.
+    ids = fopen('all');
+    if isempty(ids)
         if isa(runnable, 'Feedback')
             runnable.exception = MException('AUTOGRADER:fcloseAll', 'Student Code called fclose all');
+        end
+    end
+    fclose(fid);
+    ids = fopen('all');
+    if ~isempty(ids)
+        if isa(runnable, 'Feedback')
+            runnable.exception = MException('AUTOGADER:fileNotClosed', 'Student Code did not close all its files');
         end
     end
     % Populate outputs
