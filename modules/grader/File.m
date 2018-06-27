@@ -38,7 +38,7 @@ classdef File < handle
     end
     properties (Access = public)
         TXT = {'txt', 'm', 'rtf', 'html'};
-        EXCEL = {'xls', 'xlsx', 'csv'};
+        EXCEL = {'mat'};
         IMAGES;
     end
     methods
@@ -140,7 +140,10 @@ classdef File < handle
                     end
                 case this.EXCEL
                     try
-                        [~,~,this.data] = xlsread(path);
+                        data = load(path);
+                        this.extension = data.ext;
+                        this.data = data.data;
+                        this.name = data.name;
                     catch
                         this.data = {};
                     end
