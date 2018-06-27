@@ -323,72 +323,6 @@ function autograder(app)
         keyboard;
     end
     
-    if app.AnalyzeForCheating.Value
-        try
-            progress.Message = 'Reading Student Submissions';
-            progress.Indeterminate = 'on';
-            progress.Cancelable = 'off';
-
-            txts = cell(1, numel(students));
-            for s = numel(students):-1:1
-                workers(s) = parfeval(@getText, 1, students(s).problemPaths);
-            end
-
-            progress.Value = 0;
-            progress.Indeterminate = 'off';
-            progress.Cancelable = 'on';
-            num = numel(workers);
-
-            while ~all([workers.Read])
-                if progress.CancelRequested
-                    cancel(workers);
-                    return;
-                end
-                [idx, txt] = workers.fetchNext();
-                txts{idx} = txt;
-                progress.Value = min([progress.Value + 1/num, 1]);
-            end
-
-            wait(parfevalOnAll(@getScores, 0, [], txts));
-            progress.Value = 0;
-            progress.Message = 'Analyzing Submissions... This will take a while';
-            % for each student, we need to compare to all other students.
-            scores = cell(1, numel(students));
-            for s1 = numel(students):-1:1
-                workers(s1) = parfeval(@getScores, 1, s1);
-            end
-
-            num = numel(workers);
-
-            while ~all([workers.Read])
-                [idx, score] = workers.fetchNext();
-                scores{idx} = score;
-                progress.Value = min([progress.Value + 1/num, 1]);
-                if progress.CancelRequested
-                    cancel(workers);
-                    return;
-                end
-            end
-
-            % generate Report
-            progress.Message = 'Generating Report';
-            progress.Indeterminate = 'on';
-            progress.Cancelable = 'off';
-
-            % move resources
-            recSource = [fileparts(mfilename('fullpath')) filesep 'resources'];
-            mkdir('resources');
-            copyfile(recSource, [pwd filesep 'resources']);
-            CheatDetector(students, solutions, scores, settings.workingDir);
-        catch e
-            if debugger(app, 'Failed to analyze submissions for cheating')
-                keyboard;
-            else
-                alert(app, e);
-                return;
-            end
-        end
-    end
     % If the user requested uploading, do it
 
     if app.UploadToCanvas.Value
@@ -468,6 +402,72 @@ function autograder(app)
         copyfile(settings.workingDir, app.localOutputPath);
     end
     
+    if app.AnalyzeForCheating.Value
+        try
+            progress.Message = 'Reading Student Submissions';
+            progress.Indeterminate = 'on';
+            progress.Cancelable = 'off';
+
+            txts = cell(1, numel(students));
+            for s = numel(students):-1:1
+                workers(s) = parfeval(@getText, 1, students(s).problemPaths);
+            end
+
+            progress.Value = 0;
+            progress.Indeterminate = 'off';
+            progress.Cancelable = 'on';
+            num = numel(workers);
+
+            while ~all([workers.Read])
+                if progress.CancelRequested
+                    cancel(workers);
+                    return;
+                end
+                [idx, txt] = workers.fetchNext();
+                txts{idx} = txt;
+                progress.Value = min([progress.Value + 1/num, 1]);
+            end
+
+            wait(parfevalOnAll(@getScores, 0, [], txts));
+            progress.Value = 0;
+            progress.Message = 'Analyzing Submissions... This will take a while';
+            % for each student, we need to compare to all other students.
+            scores = cell(1, numel(students));
+            for s1 = numel(students):-1:1
+                workers(s1) = parfeval(@getScores, 1, s1);
+            end
+
+            num = numel(workers);
+
+            while ~all([workers.Read])
+                [idx, score] = workers.fetchNext();
+                scores{idx} = score;
+                progress.Value = min([progress.Value + 1/num, 1]);
+                if progress.CancelRequested
+                    cancel(workers);
+                    return;
+                end
+            end
+
+            % generate Report
+            progress.Message = 'Generating Report';
+            progress.Indeterminate = 'on';
+            progress.Cancelable = 'off';
+
+            % move resources
+            recSource = [fileparts(mfilename('fullpath')) filesep 'resources'];
+            mkdir('resources');
+            copyfile(recSource, [pwd filesep 'resources']);
+            CheatDetector(students, solutions, scores, settings.workingDir);
+        catch e
+            if debugger(app, 'Failed to analyze submissions for cheating')
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
+    end
     % Notify
     progress.Indeterminate = 'on';
     progress.Message = 'Sending Notifications';
