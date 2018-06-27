@@ -48,8 +48,8 @@ end
         html = {'<div class="row file-diff">'};
     end
     
-    left = {'<div class="col-6 file-diff-left">', '<h2>', sanitize(fName1), '</h2>', '<div class="diff-content">', ''};
-    right = {'<div class="col-6 file-diff-right">', '<h2>', sanitize(fName2), '</h2>', '<div class="diff-content">', ''};
+    left = {'<div class="col-sm-6 file-diff-left">', '<h2 style="font-size: 4vw;">', sanitize(fName1), '</h2>', '<div class="diff-content">', ''};
+    right = {'<div class="col-sm-6 file-diff-right">', '<h2 style="font-size: 4vw;">', sanitize(fName2), '</h2>', '<div class="diff-content">', ''};
     
     d = 0;
     while d < diffs.size()

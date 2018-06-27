@@ -131,6 +131,10 @@ classdef File < handle
                     fid = fopen(path, 'rt');
                     this.data = char(fread(fid)');
                     fclose(fid);
+                    this.data = strrep(this.data, [char(13) char(10)], char(0)); %#ok<*CHARTEN>
+                    this.data = strrep(this.data, char(13), char(10));
+                    this.data = strrep(this.data, char(0), char(10));
+                    this.data = strrep(this.data, char(10), newline);
                 case this.IMAGES
                     %read in image array and store in File class
                     try
