@@ -88,7 +88,11 @@ function uploadGrade(courseId, assignmentId, student, token)
         data = coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], getApiOpts, 'include[]', 'submission_comments');
         % check if student was hand graded - if we find a comment that says "REGRADE", don't overwrite
         if ~isempty(data.submission_comments)
-            comments = {data.submission_comments.comment};
+            if ~iscell(data.submission_comments)
+                comments = {data.submission_comments.comment};
+            else
+                comments = cellfun(@(s)(s.comment), data.submission_comments, 'uni', false);
+            end
         else
             comments = {''};
         end
