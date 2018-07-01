@@ -86,7 +86,9 @@ function workers = downloadFolder(folderId, token, key, path)
         end
     end
     workers = [workers{:}];
-    workers([workers.ID] == -1) = [];
+    if ~isempty(workers)
+        workers([workers.ID] == -1) = [];
+    end
 end
 
 function downloadFile(file, token, key, path, attemptNum)

@@ -38,7 +38,7 @@ function downloadFromCanvas(courseId, assignmentId, token, path, progress)
     progress.Value = 0;
     progress.Message = 'Fetching Student Information';
     for s = numStudents:-1:1
-        workers(s) = parfeval(@getStudentInfo, 1, subs(s).user_id, token);
+        workers(s) = parfeval(@getStudentInfo, 1, subs{s}.user_id, token);
     end
     while ~all([workers.Read])
         fetchNext(workers);
@@ -63,8 +63,8 @@ function downloadFromCanvas(courseId, assignmentId, token, path, progress)
         names{s} = students(s).name;
         ids{s} = students(s).login_id;
         % for each attachment, download it here
-        if ~isempty(subs(s).attachments)
-            workers{s} = saveFiles(subs(s).attachments, students(s).login_id);
+        if isfield(subs{s}, 'attachments') && ~isempty(subs{s}.attachments)
+            workers{s} = saveFiles(subs{s}.attachments, students(s).login_id);
         end
     end
     workers = [workers{:}];
@@ -141,34 +141,31 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
             pgs = str2double(pgs{1});
             if pgs == 1
                 subs = response.Body.Data';
-                if ~iscell(subs)
-                    subs = num2cell(subs);
+            else
+                subs = cell(1, pgs);
+                subs{1} = sanitizeData(response.Body.Data');
+                links = cell(1, pgs - 1);
+                links{1} = next.link.extractBetween('<', '>');
+                for l = 2:pgs - 1
+                    links{l} = regexprep(links{l-1}, '(?<=\?page=)\d*', '${num2str(1+str2double($0))}');
                 end
-                return;
-            end    
-            subs = cell(1, pgs);
-            subs{1} = sanitizeData(response.Body.Data');
-            links = cell(1, pgs - 1);
-            links{1} = next.link.extractBetween('<', '>');
-            for l = 2:pgs - 1
-                links{l} = regexprep(links{l-1}, '(?<=\?page=)\d*', '${num2str(1+str2double($0))}');
-            end
-            % for each link, fetch it's outputs and store it in subs
-            for l = numel(links):-1:1
-                workers(l) = parfeval(@fetchChunk, 1, links{l}, token);
-            end
-            progress.Indeterminate = 'off';
-            progress.Value = 0;
-            while ~all([workers.Read])
-                [idx, sub] = fetchNext(workers);
-                if progress.CancelRequested
-                    cancel(workers);
-                    throw(MException('AUTOGRADER:userCancellation', 'User Cancelled Operation'));
+                % for each link, fetch it's outputs and store it in subs
+                for l = numel(links):-1:1
+                    workers(l) = parfeval(@fetchChunk, 1, links{l}, token);
                 end
-                subs{idx + 1} = sub;
-                progress.Value = min([progress.Value + 1/numel(workers), 1]);
+                progress.Indeterminate = 'off';
+                progress.Value = 0;
+                while ~all([workers.Read])
+                    [idx, sub] = fetchNext(workers);
+                    if progress.CancelRequested
+                        cancel(workers);
+                        throw(MException('AUTOGRADER:userCancellation', 'User Cancelled Operation'));
+                    end
+                    subs{idx + 1} = sub;
+                    progress.Value = min([progress.Value + 1/numel(workers), 1]);
+                end
+                subs = [subs{:}];
             end
-            subs = [subs{:}];
         else
             % Can't use our parfor; do the old fashioned way
             progress.Indeterminate = 'on';
@@ -190,6 +187,9 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
             end
             subs(cellfun(@isempty, subs)) = [];
             subs = [subs{:}];
+        end
+        if ~iscell(subs)
+            subs = num2cell(subs);
         end
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
