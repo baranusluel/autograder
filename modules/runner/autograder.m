@@ -6,7 +6,7 @@
 %%% Remarks
 %
 % Main is the entry point for the Autograder. Main will handle any
-% exceptions, and will always clean up afdatater itself - the user's folder
+% exceptions, and will always clean up after itself - the user's folder
 % will not be changed!
 %
 % Documentation is available. Please go the the autograder's website, at
@@ -24,7 +24,7 @@
 %
 % Unfortunately, there are no "Unit Tests" for this function
 %
-function autograder(app)
+function autograder(app, selectedStudents)
     % Implementation Notes:
     %
     % Main() will provide initial checking, and set up all necessary
@@ -189,8 +189,11 @@ function autograder(app)
         % downloading. We should create new Students folder and download
         % there.
         try
-            downloadFromCanvas(getCanvasStudents(app.canvasCourseId, app.canvasHomeworkId, ...
-                app.canvasToken, progress), [pwd filesep 'Students'], progress);
+            if isempty(selectedStudents)
+                selectedStudents = getCanvasStudents(app.canvasCourseId, app.canvasHomeworkId, ...
+                    app.canvasToken, progress);
+            end
+            downloadFromCanvas(selectedStudents, [pwd filesep 'Students'], progress);
         catch e
             % alert in some way and return
             if debugger(app, 'Failed to download student submissions from Canvas')
