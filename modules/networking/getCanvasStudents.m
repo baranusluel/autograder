@@ -25,7 +25,6 @@
 % if something goes wrong with the connection
 %
 function students = getCanvasStudents(courseId, assignmentId, token, progress)
-    disp(token);
     subs = getSubmissions(courseId, assignmentId, token, progress);
     numStudents = numel(subs);
     % get info
@@ -54,7 +53,7 @@ end
 function subs = getSubmissions(courseId, assignmentId, token, progress)
     API = 'https://gatech.instructure.com/api/v1/courses/';
     DEFAULT_SUBMISSION_NUM = 10;
-    %try
+    try
         progress.Indeterminate = 'on';
         progress.Message = 'Fetching Student Submissions';
         request = matlab.net.http.RequestMessage;
@@ -123,11 +122,11 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
         if ~iscell(subs)
             subs = num2cell(subs);
         end
-    %catch reason
-    %    e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
-    %    e = addCause(e, reason);
-    %    throw(e);
-    %end
+    catch reason
+        e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
+        e = addCause(e, reason);
+        throw(e);
+    end
 end
 
 function info = getStudentInfo(userId, token)
