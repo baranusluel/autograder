@@ -18,7 +18,7 @@
 %
 %%% Exceptions
 %
-% This is guarunteed to never throw an exception; instead, exceptions are reported through the GUI
+% This is guaranteed to never throw an exception; instead, exceptions are reported through the GUI
 %
 %%% Unit Tests
 %
@@ -189,8 +189,8 @@ function autograder(app)
         % downloading. We should create new Students folder and download
         % there.
         try
-            downloadFromCanvas(app.canvasCourseId, app.canvasHomeworkId, ...
-                app.canvasToken, [pwd filesep 'Students'], progress);
+            downloadFromCanvas(getCanvasStudents(app.canvasCourseId, app.canvasHomeworkId, ...
+                app.canvasToken, progress), [pwd filesep 'Students'], progress);
         catch e
             % alert in some way and return
             if debugger(app, 'Failed to download student submissions from Canvas')
