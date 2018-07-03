@@ -24,7 +24,7 @@
 %
 % Unfortunately, there are no "Unit Tests" for this function
 %
-function autograder(app, selectedStudents)
+function autograder(app)
     % Implementation Notes:
     %
     % Main() will provide initial checking, and set up all necessary
@@ -189,11 +189,11 @@ function autograder(app, selectedStudents)
         % downloading. We should create new Students folder and download
         % there.
         try
-            if isempty(selectedStudents)
-                selectedStudents = getCanvasStudents(app.canvasCourseId, app.canvasHomeworkId, ...
+            if isempty(app.selectedStudents)
+                app.selectedStudents = getCanvasStudents(app.canvasCourseId, app.canvasHomeworkId, ...
                     app.canvasToken, progress);
             end
-            downloadFromCanvas(selectedStudents, [pwd filesep 'Students'], progress);
+            downloadFromCanvas(app.selectedStudents, [pwd filesep 'Students'], progress);
         catch e
             % alert in some way and return
             if debugger(app, 'Failed to download student submissions from Canvas')
