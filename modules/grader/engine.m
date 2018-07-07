@@ -242,13 +242,14 @@ function runnables = engine(runnables)
         end
         % check banned usage
         if isTestCase || isempty(runnable.exception)
-            if checkBanned([func2str(func) '.m'], [BANNED tCase.banned(:)'], origPaths{r})
+            [isBanned, bannedFunName] = checkBanned([func2str(func) '.m'], [BANNED tCase.banned(:)'], origPaths{r});
+            if isBanned
                 if ~isTestCase
                     runnable.exception = MException('AUTOGRADER:engine:banned', ...
-                        'File used banned function');
+                        'File used banned function "%s"', bannedFunName);
                 else
                     throw(MException('AUTOGRADER:engine:banned', ...
-                        'File used banned function'));
+                        'File used banned function "%s"', bannedFunName));
                 end
             end
 
@@ -671,8 +672,9 @@ function isRecurring = checkRecur(callInfo, main, path, stack)
     isRecurring = false;
 end
 
-function isBanned = checkBanned(name, banned, path)
+function [isBanned, bannedFunName] = checkBanned(name, banned, path)
     isBanned = false;
+    bannedFunName = '';
     % for each call, we should first check that they didn't use any banned names:
     calls = getcallinfo([path filesep name]);
     for i = 1:numel(calls)
@@ -685,13 +687,14 @@ function isBanned = checkBanned(name, banned, path)
         culprits = {culprits.name};
         for j = 1:numel(possibleCalls)
             if any(strcmp(possibleCalls{j}(1:end-2), culprits))
-                if checkBanned([possibleCalls{j} '.m'], banned, path)
-                    isBanned = true;
+                [isBanned, bannedFunName] = checkBanned([possibleCalls{j} '.m'], banned, path);
+                if isBanned
                     return;
                 end
             else
                 % see if banned
                 if any(strcmp(possibleCalls{j}, banned))
+                    bannedFunName = banned{strcmp(possibleCalls{j}, banned)};
                     isBanned = true;
                     return;
                 end
@@ -702,6 +705,7 @@ function isBanned = checkBanned(name, banned, path)
     info = mtree([path filesep name], '-file');
     for b = 1:numel(BANNED_OPS)
         if info.anykind(BANNED_OPS{b})
+            bannedFunName = BANNED_OPS{b};
             isBanned = true;
             return;
         end
