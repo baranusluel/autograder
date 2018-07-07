@@ -209,6 +209,16 @@ function autograder(app)
         % unzip the archive
         try
             canvas2autograder(app.homeworkArchivePath, app.homeworkGradebookPath, [pwd filesep 'Students'], progress);
+            if ~isempty(app.selectedStudents)
+                % delete folders not listed
+                flds = dir([pwd filesep 'Students']);
+                flds(~[flds.isdir]) = [];
+                flds(strncmp('.', {flds.name}, 1)) = [];
+                flds = flds(~contains({flds.name}, {app.selectedStudents.login_id}));
+                for f = 1:numel(flds)
+                    [~] = rmdir([flds(f).folder filesep flds(f).name], 's');
+                end
+            end
         catch e
             if debugger(app, 'Failed to unzip the Student Submission Archive')
                 keyboard;
@@ -232,7 +242,7 @@ function autograder(app)
     end
 
     % Create Plot
-    plotter = uifigure('Name', 'Grade Report');
+    plotter = uifigure('Name', 'Grade Report', 'Visible', 'off');
     ax = uiaxes(plotter);
     ax.Position = [10 10 550 400]; % as suggested in example on MATLAB ref page
     title(ax, 'Histogram of Student Grades');
