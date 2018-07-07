@@ -93,7 +93,11 @@ function solutions = generateSolutions(isResubmission, progress)
     for c = 1:numel(checkFiles)
         if ~any(contains([checkFiles(c).folder filesep checkFiles(c).name], saveFiles))
             % delete
-            delete([checkFiles(c).folder filesep checkFiles(c).name]);
+            if checkFiles(c).isdir
+                [~] = rmdir([checkFiles(c).folder filesep checkFiles(c).name], 's');
+            else
+                delete([checkFiles(c).folder filesep checkFiles(c).name]);
+            end
         end
     end
     % Create vector of indices, s.t. every TestCase when vectorized

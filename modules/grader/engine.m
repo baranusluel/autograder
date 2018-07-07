@@ -444,6 +444,8 @@ function runnable = runCase(runnable, safeDir)
     if isempty(ids)
         if isa(runnable, 'Feedback')
             runnable.exception = MException('AUTOGRADER:fcloseAll', 'Student Code called fclose all');
+        else
+            throw(MException('AUTOGRADER:fcloseAll', 'Test Case Code called fclose all'));
         end
     end
     fclose(fid);
@@ -451,6 +453,8 @@ function runnable = runCase(runnable, safeDir)
     if ~isempty(ids)
         if isa(runnable, 'Feedback')
             runnable.exception = MException('AUTOGADER:fileNotClosed', 'Student Code did not close all its files');
+        else
+            throw(MException('AUTOGADER:fileNotClosed', 'Test Case Code did not close all its files'));
         end
     end
     % Populate outputs
