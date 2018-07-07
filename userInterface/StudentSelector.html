@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>
+Student Selector
+</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<style>
+pre.bg-light {
+    border-radius: 5%;
+}
+pre.bg-light {
+    padding-left: 15px;
+}
+</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="container-fluid">
+<div class="row">
+<div class="col-12">
+<h1>
+Student Selector
+</h1>
+<p>
+ This GUI is responsible for showing the user a list of the possible student submissions to grade, for a specific assignment.
+</p>
+<h2>
+Operation
+</h2>
+<p>
+ This GUI is <em>not</em> to be called directly. Instead, it is to be called via the <code class="bg-light">Autograder</code>, which does so automatically. This GUI automatically assigns the <code class="bg-light">selectedStudents</code> in the <code class="bg-light">Autograder</code> on exit.
+</p>
+<h2>
+Exceptions
+</h2>
+<p>
+ This GUI will throw a <code class="bg-light">connectionError</code> exception if the connection is terminated.
+</p>
+</div>
+</div>
+</div>
+</body>
+</html>
