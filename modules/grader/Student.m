@@ -48,6 +48,7 @@ classdef Student < handle
         TIMEOUT = 30;
         resources = Resources;
         ROUNDOFF_ERROR = 5;
+        FCLOSE_PERCENTAGE_OFF = 0.5;
     end
     properties (Access = public)
         name;
@@ -261,7 +262,9 @@ classdef Student < handle
             for i = 1:numel(feeds)
                 feedback = feeds(i);
                 % if exception, hasPassed = false;
-                if ~isempty(feedback.exception)
+                if ~isempty(feedback.exception) && ...
+                    ~any(strcmp(feedback.exception.identifier, ...
+                        {'AUTOGADER:fileNotClosed', 'AUTOGRADER:fcloseAll'}))
                     feedback.hasPassed = false;
                     feedback.points = 0;
                 elseif isRecursive(i) && ~feedback.isRecursive
@@ -399,6 +402,11 @@ classdef Student < handle
                         feedback.hasPassed = false;
                         feedback.points = feedback.testCase.points*numCorrect/numTotal;
                     end
+                    if ~isempty(feedback.exception)
+                        % only got here if no fclose
+                        feedback.points = feedback.points * Student.FCLOSE_PERCENTAGE_OFF;
+                    end
+                        
                 end
             end
             this.feedbacks = cell(1, numel(problems));
