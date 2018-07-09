@@ -61,6 +61,7 @@
 % testing is not done at all. Defaults to true
 
 function problems = build(varargin)
+    problems = [];
     opts = getInputs(varargin{:});
     [path, ~, ~] = fileparts(mfilename('fullpath'));
     thisFolder = cd(path);
