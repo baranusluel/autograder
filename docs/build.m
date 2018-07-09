@@ -238,6 +238,11 @@ function problems = build(varargin)
     end
     fprintf(1, 'Build Successfully Completed\n');
     cd(thisFolder);
+    if nargout ~= 0
+        problems = [];
+    else
+        clear('problems');
+    end
 end
 
 function res = getInputs(varargin)
