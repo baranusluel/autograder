@@ -78,7 +78,17 @@ DRIVE_API = 'https://www.googleapis.com/drive/v3/files/';
         data.allowFileDiscovery = false;
         body.Data = data;
         request.Body = body;
-        request.send([DRIVE_API id '/permissions']);
+        try
+            request.send([DRIVE_API id '/permissions']);
+        catch e
+            if strcmp(e.identifier, 'MATLAB:webservices:Timeout')
+                % timeout; wait 10 seconds and try again
+                pause(10);
+                request.send([DRIVE_API id '/permissions']);
+            else
+                e.rethrow();
+            end
+        end
         
         % Get the link
         request = matlab.net.http.RequestMessage;
