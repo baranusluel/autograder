@@ -116,31 +116,53 @@ function downloadFile(file, token, key, path, attemptNum)
     end
 end
 
-function contents = getFolderContents(folderId, token, key)
+function contents = getFolderContents(folderId, token, key, attemptNum)
+    MAX_ATTEMPT_NUM = 10;
+    WAIT_TIME = 2;
     API = 'https://www.googleapis.com/drive/v3/files/';
+    
+    if nargin < 4
+        attemptNum = 1;
+    end
     opts = weboptions();
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
     try
         contents = webread(API, 'q', ['''' folderId ''' in parents'], 'key', key, opts);
     catch reason
-        e = MException('AUTOGRADER:networking:connectionError', ...
-            'Connection was terminated (Are you connected to the internet?');
-        e = e.addCause(reason);
-        throw(e);
+        if attemptNum < MAX_ATTEMPT_NUM
+            pause(WAIT_TIME);
+            contents = getFolderContents(folderId, token, key, attemptNum + 1);
+        else
+            e = MException('AUTOGRADER:networking:connectionError', ...
+                'Connection was terminated (Are you connected to the internet?');
+            e = e.addCause(reason);
+            throw(e);
+        end
     end
     contents = contents.files;
 end
 
-function folder = getFolder(folderId, token, key)
+function folder = getFolder(folderId, token, key, attemptNum)
+    MAX_ATTEMPT_NUM = 10;
+    WAIT_TIME = 2;
+    
+    if nargin < 4
+        attemptNum = 1;
+    end
     API = 'https://www.googleapis.com/drive/v3/files/';
     opts = weboptions();
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
     try
         folder = webread([API folderId], 'key', key, opts);
     catch reason
-        e = MException('AUTOGRADER:networking:connectionError', ...
-            'Connection was terminated (Are you connected to the internet?');
-        e = e.addCause(reason);
-        throw(e);
+        if attemptNum < MAX_ATTEMPT_NUM
+            pause(WAIT_TIME);
+            folder = getFolder(folderId, token, key, attemptNum + 1);
+        else
+            e = MException('AUTOGRADER:networking:connectionError', ...
+                'Connection was terminated (Are you connected to the internet?');
+            e = e.addCause(reason);
+            throw(e);
+        end
     end
 end
