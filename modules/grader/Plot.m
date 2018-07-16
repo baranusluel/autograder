@@ -55,6 +55,9 @@ classdef Plot < handle
         Segments;
         Limits;
     end
+    properties (Constant)
+        POSITION_MARGIN = 0.05;
+    end
     properties (Access=private)
         isAlien logical = false;
     end
@@ -434,13 +437,14 @@ classdef Plot < handle
                 return;
             end
 
-
-            if ~isequal(this.Position, that.Position)
+            if any(this.Position < (that.Position - Plot.POSITION_MARGIN)) ...
+                    || any(this.Position > (that.Position + Plot.POSITION_MARGIN))
                 areEqual = false;
                 return;
             end
             
-            if ~isequal(this.PlotBox(1:2), that.PlotBox(1:2))
+            if any(this.PlotBox < (that.PlotBox - Plot.POSITION_MARGIN)) ...
+                    || any(this.PlotBox > (that.PlotBox + Plot.POSITION_MARGIN))
                 areEqual = false;
                 return;
             end
