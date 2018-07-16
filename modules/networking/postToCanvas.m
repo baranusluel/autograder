@@ -25,13 +25,12 @@
 %   postToCanvas(C, T, M);
 %
 %   Message 'Hello, World!' posted
-function postToCanvas(courseId, token, message)
+function postToCanvas(courseId, token, title, message)
     API = 'https://gatech.instructure.com/api/v1/';
     apiOpts = weboptions;
     apiOpts.RequestMethod = 'POST';
     apiOpts.HeaderFields = {'Authorization', ['Bearer ' token]};
 
-    title = 'Homework Grades Released';
     published = 'true';
     allow_rating = 'false';
     is_announcement = 'true';

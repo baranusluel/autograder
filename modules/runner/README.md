@@ -2,6 +2,12 @@
 
 This is a module dedicated to simply running the autograder. It will utilize all other modules to accomplish this.
 
+## Classes
+
+The `Runner` Module has only one class:
+
+- `Logger`: Responsible for logging all activities within the autograder
+
 ## Functions
 
 The `Runner` Module has only one function:

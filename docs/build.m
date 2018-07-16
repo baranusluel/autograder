@@ -61,6 +61,7 @@
 % testing is not done at all. Defaults to true
 
 function problems = build(varargin)
+    problems = [];
     opts = getInputs(varargin{:});
     [path, ~, ~] = fileparts(mfilename('fullpath'));
     thisFolder = cd(path);
@@ -237,6 +238,11 @@ function problems = build(varargin)
     end
     fprintf(1, 'Build Successfully Completed\n');
     cd(thisFolder);
+    if nargout ~= 0
+        problems = [];
+    else
+        clear('problems');
+    end
 end
 
 function res = getInputs(varargin)

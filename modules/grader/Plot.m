@@ -146,9 +146,12 @@ classdef Plot < handle
             this.XLabel = pHandle.XLabel.String;
             this.YLabel = pHandle.YLabel.String;
             this.ZLabel = pHandle.ZLabel.String;
-            this.Position = pHandle.Position;
-            this.PlotBox = pHandle.PlotBoxAspectRatio;
-            this.Limits = [pHandle.XLim, pHandle.YLim, pHandle.ZLim];
+            this.Position = round(pHandle.Position, ...
+                Student.ROUNDOFF_ERROR);
+            this.PlotBox = round(pHandle.PlotBoxAspectRatio, ...
+                Student.ROUNDOFF_ERROR);
+            this.Limits = round([pHandle.XLim, pHandle.YLim, pHandle.ZLim], ...
+                Student.ROUNDOFF_ERROR);
             
             tmp = figure();
             par = pHandle.Parent;
@@ -528,13 +531,22 @@ classdef Plot < handle
                 areEqual = false;
                 return;
             end
-
-            if ~isequal(this.PlotBox, that.PlotBox)
+            if all(cellfun(@isempty, this.ZData))
+                if ~isequal(this.PlotBox(1:2), that.PlotBox(1:2))
+                    areEqual = false;
+                    return;
+                end
+            elseif ~isequal(this.PlotBox, that.PlotBox)
                 areEqual = false;
                 return;
             end
-            
-            if ~isequal(this.Limits, that.Limits)
+            % for limits, if no ZData, then only compare first four
+            if all(cellfun(@isempty, this.ZData))
+                if ~isequal(this.Limits(1:4), that.Limits(1:4))
+                    areEqual = false;
+                    return;
+                end
+            elseif ~isequal(this.Limits, that.Limits)
                 areEqual = false;
                 return;
             end

@@ -9,5 +9,6 @@ The `userInterface` Module has the following classes; all of them represent a `U
 - `Autograder`: The main entry point for the autograder. Responsible for calling the main method and adding necessary paths. Additionally, it gets most of the settings
 - `CanvasAuthorizer`: Instructs the user to get a token from `Canvas` and stores it in the settings file.
 - `CanvasHomeworkSelector`: Allows the user to pick which homework to select
+- `CheatDetector`: Allows the user to investigate possible cases of cheating
 - `GoogleDriveBrowser`: Allows the user to browse his/her folders on Google Drive for the solution archive
 - `ServerAuthorizer`: Fetches the credentials from the user for logging into the server
