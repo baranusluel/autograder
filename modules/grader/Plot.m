@@ -24,24 +24,6 @@
 %
 % * Legend: A string array of all the names in the legend
 %
-% * XData: A cell array of vectors that represents all XData points plotted
-% for this plot
-%
-% * YData: A cell array of vectors that represents all YData points plotted
-% for this plot
-%
-% * ZData: A cell array of vectors that represents all ZData points plotted
-% for this plot
-%
-% * Color: A cell array containing the normalized 1X3 double vector of the
-% color used for each line
-%
-% * Marker: A cell array containing the character uses as a marker in the
-% line
-%
-% * LineStyle: A cell array containing the character uses as a marker in
-% the line
-%
 % * Limits: A 1x6 double vector representing the axes limits
 %
 %%% Methods
@@ -484,18 +466,48 @@ classdef Plot < handle
                     return;
                 end 
             end
+            % Check other way; so wayward points are still killed
+            for i = 1:numel(thisPoints)
+                isFound = false;
+                for j = 1:numel(thatPoints)
+                    if isequal(thisPoints(i), thatPoints(j))
+                        isFound = true;
+                        break;
+                    end
+                end
+                if ~isFound
+                    areEqual = false;
+                    return;
+                end
+            end
 
             % Roll Call
             % for each line segment in that, see if found in this
             thatSegments = that.Segments;
             thisSegments = this.Segments;
-            
             for i = 1:numel(thatSegments)
                 % for each in this, go until we have found it. Cannot
                 % delete (for now) because not necessarily unique!!
                 isFound = false;
                 for j = 1:numel(thisSegments)
                     if isequal(thatSegments(i), thisSegments(j))
+                        isFound = true;
+                        break;
+                    end
+                end
+                if ~isFound
+                    % not found; not equal!
+                    areEqual = false;
+                    return;
+                end
+            end
+            % for each line segment in this, see if found in that
+            for i = 1:numel(thisSegments)
+                % for each in this, go until we have found it. Cannot
+                % delete (for now) because not necessarily unique!!
+                isFound = false;
+                for j = 1:numel(thatSegments)
+                    if isequal(thisSegments(i), thatSegments(j))
                         isFound = true;
                         break;
                     end
