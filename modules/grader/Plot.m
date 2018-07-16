@@ -69,13 +69,8 @@ classdef Plot < handle
         Position;
         PlotBox;
         Image;
-        Legend;
-        XData;
-        YData;
-        ZData;
-        Color;
-        Marker;
-        LineStyle;
+        Points;
+        Segments;
         Limits;
     end
     properties (Access=private)
@@ -165,13 +160,8 @@ classdef Plot < handle
 
             lines = allchild(pHandle);
             if isempty(lines)
-                this.XData = {};
-                this.YData = {};
-                this.ZData = {};
-                this.Legend = {};
-                this.Color = {};
-                this.Marker = {};
-                this.LineStyle = {};
+                this.Points = [];
+                this.Segments = [];
                 return;
             end
             for i = length(lines):-1:1
@@ -225,100 +215,126 @@ classdef Plot < handle
             marker(strcmp(marker, 'none')) = {''};
             linestyle = {lines.LineStyle};
             linestyle(strcmp(linestyle, 'none')) = {''};
-            % Plot Chaining
-            % A line by any other name is just as beautiful. Suppose we
-            % want the student to plot a line from origin to (1, 1), then
-            % from (1, 1) to (0, 2). There's two ways of doing this:
-            %   plot([0 1 0], [0 1 2], 'STYLE');
-            % OR
-            %   plot([0 1], [0 1], 'STYLE');
-            %   hold on;
-            %   plot([1 0], [1 2], 'STYLE');
-            % We need to handle both. How? By chaining
-            %
-            % For each line, search through the list for another line that
-            % has these characteristics:
-            %   same line style
-            %   same marker
-            %   same color
-            %   The FIRST (x,y,z) of new one matches the LAST (x,y,z) of
-            %   current choice
-            % if it meets these conditions, we need to combine them and
-            % then start the search over.
-            % if it has NO line style, then we don't care about first
-            % matching last
-            % 
-            % After we're done combining, if there's no line style, we need
-            % to sort the data - this is because we don't care which order
-            % they plotted simple points in.
+            
+            % Point Chaining
+            % combine points that have the same line style of NO LINE, the
+            % same marker style, and the same color
             i = 1;
             while i <= numel(linestyle)
-                lStyle = linestyle{i};
-                mStyle = marker{i};
-                cStyle = color{i};
-                % if no line, then just points. Point chaining does not
-                % depend on first, last.
-                if isempty(lStyle)
-                    lastSet = {};
-                    firstSet = {};
-                else
-                    lastSet = getLast(xcell{i}, ycell{i}, zcell{i});
-                    firstSet = getFirst(xcell{i}, ycell{i}, zcell{i});
-                end
-                % We now have the x, y, z data that forms the end of this
-                % line. So, loop through remaining lines. If any of them
-                % match AND their starting points match the ending points,
-                % then engage
-                j = i + 1;
-                while j <= numel(linestyle)
-                    if strcmp(lStyle, linestyle{j}) && ...
-                            strcmp(mStyle, marker{j}) && ...
-                            isequal(cStyle, color{j})
-                        % possible match. If last of main line matches
-                        % first of this, or other way around, engage
-                        if isempty(linestyle{j})
-                            % doesn't matter, just match
+                if isempty(linestyle{i})
+                    j = i + 1;
+                    while j <= numel(linestyle)
+                        if isempty(linestyle{j}) && ...
+                            strcmp(marker{i}, marker{j}) && ...
+                            isequal(color{i}, color{j})
+                            % engage
                             xcell{i} = [xcell{i} xcell{j}];
                             ycell{i} = [ycell{i} ycell{j}];
                             zcell{i} = [zcell{i} zcell{j}];
-                        else
-                            thisFirstSet = getFirst(xcell{j}, ycell{j}, zcell{j});
-                            thisLastSet = getLast(xcell{j}, ycell{j}, zcell{j});
-                            % don't worry about messing with i; i will
-                            % always be less than j
-                            if isequal(lastSet, thisFirstSet)
-                                xcell{i} = [xcell{i}(1:end-1) xcell{j}];
-                                ycell{i} = [ycell{i}(1:end-1) ycell{j}];
-                                zcell{i} = [zcell{i}(1:end-1) zcell{j}];
-                                xcell(j) = [];
-                                ycell(j) = [];
-                                zcell(j) = [];
-                                color(j) = [];
-                                legend(j) = [];
-                                marker(j) = [];
-                                linestyle(j) = [];
-                                j = j - 1;
-                            elseif isequal(thisLastSet, firstSet)
-                                xcell{i} = [xcell{j}(1:end-1) xcell{i}];
-                                ycell{i} = [ycell{j}(1:end-1) ycell{i}];
-                                zcell{i} = [zcell{j}(1:end-1) zcell{i}];
-                                xcell(j) = [];
-                                ycell(j) = [];
-                                zcell(j) = [];
-                                color(j) = [];
-                                legend(j) = [];
-                                marker(j) = [];
-                                linestyle(j) = [];
-                                j = j - 1;
-                            end
+                            xcell(j) = [];
+                            ycell(j) = [];
+                            zcell(j) = [];
+                            color(j) = [];
+                            marker(j) = [];
+                            linestyle(j) = [];
+                            legend(j) = [];
+                            j = j - 1;
                         end
+                        j = j + 1;
                     end
-                    j = j + 1;
                 end
                 i = i + 1;
             end
             
+            % Roll Call
+            %
+            % Plots are really just a bunch of line segments. So, we can
+            % break it up into each component line segment, where each
+            % segment is just two coordinates
+            
+            % Structure is as follows:
+            % segments is a cell array of segments. EACH segment carries a
+            % 1x3 cell array; the first index is xvals, second is yvals,
+            % third is zvals. These vals represent that particular segment,
+            % and are ALWAYS sorted from low to high.
+            
+            % # segments/line = #points/line - 1
+            % # segments = SUM(segments/line) for all lines
+            totalSegs = 0;
+            for i = 1:length(xcell)
+                if ~isempty(linestyle{i})
+                    totalSegs = totalSegs + numel(xcell{i}) - 1;
+                end
+            end
+            segments = cell(1, totalSegs);
+            segmentColors = cell(size(segments));
+            segmentMarkers = cell(size(segments));
+            segmentStyles = cell(size(segments));
+            segmentLegends = cell(size(segments));
+            counter = 1;
+            for i = 1:length(xcell)
+                if ~isempty(linestyle{i})
+                    tmp = line2segments(xcell{i}, ycell{i}, zcell{i});
+                    segments(counter:(counter+length(tmp)-1)) = tmp;
+                    segmentColors(counter:(counter+length(tmp)-1)) = color(i);
+                    segmentMarkers(counter:(counter+length(tmp)-1)) = marker(i);
+                    segmentStyles(counter:(counter+length(tmp)-1)) = linestyle(i);
+                    segmentLegends(counter:(counter+length(tmp)-1)) = legend(i);
+                    counter = counter + length(tmp);
+                end
+            end
+            this.Segments = struct('Segment', segments, ...
+                'Color', segmentColors, ...
+                'Marker', segmentMarkers, ...
+                'LineStyle', segmentStyles, ...
+                'Legend', segmentLegends);
+            function segments = line2segments(xx, yy, zz)
+                % a single line is guaranteed to be of the same color,
+                % style, etc. - that's why it's a line!
+                if ~isempty(zz)
+                    segments = cell(1, numel(xx) - 1);
+                    for idx = 1:length(xx)-1
+                        first = [num2str(xx(idx)) ' ' num2str(yy(idx)) ' ' num2str(zz(idx))];
+                        last = [num2str(xx(idx+1)) ' ' num2str(yy(idx+1)) ' ' num2str(zz(idx+1))];
+                        [~, order] = sort({first last});
+                        if order(1) == 1
+                            segments{idx} = {[xx(idx) xx(idx+1)], ...
+                                [yy(idx) yy(idx+1)], ...
+                                [zz(idx) zz(idx+1)]};
+                        else
+                            segments{idx} = {[xx(idx+1) xx(idx)], ...
+                                [yy(idx+1) yy(idx)], ...
+                                [zz(idx+1) zz(idx)]};
+                        end
+                    end
+                else
+                    segments = cell(1, numel(xx) - 1);
+                    for idx = 1:length(xx)-1
+                        first = [num2str(xx(idx)) ' ' num2str(yy(idx))];
+                        last = [num2str(xx(idx+1)) ' ' num2str(yy(idx+1))];
+                        [~, order] = sort({first last});
+                        if order(1) == 1
+                            segments{idx} = {[xx(idx) xx(idx+1)], ...
+                                [yy(idx) yy(idx+1)], ...
+                                []};
+                        else
+                            segments{idx} = {[xx(idx+1) xx(idx)], ...
+                                [yy(idx+1) yy(idx)], ...
+                                []};
+                        end
+                    end
+                end
+            end
             % for every line that has no line style, we should sort it.
+            ptData = cell(1, sum(strcmp(linestyle, '')));
+            points = struct('XData', ptData, ...
+                'YData', ptData, ...
+                'ZData', ptData, ...
+                'Marker', [], ...
+                'LineStyle', '', ...
+                'Legend', '', ...
+                'Color', []);
+            counter = 1;
             for l = 1:numel(linestyle)
                 if isempty(linestyle{l})
                     % sort. Doesn't matter by what, but be consistent
@@ -349,108 +365,18 @@ classdef Plot < handle
                     if ~isempty(zcell{l})
                         zcell{l} = zcell{l}(inds);
                     end
-                else
-                    % TL;DR: reverse the order of all the points in the 
-                    % line, in all three dimensions, if the student plotted
-                    % in reverse and the larger values came before the 
-                    % smaller ones.
-                    
-                    % order the line. By convention, all lines should be
-                    % ordered by X Value, from least to greatest, such that
-                    % the first value is always less than the last value.
-                    % If they're the same, we order it such that the second
-                    % value is less than the second to last value - and so
-                    % on. If the X Values are all the same, then move to Y
-                    % values, then to Z values. If all values are
-                    % identical, then sorting doesn't really matter...
-                    vals = [xcell(l), ycell(l), zcell(l)];
-                    dim = 1;
-                    while isempty(vals{dim})
-                        dim = dim + 1;
-                        if dim == 4
-                            break;
-                        end
-                    end
-                    if dim ~= 4
-                        ind1 = 1;
-                        ind2 = length(vals{dim});
-
-                        val1 = vals{dim}(ind1);
-                        val2 = vals{dim}(ind2);
-                        while val1 == val2
-                            % If they are equal, get the next val
-                            ind1 = ind1 + 1;
-                            ind2 = ind2 - 1;
-                            if ind1 >= ind2
-                                % We've reached end. Move to next value...
-                                % if we've reached last dim, just exit - no
-                                % need to sort since all data is identical...
-
-                                % keep iterating through dims until we find
-                                % non-empty
-                                dim = dim + 1;
-                                while isempty(vals{dim})
-                                    dim = dim + 1;
-                                    if dim == 4
-                                        break;
-                                    end
-                                end
-                                if dim == 4
-                                    break;
-                                else
-                                    ind1 = 1;
-                                    ind2 = length(vals{dim});
-                                end
-                            end
-                            val1 = vals{dim}(ind1);
-                            val2 = vals{dim}(ind2);
-                        end
-
-                        % if vals are equal, data identical; no need to do
-                        % anyting
-                        if val1 > val2
-                            xcell{l} = xcell{l}(end:-1:1);
-                            ycell{l} = ycell{l}(end:-1:1);
-                            zcell{l} = zcell{l}(end:-1:1);
-                        end
-                    end
+                    points(counter).XData = xcell{l};
+                    points(counter).YData = ycell{l};
+                    points(counter).ZData = zcell{l};
+                    points(counter).Marker = marker{l};
+                    points(counter).LineStyle = '';
+                    points(counter).Color = color{l};
+                    points(counter).Legend = legend{l};
+                    counter = counter + 1;
                 end
             end
             
-            this.XData = xcell;
-            this.YData = ycell;
-            this.ZData = zcell;
-            this.Legend = legend;
-            this.Color = color;
-            this.Marker = marker;
-            this.LineStyle = linestyle;
-
-            function last = getLast(x, y, z)
-                last = cell(1, 3);
-                % depending on what we have, do different things?
-                if ~isempty(x)
-                    last{1} = x(end);
-                end
-                if ~isempty(y)
-                    last{2} = y(end);
-                end
-                if ~isempty(z)
-                    last{3} = z(end);
-                end
-            end
-            function first = getFirst(x, y, z)
-                first = cell(1, 3);
-                % depending on what we have, do different things?
-                if ~isempty(x)
-                    first{1} = x(1);
-                end
-                if ~isempty(y)
-                    first{2} = y(1);
-                end
-                if ~isempty(z)
-                    first{3} = z(1);
-                end
-            end
+            this.Points = points;
         end
     end
     methods (Access=public)
@@ -531,54 +457,56 @@ classdef Plot < handle
                 areEqual = false;
                 return;
             end
-            if all(cellfun(@isempty, this.ZData))
-                if ~isequal(this.PlotBox(1:2), that.PlotBox(1:2))
-                    areEqual = false;
-                    return;
-                end
-            elseif ~isequal(this.PlotBox, that.PlotBox)
+            
+            if ~isequal(this.PlotBox(1:2), that.PlotBox(1:2))
                 areEqual = false;
                 return;
             end
             % for limits, if no ZData, then only compare first four
-            if all(cellfun(@isempty, this.ZData))
-                if ~isequal(this.Limits(1:4), that.Limits(1:4))
-                    areEqual = false;
-                    return;
-                end
-            elseif ~isequal(this.Limits, that.Limits)
+            if ~isequal(this.Limits(1:4), that.Limits(1:4))
                 areEqual = false;
                 return;
             end
-            thisStruct = struct('XData', this.XData, 'YData', this.YData,...
-                'ZData', this.ZData, 'Color', this.Color, 'Legend', this.Legend,...
-                'Marker', this.Marker, 'LineStyle', this.LineStyle);
-
-            thatStruct = struct('XData', that.XData, 'YData', that.YData,...
-                'ZData', that.ZData, 'Color', that.Color, 'Legend', that.Legend,...
-                'Marker', that.Marker, 'LineStyle', that.LineStyle);
-            if length(thisStruct) ~= length(thatStruct)
-                areEqual = false;
-                return;
-            end
-            
-            LinePropsCheck = false(1,length(thisStruct));
-            for i = 1:length(thisStruct)
-                for j = 1:length(thatStruct)
-                    if isequaln(thisStruct(i),thatStruct(j))
-                        LinePropsCheck(i) = true;
+            % Point Call
+            % for each point set, see if found in this
+            thatPoints = that.Points;
+            thisPoints = this.Points;
+            for i = 1:numel(thatPoints)
+                isFound = false;
+                for j = 1:numel(thisPoints)
+                    if isequal(thatPoints(i), thisPoints(j))
+                        isFound = true;
                         break;
                     end
                 end
+                if ~isFound
+                    areEqual = false;
+                    return;
+                end 
             end
 
-            if ~all(LinePropsCheck)
-                areEqual = false;
-                return;
-            else
-                areEqual = true;
-                return;
+            % Roll Call
+            % for each line segment in that, see if found in this
+            thatSegments = that.Segments;
+            thisSegments = this.Segments;
+            
+            for i = 1:numel(thatSegments)
+                % for each in this, go until we have found it. Cannot
+                % delete (for now) because not necessarily unique!!
+                isFound = false;
+                for j = 1:numel(thisSegments)
+                    if isequal(thatSegments(i), thisSegments(j))
+                        isFound = true;
+                        break;
+                    end
+                end
+                if ~isFound
+                    % not found; not equal!
+                    areEqual = false;
+                    return;
+                end
             end
+            areEqual = true;
         end
         function [html] = generateFeedback(this, that)
         %% generateFeedback: Generates HTML feedback for the student and solution Plot.
