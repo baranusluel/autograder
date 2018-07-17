@@ -225,9 +225,9 @@ function problems = build(varargin)
             % .package();
         end
         % Delete root .prj
-        % wait for .4 seconds because...windows? Without this pause, delete
+        % wait for 1 second because...windows? Without this pause, delete
         % does not delete the .prj files...
-        pause(0.4);
+        pause(1);
         delete(['..' filesep '*.prj']);
         fprintf(1, 'Created App Installation Package\n');
     end
