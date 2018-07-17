@@ -146,7 +146,7 @@ function problems = build(varargin)
                 content = char(fread(fid)');
                 fclose(fid);
                 content = regexprep(content, ...
-                    '(?<=\<param.version\>).*?(?=\<\/param\.version\>', opts.version);
+                    '(?<=\<param\.version\>).*?(?=\<\/param\.version\>)', opts.version);
                 fid = fopen('Autograder.prj', 'wt');
                 fwrite(fid, content);
                 fclose(fid);
