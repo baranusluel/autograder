@@ -139,11 +139,11 @@ function problems = build(varargin)
             components = strsplit(opts.version, '.');
             if numel(components) == 3 ...
                     && all(cellfun(@(n)(~isnan(str2double(n))), ...
-                    components, 'uni', false))
+                    components))
                 % Check that all three are numbers
                 % should we check if increased? Allow ability to check
                 fid = fopen('Autograder.prj', 'rt');
-                content = fread(fid)';
+                content = char(fread(fid)');
                 fclose(fid);
                 content = regexprep(content, ...
                     '(?<=\<param.version\>).*?(?=\<\/param\.version\>', opts.version);

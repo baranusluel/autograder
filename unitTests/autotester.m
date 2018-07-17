@@ -36,6 +36,7 @@
 %
 
 function [status, html] = autotester(varargin)
+    addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     outs = parseInputs(varargin);
     sentinel = [tempname '.lock'];
     fid = fopen(sentinel, 'wt');
@@ -48,7 +49,6 @@ function [status, html] = autotester(varargin)
     % path is going to be this file's directory
     origPath = cd(fileparts(mfilename('fullpath')));
     userPath = path();
-    addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     
     % get all modules:
     modules = dir();
