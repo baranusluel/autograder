@@ -7,6 +7,10 @@
 %
 %%% Fields
 %
+% * Segments: A structure array of all the segments in the plot
+%
+% * Points: A structure array of all the points in the plot
+%
 % * Title: A String of the title used for the plot
 %
 % * XLabel: A String of the xLabel used for the plot
@@ -40,7 +44,6 @@
 % a subplot is considered a single plot. Like the File class, the Plot
 % class copies over any data necessary to recreate the plot entirely; as
 % such, the plot can be deleted once a Plot object is created!
-%
 %
 classdef Plot < handle
     properties (Access = public)
