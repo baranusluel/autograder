@@ -268,6 +268,21 @@ classdef Plot < handle
                     counter = counter + length(tmp);
                 end
             end
+            % Find Uniqueness:
+            % for each one, iterate over others; each one, if equal,
+            % delete.
+            c = 1;
+            while c <= length(segments)
+                % iterate over rest of segments
+                seg = segments(c);
+                for j = (c+1):length(segments)
+                    if isequal(seg, segments(j))
+                        segments(j) = [];
+                        break;
+                    end
+                end
+                c = c + 1;
+            end
             this.Segments = struct('Segment', segments, ...
                 'Color', segmentColors, ...
                 'Marker', segmentMarkers, ...
