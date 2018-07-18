@@ -283,6 +283,8 @@ classdef Plot < handle
                 end
                 c = c + 1;
             end
+            % Sorting this would make comparison faster - but would the
+            % sorting actually be slower than just comparing unsorted?
             this.Segments = struct('Segment', segments, ...
                 'Color', segmentColors, ...
                 'Marker', segmentMarkers, ...
@@ -502,42 +504,34 @@ classdef Plot < handle
 
             % Roll Call
             % for each line segment in that, see if found in this
-            thatSegments = that.Segments;
-            thisSegments = this.Segments;
-            for i = 1:numel(thatSegments)
-                % for each in this, go until we have found it. Cannot
-                % delete (for now) because not necessarily unique!!
+            % Since they are unique, remove from both sets when found.
+            % Then, at end, if both are empty, equal; otherwise, unequal.
+            thatSegs = that.Segments;
+            thisSegs = this.Segments;
+            
+            for i = numel(thatSegs):-1:1
+                thatSeg = thatSegs(i);
+                % look through thisSegs; once found, delete from both
                 isFound = false;
-                for j = 1:numel(thisSegments)
-                    if isequal(thatSegments(i), thisSegments(j))
+                for j = numel(thisSegs):-1:1
+                    if isequal(thatSeg, thisSegs(j))
                         isFound = true;
+                        thisSegs(j) = [];
                         break;
                     end
                 end
                 if ~isFound
-                    % not found; not equal!
                     areEqual = false;
                     return;
                 end
             end
-            % for each line segment in this, see if found in that
-            for i = 1:numel(thisSegments)
-                % for each in this, go until we have found it. Cannot
-                % delete (for now) because not necessarily unique!!
-                isFound = false;
-                for j = 1:numel(thatSegments)
-                    if isequal(thisSegments(i), thatSegments(j))
-                        isFound = true;
-                        break;
-                    end
-                end
-                if ~isFound
-                    % not found; not equal!
-                    areEqual = false;
-                    return;
-                end
+            % Nothing should be left in either set; if both sets are
+            % non-empty, then false
+            if ~isempty(thisSegs) || ~isempty(thatSegs)
+                areEqual = false;
+            else
+                areEqual = true;
             end
-            areEqual = true;
         end
         function [html] = generateFeedback(this, that)
         %% generateFeedback: Generates HTML feedback for the student and solution Plot.
