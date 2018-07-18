@@ -285,11 +285,20 @@ classdef Plot < handle
             end
             % Sorting this would make comparison faster - but would the
             % sorting actually be slower than just comparing unsorted?
+            
+            % Sort order doesn't actually matter for equality; it can just
+            % make it faster. So our sort algorithm doesn't actually have
+            % to be fully unique, so just sorting by X values should be
+            % good enough, while still being quite spritely
+            
             this.Segments = struct('Segment', segments, ...
                 'Color', segmentColors, ...
                 'Marker', segmentMarkers, ...
                 'LineStyle', segmentStyles, ...
                 'Legend', segmentLegends);
+            segXPts = arrayfun(@(s)(s.Segment{1}(1)), this.Segments);
+            [~, inds] = sort(segXPts);
+            this.Segments = this.Segments(inds);
             function segments = line2segments(xx, yy, zz)
                 % a single line is guaranteed to be of the same color,
                 % style, etc. - that's why it's a line!
@@ -381,7 +390,7 @@ classdef Plot < handle
             end
             % Unique check
             % for all pts, if any point is identical, kill it
-            while p <=length(points)
+            while p <= length(points)
                 pt = points(p);
                 for j = (p+1):length(points)
                     if isequal(pt, points(j))
@@ -390,6 +399,10 @@ classdef Plot < handle
                 end
                 p = p + 1;
             end
+            
+            % Sort, just like we did with Segments:
+            [~, inds] = sort([points.X]);
+            points = points(inds);
                     
             
             this.Points = points;
