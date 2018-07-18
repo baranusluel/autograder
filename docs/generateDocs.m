@@ -39,8 +39,9 @@ function generateDocs(email)
     options.evalCode = false;
     options.catchError = false;
     options.showCode = false;
-
+    options.outputDir = tDir;
     % each directory is a module. Create a new directory in for it
+    publish('manual.m', options);
     mods = dir(['..' filesep 'modules']);
     mods(~[mods.isdir]) = [];
     mods(strncmp({mods.name}, '.', 1)) = [];
