@@ -239,9 +239,8 @@ function htmlFeedback = generateFeedback(stud, soln)
     
     % check if same size
     if ~isequal(size(soln), size(stud))
-        
-        solnSize = strrep(num2str(size(soln)), '  ', 'x');
-        studSize = strrep(num2str(size(stud)), '  ', 'x');
+        solnSize = strjoin(arrayfun(@num2str, soln, 'uni', false), 'x');
+        studSize = strjoin(arrayfun(@num2str, stud, 'uni', false), 'x');
         htmlFeedback = sprintf(DIFF_DIM, solnSize, studSize);
         return
     end
