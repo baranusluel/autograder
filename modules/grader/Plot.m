@@ -125,10 +125,26 @@ classdef Plot < handle
                     'Given input to Plot Constructor is not Axes Handle');
                 throw(ME);
             end
-            this.Title = pHandle.Title.String;
-            this.XLabel = pHandle.XLabel.String;
-            this.YLabel = pHandle.YLabel.String;
-            this.ZLabel = pHandle.ZLabel.String;
+            if iscell(pHandle.Title.String)
+                this.Title = strjoin(pHandle.Title.String, newline);
+            else
+                this.Title = pHandle.Title.String;
+            end
+            if iscell(pHandle.XLabel.String)
+                this.XLabel = strjoin(pHandle.XLabel.String, newline);
+            else
+                this.XLabel = pHandle.XLabel.String;
+            end
+            if iscell(pHandle.YLabel.String)
+                this.YLabel = strjoin(pHandle.YLabel.String, newline);
+            else
+                this.YLabel = pHandle.YLabel.String;
+            end
+            if iscell(pHandle.ZLabel.String)
+                this.ZLabel = strjoin(pHandle.ZLabel.String, newline);
+            else
+                this.ZLabel = pHandle.ZLabel.String;
+            end
             this.Position = round(pHandle.Position, ...
                 Student.ROUNDOFF_ERROR);
             this.PlotBox = round(pHandle.PlotBoxAspectRatio, ...
@@ -464,22 +480,22 @@ classdef Plot < handle
                 areEqual = false;
                 return;
             end
-            if ~strcmp(strjoin(cellstr(this.Title), newline), strjoin(cellstr(that.Title), newline))
+            if ~strcmp(this.Title, that.Title)
                 areEqual = false;
                 return;
             end
 
-            if ~strcmp(strjoin(cellstr(this.XLabel), newline), strjoin(cellstr(that.XLabel), newline))
+            if ~strcmp(this.XLabel, that.XLabel)
                 areEqual = false;
                 return;
             end
 
-            if ~strcmp(strjoin(cellstr(this.YLabel), newline), strjoin(cellstr(that.YLabel), newline))
+            if ~strcmp(this.YLabel, that.YLabel)
                 areEqual = false;
                 return;
             end
 
-            if ~strcmp(strjoin(cellstr(this.ZLabel), newline), strjoin(cellstr(that.ZLabel), newline))
+            if ~strcmp(this.ZLabel, that.ZLabel)
                 areEqual = false;
                 return;
             end
@@ -619,13 +635,118 @@ classdef Plot < handle
                 'input is not a valid instance of Plot');
             throw(ME);
         end
+
+        % Find out why
+        % title
+        % x,y,zlabel
+        % position
+        % plotbox
+        % segs
+        % pts
+        % limits
+        msg = '';
+        if ~strcmp(this.Title, that.Title)
+            msg = sprintf('You gave title "%s", but we expected "%s"', ...
+                this.title, that.Title);
+        elseif ~strcmp(this.XLabel, that.XLabel)
+            msg = sprintf('You have an X Label of "%s", but we expected "%s"', ...
+                this.XLabel, that.XLabel);
+        elseif ~strcmp(this.YLabel, that.YLabel)
+            msg = sprintf('You have an Y Label of "%s", but we expected "%s"', ...
+                this.YLabel, that.YLabel);
+        elseif ~strcmp(this.ZLabel, that.ZLabel)
+            msg = sprintf('You have an Z Label of "%s", but we expected "%s"', ...
+                this.ZLabel, that.ZLabel);
+        elseif any(this.Position < (that.Position - Plot.POSITION_MARGIN)) ...
+                    || any(this.Position > (that.Position + Plot.POSITION_MARGIN))
+            msg = sprintf(['Your plot has a position of [%0.2f, %0.2f, %0.2f, %0.2f], ', ...
+                'but we expected [%0.2f, %0.2f, %0.2f, %0.2f] (Did you call subplot correctly?)'], ...
+                this.Position(1), this.Position(2), this.Position(3), this.Position(4), ...
+                that.Position(1), that.Position(2), that.Position(3), that.Position(4));
+        elseif any(this.PlotBox < (that.PlotBox - Plot.POSITION_MARGIN)) ...
+                    || any(this.PlotBox > (that.PlotBox + Plot.POSITION_MARGIN))
+            msg = sprintf(['Your plot has a Plot Box of [%0.2f, %0.2f, %0.2f], ', ...
+                'but we expected [%0.2f, %0.2f, %0.2f] (Did you call subplot correctly?)'], ...
+                this.PlotBox(1), this.PlotBox(2), this.PlotBox(3), ...
+                that.PlotBox(1), that.PlotBox(2), that.PlotBox(3));
+        else
+            % we need to check Segs and Points
+            % do roll call
+            solnSegs = that.Segments;
+            studSegs = this.Segments;
+            
+            for i = numel(solnSegs):-1:1
+                solnSeg = solnSegs(i);
+                isFound = false;
+                for j = numel(studSegs):-1:1
+                    if isequal(solnSeg, studSegs(j))
+                        solnSegs(i) = [];
+                        studSegs(j) = [];
+                        isFound = true;
+                        break;
+                    end
+                end
+                if ~isFound
+                    msg = sprintf('You didn''t plot segment (%0.2f, %0.2f)<i class="fas fa-arrow-right"></i>(%0.2f, %0.2f)', ...
+                        solnSeg.Segment{1}(1), ...
+                        solnSeg.Segment{2}(1), ...
+                        solnSeg.Segment{1}(2), ...
+                        solnSeg.Segment{2}(2));
+                    break;
+                end
+            end
+            if isFound && ~isempty(studSegs)
+                seg = studSegs(1);
+                msg = sprintf('You plotted segment (%0.2f, %0.2f)<i class="fas fa-arrow-right"></i>(%0.2f, %0.2f) when you shouldn''t have', ...
+                    seg.Segment{1}(1), ...
+                    seg.Segment{2}(1), ...
+                    seg.Segment{1}(2), ...
+                    seg.Segment{2}(2));
+            end
+            if isempty(msg)
+                % look at points
+                solnPoints = that.Points;
+                studPoints = this.Points;
+
+                for i = numel(solnPoints):-1:1
+                    solnPoint = solnPoints(i);
+                    isFound = false;
+                    for j = numel(studPoints):-1:1
+                        if isequal(solnPoint, studPoints(j))
+                            solnPoints(i) = [];
+                            studPoints(j) = [];
+                            isFound = true;
+                            break;
+                        end
+                    end
+                    if ~isFound
+                        msg = sprintf('You didn''t plot point (%0.2f, %0.2f)', ...
+                            solnPoint.X, solnPoint.Y);
+                        break;
+                    end
+                end
+                if isFound && ~isempty(studPoints)
+                    pt = studPoints(1);
+                    msg = sprintf('You plotted point (%0.2f, %0.2f) when you shouldn''t have', ...
+                        pt.X, pt.Y);
+                end
+            end
+        end
+        
+        if isempty(msg) && ~isequal(this.Limits(1:4), that.Limits(1:4))
+            msg = sprintf(['Your plot has Limits of [%0.2f, %0.2f, %0.2f, %0.2f], ', ...
+                'but we expected [%0.2f, %0.2f, %0.2f, %0.2f] (Did you call axis or xlim/ylim correctly?)'], ...
+                this.Limits(1), this.Limits(2), this.Limits(3), this.Limits(4), ...
+                that.Limits(1), that.Limits(2), that.Limits(3), that.Limits(4));
+        end
+        
         studPlot = img2base64(this.Image);
         solnPlot = img2base64(that.Image);
         html = sprintf(['<div class="row"><div class="col-md-6 text-center">', ...
             '<h2 class="text-center">Your Plot</h2><img class="img-fluid img-thumbnail" src="%s">', ...
             '</div><div class="col-md-6 text-center"><h2 class="text-center">Solution Plot</h2>', ...
-            '<img class="img-fluid img-thumbnail" src="%s"></div></div>'],...
-            studPlot, solnPlot);
+            '<img class="img-fluid img-thumbnail" src="%s"></div><div class="text-center col-12 exception"><p>%s</p></div></div>'],...
+            studPlot, solnPlot, msg);
 
         end
     end
