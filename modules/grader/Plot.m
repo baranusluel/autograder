@@ -647,15 +647,15 @@ classdef Plot < handle
         msg = '';
         if ~strcmp(this.Title, that.Title)
             msg = sprintf('You gave title "%s", but we expected "%s"', ...
-                this.title, that.Title);
+                this.Title, that.Title);
         elseif ~strcmp(this.XLabel, that.XLabel)
             msg = sprintf('You have an X Label of "%s", but we expected "%s"', ...
                 this.XLabel, that.XLabel);
         elseif ~strcmp(this.YLabel, that.YLabel)
-            msg = sprintf('You have an Y Label of "%s", but we expected "%s"', ...
+            msg = sprintf('You have a Y Label of "%s", but we expected "%s"', ...
                 this.YLabel, that.YLabel);
         elseif ~strcmp(this.ZLabel, that.ZLabel)
-            msg = sprintf('You have an Z Label of "%s", but we expected "%s"', ...
+            msg = sprintf('You have a Z Label of "%s", but we expected "%s"', ...
                 this.ZLabel, that.ZLabel);
         elseif any(this.Position < (that.Position - Plot.POSITION_MARGIN)) ...
                     || any(this.Position > (that.Position + Plot.POSITION_MARGIN))
@@ -674,7 +674,7 @@ classdef Plot < handle
             % do roll call
             solnSegs = that.Segments;
             studSegs = this.Segments;
-            
+            isFound = false;
             for i = numel(solnSegs):-1:1
                 solnSeg = solnSegs(i);
                 isFound = false;
@@ -707,7 +707,7 @@ classdef Plot < handle
                 % look at points
                 solnPoints = that.Points;
                 studPoints = this.Points;
-
+                isFound = false;
                 for i = numel(solnPoints):-1:1
                     solnPoint = solnPoints(i);
                     isFound = false;
