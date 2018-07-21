@@ -242,7 +242,6 @@ classdef Plot < handle
             end
             segments = cell(1, totalSegs);
             segmentColors = cell(size(segments));
-            segmentMarkers = cell(size(segments));
             segmentStyles = cell(size(segments));
             segmentLegends = cell(size(segments));
             counter = 1;
@@ -251,7 +250,6 @@ classdef Plot < handle
                     tmp = line2segments(xcell{i}, ycell{i}, zcell{i});
                     segments(counter:(counter+length(tmp)-1)) = tmp;
                     segmentColors(counter:(counter+length(tmp)-1)) = color(i);
-                    segmentMarkers(counter:(counter+length(tmp)-1)) = marker(i);
                     segmentStyles(counter:(counter+length(tmp)-1)) = linestyle(i);
                     segmentLegends(counter:(counter+length(tmp)-1)) = legend(i);
                     counter = counter + length(tmp);
@@ -264,10 +262,12 @@ classdef Plot < handle
             while c <= length(segments)
                 % iterate over rest of segments
                 seg = segments(c);
-                for j = (c+1):length(segments)
+                for j = length(segments):-1:(c+1)
                     if isequal(seg, segments(j))
                         segments(j) = [];
-                        break;
+                        segmentColors(j) = [];
+                        segmentStyles(j) = [];
+                        segmentLegends(j) = [];
                     end
                 end
                 c = c + 1;
@@ -282,7 +282,6 @@ classdef Plot < handle
             
             this.Segments = struct('Segment', segments, ...
                 'Color', segmentColors, ...
-                'Marker', segmentMarkers, ...
                 'LineStyle', segmentStyles, ...
                 'Legend', segmentLegends);
             segXPts = arrayfun(@(s)(s.Segment{1}(1)), this.Segments);
@@ -325,63 +324,54 @@ classdef Plot < handle
                     end
                 end
             end
-            % for every line that has no line style, we should sort it.
-            % every point should be documented; EACH point is it's own
-            % structure
-            % for each line that has no line style, get it
-            mask = strcmp(linestyle, '');
+            % Plots are connections between points and the points
+            % themselves. Every POINT is its own thing as well
             % get X, Y, Z, Marker, Legend, Color
-            ptXData = xcell(mask);
-            ptYData = ycell(mask);
-            if ~all(cellfun(@isempty, zcell))
-                ptZData = zcell(mask);
-            else
-                ptZData = cell(1, sum(mask));
-            end
-            % z data?
-            ptMarker = marker(mask);
-            ptColor = color(mask);
-            ptLegend = legend(mask);
+
             % get total amnt of points
             totalPoints = 0;
-            for p = 1:numel(ptXData)
-                totalPoints = totalPoints + numel(xcell{p});
+            for p = 1:numel(xcell)
+                if ~isempty(marker{p})
+                    totalPoints = totalPoints + numel(xcell{p});
+                end
             end
             ptData = cell(1, totalPoints);
             points = struct('X', ptData, ...
                 'Y', ptData, ...
                 'Z', ptData, ...
                 'Marker', ptData, ...
-                'LineStyle', '', ...
                 'Legend', ptData, ...
                 'Color', ptData);
             counter = 1;
-            for i = 1:length(ptXData)
-                % just separate X, Y, Z points
-                xx = num2cell(ptXData{i});
-                yy = num2cell(ptYData{i});
-                zz = ptZData{i};
-                mark = ptMarker{i};
-                col = ptColor{i};
-                leg = ptLegend{i};
-                if isempty(zz)
-                    zz = {[]};
-                else
-                    zz = num2cell(zz);
+            for i = 1:length(xcell)
+                if ~isempty(marker{i})
+                    % just separate X, Y, Z points
+                    xx = num2cell(xcell{i});
+                    yy = num2cell(ycell{i});
+                    zz = zcell{i};
+                    mark = marker{i};
+
+                    col = color{i};
+                    leg = legend{i};
+                    if isempty(zz)
+                        zz = {[]};
+                    else
+                        zz = num2cell(zz);
+                    end
+                    [points(counter:(counter+length(xx)-1)).X] = deal(xx{:});
+                    [points(counter:(counter+length(xx)-1)).Y] = deal(yy{:});
+                    [points(counter:(counter+length(xx)-1)).Z] = deal(zz{:});
+                    [points(counter:(counter+length(xx)-1)).Marker] = deal(mark);
+                    [points(counter:(counter+length(xx)-1)).Color] = deal(col);
+                    [points(counter:(counter+length(xx)-1)).Legend] = deal(leg);
+                    counter = counter + length(xx);
                 end
-                [points(counter:(counter+length(xx)-1)).X] = deal(xx{:});
-                [points(counter:(counter+length(xx)-1)).Y] = deal(yy{:});
-                [points(counter:(counter+length(xx)-1)).Z] = deal(zz{:});
-                [points(counter:(counter+length(xx)-1)).Marker] = deal(mark);
-                [points(counter:(counter+length(xx)-1)).Color] = deal(col);
-                [points(counter:(counter+length(xx)-1)).Legend] = deal(leg);
-                counter = counter + length(xx);
             end
             % Unique check
             % for all pts, if any point is identical, kill it
             while p <= length(points)
                 pt = points(p);
-                for j = (p+1):length(points)
+                for j = length(points):-1:(p+1)
                     if isequal(pt, points(j))
                         points(j) = [];
                     end
@@ -514,21 +504,6 @@ classdef Plot < handle
             end
             % Nothing should be left in either set; if both sets are
             % non-empty, then false
-            thatPoints = that.Points;
-            thisPoints = this.Points;
-            for i = 1:numel(thatPoints)
-                isFound = false;
-                for j = 1:numel(thisPoints)
-                    if isequal(thatPoints(i), thisPoints(j))
-                        isFound = true;
-                        break;
-                    end
-                end
-                if ~isFound
-                    areEqual = false;
-                    return;
-                end 
-            end
 
             % Roll Call
             % for each line segment in that, see if found in this
