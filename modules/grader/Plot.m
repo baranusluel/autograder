@@ -255,6 +255,9 @@ classdef Plot < handle
                     counter = counter + length(tmp);
                 end
             end
+            % get rid of empty extra
+            segments((counter+1):end) = [];
+            % 
             % Find Uniqueness:
             % for each one, iterate over others; each one, if equal,
             % delete.
@@ -292,36 +295,48 @@ classdef Plot < handle
                 % style, etc. - that's why it's a line!
                 if ~isempty(zz)
                     segments = cell(1, numel(xx) - 1);
+                    mask = false(1, numel(xx) - 1);
                     for idx = 1:length(xx)-1
-                        first = [num2str(xx(idx)) ' ' num2str(yy(idx)) ' ' num2str(zz(idx))];
-                        last = [num2str(xx(idx+1)) ' ' num2str(yy(idx+1)) ' ' num2str(zz(idx+1))];
-                        [~, order] = sort({first last});
-                        if order(1) == 1
-                            segments{idx} = {[xx(idx) xx(idx+1)], ...
-                                [yy(idx) yy(idx+1)], ...
-                                [zz(idx) zz(idx+1)]};
-                        else
-                            segments{idx} = {[xx(idx+1) xx(idx)], ...
-                                [yy(idx+1) yy(idx)], ...
-                                [zz(idx+1) zz(idx)]};
+                        if xx(idx) ~= xx(idx+1) || ...
+                                yy(idx) ~= yy(idx+1) || ...
+                                zz(idx) ~= zz(idx+1)
+                            mask(idx) = true;
+                            first = [num2str(xx(idx)) ' ' num2str(yy(idx)) ' ' num2str(zz(idx))];
+                            last = [num2str(xx(idx+1)) ' ' num2str(yy(idx+1)) ' ' num2str(zz(idx+1))];
+                            [~, order] = sort({first last});
+                            if order(1) == 1
+                                segments{idx} = {[xx(idx) xx(idx+1)], ...
+                                    [yy(idx) yy(idx+1)], ...
+                                    [zz(idx) zz(idx+1)]};
+                            else
+                                segments{idx} = {[xx(idx+1) xx(idx)], ...
+                                    [yy(idx+1) yy(idx)], ...
+                                    [zz(idx+1) zz(idx)]};
+                            end
                         end
                     end
+                    segments = segments(mask);
                 else
                     segments = cell(1, numel(xx) - 1);
+                    mask = false(1, numel(xx) - 1);
                     for idx = 1:length(xx)-1
-                        first = [num2str(xx(idx)) ' ' num2str(yy(idx))];
-                        last = [num2str(xx(idx+1)) ' ' num2str(yy(idx+1))];
-                        [~, order] = sort({first last});
-                        if order(1) == 1
-                            segments{idx} = {[xx(idx) xx(idx+1)], ...
-                                [yy(idx) yy(idx+1)], ...
-                                []};
-                        else
-                            segments{idx} = {[xx(idx+1) xx(idx)], ...
-                                [yy(idx+1) yy(idx)], ...
-                                []};
+                        if xx(idx) ~= xx(idx+1) || yy(idx) ~= yy(idx+1)
+                            mask(idx) = true;
+                            first = [num2str(xx(idx)) ' ' num2str(yy(idx))];
+                            last = [num2str(xx(idx+1)) ' ' num2str(yy(idx+1))];
+                            [~, order] = sort({first last});
+                            if order(1) == 1
+                                segments{idx} = {[xx(idx) xx(idx+1)], ...
+                                    [yy(idx) yy(idx+1)], ...
+                                    []};
+                            else
+                                segments{idx} = {[xx(idx+1) xx(idx)], ...
+                                    [yy(idx+1) yy(idx)], ...
+                                    []};
+                            end
                         end
                     end
+                    segments = segments(mask);
                 end
             end
             % Plots are connections between points and the points
