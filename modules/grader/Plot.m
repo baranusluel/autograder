@@ -220,36 +220,6 @@ classdef Plot < handle
             linestyle = {lines.LineStyle};
             linestyle(strcmp(linestyle, 'none')) = {''};
             
-            % Point Chaining
-            % combine points that have the same line style of NO LINE, the
-            % same marker style, and the same color
-            i = 1;
-            while i <= numel(linestyle)
-                if isempty(linestyle{i})
-                    j = i + 1;
-                    while j <= numel(linestyle)
-                        if isempty(linestyle{j}) && ...
-                            strcmp(marker{i}, marker{j}) && ...
-                            isequal(color{i}, color{j})
-                            % engage
-                            xcell{i} = [xcell{i} xcell{j}];
-                            ycell{i} = [ycell{i} ycell{j}];
-                            zcell{i} = [zcell{i} zcell{j}];
-                            xcell(j) = [];
-                            ycell(j) = [];
-                            zcell(j) = [];
-                            color(j) = [];
-                            marker(j) = [];
-                            linestyle(j) = [];
-                            legend(j) = [];
-                            j = j - 1;
-                        end
-                        j = j + 1;
-                    end
-                end
-                i = i + 1;
-            end
-            
             % Roll Call
             %
             % Plots are really just a bunch of line segments. So, we can
