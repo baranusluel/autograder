@@ -84,6 +84,9 @@ if nargin == 1
                 end
             end
             rawUsers = [rawUsers{:}];
+            %sort by real name instead of nickname
+            [~,ind] = sort({rawUsers.real_name});
+            rawUsers = rawUsers(ind);
         end
         users = struct('name',{rawUsers.real_name},....
             'id',{rawUsers.id},...
