@@ -231,16 +231,16 @@ function htmlFeedback = generateFeedback(stud, soln)
     end
         
     % check if char vector/string and meets visualization rule
-    if (ischar(stud) && ismatrix(stud) && all(size(stud) <= [1 MAX_STR])) ...
-        || (isstring(stud) && numel(strlength(stud)) == 1 && strlength(stud) <= MAX_STR)
+    if ischar(stud) && ischar(soln) && size(stud, 1) == 1 && size(soln, 1) == 1
         htmlFeedback = sprintf(TABLE, visualizePrimitive(soln), visualizePrimitive(stud));
         return
     end
+
     
     % check if same size
     if ~isequal(size(soln), size(stud))
-        solnSize = strjoin(arrayfun(@num2str, soln, 'uni', false), 'x');
-        studSize = strjoin(arrayfun(@num2str, stud, 'uni', false), 'x');
+        solnSize = strjoin(arrayfun(@num2str, size(soln), 'uni', false), 'x');
+        studSize = strjoin(arrayfun(@num2str, size(stud), 'uni', false), 'x');
         htmlFeedback = sprintf(DIFF_DIM, solnSize, studSize);
         return
     end
