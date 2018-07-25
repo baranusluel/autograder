@@ -108,7 +108,12 @@ function uploadToServer(students, user, pass, hwName, progress)
     delete(newResubName);
     
     % zip supporting files
-    zip([pwd filesep hwName filesep 'Supporting.zip'], ...
+    if contains(hwName, 'resubmission')
+        name = 'Supporting_Resub.zip';
+    else
+        name = 'Supporting.zip';
+    end
+    zip([pwd filesep hwName filesep name], ...
         [pwd filesep hwName filesep 'SupportingFiles' filesep '*']);
     [~] = rmdir([pwd filesep hwName filesep 'SupportingFiles'], 's');
     % folder is ready to upload; upload it!
@@ -123,8 +128,8 @@ function uploadToServer(students, user, pass, hwName, progress)
             ['/httpdocs/regrades/solutions/Homework' num '/' solns(n).name]);
     end
     % upload supporting.zip
-    sftp.put([pwd filesep hwName filesep 'Supporting.zip'], ...
-        ['/httpdocs/regrades/solutions/Homework' num '/Supporting.zip']);
+    sftp.put([pwd filesep hwName filesep name], ...
+        ['/httpdocs/regrades/solutions/Homework' num '/' name]);
     
     [~] = rmdir(hwName, 's');
     
@@ -136,7 +141,7 @@ function uploadToServer(students, user, pass, hwName, progress)
     fwrite(fid, csv);
     fclose(fid);
     sftp.put([pwd filesep 'grades.csv'], ['/httpdocs/homework_files/' hwName '/grades.csv']);
-    
+    delete('grades.csv');
     % create JSON for names
     ids = {students.id};
     names = {students.name};

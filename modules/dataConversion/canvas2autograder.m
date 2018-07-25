@@ -45,7 +45,7 @@
 %
 %   Threw invalidFile exception
 %
-function canvas2autograder(canvasPath,canvasGradebook,outPath)
+function canvas2autograder(canvasPath, canvasGradebook, outPath, progress)
 
     % Canvas Information
     firstStudentRow = 3;
@@ -57,21 +57,44 @@ function canvas2autograder(canvasPath,canvasGradebook,outPath)
         throw(MException('AUTOGRADER:canvas2autograder:invalidFile',...
                          'The Path given is not a .zip file'));
     end
-    unzippedCanvas = unzipArchive(canvasPath,outPath,true);
+    unzippedCanvas = unzipArchive(canvasPath,outPath,false);
     if ~contains(canvasGradebook,'.csv')
         throw(MException('AUTOGRADER:canvas2autograder:invalidGradebook',...
                          'The Gradebook given is not a .csv file'));
     end
-    [~,~,gradebook] = xlsread(canvasGradebook);
+    warning('off');
+    gradebook = readtable(canvasGradebook);
+    warning('on');
+    tmp = table2cell(gradebook);
+    origNames = gradebook.Properties.VariableDescriptions;
+    names = gradebook.Properties.VariableNames;
+    for n = numel(origNames):-1:1
+        if ~isempty(origNames{n})
+            [~, name] = strtok(origNames{n}, '''');
+            name = name(2:end-1);
+            names{1, n} = name;
+        end
+    end
+    gradebook = [names; tmp];
+    if ~isValidGradebook(gradebook)
+        % see if we can fix; as long as we have name, canvas, and tsquare,
+        % we're good
+        canvasId = gradebook(:, strcmp(gradebook(1, :), 'ID'));
+        names = gradebook(:, strcmp(gradebook(1, :), 'Student'));
+        gtUsername = gradebook(:, strcmp(gradebook(1, :), 'SIS Login ID'));
+        if isempty(canvasId) || isempty(names) || isempty(gtUsername)
+            % unfixable; die and fail
+            throw(MException('AUTOGRADER:canvas2autograder:invalidGradebook',...
+                         'The Gradebook given is not a valid canvas csv'));
+        else
+            gradebook = [names, canvasId, canvasId, gtUsername];
+        end
+    end
 
     % Validate Inputs
     if ~isValidCanvas(unzippedCanvas)
         throw(MException('AUTOGRADER:canvas2autograder:invalidFile',...
                          'The Path given does not contain any valid student submissions'));
-    end
-    if ~isValidGradebook(gradebook)
-        throw(MException('AUTOGRADER:canvas2autograder:invalidGradebook',...
-                         'The Gradebook given is not a valid canvas csv'));
     end
 
     % Generate folders Map
@@ -79,9 +102,13 @@ function canvas2autograder(canvasPath,canvasGradebook,outPath)
                                gradebook(firstStudentRow:end,tsquareIDcol));
 
     % Generate empty folders.
+    progress.Value = 0;
+    progress.Indeterminate = 'off';
+    progress.Message = 'Creating Student Folders';
+    
     for key = keys(folderMap)
-        mkdir(fullfile(outPath,folderMap(key{1})))
-        mkdir(fullfile(outPath,folderMap(key{1}),'feedback'))
+        mkdir(fullfile(outPath,folderMap(key{1})));
+        progress.Value = min([progress.Value + 1/numel(folderMap.keys), 1]);
     end
 
     % Format of the canvas file:
@@ -89,44 +116,46 @@ function canvas2autograder(canvasPath,canvasGradebook,outPath)
     allFiles = dir(fullfile(unzippedCanvas,'*_*_*_*.*'));
 
     % Loop through all files
-    for i = 1:length(allFiles)
-        fileName = allFiles(i).name;
-
-        % Get parts of file name
-        tokens = strsplit(fileName,'_');
-        
-        % Extract Student ID and file name
-        
-        % Put ABCs filenames back together.
-        if any(strcmp(tokens,'ABCs'))
-            ABCsMask = strcmp(tokens,'ABCs');
-            toCatMask = [false, ABCsMask(1:end-1)];
-            tokens{ABCsMask} = [tokens{ABCsMask} '_' tokens{toCatMask}];
-            tokens(toCatMask) = [];
+    progress.Indeterminate = 'on';
+    progress.Value = 0;
+    progress.Message = 'Sorting Files';
+    for f = numel(allFiles):-1:1
+        name = allFiles(f).name;
+        tokens = strsplit(name, '_');
+        if any(strcmp(tokens, 'ABCs'))
+            ABCs = strcmp(tokens, 'ABCs');
+            mask = [false ABCs(1:end-1)];
+            tokens{ABCs} = [tokens{ABCs} '_' tokens{mask}];
+            tokens(mask) = [];
         end
-
-        % Get Student CanvasID
+        
         for j = 1:length(tokens)
             if ~isnan(str2double(tokens{j}))
                 canvasID = str2double(tokens{j});
-                break
+                break;
             end
         end
         
-        % Remove Version tag
         if contains(tokens{end},'-')
             fparts = strsplit(tokens{end},{'-','.'});
             tokens{end} = [fparts{1} '.' fparts{3}];
         end
-
-        % Copy the file to new location
-        copyfile(fullfile(unzippedCanvas,allFiles(i).name),...
-                 fullfile(outPath,folderMap(canvasID),tokens{end}));
+        
+        src = fullfile(unzippedCanvas, allFiles(f).name);
+        dest = fullfile(outPath, folderMap(canvasID), tokens{end});
+        workers(f) = parfeval(@movefile, 0, src, dest);
     end
-
+    
+    progress.Indeterminate = 'off';
+    progress.Value = 0;
+    while ~all([workers.Read])
+        workers.fetchNext();
+        progress.Value = min([progress.Value + 1/numel(workers), 1]);
+    end
+    delete(workers);
     % Write info.csv
     fh = fopen(fullfile(outPath,'info.csv'),'wt');  
-    toWrite = [strjoin(join(gradebook(firstStudnetRow:end, [tsquareIDcol studentNameCol]), ', "'), '"\n') '"'];
+    toWrite = ['"' strjoin(join(gradebook(firstStudentRow:end, [studentNameCol tsquareIDcol]), '", "'), '"\n"') '"'];
     fwrite(fh,toWrite);
     fclose(fh);
 end

@@ -37,12 +37,36 @@ function downloadFromDrive(folderId, token, path, key, progress)
     while ~all([workers.Read])
         fetchNext(workers);
         progress.Value = min([progress.Value + 1/tot, 1]);
+        if progress.CancelRequested
+            cancel(workers);
+            throw(MException('AUTOGRADER:downloadFromDrive:cancelRequested', ...
+                'Cancel was requested by user'));
+        end
     end
     delete(workers);
 end
 
 function workers = downloadFolder(folderId, token, key, path)
     FOLDER_TYPE = 'application/vnd.google-apps.folder';
+    INVALID_TYPES = {
+    'application/vnd.google-apps.audio', ...
+    'application/vnd.google-apps.document', ...
+    'application/vnd.google-apps.drawing', ...
+    'application/vnd.google-apps.file', ...
+    'application/vnd.google-apps.folder', ...
+    'application/vnd.google-apps.form', ...
+    'application/vnd.google-apps.fusiontable', ...
+    'application/vnd.google-apps.map', ...
+    'application/vnd.google-apps.photo', ...
+    'application/vnd.google-apps.presentation', ...
+    'application/vnd.google-apps.script', ...
+    'application/vnd.google-apps.site', ...
+    'application/vnd.google-apps.spreadsheet', ...
+    'application/vnd.google-apps.unknown', ...
+    'application/vnd.google-apps.video', ...
+    'application/vnd.google-apps.drive-sdk'
+    };
+    
     if nargin == 3
         origPath = cd(path);
     else
@@ -61,13 +85,15 @@ function workers = downloadFolder(folderId, token, key, path)
             % folder; call recursively
             mkdir([path filesep content.name]);
             workers{c} = downloadFolder(content.id, token, key, [path filesep content.name]);
-        else
+        elseif ~any(contains(content.mimeType, INVALID_TYPES))
             % file; download
             workers{c} = parfeval(@downloadFile, 0, content, token, key, path);
         end
     end
     workers = [workers{:}];
-    workers([workers.ID] == -1) = [];
+    if ~isempty(workers)
+        workers([workers.ID] == -1) = [];
+    end
 end
 
 function downloadFile(file, token, key, path, attemptNum)
@@ -95,31 +121,58 @@ function downloadFile(file, token, key, path, attemptNum)
     end
 end
 
-function contents = getFolderContents(folderId, token, key)
+function contents = getFolderContents(folderId, token, key, attemptNum)
+    MAX_ATTEMPT_NUM = 10;
+    WAIT_TIME = 2;
     API = 'https://www.googleapis.com/drive/v3/files/';
+    
+    if nargin < 4
+        attemptNum = 1;
+    end
     opts = weboptions();
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
     try
         contents = webread(API, 'q', ['''' folderId ''' in parents'], 'key', key, opts);
     catch reason
-        e = MException('AUTOGRADER:networking:connectionError', ...
-            'Connection was terminated (Are you connected to the internet?');
-        e = e.addCause(reason);
-        throw(e);
+        if attemptNum < MAX_ATTEMPT_NUM
+            pause(WAIT_TIME);
+            contents = getFolderContents(folderId, token, key, attemptNum + 1);
+        else
+            e = MException('AUTOGRADER:networking:connectionError', ...
+                'Connection was terminated (Are you connected to the internet?');
+            e = e.addCause(reason);
+            throw(e);
+        end
     end
-    contents = contents.files;
+    if ~isempty(contents)
+        contents = contents.files;
+    else
+        contents = [];
+    end
+    
 end
 
-function folder = getFolder(folderId, token, key)
+function folder = getFolder(folderId, token, key, attemptNum)
+    MAX_ATTEMPT_NUM = 10;
+    WAIT_TIME = 2;
+    
+    if nargin < 4
+        attemptNum = 1;
+    end
     API = 'https://www.googleapis.com/drive/v3/files/';
     opts = weboptions();
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
     try
         folder = webread([API folderId], 'key', key, opts);
     catch reason
-        e = MException('AUTOGRADER:networking:connectionError', ...
-            'Connection was terminated (Are you connected to the internet?');
-        e = e.addCause(reason);
-        throw(e);
+        if attemptNum < MAX_ATTEMPT_NUM
+            pause(WAIT_TIME);
+            folder = getFolder(folderId, token, key, attemptNum + 1);
+        else
+            e = MException('AUTOGRADER:networking:connectionError', ...
+                'Connection was terminated (Are you connected to the internet?');
+            e = e.addCause(reason);
+            throw(e);
+        end
     end
 end

@@ -38,7 +38,7 @@ classdef File < handle
     end
     properties (Access = public)
         TXT = {'txt', 'm', 'rtf', 'html'};
-        EXCEL = {'xls', 'xlsx', 'csv'};
+        EXCEL = {'mat'};
         IMAGES;
     end
     methods
@@ -128,37 +128,41 @@ classdef File < handle
                     %preallocating. However, Matlab makes even
                     %preallocating look lame af in the presence of the
                     %glorious fread function.
-                    fid = fopen([name ext], 'rt');
+                    fid = fopen(path, 'rt');
                     this.data = char(fread(fid)');
                     fclose(fid);
+                    this.data = strrep(this.data, [char(13) char(10)], char(0)); %#ok<*CHARTEN>
+                    this.data = strrep(this.data, char(13), char(10));
+                    this.data = strrep(this.data, char(0), char(10));
+                    this.data = strrep(this.data, char(10), newline);
                 case this.IMAGES
                     %read in image array and store in File class
                     try
-                        this.data = imread([name ext]);
+                        this.data = imread(path);
                     catch
                         this.data = [];
                     end
                 case this.EXCEL
                     try
-                        [~,~,this.data] = xlsread([name ext]);
+                        data = load(path);
+                        this.extension = data.ext;
+                        this.data = data.data;
+                        this.name = data.name;
                     catch
                         this.data = {};
                     end
                 otherwise
-                    fid = fopen([this.name this.extension]); %binary reading
+                    fid = fopen(path, 'r'); %binary reading
                     this.data = fread(fid);
                     fclose(fid);
             end
         end
     end
     methods (Static)
-        function s = SENTINEL()
+        function s = SENTINEL(n)
             persistent name;
-            if isempty(name)
-                name = [tempname '.lock'];
-                fid = fopen(name, 'wt');
-                fwrite(fid, 'SENTINEL');
-                fclose(fid);
+            if nargin == 1
+                name = n;
             end
             s = name;
         end
@@ -251,27 +255,9 @@ classdef File < handle
             else
                 switch lower(this.extension(2:end))
                     case this.TXT
-                        studPath = [tempname this.extension];
-                        solnPath = [tempname soln.extension];
-                        fid = fopen(studPath, 'wt');
-                        fwrite(fid, this.data);
-                        fclose(fid);
-                        fid = fopen(solnPath, 'wt');
-                        fwrite(fid, soln.data);
-                        fclose(fid);
                         try
-                            html = visdiff(studPath, solnPath);
-                            html = strrep(html, studPath, 'Student File');
-                            html = strrep(html, solnPath, 'Solution File');
-                            [~, studName, ~] = fileparts(studPath);
-                            [~, solnName, ~] = fileparts(solnPath);
-                            html = strrep(html, studName, this.name);
-                            html = strrep(html, solnName, soln.name);
-                            startInd = strfind(html, '<title>');
-                            endInd = strfind(html, '</title>');
-                            startInd = startInd(1) + length('<title>');
-                            endInd = endInd(1) - 1;
-                            html = [html(1:startInd), 'Comparison of Student and Solution Files' html(endInd:end)];
+                            html = fileDiff(soln.data, this.data, ...
+                                [soln.name '_soln' soln.extension], [this.name this.extension], false);
                         catch
                             html = '<p>Student file is not a valid text file</p>';
                         end

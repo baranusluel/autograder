@@ -61,6 +61,7 @@
 % testing is not done at all. Defaults to true
 
 function problems = build(varargin)
+    problems = [];
     opts = getInputs(varargin{:});
     [path, ~, ~] = fileparts(mfilename('fullpath'));
     thisFolder = cd(path);
@@ -138,14 +139,14 @@ function problems = build(varargin)
             components = strsplit(opts.version, '.');
             if numel(components) == 3 ...
                     && all(cellfun(@(n)(~isnan(str2double(n))), ...
-                    components, 'uni', false))
+                    components))
                 % Check that all three are numbers
                 % should we check if increased? Allow ability to check
                 fid = fopen('Autograder.prj', 'rt');
-                content = fread(fid)';
+                content = char(fread(fid)');
                 fclose(fid);
                 content = regexprep(content, ...
-                    '(?<=\<param.version\>).*?(?=\<\/param\.version\>', opts.version);
+                    '(?<=\<param\.version\>).*?(?=\<\/param\.version\>)', ['>' opts.version '<']);
                 fid = fopen('Autograder.prj', 'wt');
                 fwrite(fid, content);
                 fclose(fid);
@@ -224,9 +225,9 @@ function problems = build(varargin)
             % .package();
         end
         % Delete root .prj
-        % wait for .4 seconds because...windows? Without this pause, delete
+        % wait for 1 second because...windows? Without this pause, delete
         % does not delete the .prj files...
-        pause(0.4);
+        pause(1);
         delete(['..' filesep '*.prj']);
         fprintf(1, 'Created App Installation Package\n');
     end
@@ -237,6 +238,11 @@ function problems = build(varargin)
     end
     fprintf(1, 'Build Successfully Completed\n');
     cd(thisFolder);
+    if nargout ~= 0
+        problems = [];
+    else
+        clear('problems');
+    end
 end
 
 function res = getInputs(varargin)

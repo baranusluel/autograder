@@ -23,6 +23,8 @@
 %
 % * exception: The MException raised by the student's code.
 %
+% * isRecursive: True if the student's code was recursive
+%
 %%% Methods
 %
 % * Feedback
@@ -135,7 +137,9 @@ classdef Feedback < handle
                 showCorrect = true;
             end
             %Check if testCase was passed and output empty div
-            if ~isempty(this.exception)
+            if ~isempty(this.exception) && ...
+                ~any(strcmp(this.exception.identifier, ...
+                    {'AUTOGADER:fileNotClosed', 'AUTOGRADER:fcloseAll'}))
                 if isempty(this.exception.cause)
                     this.exception = this.exception.addCause(this.exception);
                 end
@@ -144,6 +148,14 @@ classdef Feedback < handle
                         this.exception.cause{1}.message '</p>'];
             else
                 html = '<div class="container-fluid"><div class="feedback">';
+                if ~isempty(this.exception)
+                    % print like normal, but then keep going
+                    html = [html '<p class="exception">', ...
+                        this.exception.identifier ' - ', ...
+                        this.exception.message , ...
+                        sprintf(' (-%0.0f%%)', Student.FCLOSE_PERCENTAGE_OFF * 100), ...
+                        '<br /></p>'];
+                end
                 %Get solution outputs for testCase
                 solnOutputs = this.testCase.outputs;
                 solnFiles = this.testCase.files;

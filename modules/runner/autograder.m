@@ -6,7 +6,7 @@
 %%% Remarks
 %
 % Main is the entry point for the Autograder. Main will handle any
-% exceptions, and will always clean up afdatater itself - the user's folder
+% exceptions, and will always clean up after itself - the user's folder
 % will not be changed!
 %
 % Documentation is available. Please go the the autograder's website, at
@@ -18,7 +18,7 @@
 %
 %%% Exceptions
 %
-% This is guarunteed to never throw an exception; instead, exceptions are reported through the GUI
+% This is guaranteed to never throw an exception; instead, exceptions are reported through the GUI
 %
 %%% Unit Tests
 %
@@ -84,7 +84,7 @@ function autograder(app)
             logger = Logger();
         end
     catch e
-        if app.isDebug
+        if debugger(app, 'Logger initialization Failed')
             keyboard;
         else
             alert(app, e);
@@ -104,7 +104,7 @@ function autograder(app)
     if progress.CancelRequested
         return;
     end
-    progress.Message = 'Setting Up Environment';
+    progress.Message = 'Loading Dictionaries & Setting up Environment';
     Logger.log('Setting up new directory');
     % Get temporary directory
     settings.workingDir = [tempname filesep];
@@ -112,12 +112,17 @@ function autograder(app)
     settings.userDir = cd(settings.workingDir);
     % Create SENTINEL file
     Logger.log('Creating Sentinel');
-    fid = fopen(File.SENTINEL, 'wt');
+    sentinel = [tempname '.lock'];
+    fid = fopen(sentinel, 'wt');
     fwrite(fid, 'SENTINEL');
     fclose(fid);
-
+    File.SENTINEL(sentinel);
+    Logger.log('Loading Dictionary');
+    worker = [parfevalOnAll(@File.SENTINEL, 0, sentinel), ...
+        parfevalOnAll(@gradeComments, 0)];
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
+    worker.wait();
     
     % close all files and plots
     wait(parfevalOnAll(@()(fclose('all')), 0));
@@ -129,12 +134,13 @@ function autograder(app)
         % downloading
         try
             Logger.log('Exchanging refresh token for access token');
-            token = refresh2access(app.driveToken);
+            token = refresh2access(app.driveToken, ...
+                app.googleClientId, app.googleClientSecret);
             Logger.log('Starting download of solution archive from Google Drive');
             downloadFromDrive(app.driveFolderId, token, ...
                 [pwd filesep 'Solutions'], app.driveKey, progress);
         catch e
-            if app.isDebug
+            if debugger(app, 'Failed to download solution archive from Google Drive')
                 keyboard;
             else
                 alert(app, e);
@@ -149,7 +155,7 @@ function autograder(app)
         try
             unzipArchive(app.solutionArchivePath, [pwd filesep 'Solutions']);
         catch e
-            if app.isDebug
+            if debugger(app, 'Failed to unzip the solution archive')
                 keyboard;
             else
                 alert(app, e);
@@ -164,10 +170,9 @@ function autograder(app)
         Logger.log('Generating Solutions');
         solutions = generateSolutions(app.isResubmission, progress);
         cd(orig);
-        app.solutions = solutions;
     catch e
         % Display to user that we failed
-        if app.isDebug
+        if debugger(app, 'Failed to generate solutions')
             keyboard;
         else
             cd(orig);
@@ -184,11 +189,14 @@ function autograder(app)
         % downloading. We should create new Students folder and download
         % there.
         try
-            downloadFromCanvas(app.canvasCourseId, app.canvasHomeworkId, ...
-                app.canvasToken, [pwd filesep 'Students'], progress);
+            if isempty(app.selectedStudents)
+                app.selectedStudents = getCanvasStudents(app.canvasCourseId, app.canvasHomeworkId, ...
+                    app.canvasToken, progress);
+            end
+            downloadFromCanvas(app.selectedStudents, [pwd filesep 'Students'], progress);
         catch e
             % alert in some way and return
-            if app.isDebug
+            if debugger(app, 'Failed to download student submissions from Canvas')
                 keyboard;
             else
                 alert(app, e);
@@ -200,9 +208,19 @@ function autograder(app)
         progress.Indeterminate = 'on';
         % unzip the archive
         try
-            unzipArchive(app.homeworkArchivePath, [pwd filesep 'Students']);
+            canvas2autograder(app.homeworkArchivePath, app.homeworkGradebookPath, [pwd filesep 'Students'], progress);
+            if ~isempty(app.selectedStudents)
+                % delete folders not listed
+                flds = dir([pwd filesep 'Students']);
+                flds(~[flds.isdir]) = [];
+                flds(strncmp('.', {flds.name}, 1)) = [];
+                flds = flds(~contains({flds.name}, {app.selectedStudents.login_id}));
+                for f = 1:numel(flds)
+                    [~] = rmdir([flds(f).folder filesep flds(f).name], 's');
+                end
+            end
         catch e
-            if app.isDebug
+            if debugger(app, 'Failed to unzip the Student Submission Archive')
                 keyboard;
             else
                 alert(app, e);
@@ -214,9 +232,8 @@ function autograder(app)
     try
         Logger.log('Generating Students');
         students = generateStudents([pwd filesep 'Students'], progress);
-        app.students = students;
     catch e
-        if app.isDebug
+        if debugger(app, 'Failed to generate students from submissions')
             keyboard;
         else
             alert(app, e);
@@ -225,7 +242,7 @@ function autograder(app)
     end
 
     % Create Plot
-    plotter = uifigure('Name', 'Grade Report');
+    plotter = uifigure('Name', 'Grade Report', 'Visible', 'off');
     ax = uiaxes(plotter);
     ax.Position = [10 10 550 400]; % as suggested in example on MATLAB ref page
     title(ax, 'Histogram of Student Grades');
@@ -248,6 +265,7 @@ function autograder(app)
     progress.Value = 0;
     progress.Message = 'Student Grading Progress';
     Logger.log('Starting student assessment');
+    setupRecs(solutions);
     for s = 1:numel(students)
         student = students(s);
         progress.Message = sprintf('Assessing Student %s', student.name);
@@ -255,14 +273,14 @@ function autograder(app)
             Logger.log(sprintf('Assessing Student %s (%s)', student.name, student.id));
             student.assess();
         catch e
-            if app.isDebug
+            if debugger(app, 'Failed to assess student')
                 keyboard;
             else
                 alert(e);
                 return;
             end
         end
-        progress.Value = min([progress.Value + 1/numel(students), 1]);
+        progress.Value = s/numel(students);
         h.Data(s) = student.grade;
         if mod(s, DRAW_INTERVAL) == 0
             drawnow;
@@ -291,16 +309,18 @@ function autograder(app)
     elseif ~any(h.Data == totalPoints)
         msg = 'No student scored a 100%.';
     elseif ~any(h.Data == 0)
-        msg = sprintf('Every student scored above 0%; the minimum was %0.2f.', ...
-            min(data));
+        msg = sprintf('Every student scored above 0%%; the minimum was %0.2f%%.', ...
+            min(h.Data));
     elseif all(h.Data == totalPoints | h.Data == 0)
         msg = 'All students scored either a 0% or a 100%';
     else
         % we have passed... for now.
         msg = '';
     end
+    % if empty, see if we should debug first
     if ~isempty(msg)
         msg = [msg ' Would you like to inspect the students, or continue?'];
+        debugger(app, msg);
         selection = uiconfirm(app.UIFigure, msg, 'Autograder', ...
             'Options', {INSPECT_LABEL, CONTINUE_LABEL}, ...
             'DefaultOption', 1, 'Icon', 'warning', 'CancelOption', 2);
@@ -314,6 +334,85 @@ function autograder(app)
     end
     if stop
         keyboard;
+    end
+    
+    % If the user requested uploading, do it
+
+    if app.UploadToCanvas.Value
+        try
+            Logger.log('Starting upload of student grades');
+            uploadToCanvas(students, app.canvasCourseId, ...
+                app.canvasHomeworkId, app.canvasToken, progress);
+        catch e
+            if debugger(app, 'Failed to upload grades to Canvas')
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
+    end
+    if app.UploadToServer.Value
+        Logger.log('Starting upload of student files');
+        if app.isResubmission
+            name = sprintf('homework%02d_resubmission', app.homeworkNum);
+        else
+            name = sprintf('homework%02d', app.homeworkNum);
+        end
+        try
+            uploadToServer(students, app.serverUsername, app.serverPassword, ...
+                name, progress);
+        catch e
+            if debugger(app, 'Failed to upload submission files to server')
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
+    end
+    if app.EmailFeedback.Value
+        Logger.log('Emailing Feedback');
+        progress.Message = 'Emailing Feedback';
+        progress.Indeterminate = 'on';
+        try
+            emailFeedback(app.notifierToken, app.driveKey, ...
+                app.googleClientId, app.googleClientSecret, ...
+                students, strjoin(app.emailMessage, newline), progress);
+        catch e
+            if debugger(app, 'Failed to email feedback files')
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
+    end
+    if app.PostToCanvas.Value
+        Logger.log('Posting to Canvas');
+        progress.Message = 'Posting to Canvas';
+        progress.Indeterminate = 'on';
+        try
+            postToCanvas(app.canvasCourseId, app.canvasToken, app.canvasTitle, ...
+                app.canvasHtml);
+        catch e
+            if debugger(app, 'Failed to post announcement')
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
+    end
+    % if they want the output, do it
+    if ~isempty(app.localOutputPath)
+        progress.Indeterminate = 'on';
+        progress.Message = 'Saving Output';
+        % save canvas info in path
+        % copy csv, then change accordingly
+        % move student folders to output path
+        Logger.log('Starting copy of local information');
+        copyfile(settings.workingDir, app.localOutputPath);
     end
     
     if app.AnalyzeForCheating.Value
@@ -372,9 +471,9 @@ function autograder(app)
             recSource = [fileparts(mfilename('fullpath')) filesep 'resources'];
             mkdir('resources');
             copyfile(recSource, [pwd filesep 'resources']);
-            CheatDetector(students, solutions, scores);
+            CheatDetector(students, solutions, scores, settings.workingDir);
         catch e
-            if app.isDebug
+            if debugger(app, 'Failed to analyze submissions for cheating')
                 keyboard;
             else
                 alert(app, e);
@@ -382,58 +481,25 @@ function autograder(app)
             end
         end
     end
-    % If the user requested uploading, do it
-
-    if app.UploadToCanvas.Value
-        try
-            Logger.log('Starting upload of student grades');
-            uploadToCanvas(students, app.canvasCourseId, ...
-                app.canvasHomeworkId, app.canvasToken, progress);
-        catch e
-            if app.isDebug
-                keyboard;
-            else
-                alert(app, e);
-                return;
-            end
-        end
-    end
-    if app.UploadToServer.Value
-        Logger.log('Starting upload of student files');
-        if app.isResubmission
-            name = sprintf('homework%02d_resubmission', app.homeworkNum);
+    % Notify
+    progress.Indeterminate = 'on';
+    progress.Message = 'Sending Notifications';
+    Logger.log('Start Sending of Notifications');
+    try
+        messenger(app, students);
+    catch e
+        if debugger(app, 'Error Sending Notifications')
+            keyboard;
         else
-            name = sprintf('homework%02d', app.homeworkNum);
+            alert(app, e);
+            return;
         end
-        try
-            uploadToServer(students, app.serverUsername, app.serverPassword, ...
-                name, progress);
-        catch e
-            if app.isDebug
-                keyboard;
-            else
-                alert(app, e);
-                return;
-            end
-        end
-    end
-
-    % if they want the output, do it
-    if ~isempty(app.localOutputPath)
-        progress.Indeterminate = 'on';
-        progress.Message = 'Saving Output';
-        % save canvas info in path
-        % copy csv, then change accordingly
-        % move student folders to output path
-        Logger.log('Starting copy of local information');
-        copyfile(settings.workingDir, app.localOutputPath);
     end
 end
 
 function alert(app, e)
     uialert(app.UIFigure, sprintf('Exception %s: "%s" encountered', ...
         e.identifier, e.message), 'Autograder Error');
-    app.exception = e;
 end
 
 function cleanup(settings)
@@ -463,12 +529,39 @@ function cleanup(settings)
     % cd to user's dir
     cd(settings.userDir);
     Logger.log('Removing Working Directory');
-    % Delete our working directory
-    [~] = rmdir(settings.workingDir, 's');
+    % Delete our working directory - UNLESS cheat detection is on!
+    if ~settings.app.AnalyzeForCheating.Value
+        [~] = rmdir(settings.workingDir, 's');
+    end
     if isvalid(settings.progress)
         close(settings.progress);
     end
     settings.logger.delete();
+end
+
+function shouldDebug = debugger(app, msg)
+    EMAIL_MESSAGE_FORMAT = 'Hello,\n\nIt appears the autograder failed to finish. Here''s the error message:\n\n%s\n\nBest Regards,\n~The CS 1371 Technology Team';
+    
+    shouldDebug = app.isDebug;
+    % notify
+    try
+        if ~isempty(app.email)
+            emailMessenger(app.email, 'Autograder Failure', ...
+                sprintf(EMAIL_MESSAGE_FORMAT, msg), ...
+                app.notifierToken, app.googleClientId, app.googleClientSecret, ...
+                app.driveKey);
+        end
+        if ~isempty(app.phoneNumber)
+            textMessenger(app.phoneNumber, 'Autograder Failed... See your computer for more information', ...
+                app.twilioSid, app.twilioToken, app.twilioOrigin);
+        end
+        if ~isempty(app.slackRecipients)
+            slackMessenger(app.slackToken, {app.slackRecipents.id}, 'Autograder Failed... See your computer for more information');
+        end
+        desktopMessenger('Autograder Failed... See MATLAB for more information');
+    catch
+    end
+    beep;
 end
 
 function setupRecs(solutions)
@@ -477,6 +570,8 @@ function setupRecs(solutions)
 end
 
 function scores = getScores(varargin)
+    % Minimum number of code lines before we start checking for cheating
+    MIN_LINES = 5;
     persistent students;
     if nargin == 2
         students = varargin{2};
@@ -497,7 +592,7 @@ function scores = getScores(varargin)
         else
             for p = numel(txts):-1:1
                 % get jaccard index
-                if ~isempty(subs{p}{1}) && ~isempty(txts{p}{1})
+                if numel(subs{p}{1}) >= MIN_LINES && numel(txts{p}{1}) >= MIN_LINES
                     % compare
                     if subs{p}{2} == txts{p}{2}
                         scores{s2}(p) = Inf;
@@ -521,6 +616,12 @@ function problemTxt = getText(problemPaths)
             fid = fopen(problemPaths{p}, 'rt');
             code = char(fread(fid)');
             fclose(fid);
+            % find all combinations, replace with NULL character.
+            % this is to account for weird encodings that a student used.
+            code = strrep(code, [char(13) char(10)], char(0)); %#ok<*CHARTEN>
+            code = strrep(code, char(13), char(10));
+            code = strrep(code, char(0), char(10));
+            code = strrep(code, char(10), newline);
             tree = mtree(code);
             tmp = strsplit(code, newline, 'CollapseDelimiters', false);
             % remove comments
