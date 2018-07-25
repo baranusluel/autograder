@@ -175,13 +175,8 @@ classdef Plot < handle
                 end
             end
             if isempty(lines)
-                this.XData = {};
-                this.YData = {};
-                this.ZData = {};
-                this.Legend = {};
-                this.Color = {};
-                this.Marker = {};
-                this.LineStyle = {};
+                this.Segments = [];
+                this.Points = [];
                 return;
             end
             xcell = {lines.XData};
@@ -397,6 +392,7 @@ classdef Plot < handle
             end
             % Unique check
             % for all pts, if any point is identical, kill it
+            p = 1;
             while p <= length(points)
                 pt = points(p);
                 for j = length(points):-1:(p+1)

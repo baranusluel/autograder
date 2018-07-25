@@ -127,6 +127,8 @@ classdef TestResults < handle
                 this.message = sprintf('<span class="test-error">Test threw exception %s: %s', ...
                     e.identifier, e.message);
             end
+            close('all', 'force');
+            fclose('all');
         end
     end
     methods (Access=public)
