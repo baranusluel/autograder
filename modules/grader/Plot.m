@@ -256,7 +256,10 @@ classdef Plot < handle
                 end
             end
             % get rid of empty extra
-            segments((counter+1):end) = [];
+            segments((counter):end) = [];
+            segmentColors((counter):end) = [];
+            segmentStyles((counter):end) = [];
+            segmentLegends((counter):end) = [];
             % 
             % Find Uniqueness:
             % for each one, iterate over others; each one, if equal,
