@@ -174,6 +174,11 @@ classdef Plot < handle
                     this.isAlien = true;
                 end
             end
+            if isempty(lines)
+                this.Segments = [];
+                this.Points = [];
+                return;
+            end
             xcell = {lines.XData};
             ycell = {lines.YData};
             zcell = {lines.ZData};
@@ -387,6 +392,7 @@ classdef Plot < handle
             end
             % Unique check
             % for all pts, if any point is identical, kill it
+            p = 1;
             while p <= length(points)
                 pt = points(p);
                 for j = length(points):-1:(p+1)
