@@ -36,6 +36,9 @@
 %
 
 function [status, html] = autotester(varargin)
+    status = get(0, 'DefaultFigureVisible');
+    set(0, 'DefaultFigureVisible', 'off');
+    addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     outs = parseInputs(varargin);
     sentinel = [tempname '.lock'];
     fid = fopen(sentinel, 'wt');
@@ -48,7 +51,6 @@ function [status, html] = autotester(varargin)
     % path is going to be this file's directory
     origPath = cd(fileparts(mfilename('fullpath')));
     userPath = path();
-    addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     
     % get all modules:
     modules = dir();
@@ -137,6 +139,7 @@ function [status, html] = autotester(varargin)
     end
     cd(origPath);
     path(userPath, '');
+    set(0, 'DefaultFigureVisible', status);
 end
 
 function outs = parseInputs(ins)

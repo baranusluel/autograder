@@ -37,6 +37,11 @@ function downloadFromDrive(folderId, token, path, key, progress)
     while ~all([workers.Read])
         fetchNext(workers);
         progress.Value = min([progress.Value + 1/tot, 1]);
+        if progress.CancelRequested
+            cancel(workers);
+            throw(MException('AUTOGRADER:downloadFromDrive:cancelRequested', ...
+                'Cancel was requested by user'));
+        end
     end
     delete(workers);
 end
@@ -139,7 +144,12 @@ function contents = getFolderContents(folderId, token, key, attemptNum)
             throw(e);
         end
     end
-    contents = contents.files;
+    if ~isempty(contents)
+        contents = contents.files;
+    else
+        contents = [];
+    end
+    
 end
 
 function folder = getFolder(folderId, token, key, attemptNum)
