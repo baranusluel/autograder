@@ -1,1 +1,0 @@
-% This function would be where the test cases for AnotherExample would be.

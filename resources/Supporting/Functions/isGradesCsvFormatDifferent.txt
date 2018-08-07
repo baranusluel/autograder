@@ -1,6 +1,0 @@
-Function Name: getMessages.m
-Inputs: gradebookTemplate - a cell array that is the output of the xlsread for the csv file.
-Outputs: isFormatDifferent - a logical that represents if the formatting has changed.
-         columnIndices - the indices of our hard-coded columns.
-Specific Uses:  getGradebook.m
-Description: This tells if the format of the CSV file that holds grades has changed at all. Regardless of whether it has or not, if the function can find the headers, the column indices will be produced faithfully. Note that if the format is different, the column indices cannot be trusted.

@@ -1,7 +1,0 @@
-Function Name: uploadHomeworkGeneratorFilesToServer.m
-Inputs: rubric - the rubric structure
-        homeworkNumber - a double representing the current assignment
-        isResubmission* - a logical representing if this is original or a resubmission.
-Outputs:
-Specific Uses:  uploadFilesToServer.m
-Description: This uploads the homework generator files (.p) to the regrade server. if isResubmission is absent, it is assumed to be false. This is experimental!
