@@ -46,6 +46,7 @@ function students = getCanvasStudents(courseId, assignmentId, token, progress)
         end
     end
     students = fetchOutputs(workers);
+    
     delete(workers);
     [students.submission] = deal(subs{:});
 end
@@ -136,6 +137,7 @@ function info = getStudentInfo(userId, token)
     opts.Timeout = 30;
     try
         info = webread([API '/users/' num2str(userId) '/profile/'], opts);
+        info.login_id = matlab.lang.makeValidName(info.login_id);
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
         e = addCause(e, reason);
