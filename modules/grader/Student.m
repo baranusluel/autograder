@@ -658,6 +658,7 @@ classdef Student < handle
 
             totalPts = 0;
             totalEarn = 0;
+            totalComments = 0;
             % For each problem, list:
             for i = 1:numel(this.resources.Problems)
                 tCases = [this.resources.Problems(i).testCases];
@@ -671,13 +672,15 @@ classdef Student < handle
                 appendRow(row);
 
                 totalPts = totalPts + sum([tCases.points]);
-                totalEarn = totalEarn + sum([feeds.points]) + this.commentGrades(i);
+                totalEarn = totalEarn + sum([feeds.points]);
+                totalComments = totalComments + this.commentGrades(i);
+                
             end
 
             % Add totals row
             totals = {'<tr>', '<td>', '</td>', ...
                 '<td>', '<strong>Total</strong>', '</td>', '<td>', ...
-                '<p>', sprintf('%0.1f', totalEarn), '</p>', '</td>', '<td>', ...
+                '<p>', sprintf('%0.1f (+%0.1f)', totalEarn, totalComments), '</p>', '</td>', '<td>', ...
                 '<p>', sprintf('%0.1f', totalPts), '</p>', '</td>', '</tr>'};
             appendRow(totals);
 
