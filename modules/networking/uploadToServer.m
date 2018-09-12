@@ -40,13 +40,13 @@ function uploadToServer(students, user, pass, hwName, progress)
     % directories!
     % cd to the httpdocs/homework_files
     % create zip
-    executeCommand(user, pass, ...
-        ['zip -r /httpdocs/previous_homework_files/' hwName '.zip ', ...
-        '/httpdocs/homework_files/' hwName]);
-    sftp.cd('/httpdocs/homework_files');
-    executeCommand(user, pass, ['rm -rf /httpdocs/homework_files/' hwName]);
-    sftp.mkdir(hwName);
-    sftp.cd(hwName);
+%     executeCommand(user, pass, ...
+%         ['zip -r /httpdocs/previous_homework_files/' hwName '.zip ', ...
+%         '/httpdocs/homework_files/' hwName]);
+%     sftp.cd('/httpdocs/homework_files');
+%     executeCommand(user, pass, ['rm -rf /httpdocs/homework_files/' hwName]);
+%     sftp.mkdir(hwName);
+%     sftp.cd(hwName);
     % upload new files
     % for each student, we'll be uploading two files: Their submissions,
     % and their Feedback. The folder name is the ID of the student, which
@@ -55,38 +55,38 @@ function uploadToServer(students, user, pass, hwName, progress)
     % So, for each student, create their folders. Then, parfeval their
     % uploads.
     wait(parfevalOnAll(@()(clear('uploadToServer')), 0));
-    startPath= ['httpdocs/homework_files/' hwName];
-    progress.Message = 'Preparing Upload';
-    progress.Value = 0;
-    progress.Indeterminate = 'off';
-    for s = numel(students):-1:1
-        % create their remote directory and sub directories
-        student = students(s);
-        sftp.mkdir(student.id);
-        sftp.mkdir([student.id '/Feedback Attachment(s)']);
-        sftp.mkdir([student.id '/Submission Attachment(s)']);
-        % create a structure with necessary info for faster serialization
-        stud.id = student.id;
-        stud.submissions = student.submissions;
-        % for each of their submissions, make a worker to upload
-        workers(s) = parfeval(@uploadStudent, 0, stud, user, pass, startPath);
-        progress.Value = min([progress.Value + 1/numel(students), 1]);
-        % upload their feedback
-    end
-    workers([workers.ID] == -1) = [];
-    tot = numel(workers);
-    progress.Indeterminate = 'off';
-    progress.Message = 'Uploading Files';
-    progress.Value = 0;
-    while ~all([workers.Read])
-        if progress.CancelRequested
-            cancel(workers);
-            throw(MException('AUTOGRADER:userCancellation', ...
-                'User Cancelled operation'));
-        end
-        fetchNext(workers);
-        progress.Value = min([progress.Value + 1/tot, 1]);
-    end
+%     startPath= ['httpdocs/homework_files/' hwName];
+%     progress.Message = 'Preparing Upload';
+%     progress.Value = 0;
+%     progress.Indeterminate = 'off';
+%     for s = numel(students):-1:1
+%         % create their remote directory and sub directories
+%         student = students(s);
+%         sftp.mkdir(student.id);
+%         sftp.mkdir([student.id '/Feedback Attachment(s)']);
+%         sftp.mkdir([student.id '/Submission Attachment(s)']);
+%         % create a structure with necessary info for faster serialization
+%         stud.id = student.id;
+%         stud.submissions = student.submissions;
+%         % for each of their submissions, make a worker to upload
+%         workers(s) = parfeval(@uploadStudent, 0, stud, user, pass, startPath);
+%         progress.Value = min([progress.Value + 1/numel(students), 1]);
+%         % upload their feedback
+%     end
+%     workers([workers.ID] == -1) = [];
+%     tot = numel(workers);
+%     progress.Indeterminate = 'off';
+%     progress.Message = 'Uploading Files';
+%     progress.Value = 0;
+%     while ~all([workers.Read])
+%         if progress.CancelRequested
+%             cancel(workers);
+%             throw(MException('AUTOGRADER:userCancellation', ...
+%                 'User Cancelled operation'));
+%         end
+%         fetchNext(workers);
+%         progress.Value = min([progress.Value + 1/tot, 1]);
+%     end
     % get HW num
     num = hwName(hwName >= '0' & hwName <= '9');
     % Upload solutions
@@ -133,29 +133,29 @@ function uploadToServer(students, user, pass, hwName, progress)
     
     [~] = rmdir(hwName, 's');
     
-    % create csv
-    ids = {students.id};
-    grades = arrayfun(@num2str, [students.grade], 'uni', false);
-    csv = strjoin(join([ids; grades]', ','), newline);
-    fid = fopen('grades.csv', 'wt');
-    fwrite(fid, csv);
-    fclose(fid);
-    sftp.put([pwd filesep 'grades.csv'], ['/httpdocs/homework_files/' hwName '/grades.csv']);
-    delete('grades.csv');
-    % create JSON for names
-    ids = {students.id};
-    names = {students.name};
-    
-    for s = numel(ids):-1:1
-        json.(ids{s}) = struct('name', names{s});
-    end
-    json = jsonencode(json);
-    fid = fopen('names.json', 'wt');
-    fwrite(fid, json);
-    fclose(fid);
-    sftp.put([pwd filesep 'names.json'], '/httpdocs/regrades/json/names.json');
-    delete('names.json');
-    %TODO: how to get sections?
+%     % create csv
+%     ids = {students.id};
+%     grades = arrayfun(@num2str, [students.grade], 'uni', false);
+%     csv = strjoin(join([ids; grades]', ','), newline);
+%     fid = fopen('grades.csv', 'wt');
+%     fwrite(fid, csv);
+%     fclose(fid);
+%     sftp.put([pwd filesep 'grades.csv'], ['/httpdocs/homework_files/' hwName '/grades.csv']);
+%     delete('grades.csv');
+%     % create JSON for names
+%     ids = {students.id};
+%     names = {students.name};
+%     
+%     for s = numel(ids):-1:1
+%         json.(ids{s}) = struct('name', names{s});
+%     end
+%     json = jsonencode(json);
+%     fid = fopen('names.json', 'wt');
+%     fwrite(fid, json);
+%     fclose(fid);
+%     sftp.put([pwd filesep 'names.json'], '/httpdocs/regrades/json/names.json');
+%     delete('names.json');
+%     %TODO: how to get sections?
     
     sftp.disconnect();
     workers = parfevalOnAll(@uploadStudent, 0);
