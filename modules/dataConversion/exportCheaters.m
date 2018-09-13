@@ -118,10 +118,15 @@ function writeHtml(problems, names, scores, myName, myPaths, paths)
         if ~isempty(names{p})
             fid = fopen(myPaths{p}, 'rt');
             myCode = char(fread(fid)');
-            myCode = strrep(myCode, '&', '&amp;');
-            myCode = strrep(myCode, '<', '&lt;');
-            myCode = strrep(myCode, '>', '&gt;');
             fclose(fid);
+            try
+                myCodeStyled = webwrite('http://hilite.me/api', 'code', myCode, 'lexer', 'matlab', 'style', 'vs', 'divstyles', '');
+            catch
+                myCode = strrep(myCode, '&', '&amp;');
+                myCode = strrep(myCode, '<', '&lt;');
+                myCode = strrep(myCode, '>', '&gt;');
+                myCodeStyled = ['<pre>' myCode '</pre>'];
+            end
             list = cell(1, size(names{p}, 2));
             [~, inds] = sort(scores{p});
             inds = inds(end:-1:1);
@@ -142,16 +147,21 @@ function writeHtml(problems, names, scores, myName, myPaths, paths)
                     'Compare Code', '</button>'}, tmp];
                 fid = fopen(paths{p}{n}, 'rt');
                 code = char(fread(fid)');
-                code = strrep(code, '&', '&amp;');
-                code = strrep(code, '<', '&lt;');
-                code = strrep(code, '>', '&gt;');
                 fclose(fid);
+                try
+                    codeStyled = webwrite('http://hilite.me/api', 'code', code, 'lexer', 'matlab', 'style', 'vs', 'divstyles', '');
+                catch
+                    code = strrep(code, '&', '&amp;');
+                    code = strrep(code, '<', '&lt;');
+                    code = strrep(code, '>', '&gt;');
+                    codeStyled = ['<pre>' code '</pre>'];
+                end
                 list{n} = [tag, {'<div class="cheater-comparison d-none">', ...
                     '<div class="row">', '<div class="col-6">', ['<h3 class="text-center">' myName '</h3>'], ...
                     '</div>', '<div class="col-6">', ['<h3 class="text-center">' names{p}{1, n} ' (' names{p}{2, n} ')</h3>'], ...
                     '</div>', '</div>', '<div class="row">', '<div class="col-6">', ...
-                    '<pre>', myCode, '</pre>', '</div>', '<div class="col-6">', ...
-                    '<pre>', code, '</pre>', '</div>', '</div>', '</div>', '<div>'}];
+                    myCodeStyled, '</div>', '<div class="col-6">', ...
+                    codeStyled, '</div>', '</div>', '</div>', '<div>'}];
             end
             problemMarkup{p} = [{'<hr />', '<div class="problem-header row"><div class="col-12">', ...
                 ['<h2><pre>' problems{p} '</pre></h2></div></div><div class="problem row"><div class="col-12">'], ...
