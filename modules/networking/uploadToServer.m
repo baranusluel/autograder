@@ -26,7 +26,7 @@
 %   uploadToServer(S, U, P, N, B);
 %
 %   Student files are correctly uploaded
-function uploadToServer(students, user, pass, hwName, progress)
+function uploadToServer(~, user, pass, hwName, progress)
     progress.Message = 'Uploading Student Data to Server';
     progress.Value = 0;
     progress.Indeterminate = 'on';
