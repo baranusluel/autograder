@@ -27,7 +27,7 @@
 %
 %   Student files are correctly uploaded
 function uploadToServer(~, user, pass, hwName, progress)
-    progress.Message = 'Uploading Student Data to Server';
+    progress.Message = 'Uploading Homework Data to Server';
     progress.Value = 0;
     progress.Indeterminate = 'on';
     
