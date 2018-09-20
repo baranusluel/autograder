@@ -213,6 +213,16 @@ function problems = build(varargin)
         fwrite(fid, proj);
         fclose(fid);
 
+        % Remove settings.autograde file
+        fid = fopen(['..' filesep 'modules' filesep 'userInterface' filsep 'settings.autograde', 'rt']);
+        if fid ~= -1
+            % we are live; get, package, then replace
+            userSettings = fread(fid);
+            fclose(fid);
+        else
+            userSettings = false;
+        end
+        
         % Create app
         matlab.apputil.package(['..' filesep 'Autograder.prj']);
 
@@ -229,6 +239,12 @@ function problems = build(varargin)
         % does not delete the .prj files...
         pause(1);
         delete(['..' filesep '*.prj']);
+        % Rewrite settings, if need be
+        if ~islogical(userSettings)
+            fid = fopen(['..' filesep 'modules' filesep 'userInterface' filsep 'settings.autograde', 'wt']);
+            fwrite(fid, userSettings);
+            fclose(fid);
+        end
         fprintf(1, 'Created App Installation Package\n');
     end
 
