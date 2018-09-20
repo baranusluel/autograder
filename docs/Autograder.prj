@@ -21,7 +21,7 @@ If you're looking for documentation, click &lt;a href="https://github.gatech.edu
 &lt;br /&gt;
 This product was a labor of love from the CS 1371 Software Development Team. You can check us out &lt;a href="https://github.gatech.edu/pages/CS1371/software-development/"&gt;here&lt;/a&gt;. Want to contribute? Fork us on &lt;a href="https://github.gatech.edu/CS1371/autograder"&gt;GitHub&lt;/a&gt;</param.description>
     <param.screenshot>${PROJECT_ROOT}\resources\images\brand.jpg</param.screenshot>
-    <param.version>1.1.2</param.version>
+    <param.version>2.0.0</param.version>
     <param.products.name>
       <item>MATLAB</item>
       <item>Instrument Control Toolbox</item>
