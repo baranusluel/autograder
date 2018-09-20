@@ -46,22 +46,30 @@ function downloadFromCanvas(students, path, progress)
         ids{s} = students(s).login_id;
         % for each attachment, download it here
         if isfield(students(s).submission, 'attachments') && ~isempty(students(s).submission.attachments)
-            workers{s} = saveFiles(students(s).submission.attachments, students(s).login_id);
+            % create paths and links
+            attachments = students(s).submission.attachments;
+            for a = numel(attachments):-1:1
+                paths(a) = string([pwd filesep students(s).login_id filesep attachments(a).filename]);
+                urls(a) = string(attachments(a).url);
+            end
+            workers{s} = StudentDownloader(paths, urls);
         end
     end
     workers = [workers{:}];
-    workers([workers.ID] == -1) = [];
-    numToSave = numel(workers);
-    while ~all([workers.Read])
-        fetchNext(workers);
-        progress.Value = min([progress.Value + 1/numToSave, 1]);
-        drawnow;
-        if progress.CancelRequested
-            cancel(workers);
-            e = MException('AUTOGRADER:networking:connectionError', ...
-                'User cancelled operation');
-            e.throw();
-        end
+    downloads = StudentDownloader.download(workers);
+    tot = downloads.size();
+    while Download.numRemaining > 0
+        progress.Value = min([1, (tot - Download.numRemaining) / tot]);
+    end
+    % check to make sure that none errored; if they did, alert!
+    mask = arrayfun(@(d)(d.isError), downloads);
+    if any(mask)
+        % we didn't make it; die
+        files = arrayfun(@(d)(d.getPath()), downloads(mask), 'uni', false);
+        e = MException('AUTOGRADER:networking:connectionError', ...
+            'We were unable to download the following files: \n%s', ...
+            strjoin(files, newline));
+        e.throw();
     end
     % write info.csv
     names = [names; ids]';
@@ -71,32 +79,4 @@ function downloadFromCanvas(students, path, progress)
     fwrite(fid, names);
     fclose(fid);
     cd(origPath);
-end
-
-function workers = saveFiles(attachments, loginId)
-    for a = numel(attachments):-1:1
-        workers(a) = parfeval(@saveFile, 0, attachments(a), [pwd filesep loginId]);
-    end
-end
-
-function saveFile(attachment, path, attempt, reason)
-    MAX_ATTEMPT_NUM = 10;
-    if nargin > 2 && attempt > MAX_ATTEMPT_NUM
-        e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
-        e = addCause(e, reason);
-        throw(e);
-    end
-    try
-        downloader = matlab.net.http.RequestMessage;
-        data = downloader.send(attachment.url);
-        fid = fopen([path filesep attachment.filename], 'w');
-        fwrite(fid, data.Body.Data);
-        fclose(fid);
-    catch reason
-        if nargin > 2
-            saveFile(attachment, path, attempt + 1, reason);
-        else
-            saveFile(attachment, path, 1, reason);
-        end
-    end
 end

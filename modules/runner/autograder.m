@@ -74,6 +74,7 @@ function autograder(app)
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     clear Student;
     Student.resetPath();
+    javaaddpath([fileparts(fileparts(mfilename('fullpath'))) filesep 'networking']);
 
     % start up application
     settings.app = app;
