@@ -241,7 +241,7 @@ function problems = build(varargin)
         delete(['..' filesep '*.prj']);
         % Rewrite settings, if need be
         if ~islogical(userSettings)
-            fid = fopen(['..' filesep 'modules' filesep 'userInterface' filsep 'settings.autograde', 'wt']);
+            fid = fopen(['..' filesep 'modules' filesep 'userInterface' filesep 'settings.autograde', 'wt']);
             fwrite(fid, userSettings);
             fclose(fid);
         end
