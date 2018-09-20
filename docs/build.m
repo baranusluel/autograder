@@ -214,7 +214,7 @@ function problems = build(varargin)
         fclose(fid);
 
         % Remove settings.autograde file
-        fid = fopen(['..' filesep 'modules' filesep 'userInterface' filsep 'settings.autograde', 'rt']);
+        fid = fopen(['..' filesep 'modules' filesep 'userInterface' filesep 'settings.autograde', 'rt']);
         if fid ~= -1
             % we are live; get, package, then replace
             userSettings = fread(fid);
