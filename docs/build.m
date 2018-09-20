@@ -261,4 +261,7 @@ function res = getInputs(varargin)
     
     parser.parse(varargin{:});
     res = parser.Results;
+    if ~isempty(res.version) && res.version(1) == 'v'
+        res.version = res.version(2:end);
+    end
 end
