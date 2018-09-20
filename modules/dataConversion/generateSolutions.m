@@ -85,7 +85,7 @@ function solutions = generateSolutions(isResubmission, progress)
     allTestCases = {solutions.testCases};
     % delete any files NOT referenced by any test case
     saveFiles = arrayfun(@(t)([t.supportingFiles(:)', t.loadFiles(:)']), [allTestCases{:}], 'uni', false);
-    saveFiles = [saveFiles{:}];
+    saveFiles = unique([saveFiles{:}]);
     % for each file in folder supporting, if not contained in
     % saveFiles, delete
     checkFiles = dir([pwd filesep 'SupportingFiles' filesep]);
@@ -100,6 +100,19 @@ function solutions = generateSolutions(isResubmission, progress)
             end
         end
     end
+    
+    % Sanity check. Make sure that all files necessary actually exist.
+    % for each saveFile, check existence
+    mask = ~cellfun(@isfile, saveFiles);
+    if any(mask)
+        [~, names, exts] = cellfun(@fileparts, saveFiles(mask), 'uni', false);
+        files = join([names', exts'], '');
+        % throw error; not all files are here
+        e = MException('AUTOGRADER:generateSolutions:fileNotFound', ...
+            'Supporting File(s) %s not found. Are you sure you put the file(s) in "SupportingFiles"?', ...
+            strjoin(files, ', '));
+        e.throw();
+    end
     % Create vector of indices, s.t. every TestCase when vectorized
     % will have a corresponding index for a Problem
     testCaseIndx = cellfun(@(tc,idx) idx*ones(1,numel(tc)), ...
@@ -108,7 +121,14 @@ function solutions = generateSolutions(isResubmission, progress)
     testCaseIndx = [testCaseIndx{:}];
 
     % Run all testcases with the engine in parallel
-    allTestCases = engine(allTestCases);
+    try
+        allTestCases = engine(allTestCases);
+    catch reason
+        e = MException('AUTOGRADER:generateSolutions:engineFailure', ...
+            'Engine failed to evaluate test cases; see cause for more information');
+        e = e.addCause(reason);
+        e.throw();
+    end
     % Put the evaluated testcases back
     for i = 1:elements
         solutions(i).testCases = allTestCases(testCaseIndx == i);
