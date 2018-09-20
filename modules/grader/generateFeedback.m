@@ -231,7 +231,7 @@ function htmlFeedback = generateFeedback(stud, soln)
     end
         
     % check if char vector/string and meets visualization rule
-    if ischar(stud) && ischar(soln) && size(stud, 1) == 1 && size(soln, 1) == 1
+    if isVisualizableString(stud, MAX_VEC_COLS) && isVisualizableString(soln, MAX_VEC_COLS)
         htmlFeedback = sprintf(TABLE, visualizePrimitive(soln), visualizePrimitive(stud));
         return
     end
@@ -335,6 +335,21 @@ function htmlFeedback = generateFeedback(stud, soln)
     htmlFeedback = findDifference(stud, soln, constants, true);
 end
     
+%% Determine if value is a visualizable string
+function isVisualizable = isVisualizableString(val, maxLength)
+    if nargin == 1
+        maxLength = 50;
+    end
+    isVisualizable = ...
+        (ischar(val) ...
+        && isvector(val) ...
+        && numel(val) <= maxLength) ...
+        || ...
+        (isstring(val) ...
+        && isscalar(val) ...
+        && strlength(val) <= maxLength);
+end
+
 
 %% Generate string visualization of a primitive
 function str = visualizePrimitive(val)
