@@ -74,7 +74,7 @@ function autograder(app)
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     clear Student;
     Student.resetPath();
-    javaaddpath([fileparts(fileparts(mfilename('fullpath'))) filesep 'networking']);
+    javaaddpath([fileparts(fileparts(mfilename('fullpath'))) filesep 'networking' filesep 'StudentDownloader.jar']);
 
     % start up application
     settings.app = app;
@@ -288,7 +288,7 @@ function autograder(app)
         end
         if progress.CancelRequested
             e = MException('AUTOGRADER:userCancelled', 'User Cancelled Operation');
-            alert(e);
+            alert(app, e);
             return;
         end
     end
@@ -361,7 +361,7 @@ function autograder(app)
             name = sprintf('homework%02d', app.homeworkNum);
         end
         try
-            uploadToServer(students, app.serverUsername, app.serverPassword, ...
+            uploadToServer(app.serverUsername, app.serverPassword, ...
                 name, progress);
         catch e
             if debugger(app, 'Failed to upload submission files to server')
@@ -509,6 +509,7 @@ function cleanup(settings)
         settings.progress.Indeterminate = 'on';
         settings.progress.Cancelable = 'off';
     end
+    javarmpath([fileparts(fileparts(mfilename('fullpath'))) filesep 'networking' filesep 'StudentDownloader.jar']);
     % Cleanup
     Logger.log('Deleting Sentinel file');
     delete(File.SENTINEL);
