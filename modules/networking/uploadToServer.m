@@ -2,14 +2,14 @@
 %
 % uploadToServer is responsible for uploading files to the CS 1371 Server
 %
-% uploadToServer(S, U, P, N, B) will upload the files for students in 
-% array S using the username U and the password P. Additionally, it will 
-% update the progress bar B. It will use the homework name N.
+% uploadToServer(U, P, N, B) will upload the files for homework using the 
+% username U and the password P. Additionally, it will  update the progress
+% bar B. It will use the homework name N.
 %
 %%% Remarks
 %
-% This method is used to upload student files to the CS 1371 website, so
-% that the students can view them.
+% This method is used to upload homework files to the CS 1371 website, so
+% that the students can view regrades.
 %
 %%% Exceptions
 %
@@ -18,15 +18,14 @@
 %
 %%% Unit Tests
 %
-%   S = Student(); % valid student array
 %   U = 'autograder'; % valid username
 %   P = 'password'; % valid password
 %   B = uiprogressdlg;
 %   N = 'homework01';
-%   uploadToServer(S, U, P, N, B);
+%   uploadToServer(U, P, N, B);
 %
 %   Student files are correctly uploaded
-function uploadToServer(~, user, pass, hwName, progress)
+function uploadToServer(user, pass, hwName, progress)
     progress.Message = 'Uploading Homework Data to Server';
     progress.Value = 0;
     progress.Indeterminate = 'on';
@@ -35,58 +34,8 @@ function uploadToServer(~, user, pass, hwName, progress)
     cleaner = onCleanup(@()...
         (javarmpath([fileparts(mfilename('fullpath')) filesep 'JSch.jar'])));
     sftp = getSftp(user, pass);
-    % for each student we will need to upload their files to their
-    % appropriate directory. First, however, we'll need to make those
-    % directories!
-    % cd to the httpdocs/homework_files
-    % create zip
-%     executeCommand(user, pass, ...
-%         ['zip -r /httpdocs/previous_homework_files/' hwName '.zip ', ...
-%         '/httpdocs/homework_files/' hwName]);
-%     sftp.cd('/httpdocs/homework_files');
-%     executeCommand(user, pass, ['rm -rf /httpdocs/homework_files/' hwName]);
-%     sftp.mkdir(hwName);
-%     sftp.cd(hwName);
-    % upload new files
-    % for each student, we'll be uploading two files: Their submissions,
-    % and their Feedback. The folder name is the ID of the student, which
-    % is underneath the HW name. In that folder is "Feedback Attachment(s)"
-    % and "Submission Attachment(s)".
-    % So, for each student, create their folders. Then, parfeval their
-    % uploads.
     wait(parfevalOnAll(@()(clear('uploadToServer')), 0));
-%     startPath= ['httpdocs/homework_files/' hwName];
-%     progress.Message = 'Preparing Upload';
-%     progress.Value = 0;
-%     progress.Indeterminate = 'off';
-%     for s = numel(students):-1:1
-%         % create their remote directory and sub directories
-%         student = students(s);
-%         sftp.mkdir(student.id);
-%         sftp.mkdir([student.id '/Feedback Attachment(s)']);
-%         sftp.mkdir([student.id '/Submission Attachment(s)']);
-%         % create a structure with necessary info for faster serialization
-%         stud.id = student.id;
-%         stud.submissions = student.submissions;
-%         % for each of their submissions, make a worker to upload
-%         workers(s) = parfeval(@uploadStudent, 0, stud, user, pass, startPath);
-%         progress.Value = min([progress.Value + 1/numel(students), 1]);
-%         % upload their feedback
-%     end
-%     workers([workers.ID] == -1) = [];
-%     tot = numel(workers);
-%     progress.Indeterminate = 'off';
-%     progress.Message = 'Uploading Files';
-%     progress.Value = 0;
-%     while ~all([workers.Read])
-%         if progress.CancelRequested
-%             cancel(workers);
-%             throw(MException('AUTOGRADER:userCancellation', ...
-%                 'User Cancelled operation'));
-%         end
-%         fetchNext(workers);
-%         progress.Value = min([progress.Value + 1/tot, 1]);
-%     end
+
     % get HW num
     num = hwName(hwName >= '0' & hwName <= '9');
     % Upload solutions
