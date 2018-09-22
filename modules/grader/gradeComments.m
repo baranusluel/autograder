@@ -72,20 +72,17 @@ function points = gradeComments(file, dict)
     lines = strsplit(code, newline, 'CollapseDelimiters', true);
     code = strjoin(lines, newline);
     
-    data = mtree(code);
-    inds = unique(data.getlastexecutableline);
-    codeLines = false(1, numel(lines));
-    codeLines(inds) = true;
-    commLines = true(1, numel(lines));
-    commLines(inds) = false;
+    data = mtree(code, '-comments');
+    comments = data.mtfind('Kind', 'COMMENT');
+    lines = comments.strings;
+    commLines = comments.lineno;
     if sum(commLines) <= MIN_LINE_NUM
         points = 0;
         return;
     end
     % get spread of commLines
-    spreadLines = find(commLines);
     
-    avgSpread = mean(diff(spreadLines));
+    avgSpread = mean(diff(commLines));
     % assign these points
     dist = abs(avgSpread - IDEAL_COMM_DIST);
     if avgSpread <= IDEAL_COMM_DIST
@@ -97,10 +94,13 @@ function points = gradeComments(file, dict)
     end
     
     % get number of code lines vs number of comment lines
-    if sum(codeLines) == 0
+    tmpKinds = data.kinds;
+    codeLines = data.lineno;
+    codeLines(strcmpi(tmpKinds, 'COMMENT')) = [];
+    if isempty(codeLines)
         return;
     end
-    ratio = sum(commLines) / numel(lines);
+    ratio = numel(commLines) / (numel(codeLines) + numel(commLines));
     
     if ratio < IDEAL_LINE_RATIO
         dist = abs(ratio - IDEAL_LINE_RATIO) / IDEAL_LINE_RATIO;
@@ -109,7 +109,6 @@ function points = gradeComments(file, dict)
     end
     points = points + MAX_LINE_POINTS * (1 - dist);
         
-    lines(codeLines) = [];
     % lines are just comments; split into words and see what words are
     % contained in dictionary
     code = strjoin(lines, ' ');
