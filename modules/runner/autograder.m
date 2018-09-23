@@ -229,6 +229,30 @@ function autograder(app)
             end
         end
     end
+    
+    % We have downloaded students. If the user wants to edit files, give
+    % them a chance to do so.
+    % The question is, should they be able to use MATLAB to do it, or
+    % should they do it via File Explorer/Finder/etc.
+    %
+    % We won't give some kind of UI to do it. This would entail much more
+    % internal complexity.
+    %
+    % For now, break into keyboard, and give the standard "Continue"
+    % message.
+    if app.isEditingSubmissions
+        safeDir = cd('Students');
+        % Break. Before we do, print to screen what to do.
+        fprintf(1, strjoin({'You have elected to edit student submissions. ', ...
+            'To view or edit files, use the "current folder". ', ...
+            'Students are organized by their GT Username; i.e., gburdell3, ', ...
+            'so to edit their submission, just open their folder. ', ...
+            'Once you are done editing, click "Continue" to proceed with grading\n'}, newline));
+        filebrowser;
+        keyboard;
+        cd(safeDir);
+    end
+    
     % Generate students
     try
         Logger.log('Generating Students');
