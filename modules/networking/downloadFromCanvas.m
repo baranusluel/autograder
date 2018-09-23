@@ -63,17 +63,6 @@ function downloadFromCanvas(students, path, progress)
         progress.Value = min([1, (tot - Download.numRemaining) / tot]);
     end
     progress.Cancelable = 'on';
-    % check to make sure that none errored; if they did, alert!
-    downloads = downloads.toArray;
-    mask = arrayfun(@(d)(d.isError), downloads);
-    if any(mask)
-        % we didn't make it; die
-        files = arrayfun(@(d)(d.getPath()), downloads(mask), 'uni', false);
-        e = MException('AUTOGRADER:networking:connectionError', ...
-            'We were unable to download the following files: \n%s', ...
-            strjoin(files, newline));
-        e.throw();
-    end
     % write info.csv
     names = [names; ids]';
     names = join(names, '", "');
@@ -82,4 +71,18 @@ function downloadFromCanvas(students, path, progress)
     fwrite(fid, names);
     fclose(fid);
     cd(origPath);
+    % check to make sure that none errored; if they did, alert!
+    downloads = downloads.toArray;
+    mask = arrayfun(@(d)(d.isError), downloads);
+    if any(mask)
+        % we didn't make it; die
+        [paths, names, exts] = arrayfun(@(d)(fileparts(char(d.getPath()))), downloads(mask), 'uni', false);
+        [~, studs, ~] = cellfun(@fileparts, paths, 'uni', false);
+        files = join([names exts], '');
+        files = [strjoin(join([files studs], ' ('), ')\n') ')'];
+        e = MException('AUTOGRADER:networking:connectionError', ...
+            'We were unable to download the following files: \n%s', ...
+            files);
+        e.throw();
+    end
 end
