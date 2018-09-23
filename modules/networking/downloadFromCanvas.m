@@ -56,13 +56,19 @@ function downloadFromCanvas(students, path, progress)
         end
     end
     workers = [workers{:}];
-    downloads = StudentDownloader.download(workers);
-    tot = downloads.size();
-    progress.Cancelable = 'off';
-    while Download.numRemaining > 0
-        progress.Value = min([1, (tot - Download.numRemaining) / tot]);
+    if ~isempty(workers)
+        downloads = StudentDownloader.download(workers);
+        tot = downloads.size();
+        progress.Cancelable = 'off';
+        while Download.numRemaining > 0
+            progress.Value = min([1, (tot - Download.numRemaining) / tot]);
+        end
+        progress.Cancelable = 'on';
+        downloads = downloads.toArray;
+        mask = arrayfun(@(d)(d.isError), downloads);
+    else
+        mask = false;
     end
-    progress.Cancelable = 'on';
     % write info.csv
     names = [names; ids]';
     names = join(names, '", "');
@@ -72,8 +78,6 @@ function downloadFromCanvas(students, path, progress)
     fclose(fid);
     cd(origPath);
     % check to make sure that none errored; if they did, alert!
-    downloads = downloads.toArray;
-    mask = arrayfun(@(d)(d.isError), downloads);
     if any(mask)
         % we didn't make it; die
         [paths, names, exts] = arrayfun(@(d)(fileparts(char(d.getPath()))), downloads(mask), 'uni', false);
