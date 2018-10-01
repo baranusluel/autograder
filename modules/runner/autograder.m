@@ -380,7 +380,7 @@ function autograder(app)
     if app.UploadFeedbackToCanvas.Value
         try
             Logger.log('Starting upload of student feedback');
-            uploadFiles(students, app.canvasCourseId, ...
+            uploadFeedback(students, app.canvasCourseId, ...
                 app.canvasHomeworkId, app.canvasToken, progress);
         catch e
             if debugger(app, 'Failed to upload feedback to Canvas')
