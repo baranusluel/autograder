@@ -1,16 +1,16 @@
-%% uploadToCanvas: Upload Grades to the Canvas Website
+%% uploadFeedback: Upload Feedback to the correct repository
 %
-% uploadToCanvas will take in an array of Students, as well as the current assignment,
-% and will upload their grades.
+% uploadFeedback will take in an array of Students, as well as the current assignment,
+% and will upload their feedback.
 %
-% uploadToCanvas(S, C, H, T, B) will use the student array S, the CourseID C,
-% the HomeworkID H, and the Token T to upload student grades to Canvas.
+% uploadGrades(S, C, H, T, B) will use the student array S, the CourseID C,
+% the HomeworkID H, and the Token T to upload student feedback to Canvas.
 % This uses the LMS RESTful API. Additionally, it updates the progress bar
 % B.
 %
 %%% Remarks
 %
-% uploadToCanvas requires a TA token - preferably an admin token. Tokens can be generated manually
+% uploadFeedback requires a TA token - preferably an admin token. Tokens can be generated manually
 % via the settings page of your Canvas Settings.
 %
 % Care must be taken with this token. Treat it like your password - anyone who has access to this token
@@ -32,15 +32,15 @@
 %   H = '54321'; % valid AssignmentID
 %   T = '2096~...'; % valid token
 %   B = uiprogressdlg;
-%   uploadToCanvas(S, C, H, T, B)
+%   uploadFeedback(S, C, H, T, B)
 %
 %   Students' grades are uploaded
 
-function uploadToCanvas(students, courseId, assignmentId, token, progress)
+function uploadFeedback(students, courseId, assignmentId, token, progress)
     if any(~isvalid(students))
         return;
     end
-    progress.Message = 'Uploading Student Grades to Canvas';
+    progress.Message = 'Uploading Student Feedback to Canvas';
     progress.Indeterminate = 'off';
     progress.Value = 0;
     % set up web options
@@ -57,9 +57,8 @@ function uploadToCanvas(students, courseId, assignmentId, token, progress)
         stud.name = students(s).name;
         stud.grade = students(s).grade;
         stud.path = students(s).path;
-        workers{s} = [parfeval(@uploadGrade, 0, ...
-            courseId, assignmentId, stud, token), ...
-            parfeval(@uploadFile, 0, courseId, assignmentId, stud, token)];
+        workers{s} = parfeval(@uploadFile, 0, ...
+            courseId, assignmentId, stud, token);
     end
     workers = [workers{:}];
     
@@ -147,46 +146,5 @@ function uploadFile(courseId, assignmentId, student, token)
         
         %% Step 3
         coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], putApiOpts, 'comment[file_ids][]', fileId, 'comment[text_comment]', 'Your Feedback File');
-    end
-end
-
-
-function uploadGrade(courseId, assignmentId, student, token)
-    apiOpts = weboptions;
-    apiOpts.RequestMethod = 'GET';
-    apiOpts.HeaderFields = {'Authorization', ['Bearer ' token]};
-    API = 'https://gatech.instructure.com/api/v1/';
-    % for each student, get student ID from GT Username. Then, using id, upload grades.
-    getApiOpts = apiOpts;
-    getApiOpts.RequestMethod = 'GET';
-    putApiOpts = apiOpts;
-    putApiOpts.RequestMethod = 'PUT';
-    id = coveredRead([API 'courses/' courseId '/users'], getApiOpts, 'search_term', student.name);
-    if ~isempty(id)
-        id = num2str(id.id);
-        data = coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], getApiOpts, 'include[]', 'submission_comments');
-        % check if student was hand graded - if we find a comment that says "REGRADE", don't overwrite
-        if ~isempty(data.submission_comments)
-            if ~iscell(data.submission_comments)
-                comments = {data.submission_comments.comment};
-            else
-                comments = cellfun(@(s)(s.comment), data.submission_comments, 'uni', false);
-            end
-        else
-            comments = {''};
-        end
-        if ~any(contains(comments, 'REGRADE', 'IgnoreCase', true))
-            coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], putApiOpts, 'submission[posted_grade]', num2str(student.grade));
-        end
-    end
-end
-
-function out = coveredRead(url, opts, varargin)
-    try
-        out = webread(url, varargin{:}, opts);
-    catch reason
-        e = MException('AUTOGRADER:networking:connectionError', 'Connection was terminated');
-        e = e.addCause(reason);
-        throw(e);
     end
 end

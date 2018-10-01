@@ -363,10 +363,10 @@ function autograder(app)
     
     % If the user requested uploading, do it
 
-    if app.UploadToCanvas.Value
+    if app.UploadGradesToCanvas.Value
         try
             Logger.log('Starting upload of student grades');
-            uploadToCanvas(students, app.canvasCourseId, ...
+            uploadGrades(students, app.canvasCourseId, ...
                 app.canvasHomeworkId, app.canvasToken, progress);
         catch e
             if debugger(app, 'Failed to upload grades to Canvas')
@@ -377,8 +377,22 @@ function autograder(app)
             end
         end
     end
+    if app.UploadFeedbackToCanvas.Value
+        try
+            Logger.log('Starting upload of student feedback');
+            uploadFiles(students, app.canvasCourseId, ...
+                app.canvasHomeworkId, app.canvasToken, progress);
+        catch e
+            if debugger(app, 'Failed to upload feedback to Canvas')
+                keyboard;
+            else
+                alert(app, e);
+                return;
+            end
+        end
+    end
     if app.UploadToServer.Value
-        Logger.log('Starting upload of student files');
+        Logger.log('Starting upload of homework files');
         if app.isResubmission
             name = sprintf('homework%02d_resubmission', app.homeworkNum);
         else
