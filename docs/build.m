@@ -264,13 +264,13 @@ end
 
 function res = getInputs(varargin)
     parser = inputParser();
-    parser.addParameter('branch', '', @ischar);
-    parser.addParameter('generateDocs', true, @islogical);
-    parser.addParameter('installerPath', ['..' filesep 'bin' filesep], @(p)(isempty(p) || isfolder(p)));
-    parser.addParameter('checkSuppressed', false, @islogical);
-    parser.addParameter('lint', true, @islogical);
-    parser.addParameter('test', true, @islogical);
-    parser.addParameter('version', '', @(v)(isempty(v) || ischar(v)));
+    parser.addParameter('branch', '');
+    parser.addParameter('generateDocs', 'off');
+    parser.addParameter('installerPath', ['..' filesep 'bin' filesep]);
+    parser.addParameter('checkSuppressed', 'off');
+    parser.addParameter('lint', 'on');
+    parser.addParameter('test', 'on');
+    parser.addParameter('version', '');
     
     parser.CaseSensitive = false;
     parser.FunctionName = 'build';
@@ -280,5 +280,29 @@ function res = getInputs(varargin)
     res = parser.Results;
     if ~isempty(res.version) && res.version(1) == 'v'
         res.version = res.version(2:end);
+    end
+    
+    if strcmpi(res.generateDocs, 'off')
+        res.generateDocs = false;
+    else
+        res.generateDocs = true;
+    end
+    
+    if strcmpi(res.checkSuppressed, 'off')
+        res.checkSuppressed = false;
+    else
+        res.checkSuppressed = true;
+    end
+    
+    if strcmpi(res.lint, 'off')
+        res.lint = false;
+    else
+        res.lint = true;
+    end
+    
+    if strcmpi(res.test, 'off')
+        res.test = false;
+    else
+        res.test = true;
     end
 end
