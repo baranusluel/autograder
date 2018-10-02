@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>authorizeWithGoogle: Authorize with Google Drive</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
+      --><title>uploadGrades: Upload Grades to the Canvas Website</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
       $(document).ready(function() {
         // get name of class
         // anywhere CLASS name is or METHOD name is, replace with code version
@@ -20,7 +20,7 @@ To make changes, update the MATLAB code and republish this document.
 
         // for each occurrence of this in 
       });
-    </script><meta name="DC.date" content="2018-10-02"><meta name="DC.source" content="authorizeWithGoogle.m"><style type="text/css">
+    </script><meta name="DC.date" content="2018-10-02"><meta name="DC.source" content="uploadGrades.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -80,9 +80,11 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="container-fluid"><div class="content"><h1>authorizeWithGoogle: Authorize with Google Drive</h1><!--introduction--><p>authorizeWithGoogle will perform a one-time authorization to allow the autograder to access that user's folders.</p><p>R = authorizeWithGoogle(I, S) will authorize with the current user using clientID I and client secret S.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>This is primarily used to authenticate with Google so that we can programmatically download the solution archive.</p><h2 id="2">Exceptions</h2><p>Like all other networking functions, this throws an AUTOGRADER:networking:connectionError exception if something goes wrong.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">R = authorizeWithGoogle();
-</pre><pre class="language-matlab"><span class="comment">% Assuming user says yes, R = '...';</span>
-</pre><pre class="language-matlab">R = authorizeWithGoogle();
-</pre><pre class="language-matlab"><span class="comment">% Assuming user says no:</span>
-threw <span class="string">connectionError</span> <span class="string">exception</span>
+  </style></head><body><div class="container-fluid"><div class="content"><h1>uploadGrades: Upload Grades to the Canvas Website</h1><!--introduction--><p>uploadGrades will take in an array of Students, as well as the current assignment, and will upload their grades.</p><p>uploadGrades(S, C, H, T, B) will use the student array S, the CourseID C, the HomeworkID H, and the Token T to upload student grades to Canvas. This uses the LMS RESTful API. Additionally, it updates the progress bar B.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Remarks</a></li><li><a href="#2">Exceptions</a></li><li><a href="#3">Unit Tests</a></li></ul></div><h2 id="1">Remarks</h2><p>uploadGrades requires a TA token - preferably an admin token. Tokens can be generated manually via the settings page of your Canvas Settings.</p><p>Care must be taken with this token. Treat it like your password - anyone who has access to this token can do anything, masquerading as you.</p><p>It is assumed that our Canvas page is located at https://gatech.instructure.com</p><p>If a grade is manually changed on canvas, the autograder will skip that student, so tweaked grades are retained.</p><h2 id="2">Exceptions</h2><p>Like other networking functions, this will throw an AUTOGRADER:networking:connectionError exception if something goes awry.</p><h2 id="3">Unit Tests</h2><pre class="language-matlab">S = Student(); <span class="comment">% valid student array</span>
+C = <span class="string">'12345'</span>; <span class="comment">% valid courseID</span>
+H = <span class="string">'54321'</span>; <span class="comment">% valid AssignmentID</span>
+T = <span class="string">'2096~...'</span>; <span class="comment">% valid token</span>
+B = uiprogressdlg;
+uploadGrades(S, C, H, T, B)
+</pre><pre class="language-matlab">Students' grades <span class="string">are</span> <span class="string">uploaded</span>
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div></div></body></html>
