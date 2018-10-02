@@ -451,6 +451,16 @@ function autograder(app)
         % copy csv, then change accordingly
         % move student folders to output path
         Logger.log('Starting copy of local information');
+        % Create local grades
+        names = {students.name};
+        ids = {students.id};
+        grades = arrayfun(@num2str, [students.grade], 'uni', false);
+        raw = [names; ids; grades]';
+        raw = join([{'Name', 'ID', 'Grade'}; raw], '", "');
+        raw = unicode2native(['"', strjoin(raw, '"\n"'), '"'], 'UTF-8');
+        fid = fopen(fullfile(app.localOutputPath, 'grades.csv'), 'wt', 'native', 'UTF-8');
+        fwrite(fid, raw);
+        fclose(fid);
         copyfile(settings.workingDir, app.localOutputPath);
     end
     
