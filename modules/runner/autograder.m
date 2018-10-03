@@ -343,7 +343,7 @@ function autograder(app)
         msg = '';
     end
     % if empty, see if we should debug first
-    if ~isempty(msg)
+    if ~isempty(msg) && ~isvalid(app.delay)
         msg = [msg ' Would you like to inspect the students, or continue?'];
         debugger(app, msg);
         selection = uiconfirm(app.UIFigure, msg, 'Autograder', ...
@@ -360,6 +360,9 @@ function autograder(app)
     if stop
         keyboard;
     end
+    % respond to caught errors
+    caughtErrors = struct('task', '', 'exception', []);
+    caughtErrors = caughtErrors(false);
     
     % If the user requested uploading, do it
 
@@ -371,10 +374,9 @@ function autograder(app)
         catch e
             if debugger(app, 'Failed to upload grades to Canvas')
                 keyboard;
-            else
-                alert(app, e);
-                return;
             end
+            caughtErrors(end+1).task = 'Uploading student grades to Canvas';
+            caughtErrors(end).exception = e;
         end
     end
     if app.UploadFeedbackToCanvas.Value
@@ -385,10 +387,9 @@ function autograder(app)
         catch e
             if debugger(app, 'Failed to upload feedback to Canvas')
                 keyboard;
-            else
-                alert(app, e);
-                return;
             end
+            caughtErrors(end+1).task = 'Uploading student feedback to Canvas';
+            caughtErrors(end).exception = e;
         end
     end
     if app.UploadToServer.Value
@@ -402,12 +403,11 @@ function autograder(app)
             uploadToServer(app.serverUsername, app.serverPassword, ...
                 name, progress);
         catch e
-            if debugger(app, 'Failed to upload submission files to server')
+            if debugger(app, 'Failed to upload files to server')
                 keyboard;
-            else
-                alert(app, e);
-                return;
             end
+            caughtErrors(end+1).task = 'Uploading Files to the Server';
+            caughtErrors(end).exception = e;
         end
     end
     if app.EmailFeedback.Value
@@ -421,10 +421,9 @@ function autograder(app)
         catch e
             if debugger(app, 'Failed to email feedback files')
                 keyboard;
-            else
-                alert(app, e);
-                return;
             end
+            caughtErrors(end+1).task = 'Emailing student feedback';
+            caughtErrors(end).exception = e;
         end
     end
     if app.PostToCanvas.Value
@@ -437,31 +436,38 @@ function autograder(app)
         catch e
             if debugger(app, 'Failed to post announcement')
                 keyboard;
-            else
-                alert(app, e);
-                return;
             end
+            caughtErrors(end+1).task = 'Posting announcement to Canvas';
+            caughtErrors(end).exception = e;
         end
     end
     % if they want the output, do it
     if ~isempty(app.localOutputPath)
-        progress.Indeterminate = 'on';
-        progress.Message = 'Saving Output';
-        % save canvas info in path
-        % copy csv, then change accordingly
-        % move student folders to output path
-        Logger.log('Starting copy of local information');
-        % Create local grades
-        names = {students.name};
-        ids = {students.id};
-        grades = arrayfun(@num2str, [students.grade], 'uni', false);
-        raw = [names; ids; grades]';
-        raw = join([{'Name', 'ID', 'Grade'}; raw], '", "');
-        raw = unicode2native(['"', strjoin(raw, '"\n"'), '"'], 'UTF-8');
-        fid = fopen(fullfile(app.localOutputPath, 'grades.csv'), 'wt', 'native', 'UTF-8');
-        fwrite(fid, raw);
-        fclose(fid);
-        copyfile(settings.workingDir, app.localOutputPath);
+        try
+            progress.Indeterminate = 'on';
+            progress.Message = 'Saving Output';
+            % save canvas info in path
+            % copy csv, then change accordingly
+            % move student folders to output path
+            Logger.log('Starting copy of local information');
+            % Create local grades
+            names = {students.name};
+            ids = {students.id};
+            grades = arrayfun(@num2str, [students.grade], 'uni', false);
+            raw = [names; ids; grades]';
+            raw = join([{'Name', 'ID', 'Grade'}; raw], '", "');
+            raw = unicode2native(['"', strjoin(raw, '"\n"'), '"'], 'UTF-8');
+            fid = fopen(fullfile(app.localOutputPath, 'grades.csv'), 'wt', 'native', 'UTF-8');
+            fwrite(fid, raw);
+            fclose(fid);
+            copyfile(settings.workingDir, app.localOutputPath);
+        catch e
+            if debugger(app, 'Failed to create local output')
+                keyboard;
+            end
+            caughtErrors(end+1).task = 'Creating local output';
+            caughtErrors(end).exception = e;
+        end
     end
     
     if app.AnalyzeForCheating.Value
@@ -524,10 +530,9 @@ function autograder(app)
         catch e
             if debugger(app, 'Failed to analyze submissions for cheating')
                 keyboard;
-            else
-                alert(app, e);
-                return;
             end
+            caughtErrors(end+1).task = 'Analyzing submissions for cheating';
+            caughtErrors(end).exception = e;
         end
     end
     % Notify
@@ -536,13 +541,31 @@ function autograder(app)
     Logger.log('Start Sending of Notifications');
     try
         messenger(app, students);
-    catch e
+    catch
         if debugger(app, 'Error Sending Notifications')
             keyboard;
-        else
-            alert(app, e);
-            return;
         end
+    end
+    
+    if ~isempty(caughtErrors)
+        DEATH_MESSAGE = ['We successfully graded student submissions. However, ', ...
+            'we ran into some problems during post-grading tasks. These problems ', ...
+            'have been detailed below, and the Autograder is in BREAK mode so ', ...
+            'that you can inspect the state. To look at a specific exception, ', ...
+            'use that error''s list order as an index for `caughtErrors`.', ...
+            newline, ...
+            'Errors:', ...
+            newline, ...
+            '%s'];
+        tasks = {caughtErrors.task};
+        orders = arrayfun(@num2str, 1:numel(tasks), 'uni', false);
+        msg = strjoin(join([orders; tasks]', '. '), newline);
+        
+        message = sprintf(DEATH_MESSAGE, msg);
+        if ~isempty(app.slackRecipients)
+            slackMessenger(app.slackToken, {app.slackRecipents.id}, message);
+        end
+            
     end
 end
 
@@ -592,7 +615,7 @@ end
 function shouldDebug = debugger(app, msg)
     EMAIL_MESSAGE_FORMAT = 'Hello,\n\nIt appears the autograder failed to finish. Here''s the error message:\n\n%s\n\nBest Regards,\n~The CS 1371 Technology Team';
     
-    shouldDebug = app.isDebug;
+    shouldDebug = app.isDebug && ~isvalid(app.delay);
     % notify
     try
         if ~isempty(app.email)
