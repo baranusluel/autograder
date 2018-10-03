@@ -547,7 +547,7 @@ function autograder(app)
         end
     end
     
-    if ~isempty(caughtErrors)
+    if ~isempty(caughtErrors) && isvalid(app.delay)
         DEATH_MESSAGE = ['We successfully graded student submissions. However, ', ...
             'we ran into some problems during post-grading tasks. These problems ', ...
             'have been detailed below, and the Autograder is in BREAK mode so ', ...
@@ -565,6 +565,7 @@ function autograder(app)
         if ~isempty(app.slackRecipients)
             slackMessenger(app.slackToken, {app.slackRecipents.id}, message);
         end
+        keyboard;
             
     end
 end
