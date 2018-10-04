@@ -491,7 +491,8 @@ function autograder(app)
                     cancel(workers);
                     return;
                 end
-                [idx, txts{idx}] = workers.fetchNext();
+                [idx, txt] = workers.fetchNext();
+                txts{idx} = txt;
                 progress.Value = min([progress.Value + 1/num, 1]);
             end
 
