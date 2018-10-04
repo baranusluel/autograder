@@ -645,7 +645,7 @@ end
 
 function scores = getScores(varargin)
     % Minimum number of code lines before we start checking for cheating
-    MIN_LINES = 5;
+    MIN_LINES = 15;
     persistent students;
     if nargin == 2
         students = varargin{2};
