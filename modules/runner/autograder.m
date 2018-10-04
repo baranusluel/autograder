@@ -538,7 +538,7 @@ function autograder(app)
                     mkdir(zipPath);
                     
                     zip(fullfile(zipPath, 'cheaters.zip'), p);
-                    slackMessenger(app.slackToken, {app.slackRecipents.id}, 'Cheat Detection finished; attached is the summary', fullfile(zipPath, 'cheaters.zip'));
+                    slackMessenger(app.slackToken, {app.slackRecipients.id}, 'Cheat Detection finished; attached is the summary', fullfile(zipPath, 'cheaters.zip'));
                     rmdir(zipPath, 's');
                 end
             end
@@ -701,6 +701,7 @@ function problemTxt = getText(problemPaths)
     for p = numel(problemPaths):-1:1
         if isempty(problemPaths{p})
             problemTxt{p} = cell(1, 2);
+            problemTxt{p}(:) = {''};
         else
             fid = fopen(problemPaths{p}, 'rt');
             code = char(fread(fid)');
