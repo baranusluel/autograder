@@ -532,7 +532,13 @@ function autograder(app)
                 mkdir(p);
                 exportCheaters(cheat.students, cheat.cheaterStudents, cheat.cheaterScores, {cheat.problems.name}, p, progress);
                 if ~isempty(app.slackRecipients)
-                    slackMessenger(app.slackToken, {app.slackRecipents.id}, 'Cheat Detection finished; attached is the summary', fullfile(p, 'summary.html'));
+                    % create ZIP archive to ship
+                    zipPath = tempname;
+                    mkdir(zipPath);
+                    
+                    zip(fullfile(zipPath, 'cheaters.zip'), p);
+                    slackMessenger(app.slackToken, {app.slackRecipents.id}, 'Cheat Detection finished; attached is the summary', fullfile(zipPath, 'cheaters.zip'));
+                    rmdir(zipPath, 's');
                 end
             end
         catch e
