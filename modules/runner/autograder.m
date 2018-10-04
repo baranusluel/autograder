@@ -666,7 +666,7 @@ function scores = getScores(varargin)
         else
             for p = numel(txts):-1:1
                 % get jaccard index
-                if numel(strfind(subs{p}{1}, newline)) >= MIN_LINES && numel(strfind(txts{p}{1}, newline)) >= MIN_LINES
+                if numel(strsplit(subs{p}{1}, newline)) >= MIN_LINES && numel(strsplit(txts{p}{1}, newline)) >= MIN_LINES
                     % compare
                     if subs{p}{2} == txts{p}{2}
                         scores{s2}(p) = Inf;
