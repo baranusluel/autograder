@@ -532,6 +532,9 @@ function autograder(app)
                 p = fullfile(app.localOutputPath, 'Cheaters');
                 mkdir(p);
                 exportCheaters(cheat.students, cheat.cheaterStudents, cheat.cheaterScores, {cheat.problems.name}, p, progress);
+                if ~isempty(app.slackRecipients)
+                    slackMessenger(app.slackToken, {app.slackRecipents.id}, 'Cheat Detection finished; attached is the summary', fullfile(p, 'summary.html'));
+                end
             end
         catch e
             if debugger(app, 'Failed to analyze submissions for cheating')
