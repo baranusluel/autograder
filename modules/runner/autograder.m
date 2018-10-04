@@ -526,7 +526,13 @@ function autograder(app)
             recSource = [fileparts(mfilename('fullpath')) filesep 'resources'];
             mkdir('resources');
             copyfile(recSource, [pwd filesep 'resources']);
-            CheatDetector(students, solutions, scores, settings.workingDir);
+            cheat = CheatDetector(students, solutions, scores, settings.workingDir);
+            % if user has local output, go ahead and export
+            if ~isempty(app.localOutputPath)
+                p = fullfile(app.localOutputPath, 'Cheaters');
+                mkdir(p);
+                exportCheaters(cheat.students, cheat.cheaterStudents, cheat.cheaterScores, {cheat.problems.name}, p, progress);
+            end
         catch e
             if debugger(app, 'Failed to analyze submissions for cheating')
                 keyboard;
