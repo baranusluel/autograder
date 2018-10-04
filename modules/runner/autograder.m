@@ -343,7 +343,7 @@ function autograder(app)
         msg = '';
     end
     % if empty, see if we should debug first
-    if ~isempty(msg) && ~isvalid(app.delay)
+    if ~isempty(msg) && isempty(app.delay)
         msg = [msg ' Would you like to inspect the students, or continue?'];
         debugger(app, msg);
         selection = uiconfirm(app.UIFigure, msg, 'Autograder', ...
@@ -561,7 +561,7 @@ function autograder(app)
         end
     end
     
-    if ~isempty(caughtErrors) && isvalid(app.delay)
+    if ~isempty(caughtErrors) && ~isempty(app.delay)
         DEATH_MESSAGE = ['We successfully graded student submissions. However, ', ...
             'we ran into some problems during post-grading tasks. These problems ', ...
             'have been detailed below, and the Autograder is in BREAK mode so ', ...
@@ -630,7 +630,7 @@ end
 function shouldDebug = debugger(app, msg)
     EMAIL_MESSAGE_FORMAT = 'Hello,\n\nIt appears the autograder failed to finish. Here''s the error message:\n\n%s\n\nBest Regards,\n~The CS 1371 Technology Team';
     
-    shouldDebug = app.isDebug && ~isvalid(app.delay);
+    shouldDebug = app.isDebug && isempty(app.delay);
     % notify
     try
         if ~isempty(app.email)
