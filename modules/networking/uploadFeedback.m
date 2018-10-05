@@ -148,3 +148,13 @@ function uploadFile(courseId, assignmentId, student, token)
         coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], putApiOpts, 'comment[file_ids][]', fileId, 'comment[text_comment]', 'Your Feedback File');
     end
 end
+
+function out = coveredRead(url, opts, varargin)
+    try
+        out = webread(url, varargin{:}, opts);
+    catch reason
+        e = MException('AUTOGRADER:networking:connectionError', 'Connection was terminated');
+        e = e.addCause(reason);
+        throw(e);
+    end
+end
