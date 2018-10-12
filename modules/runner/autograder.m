@@ -400,8 +400,7 @@ function autograder(app)
             name = sprintf('homework%02d', app.homeworkNum);
         end
         try
-            uploadToServer(app.serverUsername, app.serverPassword, ...
-                name, progress);
+            uploadToServer(app.canvasToken, name, progress);
         catch e
             if debugger(app, 'Failed to upload files to server')
                 keyboard;

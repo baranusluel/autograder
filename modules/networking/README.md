@@ -23,11 +23,6 @@ Downloads the given folder using the given token and key to the given path, upda
 
 Uploads the grades for the given students to Canvas.
 
-- `[void] = uploadToServer(Student[] students, string user, string pass, string hwName, UIProgressDlg progress);`
-
-Uploads the student's files to the CS 1371 server, using the credentials provided. This function makes use
-of `JSch` for quick `SFTP` communication with the server.
-
 - `[string access] = refresh2access(string refresh);`
 
 Converts a given refresh token to an access token
