@@ -15,10 +15,6 @@
 % files are. R1 and R2 are guaranteed to be the same length, though there
 % are no guarantees how the length relates to either file size.
 %
-%%% Exceptions
-%
-% An AUTOGRADER:jaccardIndex:invalidFile exception will be thrown if either
-% file cannot be read.
 
 function [rank1, rank2] = jaccardIndex(txt1, txt2, perm)
     if nargin == 2
@@ -26,12 +22,6 @@ function [rank1, rank2] = jaccardIndex(txt1, txt2, perm)
     end
     
     % split into words
-    if ischar(txt1)
-        txt1 = strsplit(txt1, '\s+', 'DelimiterType', 'RegularExpression');
-    end
-    if ischar(txt2)
-        txt2 = strsplit(txt2, '\s+', 'DelimiterType', 'RegularExpression');
-    end
     
     txt = unique([txt1 txt2]);
     perm = min([perm, length(txt)]);
@@ -43,14 +33,13 @@ function [rank1, rank2] = jaccardIndex(txt1, txt2, perm)
     for i = 1:perm
         % randomly permute
         inds = randperm(numel(txt));
-        tmp = txt(inds);
         % iterate until BOTH ranks ~= 0
         level = 1;
-        while level <= length(tmp) && (rank1(i) == 0 || rank2(i) == 0)
-            if rank1(i) == 0 && any(contains(txt1, tmp{level}, 'IgnoreCase', true))
+        while level <= length(txt) && (rank1(i) == 0 || rank2(i) == 0)
+            if rank1(i) == 0 && any(contains(txt1, txt(inds(level))))
                 rank1(i) = level;
             end
-            if rank2(i) == 0 && any(contains(txt2, tmp{level}, 'IgnoreCase', true))
+            if rank2(i) == 0 && any(contains(txt2, txt(inds(level))))
                 rank2(i) = level;
             end
             level = level + 1;
