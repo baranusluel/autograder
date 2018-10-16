@@ -62,6 +62,16 @@ function autograder(app)
     % The label for continuing on
     CONTINUE_LABEL = 'Continue';
     
+    % actually grade if ANY of the following is set:
+    %   * Upload Grades -> canvas
+    %   * Uplaod Feedback -> canvas
+    %   * Email Feedback
+    %   * Store Output Locally
+    shouldGrade = app.UploadGradesToCanvas.Value ...
+        || app.UploadFeedbackToCanvas.Value ...
+        || app.EmailFeedback.Value ...
+        || ~isempty(app.localOutputPath);
+    
     settings.userPath = {path(), userpath()};
     % change name of overloaded files
     overloaders = fileparts(mfilename('fullpath'));
@@ -267,98 +277,101 @@ function autograder(app)
     end
 
     % Create Plot
-    plotter = uifigure('Name', 'Grade Report', 'Visible', 'off');
-    ax = uiaxes(plotter);
-    ax.Position = [10 10 550 400]; % as suggested in example on MATLAB ref page
-    title(ax, 'Histogram of Student Grades');
-    xlabel(ax, 'Grade');
-    ylabel(ax, 'Number of Students');
-    h = histogram(ax);
-    totalPoints = [solutions.testCases];
-    totalPoints = sum([totalPoints.points]);
-    h.BinEdges = 0:10:max([totalPoints (ceil(totalPoints / 10) * 10)]);
-    h.BinLimits = [0 h.BinEdges(end)];
-    h.Data = zeros(1, numel(students)) - 1;
-    ax.YLim = [0 numel(students)];
-    ax.XLim = [0 h.BinLimits(end)];
-
-    plotter.Visible = 'on';
-
-    drawnow;
-    
-    progress.Indeterminate = 'off';
-    progress.Value = 0;
-    progress.Message = 'Student Grading Progress';
-    Logger.log('Starting student assessment');
     setupRecs(solutions);
-    for s = 1:numel(students)
-        student = students(s);
-        progress.Message = sprintf('Assessing Student %s', student.name);
-        try
-            Logger.log(sprintf('Assessing Student %s (%s)', student.name, student.id));
-            student.assess();
-        catch e
-            if debugger(app, 'Failed to assess student')
-                keyboard;
-            else
-                alert(e);
+    if shouldGrade
+        plotter = uifigure('Name', 'Grade Report', 'Visible', 'off');
+        ax = uiaxes(plotter);
+        ax.Position = [10 10 550 400]; % as suggested in example on MATLAB ref page
+        title(ax, 'Histogram of Student Grades');
+        xlabel(ax, 'Grade');
+        ylabel(ax, 'Number of Students');
+        h = histogram(ax);
+        totalPoints = [solutions.testCases];
+        totalPoints = sum([totalPoints.points]);
+        h.BinEdges = 0:10:max([totalPoints (ceil(totalPoints / 10) * 10)]);
+        h.BinLimits = [0 h.BinEdges(end)];
+        h.Data = zeros(1, numel(students)) - 1;
+        ax.YLim = [0 numel(students)];
+        ax.XLim = [0 h.BinLimits(end)];
+
+        plotter.Visible = 'on';
+
+        drawnow;
+
+        progress.Indeterminate = 'off';
+        progress.Value = 0;
+        progress.Message = 'Student Grading Progress';
+        Logger.log('Starting student assessment');
+        setupRecs(solutions);
+        for s = 1:numel(students)
+            student = students(s);
+            progress.Message = sprintf('Assessing Student %s', student.name);
+            try
+                Logger.log(sprintf('Assessing Student %s (%s)', student.name, student.id));
+                student.assess();
+            catch e
+                if debugger(app, 'Failed to assess student')
+                    keyboard;
+                else
+                    alert(e);
+                    return;
+                end
+            end
+            progress.Value = s/numel(students);
+            h.Data(s) = student.grade;
+            if mod(s, DRAW_INTERVAL) == 0
+                drawnow;
+            end
+            if progress.CancelRequested
+                e = MException('AUTOGRADER:userCancelled', 'User Cancelled Operation');
+                alert(app, e);
                 return;
             end
         end
-        progress.Value = s/numel(students);
-        h.Data(s) = student.grade;
-        if mod(s, DRAW_INTERVAL) == 0
-            drawnow;
+
+        drawnow;
+
+        % Before we do anything else, examine the grades. There should be a
+        % good distribution - if not, ask the user
+
+        % What exactly "is" a good distribution? No idea. For now, we will flag
+        % if:
+        %   Nobody got 100
+        %   Nobody got > 90
+        %   Nobody got a 0
+        %   All values are either 0 or 100
+        %   All values are the same
+        if ~any(h.Data > (.9 * totalPoints))
+            msg = 'No student scored above 90%.';
+        elseif ~any(h.Data == totalPoints)
+            msg = 'No student scored a 100%.';
+        elseif ~any(h.Data == 0)
+            msg = sprintf('Every student scored above 0%%; the minimum was %0.2f%%.', ...
+                min(h.Data));
+        elseif all(h.Data == totalPoints | h.Data == 0)
+            msg = 'All students scored either a 0% or a 100%';
+        else
+            % we have passed... for now.
+            msg = '';
         end
-        if progress.CancelRequested
-            e = MException('AUTOGRADER:userCancelled', 'User Cancelled Operation');
-            alert(app, e);
-            return;
-        end
-    end
-    
-    drawnow;
-    
-    % Before we do anything else, examine the grades. There should be a
-    % good distribution - if not, ask the user
-    
-    % What exactly "is" a good distribution? No idea. For now, we will flag
-    % if:
-    %   Nobody got 100
-    %   Nobody got > 90
-    %   Nobody got a 0
-    %   All values are either 0 or 100
-    %   All values are the same
-    if ~any(h.Data > (.9 * totalPoints))
-        msg = 'No student scored above 90%.';
-    elseif ~any(h.Data == totalPoints)
-        msg = 'No student scored a 100%.';
-    elseif ~any(h.Data == 0)
-        msg = sprintf('Every student scored above 0%%; the minimum was %0.2f%%.', ...
-            min(h.Data));
-    elseif all(h.Data == totalPoints | h.Data == 0)
-        msg = 'All students scored either a 0% or a 100%';
-    else
-        % we have passed... for now.
-        msg = '';
-    end
-    % if empty, see if we should debug first
-    if ~isempty(msg) && isempty(app.delay)
-        msg = [msg ' Would you like to inspect the students, or continue?'];
-        debugger(app, msg);
-        selection = uiconfirm(app.UIFigure, msg, 'Autograder', ...
-            'Options', {INSPECT_LABEL, CONTINUE_LABEL}, ...
-            'DefaultOption', 1, 'Icon', 'warning', 'CancelOption', 2);
-        if strcmp(selection, INSPECT_LABEL)
-            stop = true;
+        % if empty, see if we should debug first
+        if ~isempty(msg) && isempty(app.delay)
+            msg = [msg ' Would you like to inspect the students, or continue?'];
+            debugger(app, msg);
+            selection = uiconfirm(app.UIFigure, msg, 'Autograder', ...
+                'Options', {INSPECT_LABEL, CONTINUE_LABEL}, ...
+                'DefaultOption', 1, 'Icon', 'warning', 'CancelOption', 2);
+            if strcmp(selection, INSPECT_LABEL)
+                stop = true;
+            else
+                stop = false;
+            end
         else
             stop = false;
         end
-    else
-        stop = false;
-    end
-    if stop
-        keyboard;
+        if stop
+            keyboard;
+        end
     end
     % respond to caught errors
     caughtErrors = struct('task', '', 'exception', []);
@@ -528,15 +541,16 @@ function autograder(app)
             cheat = CheatDetector(students, solutions, scores, settings.workingDir);
             % if user has local output, go ahead and export
             if ~isempty(app.localOutputPath)
-                p = fullfile(app.localOutputPath, 'Cheaters');
-                mkdir(p);
-                exportCheaters(cheat.students, cheat.cheaterStudents, cheat.cheaterScores, {cheat.problems.name}, p, progress);
+                if ~isfolder(app.localCheatPath)
+                    mkdir(app.localCheatPath)
+                end
+                exportCheaters(cheat.students, cheat.cheaterStudents, cheat.cheaterScores, {cheat.problems.name}, app.localCheatPath, progress);
                 if ~isempty(app.slackRecipients)
                     % create ZIP archive to ship
                     zipPath = tempname;
                     mkdir(zipPath);
                     
-                    zip(fullfile(zipPath, 'cheaters.zip'), p);
+                    zip(fullfile(zipPath, 'cheaters.zip'), app.localCheatPath);
                     slackMessenger(app.slackToken, {app.slackRecipients.id}, 'Cheat Detection finished; attached is the summary', fullfile(zipPath, 'cheaters.zip'));
                     rmdir(zipPath, 's');
                 end
@@ -554,7 +568,25 @@ function autograder(app)
     progress.Message = 'Sending Notifications';
     Logger.log('Start Sending of Notifications');
     try
-        messenger(app, students);
+        % if graded, use messenger; otherwise, just send that we finished
+        if shouldGrade
+            messenger(app, students);
+        else
+            if ~isempty(app.email)
+                emailMessenger(app.email, 'Autograder Finished', ...
+                    'Autograder Finished!', ...
+                    app.notifierToken, app.googleClientId, app.googleClientSecret, ...
+                    app.driveKey);
+            end
+            if ~isempty(app.phoneNumber)
+                textMessenger(app.phoneNumber, 'Autograder Finished... See your computer for more information', ...
+                    app.twilioSid, app.twilioToken, app.twilioOrigin);
+            end
+            if ~isempty(app.slackRecipients)
+                slackMessenger(app.slackToken, {app.slackRecipents.id}, 'Autograder Finished... See your computer for more information');
+            end
+            desktopMessenger('Autograder Finished... See MATLAB for more information');
+        end
     catch
         if debugger(app, 'Error Sending Notifications')
             keyboard;
@@ -618,9 +650,7 @@ function cleanup(settings)
     cd(settings.userDir);
     Logger.log('Removing Working Directory');
     % Delete our working directory - UNLESS cheat detection is on!
-    if ~settings.app.AnalyzeForCheating.Value
-        [~] = rmdir(settings.workingDir, 's');
-    end
+    [~] = rmdir(settings.workingDir, 's');
     if isvalid(settings.progress)
         close(settings.progress);
     end
