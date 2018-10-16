@@ -540,7 +540,7 @@ function autograder(app)
             copyfile(recSource, [pwd filesep 'resources']);
             cheat = CheatDetector(students, solutions, scores, settings.workingDir);
             % if user has local output, go ahead and export
-            if ~isempty(app.localOutputPath)
+            if ~isempty(app.localCheatPath)
                 if ~isfolder(app.localCheatPath)
                     mkdir(app.localCheatPath)
                 end
@@ -583,7 +583,7 @@ function autograder(app)
                     app.twilioSid, app.twilioToken, app.twilioOrigin);
             end
             if ~isempty(app.slackRecipients)
-                slackMessenger(app.slackToken, {app.slackRecipents.id}, 'Autograder Finished... See your computer for more information');
+                slackMessenger(app.slackToken, {app.slackRecipients.id}, 'Autograder Finished... See your computer for more information');
             end
             desktopMessenger('Autograder Finished... See MATLAB for more information');
         end
@@ -609,7 +609,7 @@ function autograder(app)
         
         message = sprintf(DEATH_MESSAGE, msg);
         if ~isempty(app.slackRecipients)
-            slackMessenger(app.slackToken, {app.slackRecipents.id}, message);
+            slackMessenger(app.slackToken, {app.slackRecipients.id}, message);
         end
         keyboard;
             
