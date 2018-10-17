@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>User Interface</title>
+        <title>Cheat Detection</title>
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400&amp;subset=latin-ext" rel="stylesheet">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -34,7 +34,7 @@
             <div class="row">
                 <div class="col-md-4">
                     <h1 class="display-4 text-left">
-                        User Interface
+                        Cheat Detection
                     </h1>
                 </div>
             </div>
@@ -42,12 +42,8 @@
                 <div class="col-md-3 text-center">
                     <ul class="nav flex-column">
                         <div id="modFunctions">
-<div data-link="Autograder.html">Autograder</div>
-<div data-link="CanvasAuthorizer.html">CanvasAuthorizer</div>
-<div data-link="CanvasHomeworkSelector.html">CanvasHomeworkSelector</div>
-<div data-link="CheatDetector.html">CheatDetector</div>
-<div data-link="GoogleDriveBrowser.html">GoogleDriveBrowser</div>
-<div data-link="StudentSelector.html">StudentSelector</div>
+<div data-link="getScores.html">getScores</div>
+<div data-link="getText.html">getText</div>
 
                         </div>
                     </ul>
@@ -56,44 +52,20 @@
                     <p class="module-description">
                         <div>
 <h1>
-User Interface
+Cheat Detection
 </h1>
 <p>
- This module will be responsible for interacting with the user and starting the autograder with the given settings. It is the user's primary method of starting the autograder.
+ This module is concerned with cheat detection.
 </p>
 <h2>
-Classess
+Results
 </h2>
 <p>
- The <code class="bg-light">userInterface</code> Module has the following classes; all of them represent a <code class="bg-light">UIFigure</code>:
+ Cheat Detection results are given as confidence statistics. In other words, when it says "95%", that means that the code is <em>95%</em> identical.
 </p>
-<ul>
-<li>
 <p>
-<code class="bg-light">Autograder</code>: The main entry point for the autograder. Responsible for calling the main method and adding necessary paths. Additionally, it gets most of the settings
+ Cheat Detection Threshold is set as default at 95%; it can be changed by editing the compile time flag THRESHOLD.
 </p>
-</li>
-<li>
-<p>
-<code class="bg-light">CanvasAuthorizer</code>: Instructs the user to get a token from <code class="bg-light">Canvas</code> and stores it in the settings file.
-</p>
-</li>
-<li>
-<p>
-<code class="bg-light">CanvasHomeworkSelector</code>: Allows the user to pick which homework to select
-</p>
-</li>
-<li>
-<p>
-<code class="bg-light">CheatDetector</code>: Allows the user to investigate possible cases of cheating
-</p>
-</li>
-<li>
-<p>
-<code class="bg-light">GoogleDriveBrowser</code>: Allows the user to browse his/her folders on Google Drive for the solution archive
-</p>
-</li>
-</ul>
 </div>
                     </p>
                 </div>
