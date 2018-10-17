@@ -550,7 +550,13 @@ function autograder(app)
                     zipPath = tempname;
                     mkdir(zipPath);
                     
-                    zip(fullfile(zipPath, 'cheaters.zip'), app.localCheatPath);
+                    if app.isResubmission
+                        name = sprintf('cheaters_%02d_resub.zip', app.homeworkNum);
+                    else
+                        name = sprintf('cheaters_%02d.zip', app.homeworkNum);
+                    end
+                    
+                    zip(fullfile(zipPath, name), app.localCheatPath);
                     slackMessenger(app.slackToken, {app.slackRecipients.id}, 'Cheat Detection finished; attached is the summary', fullfile(zipPath, 'cheaters.zip'));
                     rmdir(zipPath, 's');
                 end
