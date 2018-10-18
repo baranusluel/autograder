@@ -46,7 +46,7 @@ function generateDocs(email)
     mods(~[mods.isdir]) = [];
     mods(strncmp({mods.name}, '.', 1)) = [];
     % For each directory, for each file, publish into mirror directory.
-    parfor i = 1:numel(mods)
+    for i = 1:numel(mods)
         module = mods(i);
         warning('off');
         [~] = rmdir([tDir module.name], 's');
@@ -88,7 +88,7 @@ function generateDocs(email)
                 line = strrep(line, '<!-- MODULE_DESCRIPTION -->', strjoin(description, newline));
             elseif contains(line, '<!-- MODULE_FUNCTIONS -->')
                 % Write all functions in divs
-                sources = [marks functions];
+                sources = [marks; functions];
                 for s = 1:numel(sources)
                     [~, name, ~] = fileparts(sources(s).name);
                     fprintf(fid, '<div data-link="%s">%s</div>\n', [name '.html'], ...
