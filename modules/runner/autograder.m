@@ -61,7 +61,7 @@ function autograder(app)
     INSPECT_LABEL = 'Inspect the Students';
     % The label for continuing on
     CONTINUE_LABEL = 'Continue';
-    
+
     % actually grade if ANY of the following is set:
     %   * Upload Grades -> canvas
     %   * Uplaod Feedback -> canvas
@@ -71,7 +71,7 @@ function autograder(app)
         || app.UploadFeedbackToCanvas.Value ...
         || app.EmailFeedback.Value ...
         || ~isempty(app.localOutputPath);
-    
+
     settings.userPath = {path(), userpath()};
     % change name of overloaded files
     overloaders = fileparts(mfilename('fullpath'));
@@ -134,7 +134,7 @@ function autograder(app)
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
     worker.wait();
-    
+
     % close all files and plots
     wait(parfevalOnAll(@()(fclose('all')), 0));
     wait(parfevalOnAll(@()(delete(findall(0, 'type', 'figure'))), 0));
@@ -239,7 +239,7 @@ function autograder(app)
             end
         end
     end
-    
+
     % We have downloaded students. If the user wants to edit files, give
     % them a chance to do so.
     % The question is, should they be able to use MATLAB to do it, or
@@ -262,7 +262,7 @@ function autograder(app)
         keyboard;
         cd(safeDir);
     end
-    
+
     % Generate students
     try
         Logger.log('Generating Students');
@@ -376,7 +376,7 @@ function autograder(app)
     % respond to caught errors
     caughtErrors = struct('task', '', 'exception', []);
     caughtErrors = caughtErrors(false);
-    
+
     % If the user requested uploading, do it
 
     if app.UploadGradesToCanvas.Value
@@ -481,7 +481,7 @@ function autograder(app)
             caughtErrors(end).exception = e;
         end
     end
-    
+
     if app.AnalyzeForCheating.Value
         try
             progress.Message = 'Reading Student Submissions';
@@ -549,13 +549,13 @@ function autograder(app)
                     % create ZIP archive to ship
                     zipPath = tempname;
                     mkdir(zipPath);
-                    
+
                     if app.isResubmission
                         name = sprintf('cheaters_%02d_resub.zip', app.homeworkNum);
                     else
                         name = sprintf('cheaters_%02d.zip', app.homeworkNum);
                     end
-                    
+
                     zip(fullfile(zipPath, name), app.localCheatPath);
                     slackMessenger(app.slackToken, {app.slackRecipients.id}, 'Cheat Detection finished; attached is the summary', fullfile(zipPath, 'cheaters.zip'));
                     rmdir(zipPath, 's');
@@ -598,7 +598,7 @@ function autograder(app)
             keyboard;
         end
     end
-    
+
     if ~isempty(caughtErrors) && ~isempty(app.delay)
         DEATH_MESSAGE = ['We successfully graded student submissions. However, ', ...
             'we ran into some problems during post-grading tasks. These problems ', ...
@@ -612,13 +612,13 @@ function autograder(app)
         tasks = {caughtErrors.task};
         orders = arrayfun(@num2str, 1:numel(tasks), 'uni', false);
         msg = strjoin(join([orders; tasks]', '. '), newline);
-        
+
         message = sprintf(DEATH_MESSAGE, msg);
         if ~isempty(app.slackRecipients)
             slackMessenger(app.slackToken, {app.slackRecipients.id}, message);
         end
         keyboard;
-            
+
     end
 end
 
@@ -665,7 +665,7 @@ end
 
 function shouldDebug = debugger(app, msg)
     EMAIL_MESSAGE_FORMAT = 'Hello,\n\nIt appears the autograder failed to finish. Here''s the error message:\n\n%s\n\nBest Regards,\n~The CS 1371 Technology Team';
-    
+
     shouldDebug = app.isDebug && isempty(app.delay);
     % notify
     try
@@ -686,9 +686,4 @@ function shouldDebug = debugger(app, msg)
     catch
     end
     beep;
-end
-
-function setupRecs(solutions)
-    recs = Student.resources;
-    recs.Problems = solutions;
 end

@@ -253,8 +253,32 @@ classdef Student < handle
                     counter = counter - 1;
                 end
             end
-            feeds(isRunnable) = engine(feeds(isRunnable));
+            try
+                feeds(isRunnable) = engine(feeds(isRunnable));
+                sanityWorker = parfevalOnAll(@()([]), 0);
+                isSane = sanityWorker.wait('finished', 5);
+            catch
+                isSane = false;
+            end
+                
             % while we fill out feedbacks, grade comments
+            % sanity check. If we can't run a parallel job, kill the pool,
+            % restart!
+
+            if ~isSane
+                % parallel pool is dead (at least one worker...)
+                % kill the pool, start it up, set up dictionary, and
+                % resources.
+                sanityWorker.cancel();
+                evalc('delete(gcp);');
+                evalc('gcp;');
+                sentinel = File.SENTINEL;
+                wait(parfevalOnAll(@File.SENTINEL, 0, sentinel));
+                wait(parfevalOnAll(@gradeComments, 0));
+                solutions = this.resources.Problems;
+                setupRecs(solutions);
+                wait(parfevalOnAll(@setupRecs, 0, solutions));
+            end
             for p = numel(problems):-1:1
                 workers(p) = parfeval(@gradeComments, 1, this.problemPaths{p});
             end
@@ -744,6 +768,11 @@ classdef Student < handle
                 % Append to end
                 prob = [prob(1:(end-2)) test prob((end-1):end)];
             end
+        end
+        
+        function setupRecs(~, solutions)
+            recs = Student.resources;
+            recs.Problems = solutions;
         end
     end
 end
