@@ -84,6 +84,18 @@ function exportCheaters(students, cheaters, scores, problems, path, progress)
     fid = fopen('index.html', 'wt');
     fwrite(fid, strjoin(markup, newline));
     fclose(fid);
+    % create section index.html
+    sections = unique({suspects.section});
+    for sec = 1:numel(sections)
+        % create index.html
+        % get links for that section
+        sectionMask = strcmp({suspects.section}, sections{sec});
+        sectionLinks = links(sectionMask);
+        sectionMarkup = [HEADER sectionLinks{:} {'</div></div></body></html>'}];
+        fid = fopen(fullfile(pwd, sections{sec}, 'index.html'), 'wt');
+        fwrite(fid, strjoin(sectionMarkup, newline));
+        fclose(fid);
+    end
     isDone = wait(workers, 'finished', 30);
     if ~isDone
         progress.Indeterminate = 'off';
