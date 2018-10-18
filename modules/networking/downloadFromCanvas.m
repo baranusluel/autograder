@@ -35,6 +35,7 @@ function downloadFromCanvas(students, path, progress)
     numStudents = numel(students);
     names = cell(1, numStudents);
     ids = cell(1, numStudents);
+    sections = cell(1, numStudents);
     workers = cell(1, numStudents);
     progress.Indeterminate = 'off';
     progress.Value = 0;
@@ -44,6 +45,7 @@ function downloadFromCanvas(students, path, progress)
         mkdir(students(s).login_id);
         names{s} = students(s).name;
         ids{s} = students(s).login_id;
+        sections{s} = students(s).section;
         % for each attachment, download it here
         if isfield(students(s).submission, 'attachments') && ~isempty(students(s).submission.attachments)
             % create paths and links
@@ -70,7 +72,7 @@ function downloadFromCanvas(students, path, progress)
         mask = false;
     end
     % write info.csv
-    names = [names; ids]';
+    names = [names; ids; sections]';
     names = join(names, '", "');
     names = ['"' strjoin(names, '"\n"'), '"'];
     fid = fopen('info.csv', 'wt');

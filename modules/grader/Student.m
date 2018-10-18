@@ -53,6 +53,7 @@ classdef Student < handle
     properties (Access = public)
         name;
         id;
+        section = 'U';
         path;
         submissions;
         feedbacks = {};

@@ -46,6 +46,24 @@ function students = getCanvasStudents(courseId, assignmentId, token, progress)
         end
     end
     students = fetchOutputs(workers);
+    sections = getSectionInfo(courseId, token);
+    sectionStudents = vertcat(sections.students)';
+    inds = zeros(1, numel(sectionStudents));
+    counter = 1;
+    for i = 1:numel(sections)
+        inds(counter:(counter+numel(sections(i).students)-1)) = i;
+        counter = counter + numel(sections(i).students);
+    end
+    sectionStudentIds = [sectionStudents.id];
+    for i = 1:numel(students)
+        mask = students(i).id == sectionStudentIds;
+        if any(mask)
+            students(i).section = sections(inds(mask)).name;
+        else
+            students(i).section = 'U';
+        end
+    end
+    
     
     delete(workers);
     [students.submission] = deal(subs{:});
@@ -127,6 +145,27 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
         e = addCause(e, reason);
         throw(e);
+    end
+end
+
+function sections = getSectionInfo(courseId, token)
+    API = 'https://gatech.instructure.com/api/v1/courses/%s/sections';
+    
+    opts = weboptions;
+    opts.HeaderFields = {'Authorization', ['Bearer ' token]};
+    opts.Timeout = 30;
+    % if we say 100 per page, get everything
+    try
+        sections = webread(sprintf(API, courseId), 'per_page', '100', 'include[]', 'students', opts);
+    catch reason
+        e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
+        e = addCause(e, reason);
+        throw(e);
+    end
+    % filter section - We just want the letter
+    for s = 1:numel(sections)
+        name = regexp(sections(s).name, '(?<=\d+\/\w+\/\d+\/)\w', 'match');
+        sections(s).name = name{1};
     end
 end
 

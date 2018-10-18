@@ -69,13 +69,19 @@ function students = generateStudents(path, progress)
             CSV_NAME = 'info.csv'; % magic variable for csv filename
             FULLNAME_COL = 1; % magic number for col with full names
             GT_USERNAME_COL = 2; % magic number for col with usernames
+            SECTION_COL = 3;
             fid = fopen([path filesep CSV_NAME], 'rt');
-            raw = textscan(fid, '%q%q', 'Delimiter', ',');
+            raw = textscan(fid, '%q%q%q', 'Delimiter', ',');
             fclose(fid);
             studentNames = raw{FULLNAME_COL};
             users = raw{GT_USERNAME_COL};
-            progress.Indeterminate = 'off';
-            progress.Value = 0;
+            sections = raw{SECTION_COL};
+            if numel(sections) < numel(users)
+                spacer = cell(1, numel(users) - numel(sections));
+                spacer(:) = {''};
+                sections = [sections; spacer];
+            end
+            sections(strcmp(sections, '')) = {'U'};
             for i = length(studs):-1:1
                 % Student constructor takes in path to individual student
                 % folder and student's full name
@@ -83,13 +89,8 @@ function students = generateStudents(path, progress)
                 studentName = studentNames{strcmp(users, studs(i).name)};
                 workers(i) = parfeval(@createStudent, 1, studentPath, studentName);
             end
-            students = cell(1, numel(studentNames));
-            while ~all([workers.Read])
-                [idx, stud] = fetchNext(workers);
-                students{idx} = stud;
-                progress.Value = min([progress.Value + 1/length(studs), 1]);
-            end
-            students = [students{:}];
+            students = workers.fetchOutputs();
+            [students.section] = deal(sections{:});
             % alphabetize vector of Students based on GT username
             [~, idx] = sort({students.name});
             students = students(idx);
