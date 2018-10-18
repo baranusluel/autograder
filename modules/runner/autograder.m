@@ -557,7 +557,10 @@ function autograder(app)
                     end
 
                     zip(fullfile(zipPath, name), app.localCheatPath);
-                    slackMessenger(app.slackToken, {app.slackRecipients.id}, 'Cheat Detection finished; attached is the summary', fullfile(zipPath, 'cheaters.zip'));
+                    slackMessenger(app.slackToken, ...
+                        {app.slackRecipients.id}, ...
+                        'Cheat Detection finished; attached is the summary', ...
+                        fullfile(zipPath, name));
                     rmdir(zipPath, 's');
                 end
             end
