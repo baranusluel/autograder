@@ -190,8 +190,8 @@ classdef Feedback < handle
                             end
                         end
                         for i = length(this.files)+1:length(solnFiles)
-                            html = [html '<p>Your code did not produce a file to match ', ...
-                                    solnFiles(i).name '</p>'];
+                            html = [html '<p class="exception">Error: Your code did not produce a file to match ', ...
+                                    solnFiles(i).name solnFiles(i).extension '</p>'];
                         end
                     elseif length(solnFiles) < length(this.files)
                         for i = 1:length(solnFiles)
@@ -200,8 +200,8 @@ classdef Feedback < handle
                             end
                         end
                         for i = length(solnFiles)+1:length(this.files)
-                            html = [html '<p>The solution did not produce a file to match ', ...
-                                    this.files(i).name '</p>'];
+                            html = [html '<p class="warning">Warning: Your code also produced the file ', ...
+                                    this.files(i).name this.files(i).extension '</p>'];
                         end
                     else
                         for i = 1:length(solnFiles)
@@ -253,7 +253,7 @@ classdef Feedback < handle
                     end
                 end
             end
-            html = sprintf('%s</div><p>Points earned for this test case: %0.1f/%0.1f</p></div>',...
+            html = sprintf('%s</div><p class="feedback-points">Points earned for this test case: <b>%0.1f/%0.1f</b></p></div>',...
                             html, this.points, this.testCase.points);
         end
     end
