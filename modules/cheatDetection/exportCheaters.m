@@ -31,6 +31,7 @@ function exportCheaters(students, cheaters, scores, problems, path, progress)
     for s = 1:numel(sections)
         mkdir(pwd, sections{s});
     end
+    mkdir('cheaters');
     progress.Message = 'Preparing to export';
     progress.Value = 0;
     % for each student, get worker
@@ -227,9 +228,12 @@ function writeHtml(problems, names, scores, myName, myUsername, mySection, myPat
         fid = fopen([myUsername '.html'], 'wt');
         fwrite(fid, strjoin(markup, newline));
         fclose(fid);
-        % if we cheated, copy to section folder
+        % if we cheated, copy to section folder & cheaters folder
         if didCheat
             fid = fopen([pwd filesep mySection filesep myUsername '.html'], 'wt');
+            fwrite(fid, strjoin(markup, ''));
+            fclose(fid);
+            fid = fopen([pwd filesep 'cheaters' filesep myUsername '.html'], 'wt');
             fwrite(fid, strjoin(markup, ''));
             fclose(fid);
         end
