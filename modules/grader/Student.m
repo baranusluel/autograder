@@ -258,6 +258,9 @@ classdef Student < handle
                 feeds(isRunnable) = engine(feeds(isRunnable));
                 sanityWorker = parfevalOnAll(@()([]), 0);
                 isSane = sanityWorker.wait('finished', 5);
+                if ~isSane
+                    sanityWorker.cancel();
+                end
             catch
                 isSane = false;
             end
@@ -270,7 +273,6 @@ classdef Student < handle
                 % parallel pool is dead (at least one worker...)
                 % kill the pool, start it up, set up dictionary, and
                 % resources.
-                sanityWorker.cancel();
                 evalc('delete(gcp);');
                 evalc('gcp;');
                 sentinel = File.SENTINEL;
