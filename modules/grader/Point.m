@@ -33,7 +33,7 @@ classdef Point < handle
         X;
         Y;
         Z;
-        Marker;
+        Marker = '';
         Color;
     end
     methods (Access = public)
@@ -53,7 +53,7 @@ classdef Point < handle
             this.X = coord(1);
             this.Y = coord(2);
             if length(coord) == 3
-                this.Z = coord(2);
+                this.Z = coord(3);
             else
                 this.Z = 0;
             end
@@ -67,7 +67,7 @@ classdef Point < handle
             % you know this
             areEqual = this.dataEquals(that) ...
                 && strcmp(this.Marker,that.Marker) ...
-                && strcmp(this.Color,that.Color);
+                && isequal(this.Color,that.Color);
         end
         function areEqual = dataEquals(this,that)
             %% dataEquals: does the equals thing
