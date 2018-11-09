@@ -30,8 +30,8 @@
 %
 classdef Segment < handle
     properties (Access = public)
-        Start Point;
-        Stop Point;
+        Start;
+        Stop;
         Color double;
         Style char;
     end
