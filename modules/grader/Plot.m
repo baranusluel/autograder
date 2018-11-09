@@ -351,36 +351,25 @@ classdef Plot < handle
                     totalPoints = totalPoints + numel(xcell{p});
                 end
             end
-            ptData = cell(1, totalPoints);
-            points = struct('X', ptData, ...
-                'Y', ptData, ...
-                'Z', ptData, ...
-                'Marker', ptData, ...
-                'Legend', ptData, ...
-                'Color', ptData);
-            counter = 1;
+            
+            n = totalPoints;
             for i = 1:length(xcell)
                 if ~isempty(marker{i})
                     % just separate X, Y, Z points
-                    xx = num2cell(xcell{i});
-                    yy = num2cell(ycell{i});
+                    xx = xcell{i};
+                    yy = ycell{i};
                     zz = zcell{i};
-                    mark = marker{i};
-
-                    col = color{i};
-                    leg = '';
                     if isempty(zz)
-                        zz = {[]};
-                    else
-                        zz = num2cell(zz);
+                        zz = zeros(1,length(xx));
                     end
-                    [points(counter:(counter+length(xx)-1)).X] = deal(xx{:});
-                    [points(counter:(counter+length(xx)-1)).Y] = deal(yy{:});
-                    [points(counter:(counter+length(xx)-1)).Z] = deal(zz{:});
-                    [points(counter:(counter+length(xx)-1)).Marker] = deal(mark);
-                    [points(counter:(counter+length(xx)-1)).Color] = deal(col);
-                    [points(counter:(counter+length(xx)-1)).Legend] = deal(leg);
-                    counter = counter + length(xx);
+                    clear points
+                    mark = marker{i};
+                    col = color{i};
+                    for j = 1:length(xx)
+                        points(n) = Point([xx(j) yy(j) zz(j)], ...
+                            mark, col);
+                        n = n - 1;
+                    end
                 end
             end
             % Unique check
@@ -389,7 +378,7 @@ classdef Plot < handle
             while p <= length(points)
                 pt = points(p);
                 for j = length(points):-1:(p+1)
-                    if isequal(pt, points(j))
+                    if pt.equals(points(j))
                         points(j) = [];
                     end
                 end
@@ -503,7 +492,7 @@ classdef Plot < handle
                 % look through thisSegs; once found, delete from both
                 isFound = false;
                 for j = numel(thisPoints):-1:1
-                    if isequal(thatPoint, thisPoints(j))
+                    if thatPoint.equals(thisPoints(j))
                         isFound = true;
                         thisPoints(j) = [];
                         thatPoints(i) = [];
@@ -674,7 +663,7 @@ classdef Plot < handle
                     solnPoint = solnPoints(i);
                     isFound = false;
                     for j = numel(studPoints):-1:1
-                        if isequal(solnPoint, studPoints(j))
+                        if solnPoint.equals(studPoints(j))
                             solnPoints(i) = [];
                             studPoints(j) = [];
                             isFound = true;

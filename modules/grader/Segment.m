@@ -47,6 +47,9 @@ classdef Segment < handle
         % S and E can be Points or coordinates - if the latter, they will
         % be constructed into points
         function this = Segment(start, stop, color, style)
+            if nargin == 0
+                return;
+            end
             if isa(start, 'Point')
                 this.Start = start;
                 this.Stop = stop;
