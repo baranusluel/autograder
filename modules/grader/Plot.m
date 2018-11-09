@@ -194,10 +194,10 @@ classdef Plot < handle
                 xdata = xcell{i};
                 ydata = ycell{i};
                 zdata = zcell{i};
-                points = max([length(xdata), length(ydata), length(zdata)]); % number of data points
-                xNaN = false(1,points);
-                yNaN = false(1,points);
-                zNaN = false(1,points);
+                pts = max([length(xdata), length(ydata), length(zdata)]); % number of data points
+                xNaN = false(1,pts);
+                yNaN = false(1,pts);
+                zNaN = false(1,pts);
                 if ~isempty(xdata)
                     xNaN = isnan(xdata);
                 end
@@ -291,6 +291,10 @@ classdef Plot < handle
                     segmentColors{s}, ...
                     segmentStyles{s});
             end
+            if isempty(segments)
+                segs = Segment();
+                segs = segs(false);
+            end 
             this.Segments = segs;
             segXPts = arrayfun(@(s)(s.Start(1)), this.Segments);
             [~, inds] = sort(segXPts);
@@ -362,15 +366,18 @@ classdef Plot < handle
                     if isempty(zz)
                         zz = zeros(1,length(xx));
                     end
-                    clear points
                     mark = marker{i};
                     col = color{i};
-                    for j = 1:length(xx)
+                    for j = length(xx):-1:1
                         points(n) = Point([xx(j) yy(j) zz(j)], ...
                             mark, col);
                         n = n - 1;
                     end
                 end
+            end
+            if totalPoints == 0
+                points = Point();
+                points = points(false);
             end
             % Unique check
             % for all pts, if any point is identical, kill it
