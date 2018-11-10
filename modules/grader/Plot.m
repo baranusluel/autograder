@@ -263,22 +263,6 @@ classdef Plot < handle
             segmentColors((counter):end) = [];
             segmentStyles((counter):end) = [];
             % 
-            % Find Uniqueness:
-            % for each one, iterate over others; each one, if equal,
-            % delete.
-            c = 1;
-            while c <= length(segments)
-                % iterate over rest of segments
-                seg = segments(c);
-                for j = length(segments):-1:(c+1)
-                    if isequal(seg, segments(j))
-                        segments(j) = [];
-                        segmentColors(j) = [];
-                        segmentStyles(j) = [];
-                    end
-                end
-                c = c + 1;
-            end
             % Sorting this would make comparison faster - but would the
             % sorting actually be slower than just comparing unsorted?
             
@@ -295,6 +279,7 @@ classdef Plot < handle
                 segs = Segment();
                 segs = segs(false);
             end 
+            segs = unique(segs);
             this.Segments = segs;
             segXPts = arrayfun(@(s)(s.Start(1)), this.Segments);
             [~, inds] = sort(segXPts);
@@ -381,22 +366,7 @@ classdef Plot < handle
             end
             % Unique check
             % for all pts, if any point is identical, kill it
-            p = 1;
-            while p <= length(points)
-                pt = points(p);
-                for j = length(points):-1:(p+1)
-                    if pt.equals(points(j))
-                        points(j) = [];
-                    end
-                end
-                p = p + 1;
-            end
-            
-            % Sort, just like we did with Segments:
-            [~, inds] = sort([points.X]);
-            points = points(inds);
-                    
-            
+            points = unique(points);
             this.Points = points;
         end
     end
@@ -493,13 +463,57 @@ classdef Plot < handle
             % for each point set, see if found in this
             thatPoints = that.Points;
             thisPoints = this.Points;
+            % use ismember! If all of student points are member, AND all of
+            % soln points are member, then yes
+            if ~all(ismember(thisPoints, thatPoints)) ...
+                    || ~all(ismember(thatPoints, thisPoints))
+                areEqual = false;
+                return;
+            end
+            
+            % Nothing should be left in either set; if both sets are
+            % non-empty, then false
+
+            % Roll Call
+            % for each line segment in that, see if found in this
+            % Since they are unique, remove from both sets when found.
+            % Then, at end, if both are empty, equal; otherwise, unequal.
+            thatSegs = that.Segments;
+            thisSegs = this.Segments;
+            
+            if ~all(ismember(thisSegs, thatSegs)) ...
+                    || ~all(ismember(thatSegs, thisSegs))
+                areEqual = false;
+                return;
+            end
+            areEqual = true;
+        end
+        %% pointEquals: Check Plotted Equality
+        %
+        % pointEquals is like dataEquals, except it only checks exact
+        % points plotted - i.e., is the raw plotted data the same
+        function areEqual = pointEquals(this, that)
+            extractor = @(seg)([seg.Start, seg.Stop]);
+            thisPoints = [this.Points, extractor(this.Segments)];
+            thatPoints = [that.Points, extractor(that.Segments)];
+            areEqual = all(ismember(thisPoints, thatPoints));
+        end
+        %% dataEquals: Check Data Equality
+        %
+        % dataEquals is the same as equals, except it strictly checks point
+        % and segment data - raw coordinates.
+        function areEqual = dataEquals(this, that)
+            % Point Call
+            % for each point set, see if found in this
+            thatPoints = that.Points;
+            thisPoints = this.Points;
             
             for i = numel(thatPoints):-1:1
                 thatPoint = thatPoints(i);
                 % look through thisSegs; once found, delete from both
                 isFound = false;
                 for j = numel(thisPoints):-1:1
-                    if thatPoint.equals(thisPoints(j))
+                    if thatPoint.dataEquals(thisPoints(j))
                         isFound = true;
                         thisPoints(j) = [];
                         thatPoints(i) = [];
@@ -530,7 +544,7 @@ classdef Plot < handle
                 % look through thisSegs; once found, delete from both
                 isFound = false;
                 for j = numel(thisSegs):-1:1
-                    if thatSeg.equals(thisSegs(j))
+                    if thatSeg.dataEquals(thisSegs(j))
                         isFound = true;
                         thisSegs(j) = [];
                         thatSegs(i) = [];
