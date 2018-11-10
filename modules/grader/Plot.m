@@ -57,13 +57,11 @@ classdef Plot < handle
         Points;
         Segments;
         Limits;
+        isAlien logical = false;
     end
     properties (Constant)
         POSITION_MARGIN = 0.05;
         ROUNDOFF_ERROR = 5;
-    end
-    properties (Access=private)
-        isAlien logical = false;
     end
     methods
         function this = Plot(pHandle)
@@ -153,7 +151,7 @@ classdef Plot < handle
             this.Limits = round([pHandle.XLim, pHandle.YLim, pHandle.ZLim], ...
                 Plot.ROUNDOFF_ERROR);
             
-            tmp = figure();
+            tmp = figure('Visible', 'off');
             par = pHandle.Parent;
             pHandle.Parent = tmp;
             imgstruct = getframe(tmp);
@@ -165,8 +163,10 @@ classdef Plot < handle
 
             lines = allchild(pHandle);
             if isempty(lines)
-                this.Points = [];
-                this.Segments = [];
+                tmp = Point();
+                this.Points = tmp(false);
+                tmp = Segment();
+                this.Segments = tmp(false);
                 return;
             end
             for i = length(lines):-1:1
@@ -176,8 +176,10 @@ classdef Plot < handle
                 end
             end
             if isempty(lines)
-                this.Segments = [];
-                this.Points = [];
+                tmp = Point();
+                this.Points = tmp(false);
+                tmp = Segment();
+                this.Segments = tmp(false);
                 return;
             end
             xcell = {lines.XData};
