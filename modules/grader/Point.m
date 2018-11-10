@@ -69,6 +69,12 @@ classdef Point < handle
                 && strcmp(this.Marker,that.Marker) ...
                 && isequal(this.Color,that.Color);
         end
+        function tf = ne(this, that)
+            tf = ~this.equals(that);
+        end
+        function tf = eq(this, that)
+            tf = this.equals(that);
+        end
         function areEqual = dataEquals(this,that)
             %% dataEquals: does the equals thing
             % you know this too
