@@ -305,6 +305,8 @@ function autograder(app)
         setupRecs(solutions);
         if app.isLeaky
             mask = false(size(students));
+            errs(numel(students)+1) = MException('AUTOGRADER:tmp', 'tmp');
+            errs(end) = [];
         end
         for s = 1:numel(students)
             student = students(s);
@@ -313,8 +315,10 @@ function autograder(app)
                 Logger.log(sprintf('Assessing Student %s (%s)', student.name, student.id));
                 student.assess();
             catch e
-                mask(s) = true;
-                if debugger(app, 'Failed to assess student')
+                if app.isLeaky
+                    mask(s) = true;
+                    errs(s) = e;
+                elseif debugger(app, 'Failed to assess student')
                     keyboard;
                 else
                     alert(e);
