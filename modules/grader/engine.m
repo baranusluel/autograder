@@ -251,10 +251,10 @@ function runnables = engine(runnables)
             if isBanned
                 if ~isTestCase
                     runnable.exception = MException('AUTOGRADER:engine:banned', ...
-                        'File used banned function(s): %s', strjoin(bannedFunName, ','));
+                        'File used banned function(s): %s', bannedFunName);
                 else
                     throw(MException('AUTOGRADER:engine:banned', ...
-                        'File used banned function(s): %s', strjoin(bannedFunName, ',')));
+                        'File used banned function(s): %s',bannedFunName));
                 end
             end
 
@@ -690,7 +690,7 @@ function [isBanned, bannedFunName] = checkBanned(name, banned, path)
     bannedFunName = calls(ismember(calls, [banned BANNED_OPS]));
     mask = strncmp(bannedFunName, '__', 2);
     bannedFunName(mask) = ...
-        cellfun(@(s)(s(3:end)), bannedFunName(mask), 'uni', false);
+        strjoin(cellfun(@(s)(s(3:end)), bannedFunName(mask), 'uni', false), ', ');
     isBanned = ~isempty(bannedFunName);
 end
 
