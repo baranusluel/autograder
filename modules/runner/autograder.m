@@ -303,6 +303,9 @@ function autograder(app)
         progress.Message = 'Student Grading Progress';
         Logger.log('Starting student assessment');
         setupRecs(solutions);
+        if app.isLeaky
+            mask = false(size(students));
+        end
         for s = 1:numel(students)
             student = students(s);
             progress.Message = sprintf('Assessing Student %s', student.name);
@@ -310,6 +313,7 @@ function autograder(app)
                 Logger.log(sprintf('Assessing Student %s (%s)', student.name, student.id));
                 student.assess();
             catch e
+                mask(s) = true;
                 if debugger(app, 'Failed to assess student')
                     keyboard;
                 else
@@ -331,6 +335,19 @@ function autograder(app)
 
         drawnow;
 
+        % If we're leaky, show who errored;
+        if app.isLeaky && any(mask)
+            leaks = students(mask);
+            nums = arrayfun(@num2str, 1:numel(leaks), 'uni', false);
+            names = {leaks.name};
+            names = strjoin(join([nums', names'], '. '), newline);
+            fprintf(2, '%d Leak(s) detected. The following students successfully got around safeguards:\n%s\n', numel(leaks), names);
+            keyboard;
+        elseif app.isLeakky && ~any(mask)
+            fprintf(1, 'No leaks detected!\n');
+            keyboard;
+        end
+            
         % Before we do anything else, examine the grades. There should be a
         % good distribution - if not, ask the user
 
