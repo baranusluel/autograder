@@ -303,9 +303,17 @@ function autograder(app)
         progress.Message = 'Student Grading Progress';
         Logger.log('Starting student assessment');
         setupRecs(solutions);
+        checker = java.io.File('/');
         for s = 1:numel(students)
             student = students(s);
             progress.Message = sprintf('Assessing Student %s', student.name);
+            if (checker.getFreeSpace() / checker.getTotalSpace()) < 0.02 ...
+                && checker.getFreeSpace() < 10e9
+                % pause - we are taking up too much space!
+                fprintf(2, 'You are low on disk space (%d bytes remaining). Please clear more space, and continue.', ...
+                    checker.getFreeSpace());
+                keyboard;
+            end
             try
                 Logger.log(sprintf('Assessing Student %s (%s)', student.name, student.id));
                 student.assess();
