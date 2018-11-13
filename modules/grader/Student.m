@@ -254,8 +254,8 @@ classdef Student < handle
                     counter = counter - 1;
                 end
             end
+            feeds(isRunnable) = engine(feeds(isRunnable));
             try
-                feeds(isRunnable) = engine(feeds(isRunnable));
                 sanityWorker = parfevalOnAll(@()([]), 0);
                 isSane = sanityWorker.wait('finished', 5);
                 if ~isSane
