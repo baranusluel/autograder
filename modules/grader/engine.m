@@ -2,11 +2,7 @@
 %
 % The engine function serves as the primary runner of code.
 %
-% T = engine(T) runs the code specified by the TestCase T, and assigns the
-% outputs, files, and plots to the corresponding fields in T. The output is
-% the same size as the input
-%
-% F = engine(F) runs the code specified by the TestCase found in Feedback F,
+% R = engine(R) runs the code specified by the TestCase found in Runnable R,
 % and assigns the outputs, files, and plots to the corresponding fields
 % in F. This does NOT grade the code, just runs it. You must capture the
 % outputs; the engine does NOT modify the inputs. The output is the same
@@ -18,7 +14,7 @@
 % finished, or timed out. However, other than that, there is no requirement
 % that any of them be related to each other - they are all run in parallel.
 %
-% while it will always be faster to run runnables in parallel, there are no
+% While it will always be faster to run runnables in parallel, there are no
 % guarantees about timing or order. If you need a specific order, you must
 % run them individually.
 %
@@ -32,7 +28,7 @@
 %
 % Timeouts are handled using a parallel pool of workers. In essence, a
 % student's code is limited to a certain runtime, 30 seconds by default.
-% To change this value, you should edit the TIMEOUT field of the STudent
+% To change this value, you should edit the TIMEOUT field of the Student
 % class.
 %
 % Errors in the code itself are handled differently, depending on whether
@@ -682,7 +678,7 @@ function isRecurring = checkRecur(callInfo, main, path, stack)
 end
 
 function [isBanned, bannedFunName] = checkBanned(name, banned, path)
-    
+
     calls = getCalls([path filesep name]);
     % calls is complete set of calls to builtin functions. If any of them
     % match up, then we have a winner!
@@ -706,7 +702,7 @@ function calls = getCalls(path, ignore)
     % any calls to inner functions should die
     calls = [calls, atCalls];
     calls(ismember(calls, [innerFunctions ignore])) = [];
-    
+
     % For any calls that exist in our current directory, recursively
     % collect their builtin calls
     localFuns = dir([fld filesep '*.m']);
@@ -717,7 +713,7 @@ function calls = getCalls(path, ignore)
     for l = 1:numel(localCalls)
         calls = [calls getCalls([pwd filesep localCalls{l} '.m'], [ignore {name}])]; %#ok<AGROW>
     end
-    
+
     % add any operations
     BANNED_OPS = {'BANG', 'PARFOR', 'SPMD', 'GLOBAL'};
     calls = [calls compose('__%s', string(info.mtfind('Kind', BANNED_OPS).kinds))];
