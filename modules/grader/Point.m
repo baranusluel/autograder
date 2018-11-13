@@ -142,5 +142,3 @@ classdef Point < handle
     methods (Static)
     end
 end
-
-

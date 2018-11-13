@@ -618,8 +618,9 @@ classdef Plot < handle
         % segs
         % pts
         % limits
-        msg = '';
-        if ~strcmp(this.Title, that.Title)
+        if this.isAlien
+            msg = 'You plotted something other than lines or points, so we could not grade your submission';
+        elseif ~strcmp(this.Title, that.Title)
             msg = sprintf('You gave title "%s", but we expected "%s"', ...
                 this.Title, that.Title);
         elseif ~strcmp(this.XLabel, that.XLabel)
@@ -633,86 +634,36 @@ classdef Plot < handle
                 this.ZLabel, that.ZLabel);
         elseif any(this.Position < (that.Position - Plot.POSITION_MARGIN)) ...
                     || any(this.Position > (that.Position + Plot.POSITION_MARGIN))
-            msg = sprintf(['Your plot has a position of [%0.2f, %0.2f, %0.2f, %0.2f], ', ...
-                'but we expected [%0.2f, %0.2f, %0.2f, %0.2f] (Did you call subplot correctly?)'], ...
-                this.Position(1), this.Position(2), this.Position(3), this.Position(4), ...
-                that.Position(1), that.Position(2), that.Position(3), that.Position(4));
+            msg = 'Your plot has the wrong position (Did you call subplot correctly?)';
         elseif any(this.PlotBox < (that.PlotBox - Plot.POSITION_MARGIN)) ...
                     || any(this.PlotBox > (that.PlotBox + Plot.POSITION_MARGIN))
-            msg = sprintf(['Your plot has a Plot Box of [%0.2f, %0.2f, %0.2f], ', ...
-                'but we expected [%0.2f, %0.2f, %0.2f] (Did you call subplot correctly?)'], ...
-                this.PlotBox(1), this.PlotBox(2), this.PlotBox(3), ...
-                that.PlotBox(1), that.PlotBox(2), that.PlotBox(3));
-        else
-            % we need to check Segs and Points
-            % do roll call
-            solnSegs = that.Segments;
-            studSegs = this.Segments;
-            isFound = false;
-            for i = numel(solnSegs):-1:1
-                solnSeg = solnSegs(i);
-                isFound = false;
-                for j = numel(studSegs):-1:1
-                    if solnSeg.equals(studSegs(j))
-                        solnSegs(i) = [];
-                        studSegs(j) = [];
-                        isFound = true;
-                        break;
-                    end
-                end
-                if ~isFound
-                    msg = sprintf('You didn''t plot segment (%0.2f, %0.2f)<i class="fas fa-arrow-right"></i>(%0.2f, %0.2f)', ...
-                        solnSeg.Start.X, ...
-                        solnSeg.Start.Y, ...
-                        solnSeg.Stop.X, ...
-                        solnSeg.Stop.Y);
-                    break;
-                end
-            end
-            if isFound && ~isempty(studSegs)
-                seg = studSegs(1);
-                msg = sprintf('You plotted segment (%0.2f, %0.2f)<i class="fas fa-arrow-right"></i>(%0.2f, %0.2f) when you shouldn''t have', ...
-                    seg.Start.X, ...
-                    seg.Start.Y, ...
-                    seg.Stop.X, ...
-                    seg.Stop.Y);
-            end
-            if isempty(msg)
-                % look at points
-                solnPoints = that.Points;
-                studPoints = this.Points;
-                isFound = false;
-                for i = numel(solnPoints):-1:1
-                    solnPoint = solnPoints(i);
-                    isFound = false;
-                    for j = numel(studPoints):-1:1
-                        if solnPoint.equals(studPoints(j))
-                            solnPoints(i) = [];
-                            studPoints(j) = [];
-                            isFound = true;
-                            break;
-                        end
-                    end
-                    if ~isFound
-                        msg = sprintf('You didn''t plot point (%0.2f, %0.2f)', ...
-                            solnPoint.X, solnPoint.Y);
-                        break;
-                    end
-                end
-                if isFound && ~isempty(studPoints)
-                    pt = studPoints(1);
-                    msg = sprintf('You plotted point (%0.2f, %0.2f) when you shouldn''t have', ...
-                        pt.X, pt.Y);
-                end
-            end
-        end
-        
-        if isempty(msg) && ~isequal(this.Limits(1:4), that.Limits(1:4))
+            msg = 'Your axes aren''t lined up (did you call axis correctly?';
+        elseif ~isequal(this.Limits(1:4), that.Limits(1:4))
             msg = sprintf(['Your plot has Limits of [%0.2f, %0.2f, %0.2f, %0.2f], ', ...
                 'but we expected [%0.2f, %0.2f, %0.2f, %0.2f] (Did you call axis or xlim/ylim correctly?)'], ...
                 this.Limits(1), this.Limits(2), this.Limits(3), this.Limits(4), ...
                 that.Limits(1), that.Limits(2), that.Limits(3), that.Limits(4));
+        elseif this.dataEquals(that)
+            % if data equals, we've alreay checked everything else. it has
+            % to be styles (points or lines)
+            msg = 'Your point or line styles are incorrect';
+        elseif this.pointEquals(that)
+            % if not even data equals, some bad data there
+            msg = 'Your plot data differs from the solution';
+        else
+            % At this point, we've checked:
+            %   Alien
+            %   Title, XYZ labels
+            %   Position (Subplot)
+            %   PlotBox (Axis)
+            %   Limits
+            %   Data
+            %
+            % If we reach here, we don't really know what's up. Tell the
+            % user we don't know - see a TA
+            msg = 'Your plot is different, but we can''t tell why. Please reach out to a TA, and include this feedback';
         end
+        msg = sprintf('%s\nFor more information, please use <code>checkPlots</code>', msg);
         
         studPlot = img2base64(this.Image);
         solnPlot = img2base64(that.Image);
