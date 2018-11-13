@@ -191,7 +191,7 @@ function runnables = engine(runnables)
         'eval', 'feval', 'assignin', 'evalc', 'evalin', ...
         'input', 'wait', 'uiwait', 'keyboard', 'dbstop', 'dos', 'unix', ...
         'cd', 'system', 'restoredefaultpath', 'builtin', 'load', ...
-        'perl', 'rmdir', 'delete'};
+        'perl', 'rmdir', 'delete', 'exit', 'quit'};
 
     if any(~isvalid(runnables))
         e = MException('AUTOGRADER:engine:invalidRunnable', ...
@@ -247,10 +247,10 @@ function runnables = engine(runnables)
             if isBanned
                 if ~isTestCase
                     runnable.exception = MException('AUTOGRADER:engine:banned', ...
-                        'File used banned function "%s"', bannedFunName);
+                        'File used banned function(s): %s', strjoin(bannedFunName, ','));
                 else
                     throw(MException('AUTOGRADER:engine:banned', ...
-                        'File used banned function "%s"', bannedFunName));
+                        'File used banned function(s): %s', strjoin(bannedFunName, ',')));
                 end
             end
 
@@ -598,7 +598,7 @@ end
 function cleanup(origPath)
     builtin('cd', origPath);
     fclose('all');
-    
+
     h = findall(0, 'type', 'figure');
     close(h, 'force');
     delete(h);
@@ -621,7 +621,7 @@ function isRecurring = checkRecur(callInfo, main, path, stack)
     %       c: stack is {'a', 'b'};
     %       b: stack is {'a', 'b', 'c'};
     %       @ a->b->c->b, 'b' is current name AND in stack, so return true!
-    
+
     if nargin < 4
         stack = {};
     end
@@ -678,41 +678,44 @@ function isRecurring = checkRecur(callInfo, main, path, stack)
 end
 
 function [isBanned, bannedFunName] = checkBanned(name, banned, path)
-    isBanned = false;
-    bannedFunName = '';
-    % for each call, we should first check that they didn't use any banned names:
-    calls = getcallinfo([path filesep name]);
-    for i = 1:numel(calls)
-        possibleCalls = [calls(i).calls.fcnCalls];
-        possibleCalls = [possibleCalls.names];% inner calls are to helper functions, so no worries there
-        % See if ANY banned are found in possibleCalls
-        % for each call, see where it exists. If it exists IN THIS FOLDER,
-        % then check it recursively
-        culprits = dir([path filesep '*.m']);
-        culprits = {culprits.name};
-        for j = 1:numel(possibleCalls)
-            if any(strcmp(possibleCalls{j}(1:end-2), culprits))
-                [isBanned, bannedFunName] = checkBanned([possibleCalls{j} '.m'], banned, path);
-                if isBanned
-                    return;
-                end
-            else
-                % see if banned
-                if any(strcmp(possibleCalls{j}, banned))
-                    bannedFunName = banned{strcmp(possibleCalls{j}, banned)};
-                    isBanned = true;
-                    return;
-                end
-            end
-        end
+    
+    calls = getCalls([path filesep name]);
+    % calls is complete set of calls to builtin functions. If any of them
+    % match up, then we have a winner!
+    BANNED_OPS = {'__BANG', '__PARFOR', '__SPMD', '__GLOBAL'};
+    bannedFunName = calls(ismember(calls, [banned BANNED_OPS]));
+    mask = strncmp(bannedFunName, '__', 2);
+    bannedFunName(mask) = ...
+        cellfun(@(s)(s(3:end)), bannedFunName(mask), 'uni', false);
+    isBanned = ~isempty(bannedFunName);
+end
+
+function calls = getCalls(path, ignore)
+    if nargin == 1
+        ignore = {};
     end
+    [fld, name, ~] = fileparts(path);
+    info = mtree(path, '-file');
+    calls = info.mtfind('Kind', {'CALL', 'DCALL'}).Left.stringvals;
+    atCalls = info.mtfind('Kind', 'AT').Tree.mtfind('Kind', 'ID').stringvals;
+    innerFunctions = info.mtfind('Kind', 'FUNCTION').Fname.stringvals;
+    % any calls to inner functions should die
+    calls = [calls, atCalls];
+    calls(ismember(calls, [innerFunctions ignore])) = [];
+    
+    % For any calls that exist in our current directory, recursively
+    % collect their builtin calls
+    localFuns = dir([fld filesep '*.m']);
+    localFuns = {localFuns.name};
+    localFuns = cellfun(@(s)(s(1:end-2)), localFuns, 'uni', false);
+    localCalls = calls(ismember(calls, localFuns));
+    calls(ismember(calls, localFuns)) = [];
+    for l = 1:numel(localCalls)
+        calls = [calls getCalls([pwd filesep localCalls{l} '.m'], [ignore {name}])]; %#ok<AGROW>
+    end
+    
+    % add any operations
     BANNED_OPS = {'BANG', 'PARFOR', 'SPMD', 'GLOBAL'};
-    info = mtree([path filesep name], '-file');
-    for b = 1:numel(BANNED_OPS)
-        if info.anykind(BANNED_OPS{b})
-            bannedFunName = BANNED_OPS{b};
-            isBanned = true;
-            return;
-        end
-    end
+    calls = [calls compose('__%s', string(info.mtfind('Kind', BANNED_OPS).kinds))];
+    calls = unique(calls);
 end
