@@ -36,10 +36,11 @@ function downloadFromCanvas(students, path, progress)
     names = cell(1, numStudents);
     ids = cell(1, numStudents);
     sections = cell(1, numStudents);
-    workers = cell(1, numStudents);
     progress.Indeterminate = 'off';
     progress.Value = 0;
     progress.Message = 'Downloading Student Submissions';
+    progress.Cancelable = 'on';
+    submissions = [];
     for s = numStudents:-1:1
         % create folder with name as login_id
         mkdir(students(s).login_id);
@@ -54,22 +55,30 @@ function downloadFromCanvas(students, path, progress)
                 paths(a) = string([pwd filesep students(s).login_id filesep attachments(a).filename]);
                 urls(a) = string(attachments(a).url);
             end
-            workers{s} = StudentDownloader(paths, urls);
+            submissions(s).paths = paths;
+            submissions(s).urls = urls;
+            % workers{s} = StudentDownloader(paths, urls);
         end
     end
-    workers = [workers{:}];
-    if ~isempty(workers)
-        downloads = StudentDownloader.download(workers);
-        tot = downloads.size();
-        progress.Cancelable = 'off';
-        while Download.numRemaining > 0
-            progress.Value = min([1, (tot - Download.numRemaining) / tot]);
+    if ~isempty(submissions)
+        for s = numel(submissions):-1:1
+            workers(s) = parfeval(@saveFiles, 0, ...
+                submissions(s).paths, ...
+                submissions(s).urls);
         end
-        progress.Cancelable = 'on';
-        downloads = downloads.toArray;
-        mask = arrayfun(@(d)(d.isError), downloads);
-    else
-        mask = false;
+        while ~all([workers.Read])
+            try
+                fetchNext(workers);
+            catch e
+                workers.cancel;
+                e.remotecause{1}.rethrow;
+            end
+            progress.Value = min(1, sum([workers.Read]) / numel(workers));
+            if progress.CancelRequested
+                workers.cancel;
+                return;
+            end
+        end
     end
     % write info.csv
     names = [names; ids; sections]';
@@ -79,16 +88,12 @@ function downloadFromCanvas(students, path, progress)
     fwrite(fid, names);
     fclose(fid);
     cd(origPath);
-    % check to make sure that none errored; if they did, alert!
-    if any(mask)
-        % we didn't make it; die
-        [paths, names, exts] = arrayfun(@(d)(fileparts(char(d.getPath()))), downloads(mask), 'uni', false);
-        [~, studs, ~] = cellfun(@fileparts, paths, 'uni', false);
-        files = join([names exts], '');
-        files = [strjoin(join([files studs], ' ('), ')\n') ')'];
-        e = MException('AUTOGRADER:networking:connectionError', ...
-            'We were unable to download the following files: \n%s', ...
-            files);
-        e.throw();
+end
+
+function saveFiles(paths, links)
+    opts = weboptions;
+    opts.Timeout = 30;
+    for f = 1:numel(links)
+        websave(paths(f), links(f), opts);
     end
 end
