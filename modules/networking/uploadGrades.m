@@ -43,20 +43,11 @@ function uploadGrades(students, courseId, assignmentId, token, progress)
     progress.Message = 'Uploading Student Grades to Canvas';
     progress.Indeterminate = 'off';
     progress.Value = 0;
-    % set up web options
-    apiOpts = weboptions;
-    apiOpts.RequestMethod = 'GET';
-    apiOpts.HeaderFields = {'Authorization', ['Bearer ' token]};
-
-    % for each student, get student ID from GT Username. Then, using id, upload grades.
-    getApiOpts = apiOpts;
-    getApiOpts.RequestMethod = 'GET';
-    putApiOpts = apiOpts;
-    putApiOpts.RequestMethod = 'PUT';
     for s = numel(students):-1:1
         stud.name = students(s).name;
         stud.grade = students(s).grade;
         stud.path = students(s).path;
+        stud.id = students(s).canvasId;
         workers{s} = parfeval(@uploadGrade, 0, ...
             courseId, assignmentId, stud, token);
     end
@@ -83,23 +74,19 @@ function uploadGrade(courseId, assignmentId, student, token)
     getApiOpts.RequestMethod = 'GET';
     putApiOpts = apiOpts;
     putApiOpts.RequestMethod = 'PUT';
-    id = coveredRead([API 'courses/' courseId '/users'], getApiOpts, 'search_term', student.name);
-    if ~isempty(id)
-        id = num2str(id.id);
-        data = coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], getApiOpts, 'include[]', 'submission_comments');
-        % check if student was hand graded - if we find a comment that says "REGRADE", don't overwrite
-        if ~isempty(data.submission_comments)
-            if ~iscell(data.submission_comments)
-                comments = {data.submission_comments.comment};
-            else
-                comments = cellfun(@(s)(s.comment), data.submission_comments, 'uni', false);
-            end
+    data = coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' student.id], getApiOpts, 'include[]', 'submission_comments');
+    % check if student was hand graded - if we find a comment that says "REGRADE", don't overwrite
+    if ~isempty(data.submission_comments)
+        if ~iscell(data.submission_comments)
+            comments = {data.submission_comments.comment};
         else
-            comments = {''};
+            comments = cellfun(@(s)(s.comment), data.submission_comments, 'uni', false);
         end
-        if ~any(contains(comments, 'REGRADE', 'IgnoreCase', true))
-            coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' id], putApiOpts, 'submission[posted_grade]', num2str(student.grade));
-        end
+    else
+        comments = {''};
+    end
+    if ~any(contains(comments, 'REGRADE', 'IgnoreCase', true))
+        coveredRead([API 'courses/' courseId '/assignments/' assignmentId '/submissions/' student.id], putApiOpts, 'submission[posted_grade]', num2str(student.grade));
     end
 end
 
