@@ -71,7 +71,7 @@ function downloadFromCanvas(students, path, progress)
                 fetchNext(workers);
             catch e
                 workers.cancel;
-                e.remotecause{1}.rethrow;
+                e.cause{1}.remotecause{1}.rethrow;
             end
             progress.Value = min(1, sum([workers.Read]) / numel(workers));
             if progress.CancelRequested
