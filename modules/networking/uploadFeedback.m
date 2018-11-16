@@ -45,9 +45,8 @@ function uploadFeedback(students, courseId, assignmentId, token, progress)
     progress.Value = 0;
     
     for s = numel(students):-1:1
-        stud.name = students(s).name;
-        stud.grade = students(s).grade;
         stud.path = students(s).path;
+        stud.id = students(s).canvasId;
         workers{s} = parfeval(@uploadFile, 0, ...
             courseId, assignmentId, stud, token);
     end

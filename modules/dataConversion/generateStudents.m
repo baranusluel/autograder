@@ -88,12 +88,16 @@ function students = generateStudents(path, progress)
                 % Student constructor takes in path to individual student
                 % folder and student's full name
                 studentPath = fullfile(studs(i).folder, studs(i).name);
-                studentName = studentNames{strcmp(users, studs(i).name)};
-                studentCanvas = canvasIds{strcmp(users, studs(i).name)};
-                workers(i) = parfeval(@createStudent, 1, ...
-                    studentPath, ...
-                    studentName, ...
-                    studentCanvas);
+                if any(strcmp(users, studs(i).name))
+                    studentName = studentNames{strcmp(users, studs(i).name)};
+                    studentCanvas = canvasIds{strcmp(users, studs(i).name)};
+                    workers(i) = parfeval(@createStudent, 1, ...
+                        studentPath, ...
+                        studentName, ...
+                        studentCanvas);
+                else
+                    workers(i) = [];
+                end
             end
             students = workers.fetchOutputs();
             [students.section] = deal(sections{:});
