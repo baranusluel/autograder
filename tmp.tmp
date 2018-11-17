@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Error><Code>AccessDenied</Code><Message>Invalid according to Policy: Policy Condition failed: ["eq", "$success_action_redirect", "https://gatech.instructure.com/api/v1/files/2040325/create_success?quota_exemption=43550f73aa&amp;uuid=yllznmoDPNd6uq1tZ4MzMoabEntq9agmRE1nc2hw"]</Message><RequestId>C3CB66D8B1ECC6B4</RequestId><HostId>BMefCXo+PVZcRgY4NRqDAnm+edCwIH1WQ5MzPmU6HIWNQ4WflvhSVZmcwOuG4TMsd/D5MkzBqdk=</HostId></Error>
