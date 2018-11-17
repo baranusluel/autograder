@@ -84,23 +84,22 @@ function students = generateStudents(path, progress)
                 sections = [sections; spacer];
             end
             sections(strcmp(sections, '')) = {'U'};
+            studentIndices = [];
             for i = length(studs):-1:1
                 % Student constructor takes in path to individual student
                 % folder and student's full name
                 studentPath = fullfile(studs(i).folder, studs(i).name);
-                if any(strcmp(users, studs(i).name))
-                    studentName = studentNames{strcmp(users, studs(i).name)};
-                    studentCanvas = canvasIds{strcmp(users, studs(i).name)};
-                    workers(i) = parfeval(@createStudent, 1, ...
-                        studentPath, ...
-                        studentName, ...
-                        studentCanvas);
-                else
-                    workers(i) = [];
-                end
+                index = find(strcmp(users, studs(i).name));
+                studentIndices(i) = index;
+                studentName = studentNames{index};
+                studentCanvas = canvasIds{index};
+                workers(i) = parfeval(@createStudent, 1, ...
+                    studentPath, ...
+                    studentName, ...
+                    studentCanvas);
             end
             students = workers.fetchOutputs();
-            [students.section] = deal(sections{:});
+            [students.section] = deal(sections{studentIndices});
             % alphabetize vector of Students based on GT username
             [~, idx] = sort({students.name});
             students = students(idx);
