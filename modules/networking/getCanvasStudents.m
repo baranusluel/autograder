@@ -177,6 +177,7 @@ function info = getStudentInfo(userId, token)
     try
         info = webread([API '/users/' num2str(userId) '/profile/'], opts);
         info.login_id = matlab.lang.makeValidName(info.login_id);
+        info.id = num2str(userId);
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
         e = addCause(e, reason);

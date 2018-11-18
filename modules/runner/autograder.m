@@ -472,9 +472,10 @@ function autograder(app)
             % Create local grades
             names = {students.name};
             ids = {students.id};
+            canvasIds = {students.canvasId};
             grades = arrayfun(@num2str, [students.grade], 'uni', false);
-            raw = [names; ids; grades]';
-            raw = join([{'Name', 'ID', 'Grade'}; raw], '", "');
+            raw = [names; ids; canvasIds; grades]';
+            raw = join([{'Name', 'GT Username', 'ID', 'Grade'}; raw], '", "');
             raw = unicode2native(['"', strjoin(raw, '"\n"'), '"'], 'UTF-8');
             fid = fopen(fullfile(app.localOutputPath, 'grades.csv'), 'wt', 'native', 'UTF-8');
             fwrite(fid, raw);
