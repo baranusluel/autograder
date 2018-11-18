@@ -20,7 +20,7 @@ function [passed, msg] = test()
     recs = Student.resources;
     recs.Problems = solutions;
     % Create our valid student
-    S = Student([pwd filesep 'tuser3'], 'Test User');
+    S = Student([pwd filesep 'tuser3'], 'Test User', '000000');
     
     % Assess
     try
