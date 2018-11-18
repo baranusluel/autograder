@@ -284,8 +284,9 @@ classdef Student < handle
                 wait(parfevalOnAll(@File.SENTINEL, 0, sentinel));
                 wait(parfevalOnAll(@gradeComments, 0));
                 solutions = this.resources.Problems;
-                setupRecs(solutions);
-                wait(parfevalOnAll(@setupRecs, 0, solutions));
+                base = this.resources.BasePath;
+                setupRecs(solutions, base);
+                wait(parfevalOnAll(@setupRecs, 0, solutions, base));
             end
             for p = numel(problems):-1:1
                 workers(p) = parfeval(@gradeComments, 1, this.problemPaths{p});

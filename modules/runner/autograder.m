@@ -191,8 +191,13 @@ function autograder(app)
             return;
         end
     end
-    setupRecs(solutions);
-    wait(parfevalOnAll(@setupRecs, 0, solutions));
+    if app.isResubmission
+        serverBasePath = sprintf('https://cs1371.gatech.edu/homework/homework%02d/original/', app.homeworkNum);
+    else
+        serverBasePath = sprintf('https://cs1371.gatech.edu/homework/homework%02d/resubmission/', app.homeworkNum);
+    end
+    setupRecs(solutions, serverBasePath);
+    wait(parfevalOnAll(@setupRecs, 0, solutions, serverBasePath));
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Students');
@@ -277,7 +282,7 @@ function autograder(app)
     end
 
     % Create Plot
-    setupRecs(solutions);
+    setupRecs(solutions, serverBasePath);
     if shouldGrade
         plotter = uifigure('Name', 'Grade Report', 'Visible', 'off');
         ax = uiaxes(plotter);
@@ -302,7 +307,7 @@ function autograder(app)
         progress.Value = 0;
         progress.Message = 'Student Grading Progress';
         Logger.log('Starting student assessment');
-        setupRecs(solutions);
+        setupRecs(solutions, serverBasePath);
         checker = java.io.File('/');
         for s = 1:numel(students)
             student = students(s);
@@ -420,7 +425,7 @@ function autograder(app)
             name = sprintf('homework%02d', app.homeworkNum);
         end
         try
-            uploadToServer(app.canvasToken, name, progress);
+            uploadToServer(app.canvasToken, name, progress, Student.resources.supportingFiles);
         catch e
             if debugger(app, 'Failed to upload files to server')
                 keyboard;

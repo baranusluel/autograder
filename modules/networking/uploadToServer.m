@@ -24,7 +24,7 @@
 %   uploadToServer(T, N, B);
 %
 %   Homework files are correctly uploaded
-function uploadToServer(token, hwName, progress)
+function uploadToServer(token, hwName, progress, resources)
     progress.Message = 'Uploading Homework Data to Server';
     progress.Value = 0;
     progress.Indeterminate = 'on';
@@ -71,6 +71,14 @@ function uploadToServer(token, hwName, progress)
     for n = 1:numel(solns)
         files(n+3).path = ['regrades/solutions/Homework' num '/' solns(n).name];
         files(n+3).data = getData([solns(n).folder filesep solns(n).name]);
+    end
+    offset = numel(files);
+    % for each resource, get base bath by deleting
+    % https://cs1371.gatech.edu/
+    for n = 1:numel(resources)
+        files(offset + n).path = strrep(resources(n).dataURI, 'https://cs1371.gatech.edu/', '');
+        files(offset + n).data = ...
+            getData([pwd filesep hwName filesep 'SupportingFiles' filesep resources(n).name]);
     end
     opts = weboptions;
     opts.ContentType = 'json';
