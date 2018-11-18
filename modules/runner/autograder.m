@@ -711,7 +711,7 @@ function shouldDebug = debugger(app, msg)
                 app.twilioSid, app.twilioToken, app.twilioOrigin);
         end
         if ~isempty(app.slackRecipients)
-            slackMessenger(app.slackToken, {app.slackRecipents.id}, 'Autograder Failed... See your computer for more information');
+            slackMessenger(app.slackToken, {app.slackRecipients.id}, 'Autograder Failed... See your computer for more information');
         end
         desktopMessenger('Autograder Failed... See MATLAB for more information');
     catch
