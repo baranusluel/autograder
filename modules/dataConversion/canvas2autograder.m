@@ -48,10 +48,11 @@
 function canvas2autograder(canvasPath, canvasGradebook, outPath, progress)
 
     % Canvas Information
-    firstStudentRow = 3;
+    FIRST_ROW = 3;
     studentNameCol = 1;
-    canvasIDcol = 2;
-    tsquareIDcol = 4;
+    canvasCol = 2;
+    gtUsernameCol = 3;
+    sectionCol = 4;
     
     if ~contains(canvasPath,'.zip')
         throw(MException('AUTOGRADER:canvas2autograder:invalidFile',...
@@ -76,19 +77,19 @@ function canvas2autograder(canvasPath, canvasGradebook, outPath, progress)
         end
     end
     gradebook = [names; tmp];
-    if ~isValidGradebook(gradebook)
-        % see if we can fix; as long as we have name, canvas, and tsquare,
-        % we're good
-        canvasId = gradebook(:, strcmp(gradebook(1, :), 'ID'));
-        names = gradebook(:, strcmp(gradebook(1, :), 'Student'));
-        gtUsername = gradebook(:, strcmp(gradebook(1, :), 'SIS Login ID'));
-        if isempty(canvasId) || isempty(names) || isempty(gtUsername)
-            % unfixable; die and fail
-            throw(MException('AUTOGRADER:canvas2autograder:invalidGradebook',...
-                         'The Gradebook given is not a valid canvas csv'));
-        else
-            gradebook = [names, canvasId, canvasId, gtUsername];
-        end
+    canvasId = cellfun(@num2str, gradebook(:, strcmp(gradebook(1, :), 'ID')), 'uni', false);
+    names = gradebook(:, strcmp(gradebook(1, :), 'Student'));
+    gtUsername = gradebook(:, strcmp(gradebook(1, :), 'SIS Login ID'));
+    sections = gradebook(:, strcmp(gradebook(1, :), 'Section'));
+    sections(FIRST_ROW:end) = ...
+        regexp(sections(FIRST_ROW:end), '(?<=\d+\/\w+\/\d+\/)\w', 'match');
+    sections(FIRST_ROW:end) = cellfun(@(c)(c{1}), sections(FIRST_ROW:end), 'uni', false);
+    if isempty(canvasId) || isempty(names) || isempty(gtUsername) || isempty(sections)
+        % unfixable; die and fail
+        throw(MException('AUTOGRADER:canvas2autograder:invalidGradebook',...
+                     'The Gradebook given is not a valid canvas csv'));
+    else
+        gradebook = [names, canvasId, gtUsername, sections];
     end
 
     % Validate Inputs
@@ -98,8 +99,8 @@ function canvas2autograder(canvasPath, canvasGradebook, outPath, progress)
     end
 
     % Generate folders Map
-    folderMap = containers.Map(gradebook(firstStudentRow:end,canvasIDcol),...
-                               gradebook(firstStudentRow:end,tsquareIDcol));
+    folderMap = containers.Map(gradebook(FIRST_ROW:end,canvasCol),...
+                               gradebook(FIRST_ROW:end,gtUsernameCol));
 
     % Generate empty folders.
     progress.Value = 0;
@@ -155,17 +156,9 @@ function canvas2autograder(canvasPath, canvasGradebook, outPath, progress)
     delete(workers);
     % Write info.csv
     fh = fopen(fullfile(outPath,'info.csv'),'wt');  
-    toWrite = ['"' strjoin(join(gradebook(firstStudentRow:end, [studentNameCol tsquareIDcol]), '", "'), '"\n"') '"'];
+    toWrite = ['"' strjoin(join(gradebook(FIRST_ROW:end, [studentNameCol gtUsernameCol sectionCol canvasCol]), '", "'), '"\n"') '"'];
     fwrite(fh,toWrite);
     fclose(fh);
-end
-
-function log = isValidGradebook(gradebook)
-    log = strcmp(gradebook{1,1},'Student')...
-       && strcmp(gradebook{1,2},'ID')...
-       && strcmp(gradebook{1,3},'SIS User ID')...
-       && strcmp(gradebook{1,4},'SIS Login ID')...
-       && strcmp(gradebook{1,5},'Section');
 end
 
 function log = isValidCanvas(canvasPath)
