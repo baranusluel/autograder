@@ -397,7 +397,6 @@ end
 
 function runnable = runCase(runnable, safeDir)
     % Setup workspace
-    % is this supposed to be here?  -->     cleanup();
     builtin('cd', safeDir);
     cleaner = onCleanup(@()(cleanup(safeDir)));
     beforeSnap = dir(runnable.path);
@@ -421,7 +420,7 @@ function runnable = runCase(runnable, safeDir)
 
     % run the function
     % create sentinel file
-    fid = fopen(File.SENTINEL, 'w');
+    fid = fopen(mfilename('fullpath'), 'r');
     try
         rng(1);
         cd(runnable.path);
