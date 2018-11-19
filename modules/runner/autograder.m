@@ -84,7 +84,6 @@ function autograder(app)
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     clear Student;
     Student.resetPath();
-    javaaddpath([fileparts(fileparts(mfilename('fullpath'))) filesep 'networking' filesep 'StudentDownloader.jar']);
 
     % start up application
     settings.app = app;
@@ -644,7 +643,6 @@ function cleanup(settings)
         settings.progress.Indeterminate = 'on';
         settings.progress.Cancelable = 'off';
     end
-    javarmpath([fileparts(fileparts(mfilename('fullpath'))) filesep 'networking' filesep 'StudentDownloader.jar']);
     % Cleanup
     Logger.log('Deleting Sentinel file');
     delete(File.SENTINEL);
