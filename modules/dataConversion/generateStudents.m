@@ -85,6 +85,8 @@ function students = generateStudents(path, progress)
             end
             sections(strcmp(sections, '')) = {'U'};
             studentIndices = [];
+            progress.Value = 0;
+            progress.Indeterminate = 'off';
             for i = length(studs):-1:1
                 % Student constructor takes in path to individual student
                 % folder and student's full name
@@ -93,12 +95,9 @@ function students = generateStudents(path, progress)
                 studentIndices(i) = index;
                 studentName = studentNames{index};
                 studentCanvas = canvasIds{index};
-                workers(i) = parfeval(@createStudent, 1, ...
-                    studentPath, ...
-                    studentName, ...
-                    studentCanvas);
+                students(i) = createStudent(studentPath, studentName, studentCanvas);
+                progress.Value = min(progress.Value + 1/length(studs), 1);
             end
-            students = workers.fetchOutputs();
             [students.section] = deal(sections{studentIndices});
             % alphabetize vector of Students based on GT username
             [~, idx] = sort({students.name});
