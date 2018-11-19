@@ -384,6 +384,35 @@ function autograder(app)
     caughtErrors = struct('task', '', 'exception', []);
     caughtErrors = caughtErrors(false);
 
+    % if they want the output, do it
+    if ~isempty(app.localOutputPath)
+        try
+            progress.Indeterminate = 'on';
+            progress.Message = 'Saving Output';
+            % save canvas info in path
+            % copy csv, then change accordingly
+            % move student folders to output path
+            Logger.log('Starting copy of local information');
+            % Create local grades
+            names = {students.name};
+            ids = {students.id};
+            canvasIds = {students.canvasId};
+            grades = arrayfun(@num2str, [students.grade], 'uni', false);
+            raw = [names; ids; canvasIds; grades]';
+            raw = join([{'Name', 'GT Username', 'ID', 'Grade'}; raw], '", "');
+            raw = unicode2native(['"', strjoin(raw, '"\n"'), '"'], 'UTF-8');
+            fid = fopen(fullfile(app.localOutputPath, 'grades.csv'), 'wt', 'native', 'UTF-8');
+            fwrite(fid, raw);
+            fclose(fid);
+            copyfile(settings.workingDir, app.localOutputPath);
+        catch e
+            if debugger(app, 'Failed to create local output')
+                keyboard;
+            end
+            caughtErrors(end+1).task = 'Creating local output';
+            caughtErrors(end).exception = e;
+        end
+    end
     % If the user requested uploading, do it
 
     if app.UploadGradesToCanvas.Value
@@ -457,34 +486,6 @@ function autograder(app)
                 keyboard;
             end
             caughtErrors(end+1).task = 'Posting announcement to Canvas';
-            caughtErrors(end).exception = e;
-        end
-    end
-    % if they want the output, do it
-    if ~isempty(app.localOutputPath)
-        try
-            progress.Indeterminate = 'on';
-            progress.Message = 'Saving Output';
-            % save canvas info in path
-            % copy csv, then change accordingly
-            % move student folders to output path
-            Logger.log('Starting copy of local information');
-            % Create local grades
-            names = {students.name};
-            ids = {students.id};
-            grades = arrayfun(@num2str, [students.grade], 'uni', false);
-            raw = [names; ids; grades]';
-            raw = join([{'Name', 'ID', 'Grade'}; raw], '", "');
-            raw = unicode2native(['"', strjoin(raw, '"\n"'), '"'], 'UTF-8');
-            fid = fopen(fullfile(app.localOutputPath, 'grades.csv'), 'wt', 'native', 'UTF-8');
-            fwrite(fid, raw);
-            fclose(fid);
-            copyfile(settings.workingDir, app.localOutputPath);
-        catch e
-            if debugger(app, 'Failed to create local output')
-                keyboard;
-            end
-            caughtErrors(end+1).task = 'Creating local output';
             caughtErrors(end).exception = e;
         end
     end

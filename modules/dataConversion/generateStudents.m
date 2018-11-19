@@ -70,12 +70,14 @@ function students = generateStudents(path, progress)
             FULLNAME_COL = 1; % magic number for col with full names
             GT_USERNAME_COL = 2; % magic number for col with usernames
             SECTION_COL = 3;
+            CANVAS_COL = 4;
             fid = fopen([path filesep CSV_NAME], 'rt');
-            raw = textscan(fid, '%q%q%q', 'Delimiter', ',');
+            raw = textscan(fid, '%q%q%q%q', 'Delimiter', ',');
             fclose(fid);
             studentNames = raw{FULLNAME_COL};
             users = raw{GT_USERNAME_COL};
             sections = raw{SECTION_COL};
+            canvasIds = raw{CANVAS_COL};
             if numel(sections) < numel(users)
                 spacer = cell(1, numel(users) - numel(sections));
                 spacer(:) = {''};
@@ -83,6 +85,8 @@ function students = generateStudents(path, progress)
             end
             sections(strcmp(sections, '')) = {'U'};
             studentIndices = [];
+            progress.Value = 0;
+            progress.Indeterminate = 'off';
             for i = length(studs):-1:1
                 % Student constructor takes in path to individual student
                 % folder and student's full name
@@ -90,9 +94,10 @@ function students = generateStudents(path, progress)
                 index = find(strcmp(users, studs(i).name));
                 studentIndices(i) = index;
                 studentName = studentNames{index};
-                workers(i) = parfeval(@createStudent, 1, studentPath, studentName);
+                studentCanvas = canvasIds{index};
+                students(i) = createStudent(studentPath, studentName, studentCanvas);
+                progress.Value = min(progress.Value + 1/length(studs), 1);
             end
-            students = workers.fetchOutputs();
             [students.section] = deal(sections{studentIndices});
             % alphabetize vector of Students based on GT username
             [~, idx] = sort({students.name});
@@ -101,7 +106,7 @@ function students = generateStudents(path, progress)
     end
 end
 
-function student = createStudent(path, name)
+function student = createStudent(path, name, canvas)
     path(path == '/' | path == '\') = filesep;
     if path(end) == filesep
         path(end) = [];
@@ -110,5 +115,5 @@ function student = createStudent(path, name)
     for i = 1:length(zipFiles)
         unzipArchive([path filesep zipFiles(i).name], path, true);
     end
-    student = Student(path, name);
+    student = Student(path, name, canvas);
 end
