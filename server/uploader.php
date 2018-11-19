@@ -11,9 +11,10 @@
         http_response_code(401);
         exit;
     }
+
     // try curl request
     $token = $request["token"];
-    $URL = 'https://gatech.instructure.com/api/v1/courses?enrollment_type=ta';
+    $URL = 'https://gatech.instructure.com/api/v1/courses?enrollment_type=teacher';
     $HEADER = array('Authorization: Bearer ' . $token);
     $fh = fopen("tmp.json", 'w');
     $curlObj = curl_init();
@@ -30,6 +31,26 @@
         exit;
     }
     $json = json_decode(file_get_contents("tmp.json"), true);
+
+    // try curl request
+    $URL = 'https://gatech.instructure.com/api/v1/courses?enrollment_type=ta';
+    $fh = fopen("tmp.json", 'w');
+    $curlObj = curl_init();
+    curl_setopt($curlObj, CURLOPT_URL, $URL);
+    curl_setopt($curlObj, CURLOPT_HTTPHEADER, $HEADER);
+    curl_setopt($curlObj, CURLOPT_FILE, $fh);
+    curl_exec($curlObj);
+    // if not 200, return 403
+    $code = curl_getinfo($curlObj)['http_code'];
+    curl_close($curlObj);
+    fclose($fh);
+    if ($code !== 200) {
+        http_response_code(403);
+        exit;
+    }
+    $json2 = json_decode(file_get_contents("tmp.json"), true);
+
+    $json = array_merge($json, $json2); 
 
     // check if current course is there. Define by start month:
         // 01 -> SPRING
