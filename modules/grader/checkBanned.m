@@ -44,7 +44,8 @@ function [isBanned, bannedFunName] = checkBanned(name, banned, path)
     bannedFunName = calls(ismember(calls, [banned BANNED_OPS]));
     mask = strncmp(bannedFunName, '__', 2);
     bannedFunName(mask) = ...
-        strjoin(cellfun(@(s)(s(3:end)), bannedFunName(mask), 'uni', false), ', ');
+        cellfun(@(s)(s(3:end)), bannedFunName(mask), 'uni', false);
+    bannedFunName = strjoin(bannedFunName, ', ');
     isBanned = ~isempty(bannedFunName);
 end
 
