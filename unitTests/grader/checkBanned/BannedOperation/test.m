@@ -15,7 +15,7 @@ if ~isBanned
     msg = 'Expected true; got false';
 elseif ~strcmp(ops, 'GLOBAL')
     passed = false;
-    msg = sprintf('Expected GLOBAL; got %s', msg);
+    msg = sprintf('Expected GLOBAL; got %s', ops);
 else
     passed = true;
     msg = '';

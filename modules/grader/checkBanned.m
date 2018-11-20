@@ -32,7 +32,7 @@
 % that the code won't actually be run.
 %
 % Should the student overwrite a banned function (i.e., they wrote a
-% separate file called "bannedFunction.m"), checkBanned will not mark them
+% separate file called "bannlsedFunction.m"), checkBanned will not mark them
 % as using a banned function, unless bannedFunction.m uses a banned
 % function.
 function [isBanned, bannedFunName] = checkBanned(name, banned, path)
