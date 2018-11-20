@@ -158,15 +158,6 @@ classdef File < handle
             end
         end
     end
-    methods (Static)
-        function s = SENTINEL(n)
-            persistent name;
-            if nargin == 1
-                name = n;
-            end
-            s = name;
-        end
-    end
     methods (Access = public)
         function [isEqual] = equals(this, soln)
             %% equals: Determine file equality
