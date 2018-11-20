@@ -22,4 +22,4 @@ Looking for the documentation? Click [here](https://github.gatech.edu/pages/CS13
 
 ## Dependencies
 
-The Autograder depends on MATLAB r2018a. Additionally, the Parallel Computing Toolbox must be installed on the host system.
+The Autograder depends on MATLAB r2018a. Additionally, the Parallel Computing Toolbox and the Instrument Control Toolbox must be installed on the host system.
