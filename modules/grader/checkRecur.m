@@ -2,12 +2,8 @@
 %
 % checkRecur will check code to ensure that it is recursive.
 %
-% I = checkRecur(C, M, P) will use call info C, main function M, and path P
-% to determine if M is recursive. If it is recursive, I is true; otherwise,
-% I is false.
-%
-% I = checkRecur(C, M, P, S) will do the same as above, but use call stack
-% S to determine if recursion occurs.
+% I = checkRecur(F) will function path F to check if F is recursive. F must
+% be an absolute path
 %
 %%% Remarks
 %
@@ -34,7 +30,7 @@
 % Though statically, it appears that notRecur calls itself, in reality that
 % code is never run, because false is never true. However, checkRecur will
 % still return true.
-function isRecurring = checkRecur(callInfo, main, path, stack)
+function isRecurring = checkRecur(functionPath)
     % Check if this function calls itself. If so, exit true.
     % If not, check all functions it calls:
     %   If the call is to a builtin, don't investigate
@@ -51,10 +47,16 @@ function isRecurring = checkRecur(callInfo, main, path, stack)
     %       c: stack is {'a', 'b'};
     %       b: stack is {'a', 'b', 'c'};
     %       @ a->b->c->b, 'b' is current name AND in stack, so return true!
-
-    if nargin < 4
-        stack = {};
+    [path, main, ~] = fileparts(functionPath);
+    try
+        callInfo = getcallinfo(functionPath);
+        isRecurring = recursiveChecker(callInfo, main, path, {});
+    catch
+        isRecurring = false;
     end
+end
+
+function isRecurring = recursiveChecker(callInfo, main, path, stack)
 
     % First, check calls for itself.
     mainCall = callInfo(strcmp({callInfo.name}, main));
@@ -71,10 +73,12 @@ function isRecurring = checkRecur(callInfo, main, path, stack)
     else
         stack = [stack {main}];
     end
-    % look at all functions in callInfo that aren't us
+    % look at all functions in callInfo that aren't us but that we call
+    % (innerCalls, excluding ourselves)
     calls = callInfo(~strcmp({callInfo.name}, main));
+    calls = calls(ismember({calls.name}, mainCall.calls.innerCalls.names));
     for i = 1:numel(calls)
-        if checkRecur(calls(i), calls(i).name, path, stack)
+        if recursiveChecker(calls(i), calls(i).name, path, stack)
             isRecurring = true;
             return;
         end
@@ -97,7 +101,7 @@ function isRecurring = checkRecur(callInfo, main, path, stack)
         % if external isn't found anywhere in possCalls, don't engage
         if any(strcmp(external{i}, possCalls))
             extCallInfo = getcallinfo([path filesep external{i} '.m']);
-            if checkRecur(extCallInfo, external{i}, path, stack)
+            if recursiveChecker(extCallInfo, external{i}, path, stack)
                 isRecurring = true;
                 return;
             end

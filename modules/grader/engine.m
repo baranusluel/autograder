@@ -226,20 +226,22 @@ function runnables = engine(runnables)
 
         % parse the function call
         [~, ~, func] = parseFunction(tCase.call);
-
+        
+        % check validity of student code
+        info = mtree([origPaths{r} filesep func2str(func) '.m'], '-file');
+        if info.allkind('ERR')
+            if isa(runnable, 'Feedback')
+                runnable.exception = MException('AUTOGRADER:syntaxError', ...
+                    info.select(1).string);
+            else
+                e = MException('AUTOGRADER:syntaxError', ...
+                    info.select(1).string);
+                e.throw;
+            end
+        end
         % check recursion
         if ~isTestCase
-            try
-                runnable.isRecursive = ...
-                    checkRecur(getcallinfo([origPaths{r} filesep func2str(func) '.m']),...
-                    func2str(func), runnable.path);
-            catch e
-                if isa(runnable, 'Feedback')
-                    runnable.exception = e;
-                else
-                    e.rethrow();
-                end
-            end
+            runnable.isRecursive = checkRecur([origPaths{r} filesep func2str(func) '.m']);
         end
         % check banned usage
         if isTestCase || isempty(runnable.exception)
