@@ -40,14 +40,7 @@ function [status, html] = autotester(varargin)
     set(0, 'DefaultFigureVisible', 'off');
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     outs = parseInputs(varargin);
-    sentinel = [tempname '.lock'];
-    fid = fopen(sentinel, 'wt');
-    fwrite(fid, 'SENTINEL');
-    fclose(fid);
-    File.SENTINEL(sentinel);
-    evalc('gcp');
-    worker = parfevalOnAll(@File.SENTINEL, 0, sentinel);
-    worker.wait();
+    evalc('gcp;');
     % path is going to be this file's directory
     origPath = cd(fileparts(mfilename('fullpath')));
     userPath = path();

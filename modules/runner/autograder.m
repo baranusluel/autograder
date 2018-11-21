@@ -84,7 +84,6 @@ function autograder(app)
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     clear Student;
     Student.resetPath();
-    javaaddpath([fileparts(fileparts(mfilename('fullpath'))) filesep 'networking' filesep 'StudentDownloader.jar']);
 
     % start up application
     settings.app = app;
@@ -121,16 +120,8 @@ function autograder(app)
     settings.workingDir = [tempname filesep];
     mkdir(settings.workingDir);
     settings.userDir = cd(settings.workingDir);
-    % Create SENTINEL file
-    Logger.log('Creating Sentinel');
-    sentinel = [tempname '.lock'];
-    fid = fopen(sentinel, 'wt');
-    fwrite(fid, 'SENTINEL');
-    fclose(fid);
-    File.SENTINEL(sentinel);
     Logger.log('Loading Dictionary');
-    worker = [parfevalOnAll(@File.SENTINEL, 0, sentinel), ...
-        parfevalOnAll(@gradeComments, 0)];
+    worker = parfevalOnAll(@gradeComments, 0);
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
     worker.wait();
@@ -384,6 +375,35 @@ function autograder(app)
     caughtErrors = struct('task', '', 'exception', []);
     caughtErrors = caughtErrors(false);
 
+    % if they want the output, do it
+    if ~isempty(app.localOutputPath)
+        try
+            progress.Indeterminate = 'on';
+            progress.Message = 'Saving Output';
+            % save canvas info in path
+            % copy csv, then change accordingly
+            % move student folders to output path
+            Logger.log('Starting copy of local information');
+            % Create local grades
+            names = {students.name};
+            ids = {students.id};
+            canvasIds = {students.canvasId};
+            grades = arrayfun(@num2str, [students.grade], 'uni', false);
+            raw = [names; ids; canvasIds; grades]';
+            raw = join([{'Name', 'GT Username', 'ID', 'Grade'}; raw], '", "');
+            raw = unicode2native(['"', strjoin(raw, '"\n"'), '"'], 'UTF-8');
+            fid = fopen(fullfile(app.localOutputPath, 'grades.csv'), 'wt', 'native', 'UTF-8');
+            fwrite(fid, raw);
+            fclose(fid);
+            copyfile(settings.workingDir, app.localOutputPath);
+        catch e
+            if debugger(app, 'Failed to create local output')
+                keyboard;
+            end
+            caughtErrors(end+1).task = 'Creating local output';
+            caughtErrors(end).exception = e;
+        end
+    end
     % If the user requested uploading, do it
 
     if app.UploadGradesToCanvas.Value
@@ -457,35 +477,6 @@ function autograder(app)
                 keyboard;
             end
             caughtErrors(end+1).task = 'Posting announcement to Canvas';
-            caughtErrors(end).exception = e;
-        end
-    end
-    % if they want the output, do it
-    if ~isempty(app.localOutputPath)
-        try
-            progress.Indeterminate = 'on';
-            progress.Message = 'Saving Output';
-            % save canvas info in path
-            % copy csv, then change accordingly
-            % move student folders to output path
-            Logger.log('Starting copy of local information');
-            % Create local grades
-            names = {students.name};
-            ids = {students.id};
-            canvasIds = {students.canvasId};
-            grades = arrayfun(@num2str, [students.grade], 'uni', false);
-            raw = [names; ids; canvasIds; grades]';
-            raw = join([{'Name', 'GT Username', 'ID', 'Grade'}; raw], '", "');
-            raw = unicode2native(['"', strjoin(raw, '"\n"'), '"'], 'UTF-8');
-            fid = fopen(fullfile(app.localOutputPath, 'grades.csv'), 'wt', 'native', 'UTF-8');
-            fwrite(fid, raw);
-            fclose(fid);
-            copyfile(settings.workingDir, app.localOutputPath);
-        catch e
-            if debugger(app, 'Failed to create local output')
-                keyboard;
-            end
-            caughtErrors(end+1).task = 'Creating local output';
             caughtErrors(end).exception = e;
         end
     end
@@ -644,7 +635,6 @@ function cleanup(settings)
         settings.progress.Indeterminate = 'on';
         settings.progress.Cancelable = 'off';
     end
-    javarmpath([fileparts(fileparts(mfilename('fullpath'))) filesep 'networking' filesep 'StudentDownloader.jar']);
     % Cleanup
     Logger.log('Deleting Sentinel file');
     delete(File.SENTINEL);
