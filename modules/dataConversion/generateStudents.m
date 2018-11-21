@@ -87,6 +87,7 @@ function students = generateStudents(path, progress)
             studentIndices = [];
             progress.Value = 0;
             progress.Indeterminate = 'off';
+            
             for i = length(studs):-1:1
                 % Student constructor takes in path to individual student
                 % folder and student's full name
@@ -99,8 +100,8 @@ function students = generateStudents(path, progress)
                 progress.Value = min(progress.Value + 1/length(studs), 1);
             end
             [students.section] = deal(sections{studentIndices});
-            % alphabetize vector of Students based on GT username
-            [~, idx] = sort({students.name});
+            
+            [~, idx] = canvasSort({students.name});
             students = students(idx);
         end
     end
