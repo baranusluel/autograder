@@ -100,8 +100,8 @@ function students = generateStudents(path, progress)
                 progress.Value = min(progress.Value + 1/length(studs), 1);
             end
             [students.section] = deal(sections{studentIndices});
-            % alphabetize vector of Students based on GT username
-            [~, idx] = sort(lower({students.name}));
+            
+            [~, idx] = canvasSort({students.name});
             students = students(idx);
         end
     end
