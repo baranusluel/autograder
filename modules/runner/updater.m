@@ -10,7 +10,7 @@
 % updater uninstalls the app, if it can find it - it looks for Autograder
 % in the currently installed suite of apps
 %
-function updater(token)
+function updated = updater(token)
 % Steps:
 %   1. Download Release
 %   2. Save settings in memory (to write later)
@@ -23,6 +23,7 @@ function updater(token)
 %% Download Release
 % Downloading the release
 % query GitHub for the latest release, using the token:
+updated = '';
 ENDPOINT = 'https://github.gatech.edu/api/v3/repos/CS1371/autograder/releases/latest';
 opts = weboptions;
 opts.HeaderFields = {'Authorization', ['Bearer ' token]};
@@ -37,6 +38,7 @@ if isfile(p)
     current = char(xml.getDocumentElement().getElementsByTagName('version').item(0).item(0).getData());
     % compare. first compare major, then minor, then patch
     current = strsplit(current, '.');
+    updated = latest.tag_name;
     latest = strsplit(latest.tag_name(2:end), '.');
     current = cellfun(@str2num, current);
     latest = cellfun(@str2num, latest);
