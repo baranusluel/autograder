@@ -120,16 +120,8 @@ function autograder(app)
     settings.workingDir = [tempname filesep];
     mkdir(settings.workingDir);
     settings.userDir = cd(settings.workingDir);
-    % Create SENTINEL file
-    Logger.log('Creating Sentinel');
-    sentinel = [tempname '.lock'];
-    fid = fopen(sentinel, 'wt');
-    fwrite(fid, 'SENTINEL');
-    fclose(fid);
-    File.SENTINEL(sentinel);
     Logger.log('Loading Dictionary');
-    worker = [parfevalOnAll(@File.SENTINEL, 0, sentinel), ...
-        parfevalOnAll(@gradeComments, 0)];
+    worker = parfevalOnAll(@gradeComments, 0);
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
     worker.wait();

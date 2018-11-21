@@ -280,8 +280,6 @@ classdef Student < handle
                 % resources.
                 evalc('delete(gcp);');
                 evalc('gcp;');
-                sentinel = File.SENTINEL;
-                wait(parfevalOnAll(@File.SENTINEL, 0, sentinel));
                 wait(parfevalOnAll(@gradeComments, 0));
                 solutions = this.resources.Problems;
                 setupRecs(solutions);
