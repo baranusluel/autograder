@@ -41,7 +41,6 @@ function [status, html] = autotester(varargin)
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     outs = parseInputs(varargin);
     evalc('gcp;');
-    worker.wait();
     % path is going to be this file's directory
     origPath = cd(fileparts(mfilename('fullpath')));
     userPath = path();
