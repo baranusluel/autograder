@@ -420,7 +420,7 @@ function runnable = runCase(runnable, safeDir)
 
     % run the function
     % create sentinel file
-    fid = fopen(mfilename('fullpath'), 'r');
+    fid = fopen([mfilename('fullpath') '.m'], 'r');
     try
         rng(1);
         cd(runnable.path);
