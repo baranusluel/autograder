@@ -498,9 +498,10 @@ classdef Plot < handle
         % points plotted - i.e., is the raw plotted data the same
         function areEqual = pointEquals(this, that)
             extractor = @(seg)([seg.Start, seg.Stop]);
-            thisPoints = [this.Points, extractor(this.Segments)];
-            thatPoints = [that.Points, extractor(that.Segments)];
-            areEqual = all(ismember(thisPoints, thatPoints));
+            thisPoints = unique([this.Points, extractor(this.Segments)]);
+            thatPoints = unique([that.Points, extractor(that.Segments)]);
+            areEqual = numel(thisPoints) == numel(thatPoints) ...
+                && all(dataEquals(thisPoints, thatPoints));
         end
         %% dataEquals: Check Data Equality
         %
