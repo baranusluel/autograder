@@ -111,8 +111,8 @@ classdef Segment < handle
         end
         
         function tf = dataEquals(this, that)
-            tf = [this.Start] == [that.Start] ...
-                & [this.Stop] == [that.Stop];
+            tf = dataEquals([this.Start], [that.Start]) ...
+                & dataEquals([this.Stop], [that.Stop]);
             tf = reshape(tf, size(this));
         end
         
