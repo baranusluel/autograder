@@ -96,6 +96,15 @@ function saveFiles(paths, links)
     opts = weboptions;
     opts.Timeout = 30;
     for f = 1:numel(links)
-        websave(paths(f), links(f), opts);
+        try
+            websave(paths(f), links(f), opts);
+        catch
+            % we might just need to wait a minute - so do just that. Wait
+            % one minute.
+            state = pause('on');
+            pause(60);
+            pause(state);
+            websave(paths(f), links(f), opts);
+        end
     end
 end
