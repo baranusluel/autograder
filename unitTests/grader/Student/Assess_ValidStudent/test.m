@@ -7,20 +7,13 @@
 function [passed, msg] = test()
     % Create TestCases
     progress.CancelRequested = false;
-    sentinel = [tempname '.lock'];
-    fid = fopen(sentinel, 'wt');
-    fwrite(fid, 'SENTINEL');
-    fclose(fid);
-    File.SENTINEL(sentinel);
-    worker = parfevalOnAll(@File.SENTINEL, 0, sentinel);
-    worker.wait();
     cd('Solutions');
     solutions = generateSolutions(false, progress);
     cd('..');
     recs = Student.resources;
     recs.Problems = solutions;
     % Create our valid student
-    S = Student([pwd filesep 'tuser3'], 'Test User');
+    S = Student([pwd filesep 'tuser3'], 'Test User', '000000');
     
     % Assess
     try
