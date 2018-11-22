@@ -370,6 +370,8 @@ classdef Plot < handle
             % for all pts, if any point is identical, kill it
             points = unique(points);
             this.Points = points;
+            this.Segments = unique(this.Segments);
+            this.Points = unique(this.Points);
         end
     end
     methods (Access=public)
@@ -505,62 +507,13 @@ classdef Plot < handle
         % dataEquals is the same as equals, except it strictly checks point
         % and segment data - raw coordinates.
         function areEqual = dataEquals(this, that)
-            % Point Call
-            % for each point set, see if found in this
-            thatPoints = that.Points;
-            thisPoints = this.Points;
-            
-            for i = numel(thatPoints):-1:1
-                thatPoint = thatPoints(i);
-                % look through thisSegs; once found, delete from both
-                isFound = false;
-                for j = numel(thisPoints):-1:1
-                    if thatPoint.dataEquals(thisPoints(j))
-                        isFound = true;
-                        thisPoints(j) = [];
-                        thatPoints(i) = [];
-                        break;
-                    end
-                end
-                if ~isFound
-                    areEqual = false;
-                    return;
-                end
-            end
-            if ~isempty(thisPoints) || ~isempty(thatPoints)
+            % already unique & sorted; just do dataEquals of points and
+            % segs
+            if numel(this.Points) ~= numel(that.Points) ...
+                    || numel(this.Segments) ~= numel(that.Segments)
                 areEqual = false;
-                return;
-            end
-            % Nothing should be left in either set; if both sets are
-            % non-empty, then false
-
-            % Roll Call
-            % for each line segment in that, see if found in this
-            % Since they are unique, remove from both sets when found.
-            % Then, at end, if both are empty, equal; otherwise, unequal.
-            thatSegs = that.Segments;
-            thisSegs = this.Segments;
-            
-            for i = numel(thatSegs):-1:1
-                thatSeg = thatSegs(i);
-                % look through thisSegs; once found, delete from both
-                isFound = false;
-                for j = numel(thisSegs):-1:1
-                    if thatSeg.dataEquals(thisSegs(j))
-                        isFound = true;
-                        thisSegs(j) = [];
-                        thatSegs(i) = [];
-                        break;
-                    end
-                end
-                if ~isFound
-                    areEqual = false;
-                    return;
-                end
-            end
-            % Nothing should be left in either set; if both sets are
-            % non-empty, then false
-            if ~isempty(thisSegs) || ~isempty(thatSegs)
+            elseif ~all(dataEquals(this.Points, that.Points)) ...
+                    || ~all(dataEquals(this.Segments, that.Segments))
                 areEqual = false;
             else
                 areEqual = true;
