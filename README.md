@@ -6,7 +6,6 @@
 ![Github Top Language](https://img.shields.io/badge/language-matlab-red.svg)
 ![OS](https://img.shields.io/badge/OS-Windows%20macOS-blue.svg)
 ![Read the Docs (version)](https://img.shields.io/readthedocs/pip/stable.svg)
-![Version](https://img.shields.io/badge/version-v0.2.0-orange.svg)
 
 The Autograder is a tool to automatically parse, grade, and provide feedback for student submissions. The autograder accepts a wide variety of submissions, from T-Square to Canvas and more.
 
@@ -22,4 +21,4 @@ Looking for the documentation? Click [here](https://github.gatech.edu/pages/CS13
 
 ## Dependencies
 
-The Autograder depends on MATLAB r2018a. Additionally, the Parallel Computing Toolbox must be installed on the host system.
+The Autograder depends on MATLAB r2018a. Additionally, the Parallel Computing Toolbox and the Instrument Control Toolbox must be installed on the host system.

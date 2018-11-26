@@ -56,7 +56,7 @@ function students = getCanvasStudents(courseId, assignmentId, token, progress)
     end
     sectionStudentIds = [sectionStudents.id];
     for i = 1:numel(students)
-        mask = students(i).id == sectionStudentIds;
+        mask = str2double(students(i).id) == sectionStudentIds;
         if any(mask)
             students(i).section = sections(inds(mask)).name;
         else
@@ -177,6 +177,7 @@ function info = getStudentInfo(userId, token)
     try
         info = webread([API '/users/' num2str(userId) '/profile/'], opts);
         info.login_id = matlab.lang.makeValidName(info.login_id);
+        info.id = num2str(userId);
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
         e = addCause(e, reason);
