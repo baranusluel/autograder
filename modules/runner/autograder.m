@@ -294,6 +294,10 @@ function autograder(app)
         progress.Message = 'Student Grading Progress';
         Logger.log('Starting student assessment');
         setupRecs(solutions);
+        if app.IsLeaky.Value
+            mask = false(size(students));
+            errs(1:numel(students)) = MException('AUTOGRADER:tmp', 'tmp');
+        end
         checker = java.io.File('/');
         for s = 1:numel(students)
             student = students(s);
@@ -324,7 +328,10 @@ function autograder(app)
                 Logger.log(sprintf('Assessing Student %s (%s)', student.name, student.id));
                 student.assess();
             catch e
-                if debugger(app, 'Failed to assess student')
+                if app.IsLeaky.Value
+                    mask(s) = true;
+                    errs(s) = e;
+                elseif debugger(app, 'Failed to assess student')
                     keyboard;
                 else
                     alert(e);
@@ -344,6 +351,18 @@ function autograder(app)
         end
 
         drawnow;
+
+        % If we're leaky, show who errored;
+        if app.IsLeaky.Value && any(mask)
+            leaks = students(mask);
+            nums = arrayfun(@num2str, 1:numel(leaks), 'uni', false);
+            names = {leaks.name};
+            names = strjoin(join([nums', names'], '. '), newline);
+            fprintf(2, '%d Leak(s) detected. The following students successfully got around safeguards:\n%s\n', numel(leaks), names);
+            keyboard;
+        elseif app.IsLeaky.Value && ~any(mask)
+            fprintf(1, 'No leaks detected!\n');
+        end
 
         % Before we do anything else, examine the grades. There should be a
         % good distribution - if not, ask the user
