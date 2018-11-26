@@ -39,7 +39,10 @@ if isfile(p)
     % compare. first compare major, then minor, then patch
     current = strsplit(current, '.');
     updated = latest.tag_name;
-    latest = strsplit(latest.tag_name(2:end), '.');
+    if latest.tag_name(1) == 'v'
+        latest.tag_name(1) = [];
+    end
+    latest = strsplit(latest.tag_name, '.');
     current = cellfun(@str2num, current);
     latest = cellfun(@str2num, latest);
     if latest(1) > current(1)
