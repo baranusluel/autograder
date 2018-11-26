@@ -314,7 +314,14 @@ function autograder(app)
                 if isunix
                     [~, ~] = system('sync');
                 elseif ispc
-                    [~, ~] = system('CHKDSK /f');
+                    % We should be using CHKDSK /f
+                    % However, that requires admin privileges. We don't
+                    % have that. The next best thing is to wait 30 seconds,
+                    % and see what happens...
+                    % [~, ~] = system('CHKDSK /f');
+                    state = pause('on');
+                    pause(30);
+                    pause(state);
                 end
                 if checker.getFreeSpace() < 5e9
                     fprintf(2, 'You are low on disk space (%0.2f GB remaining). Please clear more space, then continue.\n', ...
