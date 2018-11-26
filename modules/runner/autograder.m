@@ -300,9 +300,25 @@ function autograder(app)
             progress.Message = sprintf('Assessing Student %s', student.name);
             if checker.getFreeSpace() < 5e9
                 % pause - we are taking up too much space!
-                fprintf(2, 'You are low on disk space (%0.2f GB remaining). Please clear more space, then continue.\n', ...
-                    (checker.getFreeSpace() / (1024 ^ 3)));
-                keyboard;
+                progress.Indeterminte = 'on';
+                progress.Message = 'Synchronizing Changes with OS';
+                if isunix
+                    [~, ~] = system('sync');
+                elseif ispc
+                    % We should be using CHKDSK /f
+                    % However, that requires admin privileges. We don't
+                    % have that. The next best thing is to wait 30 seconds,
+                    % and see what happens...
+                    % [~, ~] = system('CHKDSK /f');
+                    state = pause('on');
+                    pause(30);
+                    pause(state);
+                end
+                if checker.getFreeSpace() < 5e9
+                    fprintf(2, 'You are low on disk space (%0.2f GB remaining). Please clear more space, then continue.\n', ...
+                        (checker.getFreeSpace() / (1024 ^ 3)));
+                    keyboard;
+                end
             end
             try
                 Logger.log(sprintf('Assessing Student %s (%s)', student.name, student.id));
