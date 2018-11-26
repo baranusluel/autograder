@@ -2,11 +2,7 @@
 %
 % The engine function serves as the primary runner of code.
 %
-% T = engine(T) runs the code specified by the TestCase T, and assigns the
-% outputs, files, and plots to the corresponding fields in T. The output is
-% the same size as the input
-%
-% F = engine(F) runs the code specified by the TestCase found in Feedback F,
+% R = engine(R) runs the code specified by the TestCase found in Runnable R,
 % and assigns the outputs, files, and plots to the corresponding fields
 % in F. This does NOT grade the code, just runs it. You must capture the
 % outputs; the engine does NOT modify the inputs. The output is the same
@@ -18,7 +14,7 @@
 % finished, or timed out. However, other than that, there is no requirement
 % that any of them be related to each other - they are all run in parallel.
 %
-% while it will always be faster to run runnables in parallel, there are no
+% While it will always be faster to run runnables in parallel, there are no
 % guarantees about timing or order. If you need a specific order, you must
 % run them individually.
 %
@@ -32,7 +28,7 @@
 %
 % Timeouts are handled using a parallel pool of workers. In essence, a
 % student's code is limited to a certain runtime, 30 seconds by default.
-% To change this value, you should edit the TIMEOUT field of the STudent
+% To change this value, you should edit the TIMEOUT field of the Student
 % class.
 %
 % Errors in the code itself are handled differently, depending on whether
@@ -186,12 +182,17 @@ function runnables = engine(runnables)
     % all plots.
 
     %% Setup
-    BANNED = {'parpool', 'gcp', 'parfeval', 'send','fetchOutputs', ...
+    BANNED = {'parpool', 'gcp', 'parfeval', 'send', 'fetchOutputs', ...
         'cancel', 'parfevalOnAll', 'fetchNext', 'batch', ...
         'eval', 'feval', 'assignin', 'evalc', 'evalin', ...
         'input', 'wait', 'uiwait', 'keyboard', 'dbstop', 'dos', 'unix', ...
         'cd', 'system', 'restoredefaultpath', 'builtin', 'load', ...
-        'perl', 'rmdir', 'delete'};
+        'copyfile', 'movefile', 'dir', 'ls', 'mkdir', 'rmdir', ...
+        'perl', 'fileattrib', 'delete', 'exit', 'quit', 'dbstack', ...
+        'webread', 'webwrite', 'websave', 'web', 'tcpip',  ...
+        'urlread', 'urlwrite', 'weboptions', 'ftp', 'mget', ...
+        'sound', 'soundsc', 'audiorecorder', 'audioplayer', ...
+        'addpath', 'rmpath', 'path'};
 
     if any(~isvalid(runnables))
         e = MException('AUTOGRADER:engine:invalidRunnable', ...
@@ -226,20 +227,22 @@ function runnables = engine(runnables)
 
         % parse the function call
         [~, ~, func] = parseFunction(tCase.call);
-
+        
+        % check validity of student code
+        info = mtree([origPaths{r} filesep func2str(func) '.m'], '-file');
+        if info.allkind('ERR')
+            if isa(runnable, 'Feedback')
+                runnable.exception = MException('AUTOGRADER:syntaxError', ...
+                    info.select(1).string);
+            else
+                e = MException('AUTOGRADER:syntaxError', ...
+                    info.select(1).string);
+                e.throw;
+            end
+        end
         % check recursion
         if ~isTestCase
-            try
-                runnable.isRecursive = ...
-                    checkRecur(getcallinfo([origPaths{r} filesep func2str(func) '.m']),...
-                    func2str(func), runnable.path);
-            catch e
-                if isa(runnable, 'Feedback')
-                    runnable.exception = e;
-                else
-                    e.rethrow();
-                end
-            end
+            runnable.isRecursive = checkRecur([origPaths{r} filesep func2str(func) '.m']);
         end
         % check banned usage
         if isTestCase || isempty(runnable.exception)
@@ -247,10 +250,10 @@ function runnables = engine(runnables)
             if isBanned
                 if ~isTestCase
                     runnable.exception = MException('AUTOGRADER:engine:banned', ...
-                        'File used banned function "%s"', bannedFunName);
+                        'File used banned function(s): %s', bannedFunName);
                 else
                     throw(MException('AUTOGRADER:engine:banned', ...
-                        'File used banned function "%s"', bannedFunName));
+                        'File used banned function(s): %s',bannedFunName));
                 end
             end
 
@@ -397,7 +400,6 @@ end
 
 function runnable = runCase(runnable, safeDir)
     % Setup workspace
-    % is this supposed to be here?  -->     cleanup();
     builtin('cd', safeDir);
     cleaner = onCleanup(@()(cleanup(safeDir)));
     beforeSnap = dir(runnable.path);
@@ -421,7 +423,7 @@ function runnable = runCase(runnable, safeDir)
 
     % run the function
     % create sentinel file
-    fid = fopen(File.SENTINEL, 'w');
+    fid = fopen([mfilename('fullpath') '.m'], 'r');
     try
         rng(1);
         cd(runnable.path);
@@ -598,121 +600,8 @@ end
 function cleanup(origPath)
     builtin('cd', origPath);
     fclose('all');
-    
+
     h = findall(0, 'type', 'figure');
     close(h, 'force');
     delete(h);
-end
-
-function isRecurring = checkRecur(callInfo, main, path, stack)
-    % Check if this function calls itself. If so, exit true.
-    % If not, check all functions it calls:
-    %   If the call is to a builtin, don't investigate
-    %   If the call is to something NOT builtin, investigate!
-    % Investigating means calling ourself recursively.
-    %
-    % Checking for mutual recursion:
-    %   To check for mutual recursion, each call, if it calls something in
-    %   the stack, then exit true.
-    %   For example:
-    %       a -> b -> c -> b
-    %       a: stack is {}
-    %       b: stack is {'a'}
-    %       c: stack is {'a', 'b'};
-    %       b: stack is {'a', 'b', 'c'};
-    %       @ a->b->c->b, 'b' is current name AND in stack, so return true!
-    
-    if nargin < 4
-        stack = {};
-    end
-
-    % First, check calls for itself.
-    mainCall = callInfo(strcmp({callInfo.name}, main));
-    if any(strcmp(mainCall.name, mainCall.calls.innerCalls.names))
-        % true. Exit
-        isRecurring = true;
-        return;
-    end
-
-    % if the stack ~isempty, then check ourselves on the stack.
-    if ~isempty(stack) && any(strcmp(stack, main))
-        isRecurring = true;
-        return;
-    else
-        stack = [stack {main}];
-    end
-    % look at all functions in callInfo that aren't us
-    calls = callInfo(~strcmp({callInfo.name}, main));
-    for i = 1:numel(calls)
-        if checkRecur(calls(i), calls(i).name, path, stack)
-            isRecurring = true;
-            return;
-        end
-    end
-
-    % Iterate over internal calls, checking the stack
-    internal = mainCall.calls.innerCalls.names;
-    for i = 1:numel(internal)
-        if any(strcmp(stack, internal{i}))
-            isRecurring = true;
-            return;
-        end
-    end
-    % Iterate over external calls.
-    external = mainCall.calls.fcnCalls.names;
-    % check local directory for filenames. If not there, builtin!
-    possCalls = dir([path filesep '*.m']);
-    possCalls = cellfun(@(n)(n(1:(end-2))), {possCalls.name}, 'uni', false);
-    for i = 1:numel(external)
-        % if external isn't found anywhere in possCalls, don't engage
-        if any(strcmp(external{i}, possCalls))
-            extCallInfo = getcallinfo([path filesep external{i} '.m']);
-            if checkRecur(extCallInfo, external{i}, path, stack)
-                isRecurring = true;
-                return;
-            end
-        end
-    end
-
-    isRecurring = false;
-end
-
-function [isBanned, bannedFunName] = checkBanned(name, banned, path)
-    isBanned = false;
-    bannedFunName = '';
-    % for each call, we should first check that they didn't use any banned names:
-    calls = getcallinfo([path filesep name]);
-    for i = 1:numel(calls)
-        possibleCalls = [calls(i).calls.fcnCalls];
-        possibleCalls = [possibleCalls.names];% inner calls are to helper functions, so no worries there
-        % See if ANY banned are found in possibleCalls
-        % for each call, see where it exists. If it exists IN THIS FOLDER,
-        % then check it recursively
-        culprits = dir([path filesep '*.m']);
-        culprits = {culprits.name};
-        for j = 1:numel(possibleCalls)
-            if any(strcmp(possibleCalls{j}(1:end-2), culprits))
-                [isBanned, bannedFunName] = checkBanned([possibleCalls{j} '.m'], banned, path);
-                if isBanned
-                    return;
-                end
-            else
-                % see if banned
-                if any(strcmp(possibleCalls{j}, banned))
-                    bannedFunName = banned{strcmp(possibleCalls{j}, banned)};
-                    isBanned = true;
-                    return;
-                end
-            end
-        end
-    end
-    BANNED_OPS = {'BANG', 'PARFOR', 'SPMD', 'GLOBAL'};
-    info = mtree([path filesep name], '-file');
-    for b = 1:numel(BANNED_OPS)
-        if info.anykind(BANNED_OPS{b})
-            bannedFunName = BANNED_OPS{b};
-            isBanned = true;
-            return;
-        end
-    end
 end

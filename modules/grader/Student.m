@@ -13,6 +13,8 @@
 %
 % * id: The ID (GT username) of the student (e.g. busluel3)
 %
+% * canvasId: The Canvas ID of the student, as a string.
+%
 % * path: The fully qualified path for this student's directory
 %
 % * submissions: A string array of file names that represent all names
@@ -53,6 +55,7 @@ classdef Student < handle
     properties (Access = public)
         name;
         id;
+        canvasId;
         section = 'U';
         path;
         submissions;
@@ -84,16 +87,17 @@ classdef Student < handle
             end
             grade = sum(cellfun(@(f) sum([f.points]), this.feedbacks));
         end
-        function this = Student(path, name)
+        function this = Student(path, name, canvas)
         %% Constructor
         %
         % Creates an instance of the Student class from the student's
         % submission path.
         %
-        % this = Student(PATH, NAME) returns an instance of Student.
-        % PATH should be a character vector representing the fully
-        % qualified (absolute) path to the student's folder. NAME is a
-        % character vector or string of the full name of the student.
+        % this = Student(P, N, C) returns an instance of Student.
+        % P should be a character vector representing the fully
+        % qualified (absolute) path to the student's folder. N is a
+        % character vector or string of the full name of the student. C is
+        % the Canvas ID, as a character vector
         %
         %%% Remarks
         %
@@ -152,6 +156,7 @@ classdef Student < handle
                 throw(e);
             end
             this.name = name;
+            this.canvasId = canvas;
             % We can safely assume that student has been processed (zip
             % unpacked, etc.)
 
@@ -275,8 +280,6 @@ classdef Student < handle
                 % resources.
                 evalc('delete(gcp);');
                 evalc('gcp;');
-                sentinel = File.SENTINEL;
-                wait(parfevalOnAll(@File.SENTINEL, 0, sentinel));
                 wait(parfevalOnAll(@gradeComments, 0));
                 solutions = this.resources.Problems;
                 setupRecs(solutions);
