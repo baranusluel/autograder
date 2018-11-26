@@ -78,7 +78,7 @@ function isRecurring = recursiveChecker(callInfo, main, path, stack)
     calls = callInfo(~strcmp({callInfo.name}, main));
     calls = calls(ismember({calls.name}, mainCall.calls.innerCalls.names));
     for i = 1:numel(calls)
-        if recursiveChecker(calls(i), calls(i).name, path, stack)
+        if recursiveChecker(callInfo, calls(i).name, path, stack)
             isRecurring = true;
             return;
         end
