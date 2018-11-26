@@ -635,9 +635,6 @@ function cleanup(settings)
         settings.progress.Indeterminate = 'on';
         settings.progress.Cancelable = 'off';
     end
-    % Cleanup
-    Logger.log('Deleting Sentinel file');
-    delete(File.SENTINEL);
     % Restore user's path
     Logger.log('Restoring User Path settings');
     path(settings.userPath{1}, '');
