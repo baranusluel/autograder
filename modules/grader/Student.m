@@ -284,6 +284,8 @@ classdef Student < handle
                 solutions = this.resources.Problems;
                 setupRecs(solutions);
                 wait(parfevalOnAll(@setupRecs, 0, solutions));
+                setArraySizeLimit;
+                wait(parfevalOnAll(@setArraySizeLimit, 0));
             end
             for p = numel(problems):-1:1
                 workers(p) = parfeval(@gradeComments, 1, this.problemPaths{p});
