@@ -73,6 +73,7 @@ function autograder(app)
         || ~isempty(app.localOutputPath);
 
     settings.userPath = {path(), userpath()};
+    setArraySizeLimit();
     % change name of overloaded files
     overloaders = fileparts(mfilename('fullpath'));
     files = dir([overloaders filesep 'overloader' filesep '*.txt']);
@@ -124,6 +125,9 @@ function autograder(app)
     worker = parfevalOnAll(@gradeComments, 0);
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
+    worker.wait();
+    worker = parfevalOnAll(@setArraySizeLimit, 0);
+    setArraySizeLimit();
     worker.wait();
 
     % close all files and plots
