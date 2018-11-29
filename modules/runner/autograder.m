@@ -129,6 +129,7 @@ function autograder(app)
     worker = parfevalOnAll(@setArraySizeLimit, 0);
     setArraySizeLimit();
     worker.wait();
+    wait(parfevalOnAll(@warning, 0, 'off'));
 
     % close all files and plots
     wait(parfevalOnAll(@()(fclose('all')), 0));
