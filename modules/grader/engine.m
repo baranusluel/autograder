@@ -245,18 +245,14 @@ function runnables = engine(runnables)
             runnable.isRecursive = checkRecur([origPaths{r} filesep func2str(func) '.m']);
         end
         % check banned usage
-        if isTestCase || isempty(runnable.exception)
+        if ~isTestCase && isempty(runnable.exception)
             [isBanned, bannedFunName] = checkBanned([func2str(func) '.m'], [BANNED tCase.banned(:)'], origPaths{r});
             if isBanned
-                if ~isTestCase
-                    runnable.exception = MException('AUTOGRADER:engine:banned', ...
-                        'File used banned function(s): %s', bannedFunName);
-                else
-                    throw(MException('AUTOGRADER:engine:banned', ...
-                        'File used banned function(s): %s',bannedFunName));
-                end
+                runnable.exception = MException('AUTOGRADER:engine:banned', ...
+                    'File used banned function(s): %s', bannedFunName);
             end
-
+        end
+        if isTestCase || isempty(runnable.exception)
             % copy over supporting files
             for s = 1:numel(tCase.supportingFiles)
                 copyfile(tCase.supportingFiles{s}, runnable.path);
