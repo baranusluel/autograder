@@ -64,7 +64,9 @@
 %
 classdef TestCase < handle
     properties (Access = public)
-        call;
+        inputNames;
+        outputNames;
+        name;
         initializer;
         points;
         supportingFiles;
@@ -228,8 +230,37 @@ classdef TestCase < handle
                 % instead of iterating in case fields are wrong/missing.
                 % If a field is missing, exception is caught and
                 % re-thrown as a parse error.
-                this.call = info.call;
-                this.initializer = info.initializer;
+                if isfield(info, 'call')
+                    % legacy. Parse the function call and get inputNames,
+                    % outputNames, and functionName.
+                    ins = cell(1, 5);
+                    outs = cell(1, 5);
+                    tree = mtree(['function ' info.call]);
+                    this.name = tree.Fname.stringval;
+                    in = tree.Ins;
+                    ind = 1;
+                    while ~in.isnull
+                        ins{ind} = in.stringval;
+                        ind = ind + 1;
+                        in = in.Next;
+                    end
+                    ins = ins(1:(ind-1));
+                    out = tree.Outs;
+                    ind = 1;
+                    while ~out.isnull
+                        outs{ind} = out.stringval;
+                        ind = ind + 1;
+                        out = out.Next;
+                    end
+                    outs = outs(1:(ind-1));
+                    this.inputNames = ins;
+                    this.outputNames = outs;
+                else
+                    this.inputNames = info.inputs;
+                    this.outputNames = info.outputs;
+                    this.name = info.name;
+                end
+                this.initializer = '';
                 this.points = info.points;
                 this.banned = info.banned;
                 
