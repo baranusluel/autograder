@@ -230,7 +230,7 @@ function runnables = engine(runnables)
         
         % check validity of student code
         info = mtree([origPaths{r} filesep func2str(func) '.m'], '-file');
-        if info.allkind('ERR')
+        if ~info.isnull && info.allkind('ERR')
             if isa(runnable, 'Feedback')
                 runnable.exception = MException('AUTOGRADER:syntaxError', ...
                     info.select(1).string);
