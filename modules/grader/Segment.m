@@ -111,9 +111,13 @@ classdef Segment < handle
         end
         
         function tf = dataEquals(this, that)
-            tf = dataEquals([this.Start], [that.Start]) ...
-                & dataEquals([this.Stop], [that.Stop]);
-            tf = reshape(tf, size(this));
+            if isempty(this) || isempty(that)
+                tf = [];
+            else
+                tf = dataEquals([this.Start], [that.Start]) ...
+                    & dataEquals([this.Stop], [that.Stop]);
+                tf = reshape(tf, size(this));
+            end
         end
         
         function [sorted, inds] = sort(segments, varargin)
