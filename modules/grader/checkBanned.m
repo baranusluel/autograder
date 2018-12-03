@@ -70,11 +70,11 @@ function calls = getCalls(path, ignore)
     localCalls = calls(ismember(calls, localFuns));
     calls(ismember(calls, localFuns)) = [];
     for l = 1:numel(localCalls)
-        calls = [calls getCalls([pwd filesep localCalls{l} '.m'], [ignore {name}])]; %#ok<AGROW>
+        calls = [calls getCalls([fld filesep localCalls{l} '.m'], [ignore {name}])]; %#ok<AGROW>
     end
 
     % add any operations
     OPS = {'BANG', 'PARFOR', 'SPMD', 'GLOBAL'};
-    calls = [calls compose('__%s', string(info.mtfind('Kind', OPS).kinds))];
+    calls = [calls reshape(compose('__%s', string(info.mtfind('Kind', OPS).kinds)), 1, [])];
     calls = unique(calls);
 end

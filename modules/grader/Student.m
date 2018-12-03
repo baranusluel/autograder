@@ -259,8 +259,8 @@ classdef Student < handle
                     counter = counter - 1;
                 end
             end
+            feeds(isRunnable) = engine(feeds(isRunnable));
             try
-                feeds(isRunnable) = engine(feeds(isRunnable));
                 sanityWorker = parfevalOnAll(@()([]), 0);
                 isSane = sanityWorker.wait('finished', 5);
                 if ~isSane
@@ -284,6 +284,8 @@ classdef Student < handle
                 solutions = this.resources.Problems;
                 setupRecs(solutions);
                 wait(parfevalOnAll(@setupRecs, 0, solutions));
+                setArraySizeLimit;
+                wait(parfevalOnAll(@setArraySizeLimit, 0));
             end
             for p = numel(problems):-1:1
                 workers(p) = parfeval(@gradeComments, 1, this.problemPaths{p});
