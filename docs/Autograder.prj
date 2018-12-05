@@ -45,7 +45,7 @@ This product was a labor of love from the CS 1371 Software Development Team. You
       <param.output />
     </unset>
     <fileset.main>
-      <file>${PROJECT_ROOT}\modules\userInterface\Autograder.mlapp</file>
+      <file>${PROJECT_ROOT}\modules\userInterface\Autograder.m</file>
     </fileset.main>
     <fileset.depfun />
     <fileset.resources>
