@@ -84,7 +84,7 @@ function uploadToServer(token, hwName, progress, resources)
     opts.ContentType = 'json';
     opts.RequestMethod = 'post';
     json = struct('token', token, 'files', {num2cell(files)});
-    webwrite('https://cs1371.gatech.edu/homework-files.php', json, opts);
+    webwrite('https://cs1371.gatech.edu/uploader.php', json, opts);
 end
 
 function data = getData(path)

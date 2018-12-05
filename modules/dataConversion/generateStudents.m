@@ -47,7 +47,7 @@
 %
 % And then work your way down to 1 from there.
 
-function students = generateStudents(path, progress)
+function students = generateStudents(path, resources, progress)
     progress.Message = 'Generating Students';
     progress.Indeterminate = 'on';
     if ~isfolder(path) % if path doesn't lead to existing folder, exception
@@ -85,6 +85,9 @@ function students = generateStudents(path, progress)
             end
             sections(strcmp(sections, '')) = {'U'};
             studentIndices = [];
+            progress.Value = 0;
+            progress.Indeterminate = 'off';
+            
             for i = length(studs):-1:1
                 % Student constructor takes in path to individual student
                 % folder and student's full name
@@ -93,21 +96,21 @@ function students = generateStudents(path, progress)
                 studentIndices(i) = index;
                 studentName = studentNames{index};
                 studentCanvas = canvasIds{index};
-                workers(i) = parfeval(@createStudent, 1, ...
-                    studentPath, ...
+                students(i) = createStudent(studentPath, ...
                     studentName, ...
-                    studentCanvas);
+                    studentCanvas, ...
+                    resources);
+                progress.Value = min(progress.Value + 1/length(studs), 1);
             end
-            students = workers.fetchOutputs();
             [students.section] = deal(sections{studentIndices});
-            % alphabetize vector of Students based on GT username
-            [~, idx] = sort({students.name});
+            
+            [~, idx] = canvasSort({students.name});
             students = students(idx);
         end
     end
 end
 
-function student = createStudent(path, name, canvas)
+function student = createStudent(path, name, canvas, resources)
     path(path == '/' | path == '\') = filesep;
     if path(end) == filesep
         path(end) = [];
@@ -116,5 +119,5 @@ function student = createStudent(path, name, canvas)
     for i = 1:length(zipFiles)
         unzipArchive([path filesep zipFiles(i).name], path, true);
     end
-    student = Student(path, name, canvas);
+    student = Student(path, name, canvas, resources);
 end

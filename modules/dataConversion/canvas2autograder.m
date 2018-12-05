@@ -117,7 +117,7 @@ function canvas2autograder(canvasPath, canvasGradebook, outPath, progress)
     allFiles = dir(fullfile(unzippedCanvas,'*_*_*_*.*'));
 
     % Loop through all files
-    progress.Indeterminate = 'on';
+    progress.Indeterminate = 'off';
     progress.Value = 0;
     progress.Message = 'Sorting Files';
     for f = numel(allFiles):-1:1
@@ -132,7 +132,7 @@ function canvas2autograder(canvasPath, canvasGradebook, outPath, progress)
         
         for j = 1:length(tokens)
             if ~isnan(str2double(tokens{j}))
-                canvasID = str2double(tokens{j});
+                canvasID = tokens{j};
                 break;
             end
         end
@@ -144,16 +144,9 @@ function canvas2autograder(canvasPath, canvasGradebook, outPath, progress)
         
         src = fullfile(unzippedCanvas, allFiles(f).name);
         dest = fullfile(outPath, folderMap(canvasID), tokens{end});
-        workers(f) = parfeval(@movefile, 0, src, dest);
+        movefile(src, dest);
+        progress.Value = min(progress.Value + 1/numel(allFiles), 1);
     end
-    
-    progress.Indeterminate = 'off';
-    progress.Value = 0;
-    while ~all([workers.Read])
-        workers.fetchNext();
-        progress.Value = min([progress.Value + 1/numel(workers), 1]);
-    end
-    delete(workers);
     % Write info.csv
     fh = fopen(fullfile(outPath,'info.csv'),'wt');  
     toWrite = ['"' strjoin(join(gradebook(FIRST_ROW:end, [studentNameCol gtUsernameCol sectionCol canvasCol]), '", "'), '"\n"') '"'];

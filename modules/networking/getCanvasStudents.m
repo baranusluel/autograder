@@ -56,7 +56,7 @@ function students = getCanvasStudents(courseId, assignmentId, token, progress)
     end
     sectionStudentIds = [sectionStudents.id];
     for i = 1:numel(students)
-        mask = students(i).id == sectionStudentIds;
+        mask = str2double(students(i).id) == sectionStudentIds;
         if any(mask)
             students(i).section = sections(inds(mask)).name;
         else

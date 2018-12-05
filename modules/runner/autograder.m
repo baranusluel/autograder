@@ -73,6 +73,7 @@ function autograder(app)
         || ~isempty(app.localOutputPath);
 
     settings.userPath = {path(), userpath()};
+    setArraySizeLimit();
     % change name of overloaded files
     overloaders = fileparts(mfilename('fullpath'));
     files = dir([overloaders filesep 'overloader' filesep '*.txt']);
@@ -84,7 +85,6 @@ function autograder(app)
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     clear Student;
     Student.resetPath();
-    javaaddpath([fileparts(fileparts(mfilename('fullpath'))) filesep 'networking' filesep 'StudentDownloader.jar']);
 
     % start up application
     settings.app = app;
@@ -121,19 +121,15 @@ function autograder(app)
     settings.workingDir = [tempname filesep];
     mkdir(settings.workingDir);
     settings.userDir = cd(settings.workingDir);
-    % Create SENTINEL file
-    Logger.log('Creating Sentinel');
-    sentinel = [tempname '.lock'];
-    fid = fopen(sentinel, 'wt');
-    fwrite(fid, 'SENTINEL');
-    fclose(fid);
-    File.SENTINEL(sentinel);
     Logger.log('Loading Dictionary');
-    worker = [parfevalOnAll(@File.SENTINEL, 0, sentinel), ...
-        parfevalOnAll(@gradeComments, 0)];
+    worker = parfevalOnAll(@gradeComments, 0);
     % Set on cleanup
     cleaner = onCleanup(@() cleanup(settings));
     worker.wait();
+    worker = parfevalOnAll(@setArraySizeLimit, 0);
+    setArraySizeLimit();
+    worker.wait();
+    wait(parfevalOnAll(@warning, 0, 'off'));
 
     % close all files and plots
     wait(parfevalOnAll(@()(fclose('all')), 0));
@@ -196,8 +192,9 @@ function autograder(app)
     else
         serverBasePath = sprintf('https://cs1371.gatech.edu/homework/homework%02d/resubmission/', app.homeworkNum);
     end
-    setupRecs(solutions, serverBasePath);
-    wait(parfevalOnAll(@setupRecs, 0, solutions, serverBasePath));
+    resources = Resources;
+    resources.BasePath = serverBasePath;
+    resources.Problems = solutions;
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Students');
@@ -271,7 +268,7 @@ function autograder(app)
     % Generate students
     try
         Logger.log('Generating Students');
-        students = generateStudents([pwd filesep 'Students'], progress);
+        students = generateStudents([pwd filesep 'Students'], resources, progress);
     catch e
         if debugger(app, 'Failed to generate students from submissions')
             keyboard;
@@ -282,7 +279,6 @@ function autograder(app)
     end
 
     % Create Plot
-    setupRecs(solutions, serverBasePath);
     if shouldGrade
         plotter = uifigure('Name', 'Grade Report', 'Visible', 'off');
         ax = uiaxes(plotter);
@@ -307,22 +303,44 @@ function autograder(app)
         progress.Value = 0;
         progress.Message = 'Student Grading Progress';
         Logger.log('Starting student assessment');
-        setupRecs(solutions, serverBasePath);
+        if app.IsLeaky.Value
+            mask = false(size(students));
+            errs(1:numel(students)) = MException('AUTOGRADER:tmp', 'tmp');
+        end
         checker = java.io.File('/');
         for s = 1:numel(students)
             student = students(s);
             progress.Message = sprintf('Assessing Student %s', student.name);
             if checker.getFreeSpace() < 5e9
                 % pause - we are taking up too much space!
-                fprintf(2, 'You are low on disk space (%0.2f GB remaining). Please clear more space, then continue.\n', ...
-                    (checker.getFreeSpace() / (1024 ^ 3)));
-                keyboard;
+                progress.Indeterminte = 'on';
+                progress.Message = 'Synchronizing Changes with OS';
+                if isunix
+                    [~, ~] = system('sync');
+                elseif ispc
+                    % We should be using CHKDSK /f
+                    % However, that requires admin privileges. We don't
+                    % have that. The next best thing is to wait 30 seconds,
+                    % and see what happens...
+                    % [~, ~] = system('CHKDSK /f');
+                    state = pause('on');
+                    pause(30);
+                    pause(state);
+                end
+                if checker.getFreeSpace() < 5e9
+                    fprintf(2, 'You are low on disk space (%0.2f GB remaining). Please clear more space, then continue.\n', ...
+                        (checker.getFreeSpace() / (1024 ^ 3)));
+                    keyboard;
+                end
             end
             try
                 Logger.log(sprintf('Assessing Student %s (%s)', student.name, student.id));
                 student.assess();
             catch e
-                if debugger(app, 'Failed to assess student')
+                if app.IsLeaky.Value
+                    mask(s) = true;
+                    errs(s) = e;
+                elseif debugger(app, 'Failed to assess student')
                     keyboard;
                 else
                     alert(e);
@@ -342,6 +360,18 @@ function autograder(app)
         end
 
         drawnow;
+
+        % If we're leaky, show who errored;
+        if app.IsLeaky.Value && any(mask)
+            leaks = students(mask);
+            nums = arrayfun(@num2str, 1:numel(leaks), 'uni', false);
+            names = {leaks.name};
+            names = strjoin(join([nums', names'], '. '), newline);
+            fprintf(2, '%d Leak(s) detected. The following students successfully got around safeguards:\n%s\n', numel(leaks), names);
+            keyboard;
+        elseif app.IsLeaky.Value && ~any(mask)
+            fprintf(1, 'No leaks detected!\n');
+        end
 
         % Before we do anything else, examine the grades. There should be a
         % good distribution - if not, ask the user
@@ -389,6 +419,35 @@ function autograder(app)
     caughtErrors = struct('task', '', 'exception', []);
     caughtErrors = caughtErrors(false);
 
+    % if they want the output, do it
+    if ~isempty(app.localOutputPath)
+        try
+            progress.Indeterminate = 'on';
+            progress.Message = 'Saving Output';
+            % save canvas info in path
+            % copy csv, then change accordingly
+            % move student folders to output path
+            Logger.log('Starting copy of local information');
+            % Create local grades
+            names = {students.name};
+            ids = {students.id};
+            canvasIds = {students.canvasId};
+            grades = arrayfun(@num2str, [students.grade], 'uni', false);
+            raw = [names; ids; canvasIds; grades]';
+            raw = join([{'Name', 'GT Username', 'ID', 'Grade'}; raw], '", "');
+            raw = unicode2native(['"', strjoin(raw, '"\n"'), '"'], 'UTF-8');
+            fid = fopen(fullfile(app.localOutputPath, 'grades.csv'), 'wt', 'native', 'UTF-8');
+            fwrite(fid, raw);
+            fclose(fid);
+            copyfile(settings.workingDir, app.localOutputPath);
+        catch e
+            if debugger(app, 'Failed to create local output')
+                keyboard;
+            end
+            caughtErrors(end+1).task = 'Creating local output';
+            caughtErrors(end).exception = e;
+        end
+    end
     % If the user requested uploading, do it
 
     if app.UploadGradesToCanvas.Value
@@ -462,35 +521,6 @@ function autograder(app)
                 keyboard;
             end
             caughtErrors(end+1).task = 'Posting announcement to Canvas';
-            caughtErrors(end).exception = e;
-        end
-    end
-    % if they want the output, do it
-    if ~isempty(app.localOutputPath)
-        try
-            progress.Indeterminate = 'on';
-            progress.Message = 'Saving Output';
-            % save canvas info in path
-            % copy csv, then change accordingly
-            % move student folders to output path
-            Logger.log('Starting copy of local information');
-            % Create local grades
-            names = {students.name};
-            ids = {students.id};
-            canvasIds = {students.canvasId};
-            grades = arrayfun(@num2str, [students.grade], 'uni', false);
-            raw = [names; ids; canvasIds; grades]';
-            raw = join([{'Name', 'GT Username', 'ID', 'Grade'}; raw], '", "');
-            raw = unicode2native(['"', strjoin(raw, '"\n"'), '"'], 'UTF-8');
-            fid = fopen(fullfile(app.localOutputPath, 'grades.csv'), 'wt', 'native', 'UTF-8');
-            fwrite(fid, raw);
-            fclose(fid);
-            copyfile(settings.workingDir, app.localOutputPath);
-        catch e
-            if debugger(app, 'Failed to create local output')
-                keyboard;
-            end
-            caughtErrors(end+1).task = 'Creating local output';
             caughtErrors(end).exception = e;
         end
     end
@@ -649,10 +679,6 @@ function cleanup(settings)
         settings.progress.Indeterminate = 'on';
         settings.progress.Cancelable = 'off';
     end
-    javarmpath([fileparts(fileparts(mfilename('fullpath'))) filesep 'networking' filesep 'StudentDownloader.jar']);
-    % Cleanup
-    Logger.log('Deleting Sentinel file');
-    delete(File.SENTINEL);
     % Restore user's path
     Logger.log('Restoring User Path settings');
     path(settings.userPath{1}, '');
