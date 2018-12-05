@@ -150,6 +150,7 @@ classdef Student < handle
             if nargin == 0
                 return;
             end
+            this.resources = recs;
             if ~isfolder(path)
                 e = MException('AUTOGRADER:Student:ctor:invalidPath', ...
                 'Path %s is not a valid path', path);
@@ -187,7 +188,6 @@ classdef Student < handle
             % ID is folder name:
             [~, this.id, ~] = fileparts(path);
             this.path = path;
-            this.resources = recs;
         end
     end
     methods (Access=public)
