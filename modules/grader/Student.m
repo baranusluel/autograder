@@ -284,6 +284,7 @@ classdef Student < handle
                 wait(parfevalOnAll(@gradeComments, 0));
                 setArraySizeLimit;
                 wait(parfevalOnAll(@setArraySizeLimit, 0));
+                wait(parfevalOnAll(@warning, 0, 'off'));
             end
             for p = numel(problems):-1:1
                 workers(p) = parfeval(@gradeComments, 1, this.problemPaths{p});
