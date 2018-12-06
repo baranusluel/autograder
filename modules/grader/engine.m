@@ -193,6 +193,7 @@ function runnables = engine(runnables)
         'urlread', 'urlwrite', 'weboptions', 'ftp', 'mget', ...
         'sound', 'soundsc', 'audiorecorder', 'audioplayer', ...
         'addpath', 'rmpath', 'path'};
+    DIARY_LENGTH = 1000;
 
     if any(~isvalid(runnables))
         e = MException('AUTOGRADER:engine:invalidRunnable', ...
@@ -245,15 +246,11 @@ function runnables = engine(runnables)
         if isTestCase || isempty(runnable.exception)
             [isBanned, bannedFunName] = checkBanned([tCase.name '.m'], [BANNED tCase.banned(:)'], origPaths{r});
             if isBanned
-                if ~isTestCase
-                    runnable.exception = MException('AUTOGRADER:engine:banned', ...
-                        'File used banned function(s): %s', bannedFunName);
-                else
-                    throw(MException('AUTOGRADER:engine:banned', ...
-                        'File used banned function(s): %s',bannedFunName));
-                end
+                runnable.exception = MException('AUTOGRADER:engine:banned', ...
+                    'File used banned function(s): %s', bannedFunName);
             end
-
+        end
+        if isTestCase || isempty(runnable.exception)
             % copy over supporting files
             for s = 1:numel(tCase.supportingFiles)
                 copyfile(tCase.supportingFiles{s}, runnable.path);
@@ -308,47 +305,79 @@ function runnables = engine(runnables)
             if isvalid(worker)
                 now = datetime;
                 now.TimeZone = worker.CreateDateTime.TimeZone;
-                if strcmp(worker.State, 'finished')
-                    % check error
-                    if ~isempty(worker.Error) && isTestCase
-                        % test Case; throw error
-                        e = MException('AUTOGRADER:engine:testCaseFailure', ...
-                            'TestCase failed, see error for more information');
-                        e = e.addCause(worker.Error.remotecause{1});
-                        e.throw();
-                    elseif ~isempty(worker.Error) && ~isTestCase
-                        e = MException('AUTOGRADER:studentError', ...
-                            'Student Code errored');
-                        if isempty(worker.Error.remotecause)
-                            % for now, it seems that opening infinite
-                            % files for reading causes it to error without
-                            % a cause. So the cause should be
-                            % InfiniteOpenFiles.
-                            runnables(w).exception = ...
-                                e.addCause(MException('AUTOGRADER:engine:tooManyOpenFiles', ...
-                                'You opened too many files'));
+                % first, try to get the diary. If we can't, this means that
+                % they did not suppress!!
+                try
+                    if strcmp(worker.State, 'finished')
+                        % check error
+                        if ~isempty(worker.Error) && isTestCase
+                            % test Case; throw error
+                            e = MException('AUTOGRADER:engine:testCaseFailure', ...
+                                'TestCase failed, see error for more information');
+                            e = e.addCause(worker.Error.remotecause{1});
+                            e.throw();
+                        elseif ~isempty(worker.Error) && ~isTestCase
+                            e = MException('AUTOGRADER:studentError', ...
+                                'Student Code errored');
+                            if isempty(worker.Error.remotecause)
+                                % for now, it seems that opening infinite
+                                % files for reading causes it to error without
+                                % a cause. So the cause should be
+                                % InfiniteOpenFiles.
+                                if length(worker.Diary) > DIARY_LENGTH
+                                    e = MException('AUTOGRADER:studentError', ...
+                                        'Student Code errored');
+                                    runnables(w).exception = ...
+                                        e.addCause(MException('AUTOGRADER:engine:noSuppression', ...
+                                        'Student code did not suppress output and overflowed the command window'));
+                                else
+                                    runnables(w).exception = ...
+                                        e.addCause(MException('AUTOGRADER:engine:tooManyOpenFiles', ...
+                                        'You opened too many files'));
+                                end
+                            else
+                                runnables(w).exception = ...
+                                    e.addCause(worker.Error.remotecause{1});
+                            end
                         else
+                            runnables(w) = worker.fetchOutputs();
+                        end
+                        delete(worker);
+                    elseif ~isempty(worker.StartDateTime) && (now - worker.StartDateTime > seconds(Student.TIMEOUT))
+                        cancel(worker);
+                        delete(worker);
+                        if ~isTestCase
                             runnables(w).exception = ...
-                                e.addCause(worker.Error.remotecause{1});
+                                MException('AUTOGRADER:timeout', 'Timeout occurred');
+                        else
+                            e = MException('AUTOGRADER:engine:testCaseFailure', ...
+                                'TestCase timed out');
+                            e = e.addCause(MException('AUTOGRADER:timeout', 'Timeout occurred'));
+                            e.throw();
+                        end
+                    end
+                catch reason
+                    % did not suppress! cancel and set the exception
+                    if strcmpi(reason.identifier, 'MATLAB:Java:GenericException')
+                        if isTestCase
+                            workers.cancel;
+                            e = MException('AUTOGRADER:engine:testCaseFailure', ...
+                                'TestCase failed, likely printed too much to the command window. See error for more information');
+                            e.addCause(reason);
+                            e.throw();
+                        else
+                            worker.cancel;
+                            delete(worker);
+                            e = MException('AUTOGRADER:studentError', ...
+                                'Student Code errored');
+                            runnables(w).exception = ...
+                                e.addCause(MException('AUTOGRADER:engine:noSuppression', ...
+                                'Student code did not suppress output and overflowed the command window'));
                         end
                     else
-                        runnables(w) = worker.fetchOutputs();
-                    end
-                    delete(worker);
-                elseif ~isempty(worker.StartDateTime) && (now - worker.StartDateTime > seconds(Student.TIMEOUT))
-                    cancel(worker);
-                    delete(worker);
-                    if ~isTestCase
-                        runnables(w).exception = ...
-                            MException('AUTOGRADER:timeout', 'Timeout occurred');
-                    else
-                        e = MException('AUTOGRADER:engine:testCaseFailure', ...
-                            'TestCase timed out');
-                        e = e.addCause(MException('AUTOGRADER:timeout', 'Timeout occurred'));
-                        e.throw();
+                        reason.rethrow;
                     end
                 end
-
             end
         end
     end

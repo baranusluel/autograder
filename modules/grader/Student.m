@@ -47,25 +47,25 @@
  %#ok<*PROP>
 classdef Student < handle
     properties (Constant)
-        TIMEOUT = 30;
-        resources = Resources;
-        ROUNDOFF_ERROR = 5;
-        FCLOSE_PERCENTAGE_OFF = 0.5;
+        TIMEOUT double = 30;
+        ROUNDOFF_ERROR double = 5;
+        FCLOSE_PERCENTAGE_OFF double = 0.5;
     end
     properties (Access = public)
-        name;
-        id;
-        canvasId;
-        section = 'U';
-        path;
-        submissions;
-        feedbacks = {};
-        grade;
-        problemPaths;
-        commentGrades;
+        name char;
+        id char;
+        canvasId char;
+        section char = 'U';
+        path char;
+        submissions cell;
+        feedbacks cell = {};
+        grade double;
+        problemPaths cell;
+        commentGrades double;
     end
     properties (Access=private)
-        html = {};
+        html cell = {};
+        resources Resources;
     end
     methods (Static)
         function resetPath()
@@ -87,7 +87,7 @@ classdef Student < handle
             end
             grade = sum(cellfun(@(f) sum([f.points]), this.feedbacks));
         end
-        function this = Student(path, name, canvas)
+        function this = Student(path, name, canvas, recs)
         %% Constructor
         %
         % Creates an instance of the Student class from the student's
@@ -150,6 +150,7 @@ classdef Student < handle
             if nargin == 0
                 return;
             end
+            this.resources = recs;
             if ~isfolder(path)
                 e = MException('AUTOGRADER:Student:ctor:invalidPath', ...
                 'Path %s is not a valid path', path);
@@ -281,9 +282,6 @@ classdef Student < handle
                 evalc('delete(gcp);');
                 evalc('gcp;');
                 wait(parfevalOnAll(@gradeComments, 0));
-                solutions = this.resources.Problems;
-                setupRecs(solutions);
-                wait(parfevalOnAll(@setupRecs, 0, solutions));
                 setArraySizeLimit;
                 wait(parfevalOnAll(@setArraySizeLimit, 0));
             end
@@ -785,11 +783,6 @@ classdef Student < handle
                 % Append to end
                 prob = [prob(1:(end-2)) test prob((end-1):end)];
             end
-        end
-        
-        function setupRecs(~, solutions)
-            recs = Student.resources;
-            recs.Problems = solutions;
         end
     end
 end
