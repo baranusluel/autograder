@@ -436,16 +436,6 @@ function runnable = runCase(runnable, safeDir)
     else
         tCase = runnable.testCase;
     end
-    if ~isempty(tCase.initializer)
-        % Append initializer call to end of varDefs
-        % Make sure suppressed!
-        if tCase.initializer(end) ~= ';'
-            tCase.initializer = [tCase.initializer ';'];
-        end
-        init = tCase.initializer;
-    else
-        init = '';
-    end
 
     % run the function
     % create sentinel file
@@ -455,7 +445,6 @@ function runnable = runCase(runnable, safeDir)
         cd(runnable.path);
         outs = cell(size(tCase.outputNames));
         [outs{:}] = runner(str2func(tCase.name), ...
-            init, ...
             tCase.inputNames, ...
             tCase.inputs);
     catch e
@@ -497,7 +486,7 @@ function runnable = runCase(runnable, safeDir)
     populatePlots(runnable);
 end
 
-function varargout = runner(func____, init____, ins, loads____)
+function varargout = runner(func____, ins, loads____)
 
     % Create statement that becomes cell array of all inputs.
     % No input sanitization here because all input names have already
@@ -508,10 +497,6 @@ function varargout = runner(func____, init____, ins, loads____)
     % Load MAT files
     for i____ = 1:size(loads____, 2)
         eval([loads____{1, i____} ' = loads____{2, ' num2str(i____) '};']);
-    end
-    % Run initializer, if any
-    if ~isempty(init____)
-        eval(init____);
     end
     % Create true cell array of inputs to use in func
     ins____ = eval(inCell____);

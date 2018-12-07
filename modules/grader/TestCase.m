@@ -7,9 +7,6 @@
 % * |call|: The complete function call 
 % (i.e., |[out1, out2] = myFunction(in1, in2);|)
 %
-% * |initializer|: The complete function call for a function to be run 
-% immediately before testing the student's code
-%
 % * |points|: The points possible for this specific test case
 %
 % * |path|: The fully qualified path to the solution code directory
@@ -67,7 +64,6 @@ classdef TestCase < handle
         inputNames;
         outputNames;
         name;
-        initializer;
         points;
         supportingFiles;
         loadFiles;
@@ -260,7 +256,6 @@ classdef TestCase < handle
                     this.outputNames = info.outputs;
                     this.name = info.name;
                 end
-                this.initializer = '';
                 this.points = info.points;
                 this.banned = info.banned;
                 
