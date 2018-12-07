@@ -187,7 +187,13 @@ function autograder(app)
             return;
         end
     end
+    if app.isResubmission
+        serverBasePath = sprintf('https://cs1371.gatech.edu/homework/homework%02d/original/', app.homeworkNum);
+    else
+        serverBasePath = sprintf('https://cs1371.gatech.edu/homework/homework%02d/resubmission/', app.homeworkNum);
+    end
     resources = Resources;
+    resources.BasePath = serverBasePath;
     resources.Problems = solutions;
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
@@ -478,7 +484,7 @@ function autograder(app)
             name = sprintf('homework%02d', app.homeworkNum);
         end
         try
-            uploadToServer(app.canvasToken, name, progress);
+            uploadToServer(app.canvasToken, name, progress, resources.supportingFiles);
         catch e
             if debugger(app, 'Failed to upload files to server')
                 keyboard;

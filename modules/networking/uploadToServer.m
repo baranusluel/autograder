@@ -24,16 +24,16 @@
 %   uploadToServer(T, N, B);
 %
 %   Homework files are correctly uploaded
-function uploadToServer(token, hwName, progress)
+function uploadToServer(token, hwName, progress, resources)
     progress.Message = 'Uploading Homework Data to Server';
     progress.Value = 0;
     progress.Indeterminate = 'on';
     
     % No SFTP; just POST with data and path
     % get HW num
-    solnFolder = [pwd filesep 'Solutions'];
     num = hwName(hwName >= '0' & hwName <= '9');
     % Upload solutions
+    solnFolder = [pwd filesep 'Solutions'];
     mkdir(hwName);
     newOGName = [pwd filesep hwName filesep 'hw' num 'Rubric.json'];
     newResubName = [pwd filesep hwName filesep 'hw' num 'Rubric_resub.json'];
@@ -65,18 +65,27 @@ function uploadToServer(token, hwName, progress)
     end
     zip([pwd filesep hwName filesep name], ...
         [pwd filesep hwName filesep 'SupportingFiles' filesep '*']);
-    [~] = rmdir([pwd filesep hwName filesep 'SupportingFiles'], 's');
     files(3).path = ['regrades/solutions/Homework' num '/' name];
     files(3).data = getData([pwd filesep hwName filesep name]);
     for n = 1:numel(solns)
         files(n+3).path = ['regrades/solutions/Homework' num '/' solns(n).name];
         files(n+3).data = getData([solns(n).folder filesep solns(n).name]);
     end
+    offset = numel(files);
+    % for each resource, get base bath by deleting
+    % https://cs1371.gatech.edu/
+    files = [resources.files];
+    for n = 1:numel(files)
+        files(offset + n).path = strrep(files(n).dataURI, 'https://cs1371.gatech.edu/', '');
+        files(offset + n).data = ...
+            getData([pwd filesep hwName filesep 'SupportingFiles' filesep files(n).name]);
+    end
     opts = weboptions;
     opts.ContentType = 'json';
     opts.RequestMethod = 'post';
     json = struct('token', token, 'files', {num2cell(files)});
     webwrite('https://cs1371.gatech.edu/uploader.php', json, opts);
+    [~] = rmdir([pwd filesep hwName], 's');
 end
 
 function data = getData(path)
