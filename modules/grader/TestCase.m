@@ -60,6 +60,9 @@
 % variable names inside the MAT-file should match the input names in |call|.
 %
 classdef TestCase < handle
+    properties (Access = public, Constant)
+        ARGUMENT_NUMBER = 5;
+    end
     properties (Access = public)
         inputNames;
         outputNames;
@@ -229,9 +232,8 @@ classdef TestCase < handle
                 if isfield(info, 'call')
                     % legacy. Parse the function call and get inputNames,
                     % outputNames, and functionName.
-                    ARGUMENT_NUMBER = 5;
-                    ins = cell(1, ARGUMENT_NUMBER);
-                    outs = cell(1, ARGUMENT_NUMBER);
+                    ins = cell(1, this.ARGUMENT_NUMBER);
+                    outs = cell(1, this.ARGUMENT_NUMBER);
                     tree = mtree(['function ' info.call]);
                     this.name = tree.Fname.stringval;
                     in = tree.Ins;
