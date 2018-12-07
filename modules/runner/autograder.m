@@ -187,8 +187,14 @@ function autograder(app)
             return;
         end
     end
-    setupRecs(solutions);
-    wait(parfevalOnAll(@setupRecs, 0, solutions));
+    if app.isResubmission
+        serverBasePath = sprintf('https://cs1371.gatech.edu/homework/homework%02d/original/', app.homeworkNum);
+    else
+        serverBasePath = sprintf('https://cs1371.gatech.edu/homework/homework%02d/resubmission/', app.homeworkNum);
+    end
+    resources = Resources;
+    resources.BasePath = serverBasePath;
+    resources.Problems = solutions;
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Students');
@@ -262,7 +268,7 @@ function autograder(app)
     % Generate students
     try
         Logger.log('Generating Students');
-        students = generateStudents([pwd filesep 'Students'], progress);
+        students = generateStudents([pwd filesep 'Students'], resources, progress);
     catch e
         if debugger(app, 'Failed to generate students from submissions')
             keyboard;
@@ -273,7 +279,6 @@ function autograder(app)
     end
 
     % Create Plot
-    setupRecs(solutions);
     if shouldGrade
         plotter = uifigure('Name', 'Grade Report', 'Visible', 'off');
         ax = uiaxes(plotter);
@@ -298,7 +303,6 @@ function autograder(app)
         progress.Value = 0;
         progress.Message = 'Student Grading Progress';
         Logger.log('Starting student assessment');
-        setupRecs(solutions);
         if app.IsLeaky.Value
             mask = false(size(students));
             errs(1:numel(students)) = MException('AUTOGRADER:tmp', 'tmp');
@@ -480,7 +484,7 @@ function autograder(app)
             name = sprintf('homework%02d', app.homeworkNum);
         end
         try
-            uploadToServer(app.canvasToken, name, progress);
+            uploadToServer(app.canvasToken, name, progress, resources.supportingFiles);
         catch e
             if debugger(app, 'Failed to upload files to server')
                 keyboard;

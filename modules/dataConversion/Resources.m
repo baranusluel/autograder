@@ -18,6 +18,7 @@
 classdef Resources < matlab.mixin.SetGet
     properties (Access=public,SetObservable)
         Problems;
+        BasePath;
     end
     properties (Access=public)
         supportingFiles struct;
@@ -30,7 +31,7 @@ classdef Resources < matlab.mixin.SetGet
             this.supportingFiles = struct('name', {this.Problems.name}, ...
                 'files', []);
             problems = this.Problems;
-            encoder = org.apache.commons.codec.binary.Base64;
+            % encoder = org.apache.commons.codec.binary.Base64;
             for p = 1:numel(problems)
                 rec = this.supportingFiles(p);
                 % for each problem, get the supporting files. rec.resources
@@ -48,12 +49,13 @@ classdef Resources < matlab.mixin.SetGet
                     [~, name, ext] = fileparts(file);
                     rec.files(s).name = [name ext];
                     % fread file bytes, encode in base64, set as binary
-                    fid = fopen(file, 'r');
-                    bytes = fread(fid, inf, 'uint8');
-                    fclose(fid);
-                    str = char(encoder.encode(bytes)');
-                    rec.files(s).dataURI = ...
-                        ['data:application/octet-stream;base64,', str];
+                    % fid = fopen(file, 'r');
+                    % bytes = fread(fid, inf, 'uint8');
+                    % fclose(fid);
+                    % str = char(encoder.encode(bytes)');
+                    rec.files(s).dataURI = [this.BasePath name ext];
+                    % rec.files(s).dataURI = ...
+                    %     ['data:application/octet-stream;base64,', str];
                 end
 
                 this.supportingFiles(p) = rec;
