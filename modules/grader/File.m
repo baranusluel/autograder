@@ -31,10 +31,14 @@
 % original file.
 %
 classdef File < handle
+    properties (Constant)
+        MAX_FILE_SIZE = 1 * 1024 * 1024; % 1 MB
+    end
     properties (Access = public)
         name; %will be class char
         extension; %will be class char
         data; %will vary in file type
+        bytes; % number of bytes
     end
     properties (Access = public)
         TXT = {'txt', 'm', 'rtf', 'html'};
@@ -99,7 +103,8 @@ classdef File < handle
             [~, name, ext] = fileparts(path);
             
             %store info in File
-            
+            info = dir(path);
+            this.bytes = info.bytes;
             this.name = name;
             this.extension = ext;
             %depending on the ext, extract the information
@@ -243,6 +248,8 @@ classdef File < handle
             elseif ~strcmp(this.name, soln.name)
                 html = sprintf('<p>Expected name "%s"; got name "%s"</p>',...
                     soln.name, this.name);
+            elseif this.bytes > this.MAX_FILE_SIZE
+                html = '<p>File size was too large</p>';
             else
                 switch lower(this.extension(2:end))
                     case this.TXT
@@ -273,4 +280,3 @@ classdef File < handle
         end
     end
 end
-%Code Written by: Tobin K Abraham
