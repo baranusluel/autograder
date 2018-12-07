@@ -30,7 +30,6 @@
 %
 %   In path P, the student folders are all saved, along with a `grades.csv`
 function downloadFromCanvas(students, path, progress)
-    MAX_SIZE = 0.5 * 1024 * 1024;
     origPath = cd(path);
     cleaner = onCleanup(@()(cd(origPath)));
     numStudents = numel(students);
@@ -56,7 +55,7 @@ function downloadFromCanvas(students, path, progress)
             attachments = students(s).submission.attachments;
             for a = numel(attachments):-1:1
                 [~, ~, type] = fileparts(attachments(a).filename);
-                if attachments(a).size > MAX_SIZE
+                if attachments(a).size > Student.MAX_FILE_SIZE
                     urls(a) = "FILE_TOO_LARGE";
                 elseif ~strcmpi(type, '.m')
                     urls(a) = "";

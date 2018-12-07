@@ -57,7 +57,7 @@ classdef Student < handle
             '''));'];
         FILE_TOO_LARGE struct = struct('identifier', 'AUTOGRADER:student:fileTooLarge', ...
             'message', 'Your file submission was too large to parse');
-        
+        MAX_FILE_SIZE = .5 * 1024 * 1024;
             
     end
     properties (Access = public)
