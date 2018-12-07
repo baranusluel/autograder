@@ -229,8 +229,9 @@ classdef TestCase < handle
                 if isfield(info, 'call')
                     % legacy. Parse the function call and get inputNames,
                     % outputNames, and functionName.
-                    ins = cell(1, 5);
-                    outs = cell(1, 5);
+                    ARGUMENT_NUMBER = 5;
+                    ins = cell(1, ARGUMENT_NUMBER);
+                    outs = cell(1, ARGUMENT_NUMBER);
                     tree = mtree(['function ' info.call]);
                     this.name = tree.Fname.stringval;
                     in = tree.Ins;
