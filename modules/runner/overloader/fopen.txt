@@ -1,0 +1,28 @@
+function [varargout] = fopen(varargin)
+    stack = dbstack;
+    varargout = cell(1, nargout);
+    isValid = true;
+    if any(strcmp({stack.name}, 'runCase'))
+        % do checks
+        % check that they don't try to open a file OTHER than .txt
+        % first check they gave inputs
+        if nargin ~= 0
+            % check filename
+            if ischar(varargin{1})
+                varargin{1} = string(varargin{1});
+            end
+            if ~isstring(varargin{1}) ...
+                    && ~strcmp(varargin{1}, 'all') ...
+                    && ~endsWith(varargin{1}, '.txt')
+                isValid = false;
+            end
+        end
+    end
+    if isValid
+        [varargout{:}] = builtin('fopen', varargin{:});
+    else
+        % throw error
+        throw(MException('Autograder:fopen:invalidFileType', ...
+            'Code tried to open invalid file type'));
+    end
+end
