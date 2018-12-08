@@ -219,9 +219,6 @@ classdef TestCase < handle
             %
             if nargin == 0
                 return;
-            elseif nargin == 1
-                
-                return;
             end
             
             try
@@ -249,28 +246,6 @@ classdef TestCase < handle
                 ME.addCause(e);
                 throw(ME);
             end
-        end
-        function st = serialize(this)
-            st.call = this.call;
-            st.initializer = this.initializer;
-            st.points = this.points;
-            st.supportingFiles = this.supportingFiles;
-            st.loadFiles = this.loadFiles;
-            st.inputs = this.inputs;
-            st.banned = this.banned;
-            st.outputs = this.outputs;
-            st.files = File;
-            st.files = st.files(false);
-            for f = numel(this.files):-1:1
-                st.files(f) = this.files(f).serialize;
-            end
-            
-            st.plots = Plot;
-            st.plots = st.plots(false);
-            for p = numel(this.plots):-1:1
-                st.plots(p) = this.plots(p).serialize;
-            end
-            
         end
     end
 end

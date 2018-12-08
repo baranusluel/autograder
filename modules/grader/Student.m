@@ -59,14 +59,11 @@ classdef Student < handle
         path char;
         submissions cell;
         feedbacks cell = {};
+        grade double;
         problemPaths cell;
         commentGrades double;
     end
-    properties (Access=public, Dependent)
-        Grade double;
-    end
     properties (Access=private)
-        grade double = [];
         html cell = {};
         resources Resources;
     end
@@ -84,18 +81,11 @@ classdef Student < handle
         end
     end
     methods
-        function grade = get.Grade(this)
-            if isempty(this.grade) && isempty(this.feedbacks)
+        function grade = get.grade(this)
+            if isempty(this.feedbacks)
                 throw(MException('AUTOGRADER:Student:grade:noFeedbacks', 'No feedbacks were found (did you call assess?)'));
-            elseif ~isempty(this.grade)
-                grade = this.grade;
-            else
-                grade = sum(cellfun(@(f) sum([f.points]), this.feedbacks));
             end
-        end
-        
-        function set.Grade(this, g)
-            this.grade = g;
+            grade = sum(cellfun(@(f) sum([f.points]), this.feedbacks));
         end
         function this = Student(path, name, canvas, recs)
         %% Constructor

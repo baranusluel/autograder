@@ -120,20 +120,6 @@ classdef Plot < handle
             if nargin == 0
                 return;
             end
-            if isstruct(pHandle)
-                st = pHandle;
-                this.Title = st.Title;
-                this.XLabel = st.XLabel;
-                this.YLabel = st.YLabel;
-                this.ZLabel = st.ZLabel;
-                this.Position = st.Position;
-                this.PlotBox = st.PlotBox;
-                this.Image = st.Image;
-                this.Points = st.Points;
-                this.Segments = st.Segments;
-                this.Limits = st.Limits;
-                return;
-            end
             if ~isa(pHandle,'matlab.graphics.axis.Axes')
                 ME = MException('AUTOGRADER:Plot:noAxisData',...
                     'Given input to Plot Constructor is not Axes Handle');
@@ -731,18 +717,6 @@ classdef Plot < handle
             '<img class="img-fluid img-thumbnail" src="%s"></div><div class="text-center col-12 exception"><p>%s</p></div></div>'],...
             studPlot, solnPlot, msg);
 
-        end
-        function st = serialize(this)
-            st.Title = this.Title;
-            st.XLabel = this.XLabel;
-            st.YLabel = this.YLabel;
-            st.ZLabel = this.ZLabel;
-            st.Position = this.Position;
-            st.PlotBox = this.PlotBox;
-            st.Image = this.Image;
-            st.Points = this.Points;
-            st.Segments = this.Segments;
-            st.Limits = this.Limits;
         end
     end
 end

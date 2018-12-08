@@ -94,74 +94,67 @@ classdef File < handle
             if nargin == 0
                 return;
             end
-            if isstruct(path)
-                st = path;
-                this.name = st.name;
-                this.extension = st.extension;
-                this.data = st.data;
-            else
-
-                %Parse the path input into the proper parts
-                [~, name, ext] = fileparts(path);
-
-                %store info in File
-
-                this.name = name;
-                this.extension = ext;
-                %depending on the ext, extract the information
-                %for images, imformats will be used for the potential cases
-                %because we are using imformats, we will remove the periods
-                %from the variable stored in ext when you use the
-                %switch statements
-                switch ext(2:end)
-                    case this.TXT %read data in and create a vertical string vector
-                        %In standard practice, using the string class to extract the
-                        %contents of a text file would be preferable. Most TAs,
-                        %however, would be more comfortable with cell arrays, so
-                        %this is the method chosen.
-                        %fh = fopen(name);
-                        %line = fgetl(fh);
-                        %data = {};
-                        %while ischar(line)
-                        %    data = [data; {line}];
-                        %    line = fgetl(fh);
-                        %end
-                        %fclose(fh);
-                        %File.data = data;
-
-                        %The above method is too slow since it iteratively
-                        %concatenates; the superior method would be to use
-                        %preallocating. However, Matlab makes even
-                        %preallocating look lame af in the presence of the
-                        %glorious fread function.
-                        fid = fopen(path, 'rt');
-                        this.data = char(fread(fid)');
-                        fclose(fid);
-                        this.data = strrep(this.data, [char(13) char(10)], char(0)); %#ok<*CHARTEN>
-                        this.data = strrep(this.data, char(13), char(10));
-                        this.data = strrep(this.data, char(0), char(10));
-                        this.data = strrep(this.data, char(10), newline);
-                    case this.IMAGES
-                        %read in image array and store in File class
-                        try
-                            this.data = imread(path);
-                        catch
-                            this.data = [];
-                        end
-                    case this.EXCEL
-                        try
-                            data = load(path);
-                            this.extension = data.ext;
-                            this.data = data.data;
-                            this.name = data.name;
-                        catch
-                            this.data = {};
-                        end
-                    otherwise
-                        fid = fopen(path, 'r'); %binary reading
-                        this.data = fread(fid);
-                        fclose(fid);
-                end
+            
+            %Parse the path input into the proper parts
+            [~, name, ext] = fileparts(path);
+            
+            %store info in File
+            
+            this.name = name;
+            this.extension = ext;
+            %depending on the ext, extract the information
+            %for images, imformats will be used for the potential cases
+            %because we are using imformats, we will remove the periods
+            %from the variable stored in ext when you use the
+            %switch statements
+            switch ext(2:end)
+                case this.TXT %read data in and create a vertical string vector
+                    %In standard practice, using the string class to extract the
+                    %contents of a text file would be preferable. Most TAs,
+                    %however, would be more comfortable with cell arrays, so
+                    %this is the method chosen.
+                    %fh = fopen(name);
+                    %line = fgetl(fh);
+                    %data = {};
+                    %while ischar(line)
+                    %    data = [data; {line}];
+                    %    line = fgetl(fh);
+                    %end
+                    %fclose(fh);
+                    %File.data = data;
+                    
+                    %The above method is too slow since it iteratively
+                    %concatenates; the superior method would be to use
+                    %preallocating. However, Matlab makes even
+                    %preallocating look lame af in the presence of the
+                    %glorious fread function.
+                    fid = fopen(path, 'rt');
+                    this.data = char(fread(fid)');
+                    fclose(fid);
+                    this.data = strrep(this.data, [char(13) char(10)], char(0)); %#ok<*CHARTEN>
+                    this.data = strrep(this.data, char(13), char(10));
+                    this.data = strrep(this.data, char(0), char(10));
+                    this.data = strrep(this.data, char(10), newline);
+                case this.IMAGES
+                    %read in image array and store in File class
+                    try
+                        this.data = imread(path);
+                    catch
+                        this.data = [];
+                    end
+                case this.EXCEL
+                    try
+                        data = load(path);
+                        this.extension = data.ext;
+                        this.data = data.data;
+                        this.name = data.name;
+                    catch
+                        this.data = {};
+                    end
+                otherwise
+                    fid = fopen(path, 'r'); %binary reading
+                    this.data = fread(fid);
+                    fclose(fid);
             end
         end
     end
@@ -277,11 +270,6 @@ classdef File < handle
                         html = '<p class="unknown">Data is different</p>';
                 end  
             end
-        end
-        function st = serialize(this)
-            st.name = this.name;
-            st.extension = this.extension;
-            st.data = this.data;
         end
     end
 end
