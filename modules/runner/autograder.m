@@ -294,8 +294,7 @@ function autograder(app)
         warning('off');
         tbl = readtable(fullfile(app.postProcessPath, 'grades.csv'));
         warning('on');
-        % TODO: Check if numeric
-        grades = tbl(:, end).Variables;
+        grades = str2double(tbl(:, end).Variables);
         gtUsernames = tbl(:, 2).Variables;
         
         % last column is grades
