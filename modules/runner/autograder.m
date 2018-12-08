@@ -611,6 +611,27 @@ function autograder(app)
             copyfile(recSource, [pwd filesep 'resources']);
             cheat = CheatDetector(students, solutions, scores, settings.workingDir);
             % if user has local output, go ahead and export
+            p = '';
+            if ~isempty(app.localCheatPath)
+                p = app.localCheatPath;
+            elseif ~isempty(app.postProcessPath)
+                p = fullfile(app.postProcessPath, 'Cheaters');
+                if ~isfolder(p)
+                    mkdir(p);
+                else
+                    % already done...?
+                    % Don't overwrite anything... but we need to put this
+                    % somewhere.
+                    % keep incrementing until not a folder
+                    counter = 1;
+                    while isfolder([p num2str(counter)])
+                        counter = counter + 1;
+                    end
+                    p = [p num2str(counter)];
+                    mkdir(p);
+                end
+            end
+            app.localCheatPath = p;
             if ~isempty(app.localCheatPath)
                 if ~isfolder(app.localCheatPath)
                     mkdir(app.localCheatPath)
