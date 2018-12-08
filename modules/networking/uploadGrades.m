@@ -44,7 +44,7 @@ function uploadGrades(students, courseId, assignmentId, token, progress)
     progress.Indeterminate = 'off';
     progress.Value = 0;
     for s = numel(students):-1:1
-        stud.grade = students(s).grade;
+        stud.grade = students(s).Grade;
         stud.id = students(s).canvasId;
         workers{s} = parfeval(@uploadGrade, 0, ...
             courseId, assignmentId, stud, token);

@@ -348,7 +348,7 @@ function autograder(app)
                 end
             end
             progress.Value = s/numel(students);
-            h.Data(s) = student.grade;
+            h.Data(s) = student.Grade;
             if mod(s, DRAW_INTERVAL) == 0
                 drawnow;
             end
@@ -432,7 +432,7 @@ function autograder(app)
             names = {students.name};
             ids = {students.id};
             canvasIds = {students.canvasId};
-            grades = arrayfun(@num2str, [students.grade], 'uni', false);
+            grades = arrayfun(@num2str, [students.Grade], 'uni', false);
             raw = [names; ids; canvasIds; grades]';
             raw = join([{'Name', 'GT Username', 'ID', 'Grade'}; raw], '", "');
             raw = unicode2native(['"', strjoin(raw, '"\n"'), '"'], 'UTF-8');

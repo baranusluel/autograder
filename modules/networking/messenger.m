@@ -18,12 +18,12 @@ function messenger(app, students)
         newline, ...
         'Best Regards,' newline, ...
         'The CS 1371 Autograder'];
-    message = sprintf(MESSAGE_FORMAT, mean([students.grade]), min([students.grade]), max([students.grade]));
+    message = sprintf(MESSAGE_FORMAT, mean([students.Grade]), min([students.Grade]), max([students.Grade]));
     
     % Save grades and IDs to csv file
     names = {students.name};
     ids = {students.id};
-    grades = arrayfun(@num2str, [students.grade], 'uni', false);
+    grades = arrayfun(@num2str, [students.Grade], 'uni', false);
     csv = join([names; ids; grades]', '","');
     csv = ['"' strjoin(csv, ['"' newline]) '"'];
     tmp = tempname;
