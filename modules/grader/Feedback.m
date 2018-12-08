@@ -92,8 +92,38 @@ classdef Feedback < handle
         %   F.testCase -> T;
         %
         function [this] = Feedback(testCase, path)
+            function e = deserializeException(st)
+                e = MException(st.identifier, st.message);
+                if ~isempty(st.cause)
+                    e.addCause(deserializeException(st.cause));
+                end
+            end
             if nargin == 0
                 return;
+            elseif nargin == 1
+                % deserialize!
+                st = testCase;
+                this.hasPassed = st.hasPassed;
+                this.outputs = st.outputs;
+                % for each file, deserialize
+                for f = numel(st.files):-1:1
+                    this.files(f) = File(st.files(f));
+                end
+                % for each plot, deserialize
+                for p = numel(st.plots):-1:1
+                    this.plots(p) = Plot(st.plots(p));
+                end
+                % deserialize the exception
+                % work down the cause chain. Guaranteed to be only one
+                % cause per chain.
+                if ~isempty(st.exception)
+                    this.exception = deserializeException(st.exception);
+                end
+                this.isRecursive = st.isRecursive;
+                this.points = st.points;
+            else
+                this.testCase = testCase;
+                this.path = path;
             end
             this.testCase = testCase;
             this.path = path;
@@ -255,6 +285,35 @@ classdef Feedback < handle
             end
             html = sprintf('%s</div><p class="feedback-points">Points earned for this test case: <b>%0.1f/%0.1f</b></p></div>',...
                             html, this.points, this.testCase.points);
+        end
+        function st = serialize(this)
+            st.hasPassed = this.hasPassed;
+            st.outputs = this.outputs;
+            % serialize the exception
+            
+            tmp = this.exception;
+            e = struct;
+            while ~isempty(e)
+                tmp.identifier = e(1).identifier;
+                tmp.message = e(1).message;
+                e = [e.cause{:}];
+            end
+            st.exception = e;
+            st.points = this.points;
+            st.isRecursive = this.isRecursive;
+            st.files = File;
+            st.files = st.files(false);
+            for f = numel(this.files):-1:1
+                st.files(f) = this.files(f).serialize;
+            end
+            
+            st.plots = Plot;
+            st.plots = st.plots(false);
+            for p = numel(this.plots):-1:1
+                st.plots(p) = this.plots(p).serialize;
+            end
+            
+            
         end
     end
 end
