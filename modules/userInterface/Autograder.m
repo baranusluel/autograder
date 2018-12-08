@@ -1085,7 +1085,11 @@ classdef Autograder < matlab.apps.AppBase
                 app.Go.Text = 'Post Process';
                 app.PostProcess.Text = 'Cancel Post Processing';
                 app.UIFigure.Position(4) = sum(app.OutputPanel.Position([2 4]));
-                app.Schedule.Enable = false;    
+                app.Schedule.Enable = false;
+                app.localOutputPath = '';
+                app.StoreLocally.Value = false;
+                app.StoreLocallyValueChanged();
+                app.StoreLocally.Enable = false;
                 app.EditSubmissions.Value = false;
                 app.EditSubmissions.Enable = false;
                 app.EditSubmissionsValueChanged();
@@ -1097,6 +1101,7 @@ classdef Autograder < matlab.apps.AppBase
                 app.SolutionPanel.Visible = true;
                 app.UIFigure.Position(4) = app.ORIGINAL_SIZE(4);
                 app.Schedule.Enable = true;
+                app.StoreLocally.Enable = true;
                 app.EditSubmissions.Enable = true;
                 app.postProcessPath = '';
             end
