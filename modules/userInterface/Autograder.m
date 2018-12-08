@@ -10,6 +10,7 @@ classdef Autograder < matlab.apps.AppBase
         Notifications           matlab.ui.container.Menu
         Schedule                matlab.ui.container.Menu
         Update                  matlab.ui.container.Menu
+        PostProcess             matlab.ui.container.Menu
         AuthorizationsMenu      matlab.ui.container.Menu
         Canvas                  matlab.ui.container.Menu
         Drive                   matlab.ui.container.Menu
@@ -17,7 +18,6 @@ classdef Autograder < matlab.apps.AppBase
         AcknowledgementsMenu    matlab.ui.container.Menu
         LicenseMenu             matlab.ui.container.Menu
         DocumentationMenu       matlab.ui.container.Menu
-        About                   matlab.ui.container.Menu
         HomeworkPanel           matlab.ui.container.Panel
         IsResubmission          matlab.ui.control.CheckBox
         HomeworkNumberLabel     matlab.ui.control.Label
@@ -51,6 +51,10 @@ classdef Autograder < matlab.apps.AppBase
         Go                      matlab.ui.control.Button
         Cancel                  matlab.ui.control.Button
     end
+    
+    properties (Constant)
+        ORIGINAL_SIZE = [100 100 640 581];
+    end
 
 
     properties (Access = public)
@@ -66,12 +70,12 @@ classdef Autograder < matlab.apps.AppBase
         canvasHomeworkId char
         homeworkNum double
         isResubmission logical
+        postProcessPath char = '';
         
         % Student Information
         selectedStudents
         isEditingSubmissions logical = false;
 
-        
         % Solution Information
         solutionArchivePath char
         driveFolderId char
@@ -738,8 +742,24 @@ classdef Autograder < matlab.apps.AppBase
         % Button pushed function: Go
         function GoButtonPushed(app, ~)
             % validate settings
+            % if nothing selected, we are post processing. Show
+            % confirmation dialogue!
+            if ~isempty(app.postProcessPath)
+                % post processor
+                resp = uiconfirm(app.UIFigure, ...
+                    ['You have elected to Post Process.', ...
+                    newline, ...
+                    'No grading will be done - only uploading, etc. Click continue to proceed, or cancel to select different options'], ...
+                    'Post Processing', ...
+                    'Options', {'Continue', 'Cancel'}, ...
+                    'CancelOption', 'Cancel', ...
+                    'DefaultOption', 'Cancel', ...
+                    'Icon', 'info');
+                if strcmpi(resp, 'cancel')
+                    return;
+                end
             % homework choice - had to pick ZIP or Canvas
-            if app.HomeworkChoice.Value == 0
+            elseif app.HomeworkChoice.Value == 0
                 uialert(app.UIFigure, 'Pick a Homework Submission', 'Autograder Error');
                 return;
                 % Solution choice - had to pick something
@@ -1035,6 +1055,52 @@ classdef Autograder < matlab.apps.AppBase
             end
             close(p);
         end
+        
+        % Menu selected function: PostProcess
+        function PostProcessMenuSelected(app, ~)
+            % tell user what is going to happen
+            if isempty(app.postProcessPath)
+                
+                resp = uiconfirm(app.UIFigure, ...
+                    ['Post Processing is exclusively the step 3 options - ', ...
+                    'You will be asked to select an archive from a previous grading session', ...
+                    newline, ...
+                    'Then, you can select whatever post-grading options you want. When you''re ready, click "Go"'], ...
+                    'Post Processor', ...
+                    'Options', {'OK', 'Cancel'}, ...
+                    'CancelOption', 'Cancel', ...
+                    'DefaultOption', 'Cancel', ...
+                    'Icon', 'info');
+                if strcmpi(resp, 'Cancel')
+                    return;
+                end
+                % ask for folder
+                path = app.getFolder('Select the grading archive');
+                if islogical(path)
+                    return;
+                end
+                % blank out steps 1 and 2, change Go to be Post Process
+                app.HomeworkPanel.Visible = false;
+                app.SolutionPanel.Visible = false;
+                app.Go.Text = 'Post Process';
+                app.PostProcess.Text = 'Cancel Post Processing';
+                app.UIFigure.Position(4) = sum(app.OutputPanel.Position([2 4]));
+                app.Schedule.Enable = false;    
+                app.EditSubmissions.Value = false;
+                app.EditSubmissions.Enable = false;
+                app.EditSubmissionsValueChanged();
+                app.postProcessPath = path;
+            else
+                app.PostProcess.Text = 'Post Processing...';
+                app.Go.Text = 'Go!';
+                app.HomeworkPanel.Visible = true;
+                app.SolutionPanel.Visible = true;
+                app.UIFigure.Position(4) = app.ORIGINAL_SIZE(4);
+                app.Schedule.Enable = true;
+                app.EditSubmissions.Enable = true;
+                app.postProcessPath = '';
+            end
+        end
 
         % Menu selected function: Github
         function GithubMenuSelected(app, ~)
@@ -1052,7 +1118,7 @@ classdef Autograder < matlab.apps.AppBase
             % Create UIFigure
             app.UIFigure = uifigure;
             app.UIFigure.Color = [0.9412 0.9412 0.9412];
-            app.UIFigure.Position = [100 100 640 581];
+            app.UIFigure.Position = app.ORIGINAL_SIZE;
             app.UIFigure.Name = 'Autograder';
             app.UIFigure.CloseRequestFcn = createCallbackFcn(app, @UIFigureCloseRequest, true);
 
@@ -1092,6 +1158,11 @@ classdef Autograder < matlab.apps.AppBase
             app.Update = uimenu(app.SettingsMenu);
             app.Update.MenuSelectedFcn = createCallbackFcn(app, @UpdateMenuSelected, true);
             app.Update.Text = 'Update';
+            
+            % Create PostProcess
+            app.PostProcess = uimenu(app.SettingsMenu);
+            app.PostProcess.MenuSelectedFcn = createCallbackFcn(app, @PostProcessMenuSelected, true);
+            app.PostProcess.Text = 'Post Processing...';
 
             % Create AuthorizationsMenu
             app.AuthorizationsMenu = uimenu(app.UIFigure);
@@ -1110,7 +1181,7 @@ classdef Autograder < matlab.apps.AppBase
             % Create Github
             app.Github = uimenu(app.AuthorizationsMenu);
             app.Github.MenuSelectedFcn = createCallbackFcn(app, @GithubMenuSelected, true);
-            app.Github.Text = 'Server...';
+            app.Github.Text = 'GitHub...';
 
             % Create AcknowledgementsMenu
             app.AcknowledgementsMenu = uimenu(app.UIFigure);
@@ -1125,10 +1196,6 @@ classdef Autograder < matlab.apps.AppBase
             app.DocumentationMenu = uimenu(app.AcknowledgementsMenu);
             app.DocumentationMenu.MenuSelectedFcn = createCallbackFcn(app, @DocumentationMenuSelected, true);
             app.DocumentationMenu.Text = 'Documentation';
-
-            % Create About
-            app.About = uimenu(app.AcknowledgementsMenu);
-            app.About.Text = 'Menu';
 
             % Create HomeworkPanel
             app.HomeworkPanel = uipanel(app.UIFigure);

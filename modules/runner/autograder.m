@@ -67,10 +67,11 @@ function autograder(app)
     %   * Uplaod Feedback -> canvas
     %   * Email Feedback
     %   * Store Output Locally
-    shouldGrade = app.UploadGradesToCanvas.Value ...
-        || app.UploadFeedbackToCanvas.Value ...
-        || app.EmailFeedback.Value ...
-        || ~isempty(app.localOutputPath);
+    shouldGrade = isempty(app.postProcessPath) ...
+        && (app.UploadGradesToCanvas.Value ...
+        ||  app.UploadFeedbackToCanvas.Value ...
+        ||  app.EmailFeedback.Value ...
+        ||  ~isempty(app.localOutputPath));
 
     settings.userPath = {path(), userpath()};
     setArraySizeLimit();
@@ -137,7 +138,10 @@ function autograder(app)
     % For solution, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Solutions');
-    if app.SolutionChoice.Value == 1
+    if ~isempty(app.postProcessPath)
+        % copy over files
+        copyfile(fullfile(app.postProcessPath, 'Solutions'), fullfile('.', 'Solutions'));
+    elseif app.SolutionChoice.Value == 1
         % downloading
         try
             Logger.log('Exchanging refresh token for access token');
@@ -198,7 +202,10 @@ function autograder(app)
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Students');
-    if app.HomeworkChoice.Value == 1
+    if ~isempty(app.postProcessPath)
+        % copy all the files
+        copyfile(fullfile(app.PostProcessPath, 'Students'), fullfile('.', 'Students'));
+    elseif app.HomeworkChoice.Value == 1
         % downloading. We should create new Students folder and download
         % there.
         try
@@ -275,6 +282,27 @@ function autograder(app)
         else
             alert(app, e);
             return;
+        end
+    end
+    % if we are post processing, extract grade information.
+    if ~isempty(app.postProcessPath)
+        % read original CSV
+        warning('off');
+        tbl = readtable(fullfile(app.postProcessPath, 'grades.csv'));
+        warning('on');
+        % TODO: Check if numeric
+        grades = tbl(:, end).Variables;
+        gtUsernames = tbl(:, 2).Variables;
+        
+        % last column is grades
+        % second column is GT Username
+        
+        % overwrite
+        % should be in same order........?
+        % can't assume. Mask.
+        % alternatively, sort by same metric?
+        for s = 1:numel(students)
+            students(s).Grade = grades(strcmpi(gtUsernames, students(s).id));
         end
     end
 
