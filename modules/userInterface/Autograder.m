@@ -1024,7 +1024,7 @@ classdef Autograder < matlab.apps.AppBase
             if value
                 if ~isempty(app.localOutputPath)
                     app.localCheatPath = fullfile(app.localOutputPath, 'Cheaters');
-                else
+                elseif isempty(app.postProcessPath)
                     res = app.getFolder('Where should we store the Cheat Detection?');
                     if ~islogical(res)
                         app.localCheatPath = res;
