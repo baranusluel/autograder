@@ -140,6 +140,8 @@ function autograder(app)
     mkdir('Solutions');
     if ~isempty(app.postProcessPath)
         % copy over files
+        progress.Message = 'Copying Solutions';
+        progress.Indeterminate = 'on';
         copyfile(fullfile(app.postProcessPath, 'Solutions'), fullfile('.', 'Solutions'));
     elseif app.SolutionChoice.Value == 1
         % downloading
@@ -204,7 +206,9 @@ function autograder(app)
     mkdir('Students');
     if ~isempty(app.postProcessPath)
         % copy all the files
-        copyfile(fullfile(app.PostProcessPath, 'Students'), fullfile('.', 'Students'));
+        progress.Message = 'Copying Student Files';
+        progress.Indeterminate = 'on';
+        copyfile(fullfile(app.postProcessPath, 'Students'), fullfile('.', 'Students'));
     elseif app.HomeworkChoice.Value == 1
         % downloading. We should create new Students folder and download
         % there.
