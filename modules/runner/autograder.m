@@ -305,7 +305,7 @@ function autograder(app)
         % can't assume. Mask.
         % alternatively, sort by same metric?
         for s = 1:numel(students)
-            students(s).Grade = grades(strcmpi(gtUsernames, students(s).id));
+            students(s).Grade = grades(strcmp(gtUsernames, students(s).id));
         end
     end
 
