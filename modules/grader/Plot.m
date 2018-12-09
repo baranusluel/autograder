@@ -600,23 +600,11 @@ classdef Plot < handle
             % if data equals, we've alreay checked everything else. it has
             % to be styles (points or lines)
             msg = 'Your point or line styles are incorrect';
-        elseif this.pointEquals(that)
+        else
             % if not even data equals, some bad data there
             msg = 'Your plot data differs from the solution';
-        else
-            % At this point, we've checked:
-            %   Alien
-            %   Title, XYZ labels
-            %   Position (Subplot)
-            %   PlotBox (Axis)
-            %   Limits
-            %   Data
-            %
-            % If we reach here, we don't really know what's up. Tell the
-            % user we don't know - see a TA
-            msg = 'Your plot is different, but we can''t tell why. Please reach out to a TA, and include this feedback';
         end
-        msg = sprintf('%s\nFor more information, please use <code>checkPlots</code>', msg);
+        msg = sprintf('%s. For more information, please use <code>checkPlots</code>', msg);
         
         studPlot = img2base64(this.Image);
         solnPlot = img2base64(that.Image);
