@@ -1083,8 +1083,9 @@ classdef Autograder < matlab.apps.AppBase
                 try
                     fid = fopen(fullfile(path, 'info.txt'), 'rt');
                     data = textscan(fid, '%d - %d');
+                    fclose(fid);
                     app.homeworkNum = data{1};
-                    app.isResubmission = data{1} == 1;
+                    app.isResubmission = data{2} == 1;
                 catch
                     uialert(app.UIFigure, 'Invalid archive chosen', 'Post Process', 'icon', 'error');
                     return;
