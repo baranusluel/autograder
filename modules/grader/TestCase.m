@@ -76,8 +76,13 @@ classdef TestCase < handle
         outputs = struct();
         files;
         plots;
+        call;
     end
     methods
+        function call = get.call(this)
+            call = ['[' strjoin(this.outputNames, ', ') ' = ', ...
+                this.name '(' strjoin(this.inputNames, ', ') ');'];
+        end
         function this = TestCase(info, path)
             %% Constructor
             %
