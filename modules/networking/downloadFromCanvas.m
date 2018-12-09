@@ -107,7 +107,7 @@ function saveFiles(paths, links)
     paths(strlength(links) == 0) = [];
     links(strlength(links) == 0) = [];
     for f = 1:numel(links)
-        if links(f) == "FILE_TO_LARGE"
+        if links(f) == "FILE_TOO_LARGE"
             [~, name, ~] = fileparts(paths(f));
             fid = fopen(paths(f), 'wt');
             fprintf(fid, Student.FILE_ERROR, ...
