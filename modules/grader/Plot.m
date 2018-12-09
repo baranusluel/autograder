@@ -57,12 +57,11 @@ classdef Plot < handle
         Points;
         Segments;
         Limits;
+        isAlien logical = false;
     end
     properties (Constant)
         POSITION_MARGIN = 0.05;
-    end
-    properties (Access=private)
-        isAlien logical = false;
+        ROUNDOFF_ERROR = 5;
     end
     methods
         function this = Plot(pHandle)
@@ -78,7 +77,7 @@ classdef Plot < handle
         %
         % This class takes in student plot information and compares it with
         % the solution plot information to return feedback for each
-        % student.
+        % Plot.
         %
         % If the plot does not have a title, xlabel, ylabel, or zlabel, the
         % appropriate field will contain an empty string.
@@ -146,13 +145,13 @@ classdef Plot < handle
                 this.ZLabel = pHandle.ZLabel.String;
             end
             this.Position = round(pHandle.Position, ...
-                Student.ROUNDOFF_ERROR);
+                Plot.ROUNDOFF_ERROR);
             this.PlotBox = round(pHandle.PlotBoxAspectRatio, ...
-                Student.ROUNDOFF_ERROR);
+                Plot.ROUNDOFF_ERROR);
             this.Limits = round([pHandle.XLim, pHandle.YLim, pHandle.ZLim], ...
-                Student.ROUNDOFF_ERROR);
+                Plot.ROUNDOFF_ERROR);
             
-            tmp = figure();
+            tmp = figure('Visible', 'off');
             par = pHandle.Parent;
             pHandle.Parent = tmp;
             imgstruct = getframe(tmp);
@@ -164,8 +163,10 @@ classdef Plot < handle
 
             lines = allchild(pHandle);
             if isempty(lines)
-                this.Points = [];
-                this.Segments = [];
+                tmp = Point();
+                this.Points = tmp(false);
+                tmp = Segment();
+                this.Segments = tmp(false);
                 return;
             end
             for i = length(lines):-1:1
@@ -175,8 +176,10 @@ classdef Plot < handle
                 end
             end
             if isempty(lines)
-                this.Segments = [];
-                this.Points = [];
+                tmp = Point();
+                this.Points = tmp(false);
+                tmp = Segment();
+                this.Segments = tmp(false);
                 return;
             end
             xcell = {lines.XData};
@@ -184,19 +187,19 @@ classdef Plot < handle
             zcell = {lines.ZData};
             
             % Round data to sigfig
-            xcell = cellfun(@(xx)(round(double(xx), Student.ROUNDOFF_ERROR)), xcell, 'uni', false);
-            ycell = cellfun(@(yy)(round(double(yy), Student.ROUNDOFF_ERROR)), ycell, 'uni', false);
-            zcell = cellfun(@(zz)(round(double(zz), Student.ROUNDOFF_ERROR)), zcell, 'uni', false);
+            xcell = cellfun(@(xx)(round(double(xx), Plot.ROUNDOFF_ERROR)), xcell, 'uni', false);
+            ycell = cellfun(@(yy)(round(double(yy), Plot.ROUNDOFF_ERROR)), ycell, 'uni', false);
+            zcell = cellfun(@(zz)(round(double(zz), Plot.ROUNDOFF_ERROR)), zcell, 'uni', false);
             
             % Remove data points that have NaN in any axis
             for i = 1:length(lines) % for each cell / line
                 xdata = xcell{i};
                 ydata = ycell{i};
                 zdata = zcell{i};
-                points = max([length(xdata), length(ydata), length(zdata)]); % number of data points
-                xNaN = false(1,points);
-                yNaN = false(1,points);
-                zNaN = false(1,points);
+                pts = max([length(xdata), length(ydata), length(zdata)]); % number of data points
+                xNaN = false(1,pts);
+                yNaN = false(1,pts);
+                zNaN = false(1,pts);
                 if ~isempty(xdata)
                     xNaN = isnan(xdata);
                 end
@@ -218,7 +221,6 @@ classdef Plot < handle
                 end
             end
             
-            legend = {lines.DisplayName};
             color = {lines.Color};
             marker = {lines.Marker};
             marker(strcmp(marker, 'none')) = {''};
@@ -248,7 +250,6 @@ classdef Plot < handle
             segments = cell(1, totalSegs);
             segmentColors = cell(size(segments));
             segmentStyles = cell(size(segments));
-            segmentLegends = cell(size(segments));
             counter = 1;
             for i = 1:length(xcell)
                 if ~isempty(linestyle{i})
@@ -256,7 +257,6 @@ classdef Plot < handle
                     segments(counter:(counter+length(tmp)-1)) = tmp;
                     segmentColors(counter:(counter+length(tmp)-1)) = color(i);
                     segmentStyles(counter:(counter+length(tmp)-1)) = linestyle(i);
-                    segmentLegends(counter:(counter+length(tmp)-1)) = legend(i);
                     counter = counter + length(tmp);
                 end
             end
@@ -264,25 +264,7 @@ classdef Plot < handle
             segments((counter):end) = [];
             segmentColors((counter):end) = [];
             segmentStyles((counter):end) = [];
-            segmentLegends((counter):end) = [];
             % 
-            % Find Uniqueness:
-            % for each one, iterate over others; each one, if equal,
-            % delete.
-            c = 1;
-            while c <= length(segments)
-                % iterate over rest of segments
-                seg = segments(c);
-                for j = length(segments):-1:(c+1)
-                    if isequal(seg, segments(j))
-                        segments(j) = [];
-                        segmentColors(j) = [];
-                        segmentStyles(j) = [];
-                        segmentLegends(j) = [];
-                    end
-                end
-                c = c + 1;
-            end
             % Sorting this would make comparison faster - but would the
             % sorting actually be slower than just comparing unsorted?
             
@@ -290,12 +272,18 @@ classdef Plot < handle
             % make it faster. So our sort algorithm doesn't actually have
             % to be fully unique, so just sorting by X values should be
             % good enough, while still being quite spritely
-            
-            this.Segments = struct('Segment', segments, ...
-                'Color', segmentColors, ...
-                'LineStyle', segmentStyles, ...
-                'Legend', segmentLegends);
-            segXPts = arrayfun(@(s)(s.Segment{1}(1)), this.Segments);
+            for s = numel(segments):-1:1
+                segs(s) = Segment(segments{s}{:}, ...
+                    segmentColors{s}, ...
+                    segmentStyles{s});
+            end
+            if isempty(segments)
+                segs = Segment();
+                segs = segs(false);
+            end 
+            segs = unique(segs);
+            this.Segments = segs;
+            segXPts = arrayfun(@(s)(s.Start(1)), this.Segments);
             [~, inds] = sort(segXPts);
             this.Segments = this.Segments(inds);
             function segments = line2segments(xx, yy, zz)
@@ -313,13 +301,11 @@ classdef Plot < handle
                             last = [num2str(xx(idx+1)) ' ' num2str(yy(idx+1)) ' ' num2str(zz(idx+1))];
                             [~, order] = sort({first last});
                             if order(1) == 1
-                                segments{idx} = {[xx(idx) xx(idx+1)], ...
-                                    [yy(idx) yy(idx+1)], ...
-                                    [zz(idx) zz(idx+1)]};
+                                segments{idx} = {[xx(idx) yy(idx) zz(idx)], ...
+                                    [xx(idx+1) yy(idx+1) zz(idx+1)]};
                             else
-                                segments{idx} = {[xx(idx+1) xx(idx)], ...
-                                    [yy(idx+1) yy(idx)], ...
-                                    [zz(idx+1) zz(idx)]};
+                                segments{idx} = {[xx(idx+1) yy(idx+1) zz(idx+1)], ...
+                                    [xx(idx) yy(idx) zz(idx)]};
                             end
                         end
                     end
@@ -334,13 +320,11 @@ classdef Plot < handle
                             last = [num2str(xx(idx+1)) ' ' num2str(yy(idx+1))];
                             [~, order] = sort({first last});
                             if order(1) == 1
-                                segments{idx} = {[xx(idx) xx(idx+1)], ...
-                                    [yy(idx) yy(idx+1)], ...
-                                    []};
+                                segments{idx} = {[xx(idx) yy(idx)], ...
+                                    [xx(idx+1) yy(idx+1)]};
                             else
-                                segments{idx} = {[xx(idx+1) xx(idx)], ...
-                                    [yy(idx+1) yy(idx)], ...
-                                    []};
+                                segments{idx} = {[xx(idx+1) yy(idx+1)], ...
+                                    [xx(idx) yy(idx)]};
                             end
                         end
                     end
@@ -358,57 +342,36 @@ classdef Plot < handle
                     totalPoints = totalPoints + numel(xcell{p});
                 end
             end
-            ptData = cell(1, totalPoints);
-            points = struct('X', ptData, ...
-                'Y', ptData, ...
-                'Z', ptData, ...
-                'Marker', ptData, ...
-                'Legend', ptData, ...
-                'Color', ptData);
-            counter = 1;
+            
+            n = totalPoints;
             for i = 1:length(xcell)
                 if ~isempty(marker{i})
                     % just separate X, Y, Z points
-                    xx = num2cell(xcell{i});
-                    yy = num2cell(ycell{i});
+                    xx = xcell{i};
+                    yy = ycell{i};
                     zz = zcell{i};
-                    mark = marker{i};
-
-                    col = color{i};
-                    leg = legend{i};
                     if isempty(zz)
-                        zz = {[]};
-                    else
-                        zz = num2cell(zz);
+                        zz = zeros(1,length(xx));
                     end
-                    [points(counter:(counter+length(xx)-1)).X] = deal(xx{:});
-                    [points(counter:(counter+length(xx)-1)).Y] = deal(yy{:});
-                    [points(counter:(counter+length(xx)-1)).Z] = deal(zz{:});
-                    [points(counter:(counter+length(xx)-1)).Marker] = deal(mark);
-                    [points(counter:(counter+length(xx)-1)).Color] = deal(col);
-                    [points(counter:(counter+length(xx)-1)).Legend] = deal(leg);
-                    counter = counter + length(xx);
+                    mark = marker{i};
+                    col = color{i};
+                    for j = length(xx):-1:1
+                        points(n) = Point([xx(j) yy(j) zz(j)], ...
+                            mark, col);
+                        n = n - 1;
+                    end
                 end
+            end
+            if totalPoints == 0
+                points = Point();
+                points = points(false);
             end
             % Unique check
             % for all pts, if any point is identical, kill it
-            p = 1;
-            while p <= length(points)
-                pt = points(p);
-                for j = length(points):-1:(p+1)
-                    if isequal(pt, points(j))
-                        points(j) = [];
-                    end
-                end
-                p = p + 1;
-            end
-            
-            % Sort, just like we did with Segments:
-            [~, inds] = sort([points.X]);
-            points = points(inds);
-                    
-            
+            points = unique(points);
             this.Points = points;
+            this.Segments = unique(this.Segments);
+            this.Points = unique(this.Points);
         end
     end
     methods (Access=public)
@@ -504,28 +467,14 @@ classdef Plot < handle
             % for each point set, see if found in this
             thatPoints = that.Points;
             thisPoints = this.Points;
-            
-            for i = numel(thatPoints):-1:1
-                thatPoint = thatPoints(i);
-                % look through thisSegs; once found, delete from both
-                isFound = false;
-                for j = numel(thisPoints):-1:1
-                    if isequal(thatPoint, thisPoints(j))
-                        isFound = true;
-                        thisPoints(j) = [];
-                        thatPoints(i) = [];
-                        break;
-                    end
-                end
-                if ~isFound
-                    areEqual = false;
-                    return;
-                end
-            end
-            if ~isempty(thisPoints) || ~isempty(thatPoints)
+            % use ismember! If all of student points are member, AND all of
+            % soln points are member, then yes
+            if ~all(ismember(thisPoints, thatPoints)) ...
+                    || ~all(ismember(thatPoints, thisPoints))
                 areEqual = false;
                 return;
             end
+            
             % Nothing should be left in either set; if both sets are
             % non-empty, then false
 
@@ -536,26 +485,35 @@ classdef Plot < handle
             thatSegs = that.Segments;
             thisSegs = this.Segments;
             
-            for i = numel(thatSegs):-1:1
-                thatSeg = thatSegs(i);
-                % look through thisSegs; once found, delete from both
-                isFound = false;
-                for j = numel(thisSegs):-1:1
-                    if isequal(thatSeg, thisSegs(j))
-                        isFound = true;
-                        thisSegs(j) = [];
-                        thatSegs(i) = [];
-                        break;
-                    end
-                end
-                if ~isFound
-                    areEqual = false;
-                    return;
-                end
+            if ~all(ismember(thisSegs, thatSegs)) ...
+                    || ~all(ismember(thatSegs, thisSegs))
+                areEqual = false;
+                return;
             end
-            % Nothing should be left in either set; if both sets are
-            % non-empty, then false
-            if ~isempty(thisSegs) || ~isempty(thatSegs)
+            areEqual = true;
+        end
+        %% pointEquals: Check Plotted Equality
+        %
+        % pointEquals is like dataEquals, except it only checks exact
+        % points plotted - i.e., is the raw plotted data the same
+        function areEqual = pointEquals(this, that)
+            extractor = @(seg)([seg.Start, seg.Stop]);
+            thisPoints = [this.Points, extractor(this.Segments)];
+            thatPoints = [that.Points, extractor(that.Segments)];
+            areEqual = all(ismember(thisPoints, thatPoints));
+        end
+        %% dataEquals: Check Data Equality
+        %
+        % dataEquals is the same as equals, except it strictly checks point
+        % and segment data - raw coordinates.
+        function areEqual = dataEquals(this, that)
+            % already unique & sorted; just do dataEquals of points and
+            % segs
+            if numel(this.Points) ~= numel(that.Points) ...
+                    || numel(this.Segments) ~= numel(that.Segments)
+                areEqual = false;
+            elseif ~all(dataEquals(this.Points, that.Points)) ...
+                    || ~all(dataEquals(this.Segments, that.Segments))
                 areEqual = false;
             else
                 areEqual = true;
@@ -613,8 +571,9 @@ classdef Plot < handle
         % segs
         % pts
         % limits
-        msg = '';
-        if ~strcmp(this.Title, that.Title)
+        if this.isAlien
+            msg = 'You plotted something other than lines or points, so we could not grade your submission';
+        elseif ~strcmp(this.Title, that.Title)
             msg = sprintf('You gave title "%s", but we expected "%s"', ...
                 this.Title, that.Title);
         elseif ~strcmp(this.XLabel, that.XLabel)
@@ -628,86 +587,24 @@ classdef Plot < handle
                 this.ZLabel, that.ZLabel);
         elseif any(this.Position < (that.Position - Plot.POSITION_MARGIN)) ...
                     || any(this.Position > (that.Position + Plot.POSITION_MARGIN))
-            msg = sprintf(['Your plot has a position of [%0.2f, %0.2f, %0.2f, %0.2f], ', ...
-                'but we expected [%0.2f, %0.2f, %0.2f, %0.2f] (Did you call subplot correctly?)'], ...
-                this.Position(1), this.Position(2), this.Position(3), this.Position(4), ...
-                that.Position(1), that.Position(2), that.Position(3), that.Position(4));
+            msg = 'Your plot has the wrong position (Did you call subplot correctly?)';
         elseif any(this.PlotBox < (that.PlotBox - Plot.POSITION_MARGIN)) ...
                     || any(this.PlotBox > (that.PlotBox + Plot.POSITION_MARGIN))
-            msg = sprintf(['Your plot has a Plot Box of [%0.2f, %0.2f, %0.2f], ', ...
-                'but we expected [%0.2f, %0.2f, %0.2f] (Did you call subplot correctly?)'], ...
-                this.PlotBox(1), this.PlotBox(2), this.PlotBox(3), ...
-                that.PlotBox(1), that.PlotBox(2), that.PlotBox(3));
-        else
-            % we need to check Segs and Points
-            % do roll call
-            solnSegs = that.Segments;
-            studSegs = this.Segments;
-            isFound = false;
-            for i = numel(solnSegs):-1:1
-                solnSeg = solnSegs(i);
-                isFound = false;
-                for j = numel(studSegs):-1:1
-                    if isequal(solnSeg, studSegs(j))
-                        solnSegs(i) = [];
-                        studSegs(j) = [];
-                        isFound = true;
-                        break;
-                    end
-                end
-                if ~isFound
-                    msg = sprintf('You didn''t plot segment (%0.2f, %0.2f)<i class="fas fa-arrow-right"></i>(%0.2f, %0.2f)', ...
-                        solnSeg.Segment{1}(1), ...
-                        solnSeg.Segment{2}(1), ...
-                        solnSeg.Segment{1}(2), ...
-                        solnSeg.Segment{2}(2));
-                    break;
-                end
-            end
-            if isFound && ~isempty(studSegs)
-                seg = studSegs(1);
-                msg = sprintf('You plotted segment (%0.2f, %0.2f)<i class="fas fa-arrow-right"></i>(%0.2f, %0.2f) when you shouldn''t have', ...
-                    seg.Segment{1}(1), ...
-                    seg.Segment{2}(1), ...
-                    seg.Segment{1}(2), ...
-                    seg.Segment{2}(2));
-            end
-            if isempty(msg)
-                % look at points
-                solnPoints = that.Points;
-                studPoints = this.Points;
-                isFound = false;
-                for i = numel(solnPoints):-1:1
-                    solnPoint = solnPoints(i);
-                    isFound = false;
-                    for j = numel(studPoints):-1:1
-                        if isequal(solnPoint, studPoints(j))
-                            solnPoints(i) = [];
-                            studPoints(j) = [];
-                            isFound = true;
-                            break;
-                        end
-                    end
-                    if ~isFound
-                        msg = sprintf('You didn''t plot point (%0.2f, %0.2f)', ...
-                            solnPoint.X, solnPoint.Y);
-                        break;
-                    end
-                end
-                if isFound && ~isempty(studPoints)
-                    pt = studPoints(1);
-                    msg = sprintf('You plotted point (%0.2f, %0.2f) when you shouldn''t have', ...
-                        pt.X, pt.Y);
-                end
-            end
-        end
-        
-        if isempty(msg) && ~isequal(this.Limits(1:4), that.Limits(1:4))
+            msg = 'Your axes aren''t lined up (did you call axis correctly?';
+        elseif ~isequal(this.Limits(1:4), that.Limits(1:4))
             msg = sprintf(['Your plot has Limits of [%0.2f, %0.2f, %0.2f, %0.2f], ', ...
                 'but we expected [%0.2f, %0.2f, %0.2f, %0.2f] (Did you call axis or xlim/ylim correctly?)'], ...
                 this.Limits(1), this.Limits(2), this.Limits(3), this.Limits(4), ...
                 that.Limits(1), that.Limits(2), that.Limits(3), that.Limits(4));
+        elseif this.dataEquals(that)
+            % if data equals, we've alreay checked everything else. it has
+            % to be styles (points or lines)
+            msg = 'Your point or line styles are incorrect';
+        else
+            % if not even data equals, some bad data there
+            msg = 'Your plot data differs from the solution';
         end
+        msg = sprintf('%s. For more information, please use <code>checkPlots</code>', msg);
         
         studPlot = img2base64(this.Image);
         solnPlot = img2base64(that.Image);
