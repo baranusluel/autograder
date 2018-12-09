@@ -31,6 +31,9 @@
 % original file.
 %
 classdef File < handle
+    properties (Constant)
+        encoder = org.apache.commons.codec.binary.Base64;
+    end
     properties (Access = public)
         name; %will be class char
         extension; %will be class char
@@ -137,8 +140,11 @@ classdef File < handle
                     this.data = strrep(this.data, char(10), newline);
                 case this.IMAGES
                     %read in image array and store in File class
+                    fid = fopen(path, 'r');
+                    bytes = fread(fid)';
+                    fclose(fid);
                     try
-                        this.data = imread(path);
+                        this.data = ['data:image/' ext(2:end) ';base64,', char(this.encoder.encode(bytes)')];
                     catch
                         this.data = [];
                     end
@@ -255,14 +261,14 @@ classdef File < handle
                     case this.IMAGES
                         html = '<div class="row image-feedback">';
                         html = [html '<div class="col-md-6 text-center student-image">'];
-                        if size(this.data, 3) ~= 3
+                        if isempty(this.data)
                             html = [html '<p class="exception">Your image could not be read</p>'];
                         else
-                            html = [html sprintf('<img class="img-thumbnail rounded img-fluid" src="%s">', img2base64(this.data))];
+                            html = [html sprintf('<img class="img-thumbnail rounded img-fluid" src="%s">', this.data)];
                         end
                         
                         html = [html '</div><div class="col-md-6 text-center soln-image">'];
-                        html = [html sprintf('<img class="img-thumbnail rounded img-fluid" src="%s">', img2base64(soln.data))];
+                        html = [html sprintf('<img class="img-thumbnail rounded img-fluid" src="%s">', soln.data)];
                         html = [html '</div></div>'];
                     case this.EXCEL
                         html = generateFeedback(this.data, soln.data);

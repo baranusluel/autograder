@@ -227,12 +227,9 @@ function runnables = engine(runnables)
         copyfile([runnable.path filesep '*.m'], fld);
         origPaths{r} = runnable.path;
         runnable.path = fld;
-
-        % parse the function call
-        [~, ~, func] = parseFunction(tCase.call);
         
         % check validity of student code
-        info = mtree([origPaths{r} filesep func2str(func) '.m'], '-file');
+        info = mtree([origPaths{r} filesep tCase.name '.m'], '-file');
         if ~info.isnull && info.allkind('ERR')
             if isa(runnable, 'Feedback')
                 runnable.exception = MException('AUTOGRADER:syntaxError', ...
@@ -245,11 +242,11 @@ function runnables = engine(runnables)
         end
         % check recursion
         if ~isTestCase
-            runnable.isRecursive = checkRecur([origPaths{r} filesep func2str(func) '.m']);
+            runnable.isRecursive = checkRecur([origPaths{r} filesep tCase.name '.m']);
         end
         % check banned usage
-        if ~isTestCase && isempty(runnable.exception)
-            [isBanned, bannedFunName] = checkBanned([func2str(func) '.m'], [BANNED tCase.banned(:)'], origPaths{r});
+        if isTestCase || isempty(runnable.exception)
+            [isBanned, bannedFunName] = checkBanned([tCase.name '.m'], [BANNED tCase.banned(:)'], origPaths{r});
             if isBanned
                 runnable.exception = MException('AUTOGRADER:engine:banned', ...
                     'File used banned function(s): %s', bannedFunName);
@@ -441,16 +438,6 @@ function runnable = runCase(runnable, safeDir)
     else
         tCase = runnable.testCase;
     end
-    if ~isempty(tCase.initializer)
-        % Append initializer call to end of varDefs
-        % Make sure suppressed!
-        if tCase.initializer(end) ~= ';'
-            tCase.initializer = [tCase.initializer ';'];
-        end
-        init = tCase.initializer;
-    else
-        init = '';
-    end
 
     % run the function
     % create sentinel file
@@ -458,10 +445,10 @@ function runnable = runCase(runnable, safeDir)
     try
         rng(1);
         cd(runnable.path);
-        % parse the call
-        [inNames, outNames, func] = parseFunction(tCase.call);
-        outs = cell(size(outNames));
-        [outs{:}] = runner(func, init, inNames, tCase.inputs);
+        outs = cell(size(tCase.outputNames));
+        [outs{:}] = runner(str2func(tCase.name), ...
+            tCase.inputNames, ...
+            tCase.inputs);
     catch e
         if isa(runnable, 'TestCase')
             e.rethrow();
@@ -495,13 +482,13 @@ function runnable = runCase(runnable, safeDir)
     % outNames is in order of argument. For each outName, apply corresponding
     % value
     for i = 1:numel(outs)
-        runnable.outputs.(outNames{i}) = outs{i};
+        runnable.outputs.(tCase.outputNames{i}) = outs{i};
     end
     populateFiles(runnable, beforeSnap);
     populatePlots(runnable);
 end
 
-function varargout = runner(func____, init____, ins, loads____)
+function varargout = runner(func____, ins, loads____)
 
     % Create statement that becomes cell array of all inputs.
     % No input sanitization here because all input names have already
@@ -513,119 +500,10 @@ function varargout = runner(func____, init____, ins, loads____)
     for i____ = 1:size(loads____, 2)
         eval([loads____{1, i____} ' = loads____{2, ' num2str(i____) '};']);
     end
-    % Run initializer, if any
-    if ~isempty(init____)
-        eval(init____);
-    end
     % Create true cell array of inputs to use in func
     ins____ = eval(inCell____);
     % Run func
     [varargout{:}] = func____(ins____{:});
-end
-
-%% parseFunction: Parse function call
-%
-% Parses the function call for inputs, outputs, and the function handle.
-%
-% [I, O, F] = parseFunction(C) will parse the function call C and
-% return the input names in I, the output names in O, and the function
-% handle in F.
-%
-%%% Remarks
-%
-% This function is unaffected by any type of white space.
-%
-% This function is case sensitive
-%
-%%% Unit Tests
-% Unlike ordinary Unit Tests, this is a list of tests. P means passing, U
-% means unknown.
-%
-% * P |'myFun'| -> [{}, {}, @myFun]
-% * P |'myFun;'| -> [{}, {}, @myFun]
-% * P |'myFun()'| -> [{}, {}, @myFun]
-% * P |'myFun();'| -> [{}, {}, @myFun]
-% * P |'myFun(in)'| -> [{'in'}, {}, @myFun]
-% * P |'myFun(in);'| -> [{'in'}, {}, @myFun]
-% * P |'myFun(in,in2)'| -> [{'in', 'in2'}, {}, @myFun]
-% * P |'myFun(in,In2);'| -> [{'in', 'In2'}, {}, @myFun]
-% * P |'[] = myFun'| -> [{}, {}, @myFun]
-% * P |'[] = myFun;'| -> [{}, {}, @myFun]
-% * P |'[] = myFun()'| -> [{}, {}, @myFun]
-% * P |'[] = myFun();'| -> [{}, {}, @myFun]
-% * P |'[] = myFun(in)'| -> [{'in'}, {}, @myFun]
-% * P |'[] = myFun(in);'| -> [{'in'}, {}, @myFun]
-% * P |'[] = myFun(in1,in2)'| -> [{'in1', 'in2'}, {}, @myFun]
-% * P |'[] = myFun(in1,in2);'| -> [{'in1', 'in2'}, {}, @myFun]
-% * P |'[a] = myFun'| -> [{}, {'a'}, @myFun]
-% * P |'[a] = myFun;'| -> [{}, {'a'}, @myFun]
-% * P |'[a] = myFun()'| -> [{}, {'a'}, @myFun]
-% * P |'[a] = myFun();'| -> [{}, {'a'}, @myFun]
-% * P |'[a] = myFun(in)'| -> [{'in'}, {'a'}, @myFun]
-% * P |'[a] = myFun(in);'| -> [{'in'}, {'a'}, @myFun]
-% * P |'[a] = myFun(in1,in2)'| -> [{'in1', 'in2'}, {'a'}, @myFun]
-% * P |'[a] = myFun(in1,in2);'| -> [{'in1', 'in2'}, {'a'}, @myFun]
-% * P |'a = myFun'| -> [{}, {'a'}, @myFun]
-% * P |'a = myFun;'| -> [{}, {'a'}, @myFun]
-% * P |'a = myFun()'| -> [{}, {'a'}, @myFun]
-% * P |'a = myFun();'| -> [{}, {'a'}, @myFun]
-% * P |'a = myFun(in)'| -> [{'in'}, {'a'}, @myFun]
-% * P |'a = myFun(in);'| -> [{'in'}, {'a'}, @myFun]
-% * P |'a = myFun(in1, in2)'| -> [{'in1', 'in2'}, {'a'}, @myFun]
-% * P |'a = myFun(in1, in2);'| -> [{'in1', 'in2'}, {'a'}, @myFun]
-% * P |'[a,b] = myFun'| -> [{}, {'a', 'b'}, @myFun]
-% * P |'[a,b] = myFun;'| -> [{}, {'a', 'b'}, @myFun]
-% * P |'[a,b] = myFun()'| -> [{}, {'a', 'b'}, @myFun]
-% * P |'[a,b] = myFun();'| -> [{}, {'a', 'b'}, @myFun]
-% * P |'[a,b] = myFun(in)'| -> [{'in'}, {'a', 'b'}, @myFun]
-% * P |'[a,b] = myFun(in);'| -> [{'in'}, {'a', 'b'}, @myFun]
-% * P |'[a,b] = myFun(in1, in2)'| -> [{'in1', 'in2'}, {'a', 'b'}, @myFun]
-% * P |'[a,b] = myFun(in1, in2);'| -> [{'in1', 'in2'}, {'a', 'b'}, @myFun]
-%
-function [ins, outs, func] = parseFunction(call)
-    % Strip start, ending space:
-    call = strip(call);
-    % if end is ; get rid of it (doesn't actually affect anything, but why not)
-    call(call == ';') = '';
-    % For inputs, look for starting paren. If not found, no inputs
-    ins = regexp(call, '(?<=\()([^)]+)(?=\))', 'match');
-    if ~isempty(ins)
-        ins = ins{1};
-        ins = regexprep(ins, '\s+', '');
-        ins = strsplit(ins, ',');
-    end
-
-    % For outputs, look for an equal sign. No equal sign, no outputs
-    if ~contains(call, '=')
-        outs = {};
-    else
-        % if no bracket found, only one output. Grab accordingly
-        if ~contains(call, ']')
-            call(call == ' ') = '';
-            outs = regexp(call, '^[^\=]*', 'match');
-        else
-            % We have brackets; find in between and engage
-            outs = regexp(call, '(?<=\[)([^\]]+)(?=\])', 'match');
-            if ~isempty(outs)
-                outs = strip(outs{1});
-                % 'Replace all white space with commas'
-                outs = regexprep(outs, '\s+', ',');
-                outs = strsplit(outs, {','});
-            end
-        end
-    end
-
-    % For function name, strip everything before possible =, everything
-    % after possible (.
-    if contains(call, '=')
-        ind = strfind(call, '=');
-        call(1:ind) = '';
-    end
-    if contains(call, '(')
-        ind = strfind(call, '(');
-        call(ind:end) = '';
-    end
-    func = str2func(strip(call));
 end
 
 function cleanup(origPath)

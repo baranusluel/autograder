@@ -54,8 +54,15 @@ function downloadFromCanvas(students, path, progress)
             % create paths and links
             attachments = students(s).submission.attachments;
             for a = numel(attachments):-1:1
+                [~, ~, type] = fileparts(attachments(a).filename);
+                if attachments(a).size > Student.MAX_FILE_SIZE
+                    urls(a) = "FILE_TOO_LARGE";
+                elseif ~strcmpi(type, '.m')
+                    urls(a) = "";
+                else
+                    urls(a) = string(attachments(a).url);
+                end
                 paths(a) = string([pwd filesep students(s).login_id filesep attachments(a).filename]);
-                urls(a) = string(attachments(a).url);
             end
             submissions(s).paths = paths;
             submissions(s).urls = urls;
@@ -95,16 +102,30 @@ end
 function saveFiles(paths, links)
     opts = weboptions;
     opts.Timeout = 30;
+    % if the link is empty, then invalid file - don't download!
+    % if link is FILE_TO_LARGE, then rewrite correctly
+    paths(strlength(links) == 0) = [];
+    links(strlength(links) == 0) = [];
     for f = 1:numel(links)
-        try
-            websave(paths(f), links(f), opts);
-        catch
-            % we might just need to wait a minute - so do just that. Wait
-            % one minute.
-            state = pause('on');
-            pause(60);
-            pause(state);
-            websave(paths(f), links(f), opts);
+        if links(f) == "FILE_TOO_LARGE"
+            [~, name, ~] = fileparts(paths(f));
+            fid = fopen(paths(f), 'wt');
+            fprintf(fid, Student.FILE_ERROR, ...
+                name, ...
+                Student.FILE_TOO_LARGE.identifier, ...
+                Student.FILE_TOO_LARGE.message);
+            fclose(fid);
+        else
+            try
+                websave(paths(f), links(f), opts);
+            catch
+                % we might just need to wait a minute - so do just that. Wait
+                % one minute.
+                state = pause('on');
+                pause(60);
+                pause(state);
+                websave(paths(f), links(f), opts);
+            end
         end
     end
 end
