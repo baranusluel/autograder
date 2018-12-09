@@ -245,7 +245,7 @@ function runnables = engine(runnables)
             runnable.isRecursive = checkRecur([origPaths{r} filesep tCase.name '.m']);
         end
         % check banned usage
-        if isTestCase || isempty(runnable.exception)
+        if ~isTestCase && isempty(runnable.exception)
             [isBanned, bannedFunName] = checkBanned([tCase.name '.m'], [BANNED tCase.banned(:)'], origPaths{r});
             if isBanned
                 runnable.exception = MException('AUTOGRADER:engine:banned', ...
