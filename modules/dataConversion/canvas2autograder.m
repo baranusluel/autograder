@@ -122,6 +122,10 @@ function canvas2autograder(canvasPath, canvasGradebook, outPath, progress)
     progress.Message = 'Sorting Files';
     for f = numel(allFiles):-1:1
         name = allFiles(f).name;
+        if ~endsWith(name, '.m')
+            delete(fullfile(allFiles(f).folder, allFiles(f).name));
+            continue;
+        end
         tokens = strsplit(name, '_');
         if any(strcmp(tokens, 'ABCs'))
             ABCs = strcmp(tokens, 'ABCs');
@@ -144,7 +148,18 @@ function canvas2autograder(canvasPath, canvasGradebook, outPath, progress)
         
         src = fullfile(unzippedCanvas, allFiles(f).name);
         dest = fullfile(outPath, folderMap(canvasID), tokens{end});
-        movefile(src, dest);
+        if allFiles(f).bytes > Student.MAX_FILE_SIZE
+            [~, name, ~] = fileparts(dest);
+            fid = fopen(dest, 'wt');
+            fprintf(fid, Student.FILE_ERROR, ...
+                name, ...
+                Student.FILE_TOO_LARGE.identifier, ...
+                Student.FILE_TOO_LARGE.message);
+            fclose(fid);
+            delete(src);
+        else
+            movefile(src, dest);
+        end
         progress.Value = min(progress.Value + 1/numel(allFiles), 1);
     end
     % Write info.csv

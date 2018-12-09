@@ -7,9 +7,6 @@
 % * |call|: The complete function call 
 % (i.e., |[out1, out2] = myFunction(in1, in2);|)
 %
-% * |initializer|: The complete function call for a function to be run 
-% immediately before testing the student's code
-%
 % * |points|: The points possible for this specific test case
 %
 % * |path|: The fully qualified path to the solution code directory
@@ -63,9 +60,13 @@
 % variable names inside the MAT-file should match the input names in |call|.
 %
 classdef TestCase < handle
+    properties (Access = public, Constant)
+        ARGUMENT_NUMBER = 5;
+    end
     properties (Access = public)
-        call;
-        initializer;
+        inputNames;
+        outputNames;
+        name;
         points;
         supportingFiles;
         loadFiles;
@@ -228,8 +229,36 @@ classdef TestCase < handle
                 % instead of iterating in case fields are wrong/missing.
                 % If a field is missing, exception is caught and
                 % re-thrown as a parse error.
-                this.call = info.call;
-                this.initializer = info.initializer;
+                if isfield(info, 'call')
+                    % legacy. Parse the function call and get inputNames,
+                    % outputNames, and functionName.
+                    ins = cell(1, this.ARGUMENT_NUMBER);
+                    outs = cell(1, this.ARGUMENT_NUMBER);
+                    tree = mtree(['function ' info.call]);
+                    this.name = tree.Fname.stringval;
+                    in = tree.Ins;
+                    ind = 1;
+                    while ~in.isnull
+                        ins{ind} = in.stringval;
+                        ind = ind + 1;
+                        in = in.Next;
+                    end
+                    ins = ins(1:(ind-1));
+                    out = tree.Outs;
+                    ind = 1;
+                    while ~out.isnull
+                        outs{ind} = out.stringval;
+                        ind = ind + 1;
+                        out = out.Next;
+                    end
+                    outs = outs(1:(ind-1));
+                    this.inputNames = ins;
+                    this.outputNames = outs;
+                else
+                    this.inputNames = info.inputs;
+                    this.outputNames = info.outputs;
+                    this.name = info.name;
+                end
                 this.points = info.points;
                 this.banned = info.banned;
                 
