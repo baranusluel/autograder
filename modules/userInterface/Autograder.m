@@ -1079,6 +1079,16 @@ classdef Autograder < matlab.apps.AppBase
                 if islogical(path)
                     return;
                 end
+                % determine number & resub status
+                try
+                    fid = fopen(fullfile(path, 'info.txt'), 'rt');
+                    data = textscan(fid, '%d - %d');
+                    app.homeworkNum = data{1};
+                    app.isResubmission = data{1} == 1;
+                catch
+                    uialert(app.UIFigure, 'Invalid archive chosen', 'Post Process', 'icon', 'error');
+                    return;
+                end
                 % blank out steps 1 and 2, change Go to be Post Process
                 app.HomeworkPanel.Visible = false;
                 app.SolutionPanel.Visible = false;

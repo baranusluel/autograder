@@ -143,6 +143,7 @@ function autograder(app)
         progress.Message = 'Copying Solutions';
         progress.Indeterminate = 'on';
         copyfile(fullfile(app.postProcessPath, 'Solutions'), fullfile('.', 'Solutions'));
+
     elseif app.SolutionChoice.Value == 1
         % downloading
         try
@@ -469,6 +470,9 @@ function autograder(app)
             raw = unicode2native(['"', strjoin(raw, '"\n"'), '"'], 'UTF-8');
             fid = fopen(fullfile(app.localOutputPath, 'grades.csv'), 'wt', 'native', 'UTF-8');
             fwrite(fid, raw);
+            fclose(fid);
+            fid = fopen(fullfile(app.localOutputPAth, 'info.txt'), 'wt');
+            fprintf(fid, '%d - %d', app.homeworkNum, app.isResubmission);
             fclose(fid);
             copyfile(settings.workingDir, app.localOutputPath);
         catch e
