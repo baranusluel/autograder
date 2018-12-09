@@ -32,7 +32,7 @@
 %
 classdef File < handle
     properties (Constant)
-        MAX_FILE_SIZE = 1 * 1024 * 1024; % 1 MB
+        MAX_FILE_SIZE = 10 * 1024 * 1024; % 10 MB
     end
     properties (Access = public)
         name; %will be class char
