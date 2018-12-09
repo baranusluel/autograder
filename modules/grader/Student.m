@@ -68,11 +68,14 @@ classdef Student < handle
         path char;
         submissions cell;
         feedbacks cell = {};
-        grade double;
         problemPaths cell;
         commentGrades double;
     end
+    properties (Access = public, Dependent)
+        Grade double;
+    end
     properties (Access=private)
+        grade double = [];
         html cell = {};
         resources Resources;
     end
@@ -90,11 +93,17 @@ classdef Student < handle
         end
     end
     methods
-        function grade = get.grade(this)
-            if isempty(this.feedbacks)
+        function grade = get.Grade(this)
+            if isempty(this.grade) && isempty(this.feedbacks)
                 throw(MException('AUTOGRADER:Student:grade:noFeedbacks', 'No feedbacks were found (did you call assess?)'));
+            elseif isempty(this.grade)
+                this.grade = sum(cellfun(@(f) sum([f.points]), this.feedbacks));
             end
-            grade = sum(cellfun(@(f) sum([f.points]), this.feedbacks));
+            grade = this.grade;
+        end
+        
+        function set.Grade(this, grade)
+            this.grade = grade;
         end
         function this = Student(path, name, canvas, recs)
         %% Constructor
@@ -242,6 +251,10 @@ classdef Student < handle
         % Empty submissions will give appropriate score and reason values
         % in the Feedback class.
         % The Feedback classes will then be added to the feedbacks field.
+            
+            % Reset our grade when we assess a student - otherwise,
+            % re-assessing a student would not change the grade!
+            this.grade = [];
             problems = this.resources.Problems;
             % for each problem, create ends
             counter = numel([problems.testCases]);

@@ -67,10 +67,11 @@ function autograder(app)
     %   * Uplaod Feedback -> canvas
     %   * Email Feedback
     %   * Store Output Locally
-    shouldGrade = app.UploadGradesToCanvas.Value ...
-        || app.UploadFeedbackToCanvas.Value ...
-        || app.EmailFeedback.Value ...
-        || ~isempty(app.localOutputPath);
+    shouldGrade = isempty(app.postProcessPath) ...
+        && (app.UploadGradesToCanvas.Value ...
+        ||  app.UploadFeedbackToCanvas.Value ...
+        ||  app.EmailFeedback.Value ...
+        ||  ~isempty(app.localOutputPath));
 
     settings.userPath = {path(), userpath()};
     setArraySizeLimit();
@@ -137,7 +138,12 @@ function autograder(app)
     % For solution, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Solutions');
-    if app.SolutionChoice.Value == 1
+    if ~isempty(app.postProcessPath)
+        % copy over files
+        progress.Message = 'Copying Solutions';
+        progress.Indeterminate = 'on';
+        copyfile(fullfile(app.postProcessPath, 'Solutions'), fullfile('.', 'Solutions'));
+    elseif app.SolutionChoice.Value == 1
         % downloading
         try
             Logger.log('Exchanging refresh token for access token');
@@ -198,7 +204,12 @@ function autograder(app)
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Students');
-    if app.HomeworkChoice.Value == 1
+    if ~isempty(app.postProcessPath)
+        % copy all the files
+        progress.Message = 'Copying Student Files';
+        progress.Indeterminate = 'on';
+        copyfile(fullfile(app.postProcessPath, 'Students'), fullfile('.', 'Students'));
+    elseif app.HomeworkChoice.Value == 1
         % downloading. We should create new Students folder and download
         % there.
         try
@@ -277,6 +288,26 @@ function autograder(app)
             return;
         end
     end
+    % if we are post processing, extract grade information.
+    if ~isempty(app.postProcessPath)
+        % read original CSV
+        warning('off');
+        tbl = readtable(fullfile(app.postProcessPath, 'grades.csv'));
+        warning('on');
+        grades = str2double(tbl(:, end).Variables);
+        gtUsernames = tbl(:, 2).Variables;
+        
+        % last column is grades
+        % second column is GT Username
+        
+        % overwrite
+        % should be in same order........?
+        % can't assume. Mask.
+        % alternatively, sort by same metric?
+        for s = 1:numel(students)
+            students(s).Grade = grades(strcmp(gtUsernames, students(s).id));
+        end
+    end
 
     % Create Plot
     if shouldGrade
@@ -348,7 +379,7 @@ function autograder(app)
                 end
             end
             progress.Value = s/numel(students);
-            h.Data(s) = student.grade;
+            h.Data(s) = student.Grade;
             if mod(s, DRAW_INTERVAL) == 0
                 drawnow;
             end
@@ -432,7 +463,7 @@ function autograder(app)
             names = {students.name};
             ids = {students.id};
             canvasIds = {students.canvasId};
-            grades = arrayfun(@num2str, [students.grade], 'uni', false);
+            grades = arrayfun(@num2str, [students.Grade], 'uni', false);
             raw = [names; ids; canvasIds; grades]';
             raw = join([{'Name', 'GT Username', 'ID', 'Grade'}; raw], '", "');
             raw = unicode2native(['"', strjoin(raw, '"\n"'), '"'], 'UTF-8');
@@ -583,6 +614,27 @@ function autograder(app)
             copyfile(recSource, [pwd filesep 'resources']);
             cheat = CheatDetector(students, solutions, scores, settings.workingDir);
             % if user has local output, go ahead and export
+            p = '';
+            if ~isempty(app.localCheatPath)
+                p = app.localCheatPath;
+            elseif ~isempty(app.postProcessPath)
+                p = fullfile(app.postProcessPath, 'Cheaters');
+                if ~isfolder(p)
+                    mkdir(p);
+                else
+                    % already done...?
+                    % Don't overwrite anything... but we need to put this
+                    % somewhere.
+                    % keep incrementing until not a folder
+                    counter = 1;
+                    while isfolder([p num2str(counter)])
+                        counter = counter + 1;
+                    end
+                    p = [p num2str(counter)];
+                    mkdir(p);
+                end
+            end
+            app.localCheatPath = p;
             if ~isempty(app.localCheatPath)
                 if ~isfolder(app.localCheatPath)
                     mkdir(app.localCheatPath)
