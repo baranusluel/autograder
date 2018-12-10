@@ -104,6 +104,9 @@ function saveFiles(paths, links)
     opts.Timeout = 30;
     % if the link is empty, then invalid file - don't download!
     % if link is FILE_TO_LARGE, then rewrite correctly
+    if isempty(paths) || isempty(links)
+        return;
+    end
     paths(strlength(links) == 0) = [];
     links(strlength(links) == 0) = [];
     for f = 1:numel(links)
