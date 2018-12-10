@@ -89,6 +89,25 @@ function autograder(app)
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     clear Student;
     Student.resetPath();
+    
+    % set breakpoint
+    if app.IsLeaky.Value
+        % set breakpoint
+        % look for line that looks like this:
+        % feeds(isRunnable) = engine(feeds(isRunnable));
+        fid = fopen('Student.m', 'rt');
+        lines = strtrim(strsplit(char(fread(fid)'), newline, 'CollapseDelimiters', false));
+        fclose(fid);
+        ln = find(strcmp(lines, 'feeds(isRunnable) = engine(feeds(isRunnable));'));
+        dbstop('Student.m', num2str(ln), 'if', 'any(isRunnable);');
+        % Tell user they will have to get their hands dirty
+        fprintf(1, 'You have elected to run the Autograder in Leaks mode.\n');
+        fprintf(1, 'In this mode, every student that submitted code \n');
+        fprintf(1, 'will be paused on - this breakpoint has already been \n');
+        fprintf(1, 'set on your behalf. There is nothing you need to do now\n');
+    else
+        dbclear('in', 'Student.m');
+    end
 
     % start up application
     settings.app = app;
