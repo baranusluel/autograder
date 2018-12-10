@@ -471,7 +471,7 @@ function autograder(app)
             fid = fopen(fullfile(app.localOutputPath, 'grades.csv'), 'wt', 'native', 'UTF-8');
             fwrite(fid, raw);
             fclose(fid);
-            fid = fopen(fullfile(app.localOutputPAth, 'info.txt'), 'wt');
+            fid = fopen(fullfile(app.localOutputPath, 'info.txt'), 'wt');
             fprintf(fid, '%d - %d', app.homeworkNum, app.isResubmission);
             fclose(fid);
             copyfile(settings.workingDir, app.localOutputPath);
