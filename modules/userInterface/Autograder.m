@@ -718,7 +718,7 @@ classdef Autograder < matlab.apps.AppBase
 
         % Menu selected function: LicenseMenu
         function LicenseMenuSelected(~, ~)
-            web('https://github.gatech.edu/CS1371/autograder/blob/Development/LICENSE', '-browser');
+            web('https://github.gatech.edu/CS1371/autograder/blob/master/LICENSE', '-browser');
         end
 
         % Menu selected function: DocumentationMenu
