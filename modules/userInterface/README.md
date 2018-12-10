@@ -2,7 +2,7 @@
 
 This module will be responsible for interacting with the user and starting the autograder with the given settings. It is the user's primary method of starting the autograder.
 
-## Classess
+## Classes
 
 The `userInterface` Module has the following classes; all of them represent a `UIFigure`:
 
