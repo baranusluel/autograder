@@ -6,7 +6,8 @@ classdef Autograder < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                matlab.ui.Figure
-        SettingsMenu            matlab.ui.container.Menu
+        FileMenu                matlab.ui.container.Menu
+        AdvancedMenu            matlab.ui.container.Menu
         SaveConfiguration       matlab.ui.container.Menu
         LoadConfigurationMenu   matlab.ui.container.Menu
         Exit                    matlab.ui.container.Menu
@@ -18,7 +19,7 @@ classdef Autograder < matlab.apps.AppBase
         Canvas                  matlab.ui.container.Menu
         Drive                   matlab.ui.container.Menu
         Github                  matlab.ui.container.Menu
-        AcknowledgementsMenu    matlab.ui.container.Menu
+        AboutMenu               matlab.ui.container.Menu
         LicenseMenu             matlab.ui.container.Menu
         DocumentationMenu       matlab.ui.container.Menu
         HomeworkPanel           matlab.ui.container.Panel
@@ -1148,48 +1149,29 @@ classdef Autograder < matlab.apps.AppBase
             app.UIFigure.Position = app.ORIGINAL_SIZE;
             app.UIFigure.Name = 'Autograder';
             app.UIFigure.CloseRequestFcn = createCallbackFcn(app, @UIFigureCloseRequest, true);
+            app.UIFigure.Resize = 'off';
 
-            % Create SettingsMenu
-            app.SettingsMenu = uimenu(app.UIFigure);
-            app.SettingsMenu.Text = 'Settings';
+            % Create FileMenu
+            app.FileMenu = uimenu(app.UIFigure);
+            app.FileMenu.Text = 'File';
 
             % Create SaveConfiguration
-            app.SaveConfiguration = uimenu(app.SettingsMenu);
+            app.SaveConfiguration = uimenu(app.FileMenu);
             app.SaveConfiguration.MenuSelectedFcn = createCallbackFcn(app, @SaveConfigurationMenuSelected, true);
             app.SaveConfiguration.Accelerator = 'S';
-            app.SaveConfiguration.Text = 'Save Configuration...';
+            app.SaveConfiguration.Text = 'Save Credentials...';
 
             % Create LoadConfigurationMenu
-            app.LoadConfigurationMenu = uimenu(app.SettingsMenu);
+            app.LoadConfigurationMenu = uimenu(app.FileMenu);
             app.LoadConfigurationMenu.MenuSelectedFcn = createCallbackFcn(app, @LoadConfigurationMenuSelected, true);
             app.LoadConfigurationMenu.Accelerator = 'L';
-            app.LoadConfigurationMenu.Text = 'Load Configuration...';
+            app.LoadConfigurationMenu.Text = 'Load Credentials...';
 
             % Create Exit
-            app.Exit = uimenu(app.SettingsMenu);
+            app.Exit = uimenu(app.FileMenu);
             app.Exit.MenuSelectedFcn = createCallbackFcn(app, @CancelButtonPushed, true);
             app.Exit.Accelerator = 'W';
             app.Exit.Text = 'Exit';
-
-            % Create Notifications
-            app.Notifications = uimenu(app.SettingsMenu);
-            app.Notifications.MenuSelectedFcn = createCallbackFcn(app, @NotificationsMenuSelected, true);
-            app.Notifications.Text = 'Notifications...';
-
-            % Create Schedule
-            app.Schedule = uimenu(app.SettingsMenu);
-            app.Schedule.MenuSelectedFcn = createCallbackFcn(app, @ScheduleMenuSelected, true);
-            app.Schedule.Text = 'Schedule for Midnight...';
-
-            % Create Update
-            app.Update = uimenu(app.SettingsMenu);
-            app.Update.MenuSelectedFcn = createCallbackFcn(app, @UpdateMenuSelected, true);
-            app.Update.Text = 'Update';
-            
-            % Create PostProcess
-            app.PostProcess = uimenu(app.SettingsMenu);
-            app.PostProcess.MenuSelectedFcn = createCallbackFcn(app, @PostProcessMenuSelected, true);
-            app.PostProcess.Text = 'Post Processing...';
 
             % Create AuthorizationsMenu
             app.AuthorizationsMenu = uimenu(app.UIFigure);
@@ -1209,20 +1191,44 @@ classdef Autograder < matlab.apps.AppBase
             app.Github = uimenu(app.AuthorizationsMenu);
             app.Github.MenuSelectedFcn = createCallbackFcn(app, @GithubMenuSelected, true);
             app.Github.Text = 'GitHub...';
+            
+            % Create Advanced
+            app.AdvancedMenu = uimenu(app.UIFigure);
+            app.AdvancedMenu.Text = 'Advanced';
+            
+            % Create Notifications
+            app.Notifications = uimenu(app.AdvancedMenu);
+            app.Notifications.MenuSelectedFcn = createCallbackFcn(app, @NotificationsMenuSelected, true);
+            app.Notifications.Text = 'Notifications...';
 
-            % Create AcknowledgementsMenu
-            app.AcknowledgementsMenu = uimenu(app.UIFigure);
-            app.AcknowledgementsMenu.Text = 'Acknowledgements';
+            % Create Schedule
+            app.Schedule = uimenu(app.AdvancedMenu);
+            app.Schedule.MenuSelectedFcn = createCallbackFcn(app, @ScheduleMenuSelected, true);
+            app.Schedule.Text = 'Schedule for Midnight...';
+            
+            % Create PostProcess
+            app.PostProcess = uimenu(app.AdvancedMenu);
+            app.PostProcess.MenuSelectedFcn = createCallbackFcn(app, @PostProcessMenuSelected, true);
+            app.PostProcess.Text = 'Post Processing...';
+            
+            % Create AboutMenu
+            app.AboutMenu = uimenu(app.UIFigure);
+            app.AboutMenu.Text = 'About';
 
             % Create LicenseMenu
-            app.LicenseMenu = uimenu(app.AcknowledgementsMenu);
+            app.LicenseMenu = uimenu(app.AboutMenu);
             app.LicenseMenu.MenuSelectedFcn = createCallbackFcn(app, @LicenseMenuSelected, true);
             app.LicenseMenu.Text = 'License';
 
             % Create DocumentationMenu
-            app.DocumentationMenu = uimenu(app.AcknowledgementsMenu);
+            app.DocumentationMenu = uimenu(app.AboutMenu);
             app.DocumentationMenu.MenuSelectedFcn = createCallbackFcn(app, @DocumentationMenuSelected, true);
             app.DocumentationMenu.Text = 'Documentation';
+            
+            % Create Update
+            app.Update = uimenu(app.AboutMenu);
+            app.Update.MenuSelectedFcn = createCallbackFcn(app, @UpdateMenuSelected, true);
+            app.Update.Text = 'Check for Updates...';
 
             % Create HomeworkPanel
             app.HomeworkPanel = uipanel(app.UIFigure);
@@ -1287,7 +1293,7 @@ classdef Autograder < matlab.apps.AppBase
 
             % Create SelectButton
             app.SelectButton = uiradiobutton(app.ButtonGroup);
-            app.SelectButton.Text = 'Select';
+            app.SelectButton.Text = 'Select...';
             app.SelectButton.Position = [56 7 65 22];
 
             % Create GradeallstudentsLabel
@@ -1298,6 +1304,7 @@ classdef Autograder < matlab.apps.AppBase
             % Create IsLeaky
             app.IsLeaky = uicheckbox(app.HomeworkPanel);
             app.IsLeaky.Text = 'Leaky';
+            app.IsLeaky.Tooltip = 'If you''re grading the "autoBreaker" submission, check this';
             app.IsLeaky.Position = [296 13 54 22];
 
             % Create SolutionPanel
@@ -1343,18 +1350,21 @@ classdef Autograder < matlab.apps.AppBase
             app.UploadFeedbackToCanvas = uicheckbox(app.OutputPanel);
             app.UploadFeedbackToCanvas.ValueChangedFcn = createCallbackFcn(app, @UploadFeedbackToCanvasValueChanged, true);
             app.UploadFeedbackToCanvas.Text = 'Upload Feedback to Canvas';
+            app.UploadFeedbackToCanvas.Tooltip = 'Use this to upload the HTML feedback files as a comment on each students'' submission';
             app.UploadFeedbackToCanvas.Position = [19 193 175 33];
 
             % Create UploadToServer
             app.UploadToServer = uicheckbox(app.OutputPanel);
             app.UploadToServer.ValueChangedFcn = createCallbackFcn(app, @UploadToServerValueChanged, true);
             app.UploadToServer.Text = 'Upload Files to Server';
+            app.UploadToServer.Tooltip = {'Upload solution data to the server, such as solutions, supporting files, etc.'; 'This does not upload any student data'};
             app.UploadToServer.Position = [19 130 192 33];
 
             % Create StoreLocally
             app.StoreLocally = uicheckbox(app.OutputPanel);
             app.StoreLocally.ValueChangedFcn = createCallbackFcn(app, @StoreLocallyValueChanged, true);
             app.StoreLocally.Text = 'Store Output Locally...';
+            app.StoreLocally.Tooltip = 'Store all the autograder output locally, to possibly post process at a later time';
             app.StoreLocally.Position = [19 98 141 33];
 
             % Create EditSubmissions
@@ -1368,6 +1378,7 @@ classdef Autograder < matlab.apps.AppBase
             app.PostToCanvas = uicheckbox(app.OutputPanel);
             app.PostToCanvas.ValueChangedFcn = createCallbackFcn(app, @PostToCanvasValueChanged, true);
             app.PostToCanvas.Text = 'Post Announcement...';
+            app.PostToCanvas.Tooltip = 'Use this to automatically post an announcement to Canvas that the homework has been graded';
             app.PostToCanvas.Position = [19 34 141 33];
 
             % Create OutputBrowser
@@ -1380,6 +1391,7 @@ classdef Autograder < matlab.apps.AppBase
             app.AnalyzeForCheating = uicheckbox(app.OutputPanel);
             app.AnalyzeForCheating.ValueChangedFcn = createCallbackFcn(app, @AnalyzeForCheatingValueChanged, true);
             app.AnalyzeForCheating.Text = 'Analyze for Cheating...';
+            app.AnalyzeForCheating.Tooltip = 'Analyze the student submissions for possible plagiarism';
             app.AnalyzeForCheating.Position = [19 7 143 22];
 
             % Create PostOptions
@@ -1392,6 +1404,7 @@ classdef Autograder < matlab.apps.AppBase
             app.EmailFeedback = uicheckbox(app.OutputPanel);
             app.EmailFeedback.ValueChangedFcn = createCallbackFcn(app, @EmailFeedbackValueChanged, true);
             app.EmailFeedback.Text = 'Email Feedback...';
+            app.EmailFeedback.Tooltip = {'Use the "escape hatch" to email each student his or her feedback.'; 'This should be used as a last resort - it uses services that are not FERPA compliant'};
             app.EmailFeedback.Position = [19 167 118 22];
 
             % Create EmailFeedbackOptions
@@ -1404,6 +1417,7 @@ classdef Autograder < matlab.apps.AppBase
             app.UploadGradesToCanvas = uicheckbox(app.OutputPanel);
             app.UploadGradesToCanvas.ValueChangedFcn = createCallbackFcn(app, @UploadGradesToCanvasValueChanged, true);
             app.UploadGradesToCanvas.Text = 'Upload Grades to Canvas';
+            app.UploadGradesToCanvas.Tooltip = 'Upload student grades to the Canvas gradebook';
             app.UploadGradesToCanvas.Position = [19 225 175 33];
 
             % Create Go
