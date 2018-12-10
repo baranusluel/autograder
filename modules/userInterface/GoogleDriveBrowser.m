@@ -1,3 +1,7 @@
+%% GoogleDriveBrowser: Graphically Browse your Google Drive
+%
+% The GoogleDriveBrowser allows the user to graphically browse his or her
+% Google Drive - only "My Drive" (root) is used.
 classdef GoogleDriveBrowser < matlab.apps.AppBase
 
     % Properties that correspond to app components

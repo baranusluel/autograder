@@ -1,3 +1,7 @@
+%% Initializer: First Time Run of the Autograder
+%
+% This allows the user to run the autograder for the first time, by
+% brokering the collection of all the necessary tokens.
 classdef Initializer < matlab.apps.AppBase
 
     % Properties that correspond to app components

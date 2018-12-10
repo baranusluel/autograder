@@ -1,3 +1,6 @@
+%% MarkdownHelper: Provide guidance in MarkDown
+%
+% This displays a static figure that tells the user how to write markdown
 classdef MarkdownHelper < matlab.apps.AppBase
 
     % Properties that correspond to app components

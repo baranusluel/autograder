@@ -1,3 +1,6 @@
+%% Autograder: Main UI
+%
+% The Autograder functions as the main User Interface for the autograder.
 classdef Autograder < matlab.apps.AppBase
 
     % Properties that correspond to app components

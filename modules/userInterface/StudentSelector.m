@@ -1,3 +1,7 @@
+%% StudentSelector: Graphically Select Student
+%
+% This allows the user to graphically select students from an archive or
+% Canvas.
 classdef StudentSelector < matlab.apps.AppBase
 
     % Properties that correspond to app components

@@ -1,3 +1,7 @@
+%% EmailComposer: Compose an Email with Feedback
+%
+% This acts as a general email composer, though is specifically used to
+% create plain text emails to use with GMail.
 classdef EmailComposer < matlab.apps.AppBase
 
     % Properties that correspond to app components

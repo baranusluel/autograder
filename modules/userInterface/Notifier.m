@@ -1,3 +1,7 @@
+%% Notifier: Manage Notification Settings
+%
+% The Notifier allows the user to graphically manage who will be notified,
+% and how.
 classdef Notifier < matlab.apps.AppBase
 
     % Properties that correspond to app components

@@ -1,3 +1,7 @@
+%% CanvasHomeworkSelector: Select a Homework Submission
+%
+% This allows the user to select a specific homework submission directly
+% from Canvas.
 classdef CanvasHomeworkSelector < matlab.apps.AppBase
 
     % Properties that correspond to app components

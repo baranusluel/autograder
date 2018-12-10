@@ -1,3 +1,6 @@
+%% GithubAuthorizer: Authorize with GitHub
+%
+% This allows the user to graphically authorize with GitHub
 classdef GithubAuthorizer < matlab.apps.AppBase
 
     % Properties that correspond to app components

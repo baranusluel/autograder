@@ -1,3 +1,6 @@
+%% CanvasAuthorizer: Authorizes the user with Canvas
+%
+% This lets the user graphically grant a token with Canvas
 classdef CanvasAuthorizer < matlab.apps.AppBase
 
     % Properties that correspond to app components

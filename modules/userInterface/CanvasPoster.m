@@ -1,3 +1,7 @@
+%% CanvasPoster: Create Rich Text Posts in Canvas
+%
+% This allows the user to create a formatted post on Canvas; it supports
+% Markdown, HTML, and plain text
 classdef CanvasPoster < matlab.apps.AppBase
 
     % Properties that correspond to app components
