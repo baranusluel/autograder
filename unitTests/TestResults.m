@@ -116,7 +116,7 @@ classdef TestResults < handle
             cd(workDir);
             function clean(p, d)
                 cd(p);
-                [~] = rmdir(d);
+                [~] = rmdir(d, 's');
             end
             cleaner = onCleanup(@()(clean(origPath, workDir)));
             % we know test.m will exist
