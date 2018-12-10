@@ -1030,6 +1030,7 @@ classdef Autograder < matlab.apps.AppBase
                         app.localCheatPath = res;
                     else
                         app.localCheatPath = '';
+                        app.AnalyzeForCheating.Value = false;
                     end
                 end
             else
