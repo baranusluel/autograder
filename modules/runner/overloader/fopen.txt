@@ -1,4 +1,5 @@
 function [varargout] = fopen(varargin)
+    BANNED = {'.m', '.p', '.mlappinstall', '.mlapp'};
     stack = dbstack;
     if nargout == 0
         varargout = cell(1);
@@ -17,7 +18,7 @@ function [varargout] = fopen(varargin)
             end
             if isstring(varargin{1}) ...
                     && ~strcmp(varargin{1}, 'all') ...
-                    && ~endsWith(varargin{1}, {'.txt', '.png', '.jpg', '.jpeg'}, 'IgnoreCase', true)
+                    && endsWith(varargin{1}, BANNED, 'IgnoreCase', true)
                 isValid = false;
             end
         end
