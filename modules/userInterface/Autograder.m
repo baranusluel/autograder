@@ -107,7 +107,6 @@ classdef Autograder < matlab.apps.AppBase
         emailMessage = {''};
         
         % Debugging
-        isDebug logical = true;
         settingsPath = [fileparts(mfilename('fullpath')) filesep 'settings.autograde'];
         settingsFormat = '%s: %s\n';
     end

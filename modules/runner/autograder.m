@@ -93,17 +93,10 @@ function autograder(app)
     % start up application
     settings.app = app;
     try
-        if app.isDebug
-            logger = Logger(pwd);
-        else
-            logger = Logger();
-        end
+        logger = Logger(pwd);
     catch e
-        if debugger(app, 'Logger initialization Failed')
+        if debugger(app, sprintf('Logger initialization Failed: %s: %s', e.identifier, e.message))
             keyboard;
-        else
-            alert(app, e);
-            return;
         end
     end
     settings.logger = logger;
@@ -155,11 +148,8 @@ function autograder(app)
             downloadFromDrive(app.driveFolderId, token, ...
                 [pwd filesep 'Solutions'], app.driveKey, progress);
         catch e
-            if debugger(app, 'Failed to download solution archive from Google Drive')
+            if debugger(app, sprintf('Failed to download solution archive from Google Drive: %s: %s', e.identifier, e.message))
                 keyboard;
-            else
-                alert(app, e);
-                return;
             end
         end
     else
@@ -170,11 +160,8 @@ function autograder(app)
         try
             unzipArchive(app.solutionArchivePath, [pwd filesep 'Solutions']);
         catch e
-            if debugger(app, 'Failed to unzip the solution archive')
+            if debugger(app, sprintf('Failed to unzip the solution archive: %s: %s', e.identifier, e.message))
                 keyboard;
-            else
-                alert(app, e);
-                return;
             end
         end
     end
@@ -187,12 +174,8 @@ function autograder(app)
         cd(orig);
     catch e
         % Display to user that we failed
-        if debugger(app, 'Failed to generate solutions')
+        if debugger(app, sprintf('Failed to generate solutions: %s: %s', e.identifier, e.message))
             keyboard;
-        else
-            cd(orig);
-            alert(app, e);
-            return;
         end
     end
     if app.isResubmission
@@ -222,11 +205,8 @@ function autograder(app)
             downloadFromCanvas(app.selectedStudents, [pwd filesep 'Students'], progress);
         catch e
             % alert in some way and return
-            if debugger(app, 'Failed to download student submissions from Canvas')
+            if debugger(app, sprintf('Failed to download student submissions from Canvas: %s: %s', e.identifier, e.message))
                 keyboard;
-            else
-                alert(app, e);
-                return;
             end
         end
     else
@@ -246,11 +226,8 @@ function autograder(app)
                 end
             end
         catch e
-            if debugger(app, 'Failed to unzip the Student Submission Archive')
+            if debugger(app, sprintf('Failed to unzip the Student Submission Archive: %s: %s', e.message, e.identifier))
                 keyboard;
-            else
-                alert(app, e);
-                return;
             end
         end
     end
@@ -283,11 +260,8 @@ function autograder(app)
         Logger.log('Generating Students');
         students = generateStudents([pwd filesep 'Students'], resources, progress);
     catch e
-        if debugger(app, 'Failed to generate students from submissions')
+        if debugger(app, sprintf('Failed to generate students from submissions: %s: %s', e.identifier, e.message))
             keyboard;
-        else
-            alert(app, e);
-            return;
         end
     end
     % if we are post processing, extract grade information.
@@ -373,9 +347,6 @@ function autograder(app)
                     errs(s) = e;
                 elseif debugger(app, 'Failed to assess student')
                     keyboard;
-                else
-                    alert(e);
-                    return;
                 end
             end
             progress.Value = s/numel(students);
@@ -384,9 +355,20 @@ function autograder(app)
                 drawnow;
             end
             if progress.CancelRequested
-                e = MException('AUTOGRADER:userCancelled', 'User Cancelled Operation');
-                alert(app, e);
-                return;
+                resp = uiconfirm(app.UIFigure, ...
+                    'Are you sure you''d like to cancel grading? All progress will be lost!', ...
+                    'Autograder', ...
+                    'Options', {'Yes, Stop Grading', 'No, Continue', 'Activate Break Mode'}, ...
+                    'CancelOption', 'No, Continue', ...
+                    'DefaultOption', 'No, Continue', ...
+                    'Icon', 'warning');
+                switch resp
+                    case 'Yes, Stop Grading'
+                        uialert(app.UIFigure, 'User Cancelled Grading', 'Autograder');
+                        return;
+                    case 'Activate Break Mode'
+                        keyboard;
+                end
             end
         end
 
@@ -723,11 +705,6 @@ function autograder(app)
     end
 end
 
-function alert(app, e)
-    uialert(app.UIFigure, sprintf('Exception %s: "%s" encountered', ...
-        e.identifier, e.message), 'Autograder Error');
-end
-
 function cleanup(settings)
     if isvalid(settings.progress)
         settings.progress.Message = 'Cleaning Up';
@@ -765,7 +742,7 @@ end
 function shouldDebug = debugger(app, msg)
     EMAIL_MESSAGE_FORMAT = 'Hello,\n\nIt appears the autograder failed to finish. Here''s the error message:\n\n%s\n\nBest Regards,\n~The CS 1371 Technology Team';
 
-    shouldDebug = app.isDebug && isempty(app.delay);
+    shouldDebug = isempty(app.delay);
     % notify
     try
         if ~isempty(app.email)
