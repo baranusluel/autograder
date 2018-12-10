@@ -1130,6 +1130,9 @@ classdef Autograder < matlab.apps.AppBase
         function GithubMenuSelected(app, ~)
             auth = GithubAuthorizer(app);
             uiwait(auth.UIFigure);
+            if isvalid(auth) && isvalid(auth.UIFigure)
+                close(auth.UIFigure);
+            end
         end
     end
 
