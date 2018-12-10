@@ -1113,6 +1113,7 @@ classdef Autograder < matlab.apps.AppBase
                 app.EditSubmissions.Value = false;
                 app.EditSubmissions.Enable = false;
                 app.EditSubmissionsValueChanged();
+                app.IsLeaky.Value = false;
                 app.postProcessPath = path;
             else
                 app.PostProcess.Text = 'Post Processing...';

@@ -99,7 +99,7 @@ function autograder(app)
         lines = strtrim(strsplit(char(fread(fid)'), newline, 'CollapseDelimiters', false));
         fclose(fid);
         ln = find(strcmp(lines, 'feeds(isRunnable) = engine(feeds(isRunnable));'));
-        dbstop('Student.m', num2str(ln), 'if', 'any(isRunnable);');
+        dbstop('Student.m', num2str(ln), 'if', 'any(isRunnable)');
         % Tell user they will have to get their hands dirty
         fprintf(1, 'You have elected to run the Autograder in Leaks mode.\n');
         fprintf(1, 'In this mode, every student that submitted code \n');
