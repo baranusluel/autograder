@@ -61,6 +61,9 @@ function autograder(app)
     INSPECT_LABEL = 'Inspect the Students';
     % The label for continuing on
     CONTINUE_LABEL = 'Continue';
+    progress = uiprogressdlg(app.UIFigure, 'Title', 'Autograder Progress', ...
+        'Message', 'Initializing', 'Cancelable', 'on', ...
+        'ShowPercentage', true, 'Indeterminate', 'on');
 
     % actually grade if ANY of the following is set:
     %   * Upload Grades -> canvas
@@ -74,10 +77,10 @@ function autograder(app)
         ||  ~isempty(app.localOutputPath));
 
     settings.userPath = {path(), userpath()};
-    setArraySizeLimit();
     % change name of overloaded files
     overloaders = fileparts(mfilename('fullpath'));
     files = dir([overloaders filesep 'overloader' filesep '*.txt']);
+    settings.warningState = warning('off');
     for f = 1:numel(files)
         [~, name, ~] = fileparts(files(f).name);
         movefile([files(f).folder filesep files(f).name], ...
@@ -105,9 +108,7 @@ function autograder(app)
     end
     settings.logger = logger;
     % Start up parallel pool
-    progress = uiprogressdlg(app.UIFigure, 'Title', 'Autograder Progress', ...
-        'Message', 'Starting Parallel Pool', 'Cancelable', 'on', ...
-        'ShowPercentage', true, 'Indeterminate', 'on');
+    progress.Message = 'Starting Parallel Pool';
     Logger.log('Starting up parallel pool');
     settings.progress = progress;
     evalc('gcp');
@@ -292,9 +293,7 @@ function autograder(app)
     % if we are post processing, extract grade information.
     if ~isempty(app.postProcessPath)
         % read original CSV
-        warning('off');
         tbl = readtable(fullfile(app.postProcessPath, 'grades.csv'));
-        warning('on');
         grades = str2double(tbl(:, end).Variables);
         gtUsernames = tbl(:, 2).Variables;
         
@@ -749,6 +748,8 @@ function cleanup(settings)
         movefile([files(f).folder filesep files(f).name], ...
             [files(f).folder filesep name '.txt']);
     end
+    % reset warnings
+    warning(settings.warningState);
 
     % cd to user's dir
     cd(settings.userDir);
