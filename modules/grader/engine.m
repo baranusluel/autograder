@@ -32,12 +32,12 @@
 % class.
 %
 % Errors in the code itself are handled differently, depending on whether
-% a TestCase or a Feedback was passed in.
+% a TestCase or a Feedback was passed in:
 %
-% If a TestCase was received, the error is propogated; this is because a
+% * If a TestCase was received, the error is propogated; this is because a
 % solution error is usually a fatal error.
 %
-% If a Feedback was received, the error is caught and assigned to the
+% * If a Feedback was received, the error is caught and assigned to the
 % exception field of the Feedback.
 %
 % engine uses static checking to check if the function is recursive.
@@ -70,11 +70,12 @@
 %
 % Note that for both recursion and banned functions, comments do not count.
 %
-% If user created their own version of a banned function, and included it in the file,
-% then that is considered to be OK.
+% If the user created their own version of a banned function, and included 
+% it in the file, then that is considered to be OK.
 %
-% Even if the student uses a banned function, the code is still run, and outputs
-% still produced.
+% For more information on banned function checking, look at |checkBanned|.
+%
+% For more information on recursion checking, look at |checkRecur|.
 %
 %%% Exceptions
 %
@@ -182,19 +183,6 @@ function runnables = engine(runnables)
     % all plots.
 
     %% Setup
-    BANNED = {'parpool', 'gcp', 'parfeval', 'send', 'fetchOutputs', ...
-        'cancel', 'parfevalOnAll', 'fetchNext', 'batch', ...
-        'eval', 'feval', 'assignin', 'evalc', 'evalin', ...
-        'input', 'wait', 'uiwait', 'keyboard', 'dbstop', 'dos', 'unix', ...
-        'cd', 'system', 'restoredefaultpath', 'builtin', 'load', ...
-        'edit', 'copyfile', 'movefile', 'dir', 'ls', 'mkdir', 'rmdir', ...
-        'perl', 'fileattrib', 'delete', 'exit', 'quit', 'dbstack', ...
-        'webread', 'webwrite', 'websave', 'web', 'tcpip',  ...
-        'urlread', 'urlwrite', 'weboptions', 'ftp', 'mget', ...
-        'sound', 'soundsc', 'audiorecorder', 'audioplayer', ...
-        'addpath', 'rmpath', 'path', 'gzip', 'gunzip', 'tar', 'untar', ...
-        'open', 'zip', 'unzip', 'set', 'get', 'settings', 'winopen', ...
-        };
     DIARY_LENGTH = 1000;
 
     if any(~isvalid(runnables))
@@ -246,7 +234,7 @@ function runnables = engine(runnables)
         end
         % check banned usage
         if ~isTestCase && isempty(runnable.exception)
-            [isBanned, bannedFunName] = checkBanned([tCase.name '.m'], [BANNED tCase.banned(:)'], origPaths{r});
+            [isBanned, bannedFunName] = checkBanned([tCase.name '.m'], tCase.banned(:)', origPaths{r});
             if isBanned
                 runnable.exception = MException('AUTOGRADER:engine:banned', ...
                     'File used banned function(s): %s', bannedFunName);
