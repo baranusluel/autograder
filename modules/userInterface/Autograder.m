@@ -1050,6 +1050,11 @@ classdef Autograder < matlab.apps.AppBase
             if isempty(app.githubToken)
                 auth = GithubAuthorizer(app);
                 uiwait(auth.UIFigure);
+                if ~isvalid(auth) || ~isvalid(auth.UIFigure)
+                    uialert(app.UIFigure, 'You must provide your GitHub Credentials to check for updates', 'Update Failure');
+                else
+                    close(auth.UIFigure);
+                end 
             end
             if isempty(app.githubToken)
                 uialert(app.UIFigure, 'You must provide your GitHub Credentials to check for updates', 'Update Failure');
