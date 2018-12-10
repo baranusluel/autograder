@@ -80,7 +80,7 @@ classdef TestCase < handle
     end
     methods
         function call = get.call(this)
-            call = ['[' strjoin(this.outputNames, ', ') ' = ', ...
+            call = ['[' strjoin(this.outputNames, ', ') '] = ', ...
                 this.name '(' strjoin(this.inputNames, ', ') ');'];
         end
         function this = TestCase(info, path)

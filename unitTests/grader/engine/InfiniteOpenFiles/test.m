@@ -23,7 +23,7 @@ function [passed, msg] = test()
         else
             fclose(fid);
             passed = true;
-            msg = 'Engine successfully recovered';
+            msg = '';
         end
     catch e
         passed = false;

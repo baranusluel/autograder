@@ -14,7 +14,7 @@
 %   this.path -> PATH
 %   this.outputs -> struct('out1', 1, 'out2', 2);
 function [passed, message] = test()
-    info = struct('call', '[out1, out2] = myFunction(1, 2);', 'initializer', [], 'points', 3, 'supportingFiles', [], 'banned', '');
+    info = struct('call', '[out1, out2] = myFunction();', 'initializer', [], 'points', 3, 'supportingFiles', [], 'banned', '');
     id = 'tuser3';
     path = [pwd filesep id];
     try
@@ -25,13 +25,9 @@ function [passed, message] = test()
         message = sprintf('Exception Thrown: %s (%s)', e.identifier, e.message);
         return;
     end
-    if ~strcmp(tc.call, '[out1, out2] = myFunction(1, 2);')
+    if ~strcmp(tc.call, '[out1, out2] = myFunction();')
         passed = false;
-        message = sprintf('Incorrect call; expected %s, got %s', '[out1, out2] = myFunction(1, 2);', tc.call);
-        return;
-    elseif ~isempty(tc.initializer)
-        passed = false;
-        message = 'initializer not empty, when should be empty';
+        message = sprintf('Incorrect call; expected %s, got %s', '[out1, out2] = myFunction(in1, in2);', tc.call);
         return;
     elseif ~isequal(tc.points, 3)
         passed = false;
@@ -66,7 +62,7 @@ function [passed, message] = test()
         message = sprintf('outputs.out2 incorrect; expected %d, got %d', 2, tc.outputs.out2);
         return;
     end
-    message = 'TestCase correctly constructed';
+    message = '';
     passed = true;
 end
 

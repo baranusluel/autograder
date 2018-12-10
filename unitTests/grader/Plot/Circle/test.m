@@ -36,6 +36,6 @@ function [passed, msg] = test()
         msg = 'Expected equality; got inequality';
     else
         passed = true;
-        msg = 'Different circles compare equal';
+        msg = '';
     end
 end

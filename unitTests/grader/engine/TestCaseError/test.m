@@ -16,7 +16,7 @@ function [passed, msg] = test()
     catch e
         if strcmp(e.identifier, 'AUTOGRADER:engine:testCaseFailure')
             passed = true;
-            msg = 'Correct exception thrown';
+            msg = '';
         else
             passed = false;
             msg = sprintf('Expected testCaseFailure; got "%s"', e.identifier);

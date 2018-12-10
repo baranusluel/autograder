@@ -28,6 +28,6 @@ function [passed, msg] = test()
         return;
     else
         passed = true;
-        msg = 'Successfully created Data URI string';
+        msg = '';
     end
 end

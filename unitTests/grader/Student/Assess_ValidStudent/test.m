@@ -10,10 +10,12 @@ function [passed, msg] = test()
     cd('Solutions');
     solutions = generateSolutions(false, progress);
     cd('..');
-    recs = Student.resources;
+    recs = Resources;
+    recs.BasePath = 'https://my/url';
     recs.Problems = solutions;
     % Create our valid student
-    S = Student([pwd filesep 'tuser3'], 'Test User', '000000');
+    
+    S = Student([pwd filesep 'tuser3'], 'Test User', '000000', recs);
     
     % Assess
     try
@@ -24,11 +26,11 @@ function [passed, msg] = test()
         return;
     end
     % grade should be 2/3 of total
-    if round(1.20 * S.grade, 2) ~= 15.2
+    if round(1.20 * S.Grade, 2) ~= 15.2
         passed = false;
         msg = sprintf('Expected %0.2f points; got %0.2f points', ...
             15.2, ...
-            round(1.20 * S.grade, 2));
+            round(1.20 * S.Grade, 2));
         return;
     elseif ~isfile([S.path filesep 'feedback.html'])
         passed = false;
@@ -36,6 +38,6 @@ function [passed, msg] = test()
         return;
     else
         passed = true;
-        msg = 'Student successfully assessed';
+        msg = '';
     end
 end

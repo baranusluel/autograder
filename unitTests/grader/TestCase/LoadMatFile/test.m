@@ -29,10 +29,6 @@ function [passed, message] = test()
         passed = false;
         message = sprintf('Incorrect call; expected %s, got %s', '[out1, out2] = myFunction(1, 2);', tc.call);
         return;
-    elseif ~isempty(tc.initializer)
-        passed = false;
-        message = 'initializer not empty, when should be empty';
-        return;
     elseif ~isequal(tc.points, 3)
         passed = false;
         message = sprintf('Incorrect points; expected %d, got %d', 3, tc.call);
@@ -66,7 +62,7 @@ function [passed, message] = test()
         message = sprintf('outputs.out2 incorrect; expected %d, got %d', 2, tc.outputs.out2);
         return;
     end
-    message = 'TestCase correctly constructed';
+    message = '';
     passed = true;
 end
 

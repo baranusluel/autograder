@@ -33,7 +33,7 @@ function [passed, msg] = test()
                 return;
             else
                 passed = true;
-                msg = 'Output correctly created';
+                msg = '';
             end
         end
     catch e

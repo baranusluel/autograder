@@ -48,7 +48,7 @@ function [passed, msg] = test()
     
     if P1.equals(P2)
         passed = true;
-        msg = 'Five Lines successfully compare equal';
+        msg = '';
     else
         passed = false;
         msg = 'Five lines differ';

@@ -55,7 +55,7 @@ function [passed, msg] = test()
             return;
         else
             passed = true;
-            msg = 'Files passed';
+            msg = '';
             return;
         end
     end

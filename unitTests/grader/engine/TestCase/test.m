@@ -27,7 +27,7 @@ function [passed, msg] = test()
             return;
         else
             passed = true;
-            msg = 'Output correctly created';
+            msg = '';
         end
     catch e
         passed = false;

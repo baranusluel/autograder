@@ -23,7 +23,7 @@ function [passed, msg] = test()
         return;
     else
         passed = true;
-        msg = 'Exception successfully thrown';
+        msg = '';
         return;
     end
 end

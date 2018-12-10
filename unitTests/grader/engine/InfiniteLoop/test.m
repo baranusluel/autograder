@@ -26,7 +26,7 @@ function [passed, msg] = test()
             return;
         else
             passed = true;
-            msg = 'Correctly attached exception';
+            msg = '';
         end
     catch e
         passed = false;

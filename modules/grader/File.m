@@ -40,6 +40,7 @@ classdef File < handle
         extension; %will be class char
         data; %will vary in file type
         bytes; % number of bytes
+        uri; % possible URI for data
     end
     properties (Access = public)
         TXT = {'txt', 'm', 'rtf', 'html'};
@@ -147,9 +148,11 @@ classdef File < handle
                     bytes = fread(fid)';
                     fclose(fid);
                     try
-                        this.data = ['data:image/' ext(2:end) ';base64,', char(this.encoder.encode(bytes)')];
+                        this.data = imread(path);
+                        this.uri = ['data:image/' ext(2:end) ';base64,', char(this.encoder.encode(bytes)')];
                     catch
                         this.data = [];
+                        this.uri = '';
                     end
                 case this.EXCEL
                     try
@@ -269,11 +272,11 @@ classdef File < handle
                         if isempty(this.data)
                             html = [html '<p class="exception">Your image could not be read</p>'];
                         else
-                            html = [html sprintf('<img class="img-thumbnail rounded img-fluid" src="%s">', this.data)];
+                            html = [html sprintf('<img class="img-thumbnail rounded img-fluid" src="%s">', this.uri)];
                         end
                         
                         html = [html '</div><div class="col-md-6 text-center soln-image">'];
-                        html = [html sprintf('<img class="img-thumbnail rounded img-fluid" src="%s">', soln.data)];
+                        html = [html sprintf('<img class="img-thumbnail rounded img-fluid" src="%s">', soln.uri)];
                         html = [html '</div></div>'];
                     case this.EXCEL
                         html = generateFeedback(this.data, soln.data);

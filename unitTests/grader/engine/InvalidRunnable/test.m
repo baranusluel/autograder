@@ -15,7 +15,7 @@ function [passed, msg] = test()
     catch e
         if strcmp(e.identifier, 'AUTOGRADER:engine:invalidRunnable')
             passed = true;
-            msg = 'Engine threw correct exception';
+            msg = '';
         else
             passed = false;
             msg = sprintf('Expected exception invalidRunnable; got %s', e.identifier);

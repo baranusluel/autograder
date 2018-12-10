@@ -13,5 +13,5 @@ function [passed, msg] = test()
     end
     
     passed = true;
-    msg = 'Successfully recovered from imshow';
+    msg = '';
 end

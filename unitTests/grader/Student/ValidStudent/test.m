@@ -8,14 +8,15 @@ function [passed, msg] = test()
     solutions = generateSolutions(false, progress);
     cd('..');
     % create student
-    recs = Student.resources;
+    recs = Resources;
+    recs.BasePath = 'https://my/url/';
     recs.Problems = solutions;
     
     NAME = 'Test User';
     PATH = [pwd filesep 'tuser3'];
     NUM_SUBMISSIONS = 2;
     try
-        S = Student([pwd filesep 'tuser3'], NAME, '000000');
+        S = Student([pwd filesep 'tuser3'], NAME, '000000', recs);
     catch reason
         passed = false;
         msg = sprintf('Expected Success; got %s - "%s"', reason.identifier, ...
@@ -40,7 +41,7 @@ function [passed, msg] = test()
         return;
     else
         passed = true;
-        msg = 'Student successfully constructed';
+        msg = '';
         return;
     end
 end

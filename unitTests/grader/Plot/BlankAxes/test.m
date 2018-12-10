@@ -10,5 +10,5 @@ function [passed, msg] = test()
         return;
     end
     passed = true;
-    msg = 'Null Plot created successfully';
+    msg = '';
 end

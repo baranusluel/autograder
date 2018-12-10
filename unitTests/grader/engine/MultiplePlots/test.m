@@ -24,6 +24,6 @@ function [passed, msg] = test()
         return;
     else
         passed = true;
-        msg = 'Two plots successfully recorded';
+        msg = '';
     end
 end
