@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>CanvasAuthorizer: Authorizes the user with Canvas</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
+      --><title>Segment: A single connection between two points</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script><script>
       $(document).ready(function() {
         // get name of class
         // anywhere CLASS name is or METHOD name is, replace with code version
@@ -20,7 +20,7 @@ To make changes, update the MATLAB code and republish this document.
 
         // for each occurrence of this in 
       });
-    </script><meta name="DC.date" content="2018-12-09"><meta name="DC.source" content="CanvasAuthorizer.m"><style type="text/css">
+    </script><meta name="DC.date" content="2018-12-09"><meta name="DC.source" content="Segment.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -80,4 +80,4 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="container-fluid"><div class="content"><h1>CanvasAuthorizer: Authorizes the user with Canvas</h1><p>This lets the user graphically grant a token with Canvas</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div></div></body></html>
+  </style></head><body><div class="container-fluid"><div class="content"><h1>Segment: A single connection between two points</h1><!--introduction--><p>A single connection between two points without marker!</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Fields</a></li><li><a href="#2">Methods</a></li><li><a href="#3">Remarks</a></li><li><a href="#4">Constructor</a></li><li><a href="#5">Remarks</a></li></ul></div><h2 id="1">Fields</h2><div><ul><li>Start: A Point that represents where this segment starts</li></ul></div><div><ul><li>Stop: A Point that represents where this segment ends</li></ul></div><div><ul><li>Color: A 1x3 vector that represents the color</li></ul></div><div><ul><li>Style: A character vector that represents the style (i.e., dashed. etc.)</li></ul></div><h2 id="2">Methods</h2><div><ul><li>Segment</li></ul></div><div><ul><li>equals</li></ul></div><div><ul><li>dataEquals</li></ul></div><h2 id="3">Remarks</h2><p>This class keeps data for a single segment - a connection. It does not care about what the endpoints look like - only where they are.</p><p>The Point will not have a style - just coordinates</p><h2 id="4">Constructor</h2><p>Segment(S, E, C, L) will use start S and stop E to make a segment, with color C and line style L.</p><h2 id="5">Remarks</h2><p>S and E can be Points or coordinates - if the latter, they will be constructed into points</p><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div></div></body></html>
