@@ -141,7 +141,7 @@ classdef StudentSelector < matlab.apps.AppBase
         % Button pushed function: SubmitButton
         function SubmitButtonPressed(app, ~)
             app.base.selectedStudents = app.SelectedListBox.ItemsData;
-            delete(app);
+            uiresume(app.UIFigure);
         end
     end
 
