@@ -902,7 +902,7 @@ classdef Autograder < matlab.apps.AppBase
                 return
             end
             selectedButton = app.ButtonGroup.SelectedObject;
-            if strcmp(selectedButton.Text, "Select")
+            if strcmp(selectedButton.Text, "Select...")
                 selector = StudentSelector(app);
                 uiwait(selector.UIFigure);
                 delete(selector);
