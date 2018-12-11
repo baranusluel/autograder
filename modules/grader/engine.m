@@ -287,6 +287,10 @@ function runnables = engine(runnables)
             workers(w) = parfeval(@runCase, 1, runnables(w), pwd);
         end
     end
+    if any(isvalid(workers))
+        % if none are valid, while loop will never run!
+        tz = workers(find(isvalid(workers), 1)).CreateDateTime.TimeZone;
+    end
     while any(isvalid(workers))
         for w = 1:numel(workers)
             % check the status. If running, that's a timeout!
@@ -294,7 +298,7 @@ function runnables = engine(runnables)
             % check status. If it's finished, get outputs and delete
             if isvalid(worker)
                 now = datetime;
-                now.TimeZone = worker.CreateDateTime.TimeZone;
+                now.TimeZone = tz;
                 % first, try to get the diary. If we can't, this means that
                 % they did not suppress!!
                 try
