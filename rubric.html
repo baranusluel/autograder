@@ -109,7 +109,7 @@
                                 <div class="col-12">
                                     <h3>Variable Files</h3>
                                     <p>
-                                        These files contain all the variables needed by a specific function (as specified in the rubric). They <em>must</em> be called <code>problemName_submission.mat</code> and <code>problemName_resub.mat</code>, respectively.
+                                        These files contain all the variables needed by a specific function (as specified in the rubric). They <em>must</em> be called <code>problemName.mat</code>.
                                     </p>
                                 </div>
                             </div>
@@ -131,9 +131,13 @@
                             <h2>Quick Reference</h2>
                             <hr />
                             <ul>
+								<li>The <code>submission</code> folder is for grading the original submission</li>
+								<li>The <code>resub</code> folder is for grading the resubmission</li>
+								<li>The <code>assets</code> folder holds all the releasable <code>zip</code> files</li>
+								<li>The <code>student</code> folder holds what will be given to the student, and has no rubrics</li>
                                 <li>Solutions should be placed in <code>Solutions</code></li>
                                 <li>Supporting files should be placed in <code>SupportingFiles</code></li>
-                                <li>JSON rubric files should be at the top level</li>
+                                <li>JSON rubric files should be at the top level of the submission type</li>
                             </ul>
                         </div>
                         <div class="col-md-8">
@@ -146,53 +150,126 @@
                                 At the top level of the archive, you should have:
                             </p>
                             <ul>
+								<li>
+									<p>A folder for the zipped assets (<code>assets</code>).
+								</li>
+								<li><p>A folder for the submission grader (<code>submission</code>).</li>
+								<li><p>A folder for the resubmission grader (<code>resub</code>).</li>
+								<li><p>A folder for the student data (<code>student</code>).</li>
+							</ul>
+							<p>
+								Inside the <code>submission</code> and <code>resub</code> folders, you have the following organization:
+							</p>
+							<ul>
                                 <li>
 				                    <p>A folder for the solutions (<code>Solutions</code>). This folder contains all the <code>.m</code> files.</p>
                                 </li>
 				                <li>
 				                    <p>A folder for the supporting files (<code>SupportingFiles</code>). This folder contains all <code>.mat</code> (variables), as well as any other supporting files.</p>
-				                    <p><em>Note that the input variable <code>mat</code> file <strong>must</strong> end with either <code>_submission.mat</code> or <code>_resub.mat</code>.</em></p>
+				                    <p><em>Note that the input variable <code>mat</code> file <strong>must</strong> be called <code>problemName.mat</code></em></p>
                                 </li>
-                                <li><p>The JSON files specifying the rubric, called <code>submission.json</code> and <code>resub.json</code></p></li>
+                                <li><p>The JSON files specifying the rubric, called <code>rubric.json</code></p></li>
                             </ul>
                             <p>
                                 A visual rendering of this format is shown below:
                             </p>
                             <ul class="list-group">
-                                <li class="list-group-item"><code>submission.json</code></li>
-                                <li class="list-group-item"><code>resub.json</code></li>
-                                <li class="list-group-item">
+								<li class="list-group-item">
                                     <i class="far fa-folder-open"></i>
-                                    <code>Solutions</code>
+                                    <code>assets</code>
                                     <ul class="list-group">
                                         <li class="list-group-item">
-                                            <i class="far fa-file-code"></i>
-                                            <code>problemOne.m</code><br>
-                                            <i class="far fa-file-code"></i>
-                                            <code>problemTwo.m</code>
+                                            <i class="far fa-file"></i>
+                                            <code>student.zip</code><br>
+                                            <i class="far fa-file"></i>
+                                            <code>submission.zip</code><br>
+											<i class="far fa-file"></i>
+											<code>resub.zip</code>
                                         </li>
                                     </ul>
                                 </li>
-				                <li class="list-group-item">
+								<li class="list-group-item">
                                     <i class="far fa-folder-open"></i>
-                                    <code>SupportingFiles</code>
+                                    <code>student</code>
                                     <ul class="list-group">
                                         <li class="list-group-item">
                                             <i class="far fa-file-code"></i>
-                                            <code>problemOneSupport.p</code><br>
-                                            <i class="far fa-file"></i>
-                                            <code>problemOne_submission.mat</code><br>
-                                            <i class="far fa-file"></i>
-                                            <code>problemOne_resub.mat</code><br>
-                                            <i class="far fa-file-alt"></i>
-                                            <code>problemOneText.txt</code><br>
-                                            <i class="far fa-file-image"></i>
-                                            <code>problemOneImg.png</code><br>
-                                            <i class="far fa-file"></i>
-                                            <code>problemTwo_submission.mat</code><br>
-                                            <i class="far fa-file"></i>
-                                            <code>problemTwo_resub.mat</code>
+                                            <code>problemOne_soln.p</code><br>
+                                            <i class="far fa-file-code"></i>
+                                            <code>problemOne.mat</code>
                                         </li>
+                                    </ul>
+                                </li>
+								<li class="list-group-item">
+                                    <i class="far fa-folder-open"></i>
+                                    <code>submission</code>
+                                    <ul class="list-group">
+                                        <li class="list-group-item">
+                                            <i class="far fa-file-code"></i>
+                                            <code>rubric.json</code>
+                                        </li>
+										<li class="list-group-item">
+											<i class="far fa-folder-open"></i>
+											<code>Solutions</code>
+											<ul class="list-group">
+												<li class="list-group-item">
+													<i class="far fa-file-code"></i>
+													<code>problemOne.m</code><br>
+													<i class="far fa-file-code"></i>
+													<code>problemTwo.m</code>
+												</li>
+											</ul>
+										</li>
+										<li class="list-group-item">
+											<i class="far fa-folder-open"></i>
+											<code>SupportingFiles</code>
+											<ul class="list-group">
+												<li class="list-group-item">
+													<i class="far fa-file-code"></i>
+													<code>problemOne.mat</code><br>
+													<i class="far fa-file-code"></i>
+													<code>problemTwo.mat</code><br>
+													<i class="far fa-file-code"></i>
+													<code>problemOneSupport.txt</code>
+												</li>
+											</ul>
+										</li>
+                                    </ul>
+                                </li>
+								<li class="list-group-item">
+                                    <i class="far fa-folder-open"></i>
+                                    <code>resub</code>
+                                    <ul class="list-group">
+                                        <li class="list-group-item">
+                                            <i class="far fa-file-code"></i>
+                                            <code>rubric.json</code>
+                                        </li>
+										<li class="list-group-item">
+											<i class="far fa-folder-open"></i>
+											<code>Solutions</code>
+											<ul class="list-group">
+												<li class="list-group-item">
+													<i class="far fa-file-code"></i>
+													<code>problemOne.m</code><br>
+													<i class="far fa-file-code"></i>
+													<code>problemTwo.m</code>
+												</li>
+											</ul>
+										</li>
+										<li class="list-group-item">
+											<i class="far fa-folder-open"></i>
+											<code>SupportingFiles</code>
+											<ul class="list-group">
+												<li class="list-group-item">
+													<i class="far fa-file-code"></i>
+													<code>problemOne.mat</code><br>
+													<i class="far fa-file-code"></i>
+													<code>problemTwo.mat</code><br>
+													<i class="far fa-file-code"></i>
+													<code>problemOneSupport.txt</code>
+												</li>
+											</ul>
+										</li>
                                     </ul>
                                 </li>
                             </ul>
@@ -223,8 +300,8 @@
                                 <li><code>name</code>: A string. The name of the problem, such as <code>myProblem</code>. This name should be identical to the solution file name without the extension.</li>
                                 <li><code>banned</code>: An array of strings. The names of banned functions.</li>
                                 <li><code>isRecursive</code>: A boolean. If true, the student code <em>must</em> be recursive to receive any points. To learn more about recursion checking, see <a href="grader/checkRecur.html"><code>checkRecur</code></a>.</li>
-                                <li><code>supportingFiles</code>: An array of strings. The full names (including extensions) or supporting files. This should include the <code>myFunction_submission.mat</code> (or <code>myFunction_resub.mat</code>) file.</li>
-                                <li><code>testCases</code>: An array of TestCases. See below for more information.</li>
+                                <li><code>supportingFiles</code>: An array of strings. The full names (including extensions) or supporting files. This should include the <code>myFunction.mat</code> file.</li>
+                                <li><code>testCases</code>: An array of <code>TestCase</code>s. See below for more information.</li>
                             </ul>
                             <h4>Test Case</h4>
                             <p>
