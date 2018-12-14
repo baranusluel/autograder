@@ -76,14 +76,14 @@
                 <div id="files" class="tab-pane active">
                     <div class="row">
                         <div class="col-md-3">
-                            <h2>Quick Reference:</h2>
+                            <h2>Quick Reference</h2>
                             <hr />
                             <p class="lead">You'll need all of the following files:</p>
                             <ul class="list-group">
-                                <li class="list-group-item">Solution Files (<code>.m</code> format)</li>
-                                <li class="list-group-item">JSON file (<code>rubric.json</code>)</li>
-                                <li class="list-group-item">Variable files (<code>.mat</code> files)</li>
-                                <li class="list-group-item">Initializer files (<code>.m</code> files containing an initializer function definition)</li>
+                                <li class="list-group-item">Solution files</li>
+                                <li class="list-group-item">JSON rubric files</li>
+                                <li class="list-group-item">Variable files</li>
+                                <li class="list-group-item">Supporting files</li>
                             </ul>
                         </div>
                         <div class="col-md-8">
@@ -101,7 +101,7 @@
                                 <div class="col-12">
                                     <h3>JSON Rubric</h3>
                                     <p>
-                                        This file must be called <code>rubric.json</code>, and contains the JSON (specified later) for this homework set.
+                                        This file must be called <code>submission.json</code> or <code>resub.json</code>, and contains the JSON (specified later) for this homework set.
                                     </p>
                                 </div>
                             </div>
@@ -109,15 +109,7 @@
                                 <div class="col-12">
                                     <h3>Variable Files</h3>
                                     <p>
-                                        These files contain all the variables needed by a specific function (as specified in the rubric).
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-12">
-                                    <h3>Initializer Files</h3>
-                                    <p>
-                                        If your code uses any <code>initializers</code>, be sure to include the function file in the solutions archive.
+                                        These files contain all the variables needed by a specific function (as specified in the rubric). They <em>must</em> be called <code>problemName_submission.mat</code> and <code>problemName_resub.mat</code>, respectively.
                                     </p>
                                 </div>
                             </div>
@@ -135,16 +127,17 @@
             
                 <div id="structure" class="tab-pane fade">
                     <div class="row">
-                        <div class="col-md-4">
-                            <h3>Quick Reference</h3>
+                        <div class="col-md-3">
+                            <h2>Quick Reference</h2>
                             <hr />
                             <ul>
-                                <li>Each problem should have its own folder</li>
-                                <li>JSON rubric file should be at the top level</li>
+                                <li>Solutions should be placed in <code>Solutions</code></li>
+                                <li>Supporting files should be placed in <code>SupportingFiles</code></li>
+                                <li>JSON rubric files should be at the top level</li>
                             </ul>
                         </div>
                         <div class="col-md-8">
-                            <h3>Detailed Structure</h3>
+                            <h2>Detailed Structure</h2>
                             <hr />
                             <p class="lead">
                                 The organization of the archive is simple and intuitive.
@@ -154,44 +147,51 @@
                             </p>
                             <ul>
                                 <li>
-				    <p>A folder for the solutions (<code>Solutions</code>). This folder contains all the <code>.m</code> files.</p>
+				                    <p>A folder for the solutions (<code>Solutions</code>). This folder contains all the <code>.m</code> files.</p>
                                 </li>
-				<li>
-				    <p>A folder for the supporting files (<code>SupportingFiles</code>). This folder contains all <code>.mat</code> (variables), as well as any other supporting files.</p>
-				    <p><em>Note that the input variable <code>mat</code> file <strong>must</strong> end with either <code>_rubrica.mat</code> or <code>_rubricb.mat</code>.</em></p>
-				</li>
-                                <li><p>The JSON files specifying the rubric, called <code>rubric&lt;a OR b&gt;.json</code></p></li>
+				                <li>
+				                    <p>A folder for the supporting files (<code>SupportingFiles</code>). This folder contains all <code>.mat</code> (variables), as well as any other supporting files.</p>
+				                    <p><em>Note that the input variable <code>mat</code> file <strong>must</strong> end with either <code>_submission.mat</code> or <code>_resub.mat</code>.</em></p>
+                                </li>
+                                <li><p>The JSON files specifying the rubric, called <code>submission.json</code> and <code>resub.json</code></p></li>
                             </ul>
                             <p>
                                 A visual rendering of this format is shown below:
                             </p>
                             <ul class="list-group">
-                                <li class="list-group-item"><code>rubrica.json</code></li>
+                                <li class="list-group-item"><code>submission.json</code></li>
+                                <li class="list-group-item"><code>resub.json</code></li>
                                 <li class="list-group-item">
                                     <i class="far fa-folder-open"></i>
                                     <code>Solutions</code>
                                     <ul class="list-group">
                                         <li class="list-group-item">
-                                            <i class="far fa-file"></i>
+                                            <i class="far fa-file-code"></i>
                                             <code>problemOne.m</code><br>
-				            <i class="far fa-file"></i>
-				            <code>problemTwo.m</code>
+                                            <i class="far fa-file-code"></i>
+                                            <code>problemTwo.m</code>
                                         </li>
                                     </ul>
                                 </li>
-				<li class="list-group-item">
+				                <li class="list-group-item">
                                     <i class="far fa-folder-open"></i>
                                     <code>SupportingFiles</code>
                                     <ul class="list-group">
                                         <li class="list-group-item">
                                             <i class="far fa-file-code"></i>
-                                            <code>problemOneSupport____.m</code><br>
+                                            <code>problemOneSupport.p</code><br>
                                             <i class="far fa-file"></i>
-                                            <code>problemOneInputs.mat</code><br>
+                                            <code>problemOne_submission.mat</code><br>
+                                            <i class="far fa-file"></i>
+                                            <code>problemOne_resub.mat</code><br>
                                             <i class="far fa-file-alt"></i>
                                             <code>problemOneText.txt</code><br>
                                             <i class="far fa-file-image"></i>
-                                            <code>problemOneImg.png</code>
+                                            <code>problemOneImg.png</code><br>
+                                            <i class="far fa-file"></i>
+                                            <code>problemTwo_submission.mat</code><br>
+                                            <i class="far fa-file"></i>
+                                            <code>problemTwo_resub.mat</code>
                                         </li>
                                     </ul>
                                 </li>
@@ -207,6 +207,37 @@
                             <p>
                                 All fields must be present, though their value can be empty. Values can <strong>not</strong> be <code>null</code>
                             </p>
+                            <p>
+                                Additionally, fields marked as an <code>array</code> <em>must</em> be an array, even if 0 or 1 element(s) long.
+                            </p>
+                        </div>
+                        <div class="col-12 text-left">
+                            <h4>Problem</h4>
+                            <p>
+                                The JSON is made up of <code>Problem</code>s, which represent the complete information to grade a single homework problem.
+                            </p>
+                            <p class="lead">
+                                A <code>Problem</code> has the following fields:
+                            </p>
+                            <ul>
+                                <li><code>name</code>: A string. The name of the problem, such as <code>myProblem</code>. This name should be identical to the solution file name without the extension.</li>
+                                <li><code>banned</code>: An array of strings. The names of banned functions.</li>
+                                <li><code>isRecursive</code>: A boolean. If true, the student code <em>must</em> be recursive to receive any points. To learn more about recursion checking, see <a href="grader/checkRecur.html"><code>checkRecur</code></a>.</li>
+                                <li><code>supportingFiles</code>: An array of strings. The full names (including extensions) or supporting files. This should include the <code>myFunction_submission.mat</code> (or <code>myFunction_resub.mat</code>) file.</li>
+                                <li><code>testCases</code>: An array of TestCases. See below for more information.</li>
+                            </ul>
+                            <h4>Test Case</h4>
+                            <p>
+                                A <code>Problem</code> is made up of <code>TestCase</code>s, which represent individual calls.
+                            </p>
+                            <p class="lead">
+                                A <code>TestCase</code> has the following fields:
+                            </p>
+                            <ul>
+                                <li><code>inputs</code>: An array of strings. Each string represents the name of that input (i.e., the first string is the first input name, etc.). These names should match the <code>inputs.mat</code> variables.</li>
+                                <li><code>outputs</code>: An array of strings. Each string represents the name of that output, just like with <code>inputs</code>.</li>
+                                <li><code>points</code>: A number. The amount of absolute points this test case is worth. Note that the total points need not add up to 100 - any points after 100 are considered to be extra credit.</li>
+                            </ul>
                             <p class="lead">
                                 Below is an example of what the JSON could possibly look like...
                             </p>
@@ -217,21 +248,6 @@
                             <pre>
 [
 	{
-		"name": "ABCs_iteration",
-		"banned": [],
-		"isRecursive": false,
-		"supportingFiles": [
-			"ABCs_iteration_rubrica.mat"
-		],
-		"testCases": [
-			{
-				"call": "[A, B, C, D, E, F, G, H, I] = ABCs_iteration(in1, in2, in3, in4)",
-				"initializer": "",
-				"points": 5
-			}
-		]
-	},
-	{
 		"name": "luge",
 		"banned": [
 			"find",
@@ -240,23 +256,34 @@
 		],
 		"isRecursive": false,
 		"supportingFiles": [
-			"luge_rubrica.mat",
-			"initializer____.m"
+			"luge_submission.mat"
 		],
 		"testCases": [
 			{
-				"call": "[str1] = luge(in1)",
-				"initializer": "[in1] = initializer____()",
+				"inputs": [
+					"in1"
+				],
+				"outputs": [
+					"str1"
+				],
 				"points": 6
 			},
 			{
-				"call": "[str2] = luge(in2)",
-				"initializer": "",
+				"inputs": [
+					"in2"
+				],
+				"outputs": [
+					"str2"
+				],
 				"points": 6
 			},
 			{
-				"call": "[str3] = luge(in3)",
-				"initializer": "",
+				"inputs": [
+					"in3"
+				],
+				"outputs": [
+					"str3"
+				],
 				"points": 7
 			}
 		]
@@ -266,23 +293,38 @@
 		"banned": [],
 		"isRecursive": false,
 		"supportingFiles": [
-			"olympicTorch_rubrica.mat"
+			"olympicTorch_submission.mat"
 		],
 		"testCases": [
 			{
-				"call": "[result1] = olympicTorch(in1, in2)",
-				"initializer": "",
+				"inputs": [
+					"in1",
+					"in2"
+				],
+				"outputs": [
+					"result1"
+				],
 				"points": 6
 			},
 			{
-				"call": "[result2] = olympicTorch(in3, in4)",
-				"initializer": "",
+				"inputs": [
+					"in3",
+					"in4"
+				],
+				"outputs": [
+					"result2"
+				],
 				"points": 6
 			},
 			{
-				"call": "[result3] = olympicTorch(in5, in6)",
-				"initializer": "",
-				"points": 7
+				"inputs": [
+					"in5",
+					"in6"
+				],
+				"outputs": [
+					"result3"
+				],
+				"points": 6
 			}
 		]
 	},
@@ -291,7 +333,7 @@
 		"banned": [],
 		"isRecursive": false,
 		"supportingFiles": [
-			"zamboni_rubrica.mat",
+			"zamboni_submission.mat",
 			"bruins2.png",
 			"checkerboard2.png",
 			"flag2.png",
@@ -299,23 +341,31 @@
 		],
 		"testCases": [
 			{
-				"call": "[] = zamboni(in1)",
-				"initializer": "",
+				"inputs": [
+					"in1"
+				],
+				"outputs": [],
 				"points": 4
 			},
 			{
-				"call": "[] = zamboni(in2)",
-				"initializer": "",
+				"inputs": [
+					"in2"
+				],
+				"outputs": [],
 				"points": 5
 			},
 			{
-				"call": "[] = zamboni(in3)",
-				"initializer": "",
+				"inputs": [
+					"in3"
+				],
+				"outputs": [],
 				"points": 5
 			},
 			{
-				"call": "[] = zamboni(in4)",
-				"initializer": "",
+				"inputs": [
+					"in4"
+				],
+				"outputs": [],
 				"points": 5
 			}
 		]
@@ -328,22 +378,34 @@
 		],
 		"isRecursive": false,
 		"supportingFiles": [
-			"pascalsPodium_rubrica.mat"
+			"pascalsPodium_submission.mat"
 		],
 		"testCases": [
 			{
-				"call": "[podium1] = pascalsPodium(in1)",
-				"initializer": "",
+				"inputs": [
+					"in1"
+				],
+				"outputs": [
+					"podium1"
+				],
 				"points": 6
 			},
 			{
-				"call": "[podium2] = pascalsPodium(in2)",
-				"initializer": "",
+				"inputs": [
+					"in2"
+				],
+				"outputs": [
+					"podium2"
+				],
 				"points": 6
 			},
 			{
-				"call": "[podium3] = pascalsPodium(in3)",
-				"initializer": "",
+				"inputs": [
+					"in3"
+				],
+				"outputs": [
+					"podium3"
+				],
 				"points": 7
 			}
 		]
@@ -353,22 +415,34 @@
 		"banned": [],
 		"isRecursive": false,
 		"supportingFiles": [
-			"roundRobin_rubrica.mat"
+			"roundRobin_submission.mat"
 		],
 		"testCases": [
 			{
-				"call": "[result1] = roundRobin(in1)",
-				"initializer": "",
+				"inputs": [
+					"in1"
+				],
+				"outputs": [
+					"result1"
+				],
 				"points": 6
 			},
 			{
-				"call": "[result2] = roundRobin(in2)",
-				"initializer": "",
+				"inputs": [
+					"in2"
+				],
+				"outputs": [
+					"result2"
+				],
 				"points": 6
 			},
 			{
-				"call": "[result3] = roundRobin(in3)",
-				"initializer": "",
+				"inputs": [
+					"in3"
+				],
+				"outputs": [
+					"result3"
+				],
 				"points": 7
 			}
 		]
@@ -378,7 +452,7 @@
 		"banned": [],
 		"isRecursive": false,
 		"supportingFiles": [
-			"cryptex_rubrica.mat",
+			"cryptex_submission.mat",
 			"charStruct.mat",
 			"letterChecker.p",
 			"day.png",
@@ -387,18 +461,27 @@
 		],
 		"testCases": [
 			{
-				"call": "[] = cryptex(in1, in2)",
-				"initializer": "",
+				"inputs": [
+					"in1",
+					"in2"
+				],
+				"outputs": [],
 				"points": 6
 			},
 			{
-				"call": "[] = cryptex(in3, in4)",
-				"initializer": "",
+				"inputs": [
+					"in3",
+					"in4"
+				],
+				"outputs": [],
 				"points": 7
 			},
 			{
-				"call": "[] = cryptex(in5, in6)",
-				"initializer": "",
+				"inputs": [
+					"in5",
+					"in6"
+				],
+				"outputs": [],
 				"points": 7
 			}
 		]
