@@ -87,6 +87,10 @@ classdef Problem < handle
                 
                 for i = length(info.testCases):-1:1
                     tInfo = info.testCases(i);
+                    tInfo.name = info.name;
+                    if isfield(info, 'loadFile')
+                        tInfo.loadFile = [pwd filesep 'SupportingFiles' filesep info.loadFile];
+                    end
                     % could have supporting files; if it does, then add to
                     % list
                     if isfield(tInfo, 'supportingFiles')

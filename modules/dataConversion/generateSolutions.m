@@ -49,24 +49,20 @@
 %   Threw invalidPath exception
 %
 function solutions = generateSolutions(isResubmission, progress)
-    try
+    fid = fopen('rubric.json', 'rt');
+    if fid == -1
+        % work with legacy - if we don't find rubric, look for rubrica/b
         if ~isResubmission
-            fh = fopen('rubrica.json','rt');
-            json = char(fread(fh)');
-            fclose(fh);
-            rubric = jsondecode(json);
+            fid = fopen('rubrica.json');
         else
-            fh = fopen('rubricb.json','rt');
-            json = char(fread(fh)');
-            fclose(fh);
-            rubric = jsondecode(json);
+            fid = fopen('rubricb.json');
         end
-    catch e
-        me = MException('AUTOGRADER:generateSolutions:invalidJSON', ...
-            'JSON provided could not be decoded');
-        me = me.addCause(e);
-        me.throw();
     end
+    json = char(fread(fid)');
+    fclose(fid);
+    rubric = jsondecode(json);
+    % work with legacy - if we don't find rubric, look for rubrica/b
+
     %Go through the structure array (vector) that was created from the
     %jsondecode() call and create problem types.
     %Store these in one vector.
@@ -75,6 +71,9 @@ function solutions = generateSolutions(isResubmission, progress)
     progress.Value = 0;
     elements = numel(rubric);
     for i = elements:-1:1
+        if isempty(rubric(i).supportingFiles)
+            rubric(i).supportingFiles = {};
+        end
         solutions(i) = Problem(rubric(i));
         progress.Value = min([progress.Value + 1/numel(elements), 1]);
     end
@@ -86,6 +85,9 @@ function solutions = generateSolutions(isResubmission, progress)
     % delete any files NOT referenced by any test case
     saveFiles = arrayfun(@(t)([t.supportingFiles(:)', t.loadFiles(:)']), [allTestCases{:}], 'uni', false);
     saveFiles = unique([saveFiles{:}]);
+    if ~iscell(saveFiles)
+        saveFiles = {};
+    end
     % for each file in folder supporting, if not contained in
     % saveFiles, delete
     checkFiles = dir([pwd filesep 'SupportingFiles' filesep]);

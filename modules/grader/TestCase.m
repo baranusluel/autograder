@@ -234,7 +234,8 @@ classdef TestCase < handle
                 % instead of iterating in case fields are wrong/missing.
                 % If a field is missing, exception is caught and
                 % re-thrown as a parse error.
-                if isfield(info, 'call')
+                isLegacy = isfield(info, 'call');
+                if isLegacy
                     % legacy. Parse the function call and get inputNames,
                     % outputNames, and functionName.
                     ins = cell(1, this.ARGUMENT_NUMBER);
@@ -268,11 +269,16 @@ classdef TestCase < handle
                 this.banned = info.banned;
                 
                 % contains() errors if supportingFiles is empty
-                if ~isempty(info.supportingFiles)
-                    toLoad = endsWith(info.supportingFiles, '_rubrica.mat') | ...
-                        endsWith(info.supportingFiles, '_rubricb.mat');
-                    this.loadFiles = info.supportingFiles(toLoad);
-                    this.supportingFiles = info.supportingFiles(~toLoad);
+                if isLegacy
+                    if ~isempty(info.supportingFiles)
+                        toLoad = endsWith(info.supportingFiles, '_rubrica.mat') ...
+                            | endsWith(info.supportingFiles, '_rubricb.mat');
+                        this.loadFiles = info.supportingFiles(toLoad);
+                        this.supportingFiles = info.supportingFiles(~toLoad);
+                    end
+                elseif ~isempty(info.loadFile)
+                    this.loadFiles = {info.loadFile};
+                    this.supportingFiles = info.supportingFiles;
                 end
             catch e
                 ME = MException('AUTOGRADER:TestCase:ctor:badInfo', ...
