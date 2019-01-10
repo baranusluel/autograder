@@ -54,7 +54,7 @@ if nargin == 1
     rg = request.send(listGroups_API);
     ru = request.send(listUsers_API);
     
-    anrawUsers = ru.Body.Data.members;
+    rawUsers = ru.Body.Data.members;
     rawChannels = rc.Body.Data.channels;
     rawGroups = rg.Body.Data.groups;
     
