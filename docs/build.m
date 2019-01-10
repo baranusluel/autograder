@@ -97,9 +97,18 @@ function problems = build(varargin)
         [info, paths] = checkcode(files, options{:}, '-struct');
         if ~all(cellfun(@isempty, info, 'uni', true))
             % if requesting output, don't error
-            fprintf(2, 'Files failed lint test\n');
+            fprintf(2, 'Files failed lint test:\n');
+            mask = ~cellfun(@isempty, info, 'uni', true);
+            info = info(mask);
+            paths = paths(mask);
+            [~, names, exts] = cellfun(@(p)(fileparts(p)), paths, 'uni', false);
+            names = join([names, exts], '');
             if nargout ~= 0
                 problems = [paths, info];
+            else 
+                % print
+                fprintf(2, '%s\n', strjoin(names, newline));
+                clear problems;
             end
             return;
         else
