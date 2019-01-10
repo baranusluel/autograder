@@ -54,7 +54,7 @@ if nargin == 1
     rg = request.send(listGroups_API);
     ru = request.send(listUsers_API);
     
-    rawUsers = ru.Body.Data.members;
+    anrawUsers = ru.Body.Data.members;
     rawChannels = rc.Body.Data.channels;
     rawGroups = rg.Body.Data.groups;
     
@@ -111,6 +111,10 @@ if ~isempty(message)
     
     mrequest.Method = 'Post';
     mrequest.Header = [auth contentType];
+    
+    if ~iscell(channel)
+        channel = {channel};
+    end
     
     for c = 1:numel(channel)
         body.text = message;
