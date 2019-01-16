@@ -49,13 +49,13 @@
 %   Threw invalidPath exception
 %
 function solutions = generateSolutions(isResubmission, progress)
-    fid = fopen('rubric.json', 'rt');
+    fid = fopen('./rubric.json', 'rt');
     if fid == -1
         % work with legacy - if we don't find rubric, look for rubrica/b
         if ~isResubmission
-            fid = fopen('rubrica.json');
+            fid = fopen('./rubrica.json');
         else
-            fid = fopen('rubricb.json');
+            fid = fopen('./rubricb.json');
         end
     end
     json = char(fread(fid)');
