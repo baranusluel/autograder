@@ -2,7 +2,7 @@
 %
 % uploadToServer is responsible for uploading files to the CS 1371 Server
 %
-% uploadToServer(T, N, B) will upload the files for homework using the 
+% uploadToServer(T, N, B) will upload the files for homework using the
 % Canvas Token T. Additionally, it will  update the progress
 % bar B. It will use the homework name N.
 %
@@ -28,7 +28,7 @@ function uploadToServer(token, hwName, progress, resources)
     progress.Message = 'Uploading Homework Data to Server';
     progress.Value = 0;
     progress.Indeterminate = 'on';
-    
+
     % No SFTP; just POST with data and path
     % get HW num
     num = hwName(hwName >= '0' & hwName <= '9');
@@ -39,37 +39,42 @@ function uploadToServer(token, hwName, progress, resources)
     newResubName = [pwd filesep hwName filesep 'hw' num 'Rubric_resub.json'];
     copyfile(solnFolder, hwName);
     % rename rubrics and upload
-    movefile([pwd filesep hwName filesep 'rubrica.json'], ...
-        newOGName);
-    movefile([pwd filesep hwName filesep 'rubricb.json'], ...
-        newResubName);
-    
+    % PROBLEM. We only have submission / resubmission.
+    % we can't upload both!
+    % Good news - only have to uplaod one
+    if ~contains(hwName, 'resubmission')
+        name = 'Supporting_Resub.zip';
+        movefile(fullfile(pwd, hwName, 'rubric.json'), newOGName);
+    else
+        name = 'Supporting.zip';
+        movefile(fullfile(pwd, hwName, 'rubric.json'), newResubName);
+    end
+
     % Files to upload:
     %   Rubric.json
     %   Rubric_resub.json
     %   Supporting.zip
     %   Solution Files
     solns = dir([pwd filesep hwName filesep 'Solutions' filesep '*.m']);
-    files = struct('path', cell(1, 3+numel(solns)), 'data', '');
-    [~, name, ext] = fileparts(newOGName);
-    files(1).path = ['regrades/rubrics/' name ext];
-    files(1).data = getData(newOGName);
-    [~, name, ext] = fileparts(newResubName);
-    files(2).path = ['regrades/rubrics/' name ext];
-    files(2).data = getData(newResubName);
+    files = struct('path', cell(1, 2+numel(solns)), 'data', '');
     
-    if contains(hwName, 'resubmission')
-        name = 'Supporting_Resub.zip';
+    if ~contains(hwName, 'resubmission')
+        [~, tmpName, ext] = fileparts(newOGName);
+        files(1).path = ['regrades/rubrics/' tmpName ext];
+        files(1).data = getData(newOGName);
     else
-        name = 'Supporting.zip';
+        [~, tmpName, ext] = fileparts(newResubName);
+        files(1).path = ['regrades/rubrics/' tmpName ext];
+        files(1).data = getData(newResubName);
     end
+
     zip([pwd filesep hwName filesep name], ...
         [pwd filesep hwName filesep 'SupportingFiles' filesep '*']);
-    files(3).path = ['regrades/solutions/Homework' num '/' name];
-    files(3).data = getData([pwd filesep hwName filesep name]);
+    files(2).path = ['regrades/solutions/Homework' num '/' name];
+    files(2).data = getData([pwd filesep hwName filesep name]);
     for n = 1:numel(solns)
-        files(n+3).path = ['regrades/solutions/Homework' num '/' solns(n).name];
-        files(n+3).data = getData([solns(n).folder filesep solns(n).name]);
+        files(n+2).path = ['regrades/solutions/Homework' num '/' solns(n).name];
+        files(n+2).data = getData([solns(n).folder filesep solns(n).name]);
     end
     offset = numel(files);
     % for each resource, get base bath by deleting
