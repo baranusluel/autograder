@@ -118,6 +118,7 @@ function status = saveFiles(paths, links)
     % if the link is empty, then invalid file - don't download!
     % if link is FILE_TO_LARGE, then rewrite correctly
     if isempty(paths) || isempty(links)
+        status = struct('path', {}, 'link', {});
         return;
     end
     paths(strlength(links) == 0) = [];
