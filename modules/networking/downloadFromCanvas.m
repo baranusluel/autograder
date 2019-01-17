@@ -70,24 +70,37 @@ function downloadFromCanvas(students, path, progress)
         end
     end
     if ~isempty(submissions)
+        status = cell(1, numel(submissions));
         for s = numel(submissions):-1:1
-            workers(s) = parfeval(@saveFiles, 0, ...
+            workers(s) = parfeval(@saveFiles, 1, ...
                 submissions(s).paths, ...
                 submissions(s).urls);
         end
         while ~all([workers.Read])
             try
-                fetchNext(workers);
+                [ind, thisStatus] = fetchNext(workers);
+                status{ind} = thisStatus;
             catch e
                 workers.cancel;
                 e.cause{1}.remotecause{1}.rethrow;
             end
+            
             progress.Value = min(1, sum([workers.Read]) / numel(workers));
             if progress.CancelRequested
                 workers.cancel;
                 return;
             end
         end
+        mask = ~cellfun(@isempty, status);
+        if any(mask)
+            % print
+            fprintf(2, 'Some student files failed to download:\n\t');
+            studs = students(mask);
+            studs = strjoin({studs.login_id}, sprintf('\n\t'));
+            fprintf(2, studs);
+            fprintf(2, newline);
+        end
+        
     end
     % write info.csv
     names = [names; ids; sections; canvasIds]';
@@ -99,7 +112,7 @@ function downloadFromCanvas(students, path, progress)
     cd(origPath);
 end
 
-function saveFiles(paths, links)
+function status = saveFiles(paths, links)
     opts = weboptions;
     opts.Timeout = 30;
     % if the link is empty, then invalid file - don't download!
@@ -109,7 +122,9 @@ function saveFiles(paths, links)
     end
     paths(strlength(links) == 0) = [];
     links(strlength(links) == 0) = [];
-    for f = 1:numel(links)
+    status(numel(links)).path = '';
+    status(end).link = '';
+    for f = numel(links):-1:1
         if links(f) == "FILE_TOO_LARGE"
             [~, name, ~] = fileparts(paths(f));
             fid = fopen(paths(f), 'wt');
@@ -121,13 +136,22 @@ function saveFiles(paths, links)
         else
             try
                 websave(paths(f), links(f), opts);
+                status(f) = [];
             catch
                 % we might just need to wait a minute - so do just that. Wait
                 % one minute.
                 state = pause('on');
-                pause(60);
+                pause(20);
                 pause(state);
-                websave(paths(f), links(f), opts);
+                try
+                    websave(paths(f), links(f), opts);
+                    status(f) = [];
+                catch
+                    % at this point, die. Output the path and link that
+                    % failed.
+                    status(f).path = paths(f);
+                    status(f).link = links(f);
+                end
             end
         end
     end
