@@ -309,6 +309,13 @@ function runnables = engine(runnables)
                             e = MException('AUTOGRADER:engine:testCaseFailure', ...
                                 'TestCase failed, see error for more information');
                             e = e.addCause(worker.Error.remotecause{1});
+                            % reset each runnable
+                            for r = 1:numel(runnables)
+                                % remove path
+                                [~] = rmdir(runnables(r).path, 's');
+                                runnables(r).path = origPaths{r};
+                            end
+                            workers(isvalid(workers)).cancel;
                             e.throw();
                         elseif ~isempty(worker.Error) && ~isTestCase
                             e = MException('AUTOGRADER:studentError', ...

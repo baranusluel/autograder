@@ -57,7 +57,13 @@ classdef TestResults < handle
             % create temporary directory
             workDir = tempname;
             mkdir(workDir);
+            
             origPath = cd(path);
+            function clean(p, d)
+                cd(p);
+                [~] = rmdir(d, 's');
+            end
+            cleaner = onCleanup(@()(clean(origPath, workDir)));
             % copy over everything in the PATH directory
             copyfile([pwd filesep '*'], workDir);
             files = dir('**/*.m');
@@ -114,11 +120,7 @@ classdef TestResults < handle
             end
 
             cd(workDir);
-            function clean(p, d)
-                cd(p);
-                [~] = rmdir(d, 's');
-            end
-            cleaner = onCleanup(@()(clean(origPath, workDir)));
+
             % we know test.m will exist
             try
                 [this.passed, this.message] = test();

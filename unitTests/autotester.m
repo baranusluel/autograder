@@ -36,7 +36,7 @@
 %
 
 function [status, html] = autotester(varargin)
-    status = get(0, 'DefaultFigureVisible');
+    figStatus = get(0, 'DefaultFigureVisible');
     set(0, 'DefaultFigureVisible', 'off');
     addpath(genpath(fileparts(fileparts(mfilename('fullpath')))));
     outs = parseInputs(varargin);
@@ -114,6 +114,10 @@ function [status, html] = autotester(varargin)
         fwrite(fid, completeHtml);
         fclose(fid);
         web(['file:///' file], '-browser');
+        st = pause('on');
+        pause(5);
+        pause(st);
+        delete(file);
     end
 
     if ~isempty(outs.output)
@@ -132,7 +136,7 @@ function [status, html] = autotester(varargin)
     end
     cd(origPath);
     path(userPath, '');
-    set(0, 'DefaultFigureVisible', status);
+    set(0, 'DefaultFigureVisible', figStatus);
 end
 
 function outs = parseInputs(ins)
