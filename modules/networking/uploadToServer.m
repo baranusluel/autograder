@@ -154,7 +154,7 @@ function uploadToServer(token, hwName, progress, resources, students, courseId)
     fid = fopen(taName, 'wt');
     fwrite(fid, jsonencode(jsonTAs));
     fclose(fid);
-    files(end+1).path = '/regrades/json/sections.json';
+    files(end+1).path = 'regrades/json/sections.json';
     files(end).data = getData(taName);
     delete(taName);
     
