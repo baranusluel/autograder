@@ -492,7 +492,7 @@ function autograder(app)
                 app.canvasHomeworkId, app.canvasToken, progress);
             if ~isempty(failed)
                 fprintf(2, 'Some students'' grades failed to upload:');
-                fprintf(2, '\n\t%s\n', strjoin({failed.id}, sprintf('\t\n')));
+                fprintf(2, '\n\t%s\n', strjoin({failed.id}, sprintf('\n\t')));
                 throw(MException('AUTOGRADER:uploadGrades:failure', ...
                     'Failed to upload grades for students; see command window for more information'));
             end
@@ -511,7 +511,7 @@ function autograder(app)
                 app.canvasHomeworkId, app.canvasToken, progress);
             if ~isempty(failed)
                 fprintf(2, 'Some students'' feedback failed to upload:');
-                fprintf(2, '\n\t%s\n', strjoin({failed.id}, sprintf('\t\n')));
+                fprintf(2, '\n\t%s\n', strjoin({failed.id}, sprintf('\n\t')));
                 throw(MException('AUTOGRADER:uploadFeedback:failure', ...
                     'Failed to upload feedback for students; see command window for more information'));
             end
@@ -723,7 +723,7 @@ function autograder(app)
             'we ran into some problems during post-grading tasks. These problems ', ...
             'have been detailed below, and the Autograder is in BREAK mode so ', ...
             'that you can inspect the state. To look at a specific exception, ', ...
-            'use that error''s list order as an index for `caughtErrors`.', ...
+            'use that error''s list order as an index for caughtErrors.', ...
             newline, ...
             'Errors:', ...
             newline, ...
@@ -794,7 +794,7 @@ function shouldDebug = debugger(app, msg)
         if ~isempty(app.slackRecipients)
             slackMessenger(app.slackToken, {app.slackRecipients.id}, 'Autograder Failed... See your computer for more information');
         end
-        desktopMessenger('Autograder Failed... See MATLAB for more information');
+        desktopMessenger('Autograder Failed... See MATLAB');
     catch
     end
     beep;
