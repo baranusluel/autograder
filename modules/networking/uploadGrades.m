@@ -36,7 +36,7 @@
 %
 %   Students' grades are uploaded
 
-function uploadGrades(students, courseId, assignmentId, token, progress)
+function failed = uploadGrades(students, courseId, assignmentId, token, progress)
     if any(~isvalid(students))
         return;
     end
@@ -51,14 +51,26 @@ function uploadGrades(students, courseId, assignmentId, token, progress)
     end
     workers = [workers{:}];
     
+    uploaders = students([workers.ID] ~= -1);
     workers([workers.ID] == -1) = [];
+    isSuccessful = true;
     while ~all([workers.Read])
-        fetchNext(workers);
+        try
+            fetchNext(workers);
+        catch
+            isSuccessful = false;
+        end
         if progress.CancelRequested
             cancel(workers);
             throw(MException('AUTOGRADER:userCancellation', 'User Cancelled Operation'));
         end
         progress.Value = min([progress.Value + 1/numel(workers), 1]);
+    end
+    if isSuccessful
+        failed = uploaders(false);
+    else
+        mask = ~cellfun(@isempty, {workers.Error});
+        failed = uploaders(mask);
     end
 end
 

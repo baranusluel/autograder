@@ -488,8 +488,14 @@ function autograder(app)
     if app.UploadGradesToCanvas.Value
         try
             Logger.log('Starting upload of student grades');
-            uploadGrades(students, app.canvasCourseId, ...
+            failed = uploadGrades(students, app.canvasCourseId, ...
                 app.canvasHomeworkId, app.canvasToken, progress);
+            if ~isempty(failed)
+                fprintf(2, 'Some students'' grades failed to upload:');
+                fprintf(2, '\n\t%s\n', strjoin({failed.id}, sprintf('\t\n')));
+                throw(MException('AUTOGRADER:uploadGrades:failure', ...
+                    'Failed to upload grades for students; see command window for more information'));
+            end
         catch e
             if debugger(app, 'Failed to upload grades to Canvas')
                 keyboard;
@@ -501,8 +507,14 @@ function autograder(app)
     if app.UploadFeedbackToCanvas.Value
         try
             Logger.log('Starting upload of student feedback');
-            uploadFeedback(students, app.canvasCourseId, ...
+            failed = uploadFeedback(students, app.canvasCourseId, ...
                 app.canvasHomeworkId, app.canvasToken, progress);
+            if ~isempty(failed)
+                fprintf(2, 'Some students'' feedback failed to upload:');
+                fprintf(2, '\n\t%s\n', strjoin({failed.id}, sprintf('\t\n')));
+                throw(MException('AUTOGRADER:uploadFeedback:failure', ...
+                    'Failed to upload feedback for students; see command window for more information'));
+            end
         catch e
             if debugger(app, 'Failed to upload feedback to Canvas')
                 keyboard;

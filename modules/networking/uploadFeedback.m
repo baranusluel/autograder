@@ -36,11 +36,11 @@
 %
 %   Students' grades are uploaded
 
-function uploadFeedback(students, courseId, assignmentId, token, progress)
+function failed = uploadFeedback(students, courseId, assignmentId, token, progress)
     progress.Message = 'Uploading Student Feedback to Canvas';
     progress.Indeterminate = 'off';
     progress.Value = 0;
-    
+    isSuccessful = true;
     for s = numel(students):-1:1
         stud.path = students(s).path;
         stud.id = students(s).canvasId;
@@ -48,15 +48,27 @@ function uploadFeedback(students, courseId, assignmentId, token, progress)
             courseId, assignmentId, stud, token);
     end
     workers = [workers{:}];
-    
+    uploaders = students([workers.ID] ~= -1);
     workers([workers.ID] == -1) = [];
     while ~all([workers.Read])
-        fetchNext(workers);
+        try
+            fetchNext(workers);
+        catch
+            isSuccessful = false;
+        end
+            
         if progress.CancelRequested
             cancel(workers);
             throw(MException('AUTOGRADER:userCancellation', 'User Cancelled Operation'));
         end
         progress.Value = min([progress.Value + 1/numel(workers), 1]);
+    end
+    % return failed kids
+    if isSuccessful
+        failed = uploaders(false);
+    else
+        mask = ~cellfun(@isempty, {workers.Error});
+        failed = uploaders(mask);
     end
 end
 
