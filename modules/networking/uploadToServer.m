@@ -56,12 +56,12 @@ function uploadToServer(token, hwName, progress, resources, students, courseId)
     % rename rubrics and upload
     % PROBLEM. We only have submission / resubmission.
     % we can't upload both!
-    % Good news - only have to uplaod one
+    % Good news - only have to upload one
     if ~contains(hwName, 'resubmission')
-        name = 'Supporting_Resub.zip';
+        name = 'Supporting.zip';
         movefile(fullfile(pwd, hwName, 'rubric.json'), newOGName);
     else
-        name = 'Supporting.zip';
+        name = 'Supporting_Resub.zip';
         movefile(fullfile(pwd, hwName, 'rubric.json'), newResubName);
     end
     

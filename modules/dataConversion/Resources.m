@@ -25,9 +25,9 @@ classdef Resources < matlab.mixin.SetGet
     end
     methods
         function this = Resources
-            this.addlistener('Problems', 'PostSet', @this.tester);
+            this.addlistener('Problems', 'PostSet', @this.setter);
         end
-        function tester(this, ~, ~)
+        function setter(this, ~, ~)
             this.supportingFiles = struct('name', {this.Problems.name}, ...
                 'files', []);
             problems = this.Problems;

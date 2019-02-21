@@ -197,7 +197,7 @@ function autograder(app)
             keyboard;
         end
     end
-    if app.isResubmission
+    if ~app.isResubmission
         serverBasePath = sprintf('https://cs1371.gatech.edu/homework/homework%02d/original/', app.homeworkNum);
     else
         serverBasePath = sprintf('https://cs1371.gatech.edu/homework/homework%02d/resubmission/', app.homeworkNum);
