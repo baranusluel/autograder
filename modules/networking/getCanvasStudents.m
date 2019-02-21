@@ -50,6 +50,8 @@ function students = getCanvasStudents(courseId, assignmentId, token, progress)
     end
     students = fetchOutputs(workers);
     %}
+    progress.Indeterminate = 'on';
+    progress.Message = 'Assigning Sections';
     sections = getSectionInfo(courseId, token);
     sectionStudents = vertcat(sections.students)';
     inds = zeros(1, numel(sectionStudents));
@@ -99,7 +101,7 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
                 links = cell(1, pgs - 1);
                 links{1} = next.link.extractBetween('<', '>');
                 for l = 2:pgs - 1
-                    links{l} = regexprep(links{l-1}, '(?<=\?page=)\d*', '${num2str(1+str2double($0))}');
+                    links{l} = regexprep(links{l-1}, '(?<=[\&\?]page\=)\d+', '${num2str(1+str2double($0))}');
                 end
                 % for each link, fetch it's outputs and store it in subs
                 for l = numel(links):-1:1

@@ -48,7 +48,7 @@ function downloadFromCanvas(students, path, progress)
         names{s} = students(s).name;
         ids{s} = students(s).login_id;
         sections{s} = students(s).section;
-        canvasIds{s} = students(s).id;
+        canvasIds{s} = num2str(students(s).id);
         % for each attachment, download it here
         if isfield(students(s).submission, 'attachments') && ~isempty(students(s).submission.attachments)
             % create paths and links
