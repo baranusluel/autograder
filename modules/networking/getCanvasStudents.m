@@ -26,6 +26,9 @@
 %
 function students = getCanvasStudents(courseId, assignmentId, token, progress)
     subs = getSubmissions(courseId, assignmentId, token, progress);
+    % students will be .user?
+    students = cellfun(@(s)(s.user), subs);
+    %{
     numStudents = numel(subs);
     % get info
     progress.Indeterminate = 'off';
@@ -46,6 +49,7 @@ function students = getCanvasStudents(courseId, assignmentId, token, progress)
         end
     end
     students = fetchOutputs(workers);
+    %}
     sections = getSectionInfo(courseId, token);
     sectionStudents = vertcat(sections.students)';
     inds = zeros(1, numel(sectionStudents));
@@ -56,7 +60,7 @@ function students = getCanvasStudents(courseId, assignmentId, token, progress)
     end
     sectionStudentIds = [sectionStudents.id];
     for i = 1:numel(students)
-        mask = str2double(students(i).id) == sectionStudentIds;
+        mask = students(i).id == sectionStudentIds;
         if any(mask)
             students(i).section = sections(inds(mask)).name;
         else
@@ -64,8 +68,6 @@ function students = getCanvasStudents(courseId, assignmentId, token, progress)
         end
     end
     
-    
-    delete(workers);
     [students.submission] = deal(subs{:});
 end
 
@@ -79,7 +81,7 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
         request.Header = matlab.net.http.HeaderField;
         request.Header.Name = 'Authorization';
         request.Header.Value = ['Bearer ' token];
-        response = request.send([API courseId '/assignments/' assignmentId '/submissions/?per_page=100']);
+        response = request.send([API courseId '/assignments/' assignmentId '/submissions/?include%5B%5D=user&group=&per_page=100']);
         next = response.getFields('Link').parse({'link', 'rel'});
         % see if last was provided. If so, then we can prealloc (mostly)
         % precisely. Otherwise, just use DEFAULT_SUBMISSION_NUM
@@ -87,7 +89,7 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
         next = next(strcmp([next.rel], "next"));
         if ~isempty(last)
             % get page: ?page=num&
-            pgs = regexp(last.link, '(?<=\?page=)\d*', 'match');
+            pgs = regexp(last.link, '(?<=[\&\?]page\=)\d+', 'match');
             pgs = str2double(pgs{1});
             if pgs == 1
                 subs = response.Body.Data';
@@ -168,7 +170,7 @@ function sections = getSectionInfo(courseId, token)
         sections(s).name = name{1};
     end
 end
-
+%{
 function info = getStudentInfo(userId, token)
     API = 'https://gatech.instructure.com/api/v1';
     opts = weboptions;
@@ -184,7 +186,7 @@ function info = getStudentInfo(userId, token)
         throw(e);
     end
 end
-
+%}
 function chunk = fetchChunk(link, token)
     request = matlab.net.http.RequestMessage;
     request.Header = matlab.net.http.HeaderField;
