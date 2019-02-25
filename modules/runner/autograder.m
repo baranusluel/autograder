@@ -781,7 +781,7 @@ function shouldDebug = debugger(app, msg)
     % If we are leaky (or there is a delay), don't stop
     % If we are leaky (app.isLeaky = true) OR we have a delay
     % (~isempty(app.delay)), don't debug
-    shouldDebug = ~(app.isLeaky || ~isempty(app.delay));
+    shouldDebug = ~(app.IsLeaky.Value || ~isempty(app.delay));
     % notify
     try
         if ~isempty(app.email)
