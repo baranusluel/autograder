@@ -777,11 +777,8 @@ end
 
 function shouldDebug = debugger(app, msg)
     EMAIL_MESSAGE_FORMAT = 'Hello,\n\nIt appears the autograder failed to finish. Here''s the error message:\n\n%s\n\nBest Regards,\n~The CS 1371 Technology Team';
-
-    % If we are leaky (or there is a delay), don't stop
-    % If we are leaky (app.isLeaky = true) OR we have a delay
-    % (~isempty(app.delay)), don't debug
-    shouldDebug = ~(app.IsLeaky.Value || ~isempty(app.delay));
+    % If EnterBreakMode is true, we debug
+    shouldDebug = app.shouldDebug;
     % notify
     try
         if ~isempty(app.email)
