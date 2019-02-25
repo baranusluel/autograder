@@ -30,6 +30,7 @@
 %
 %   In path P, the student folders are all saved, along with a `grades.csv`
 function downloadFromCanvas(students, path, progress)
+    didFail = false;
     origPath = cd(path);
     cleaner = onCleanup(@()(cd(origPath)));
     numStudents = numel(students);
@@ -93,6 +94,7 @@ function downloadFromCanvas(students, path, progress)
         end
         mask = ~cellfun(@isempty, status);
         if any(mask)
+            didFail = true;
             % print
             fprintf(2, 'Some student files failed to download:\n\t');
             studs = students(mask);
@@ -110,6 +112,10 @@ function downloadFromCanvas(students, path, progress)
     fwrite(fid, names);
     fclose(fid);
     cd(origPath);
+    if didFail
+        throw(MException('AUTOGRADER:networking:downloadError', ...
+            'Failed to download some students'));
+    end
 end
 
 function status = saveFiles(paths, links)
