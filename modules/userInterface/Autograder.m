@@ -12,6 +12,7 @@ classdef Autograder < matlab.apps.AppBase
         LoadConfigurationMenu   matlab.ui.container.Menu
         Exit                    matlab.ui.container.Menu
         Notifications           matlab.ui.container.Menu
+        BreakMode               matlab.ui.container.Menu
         Schedule                matlab.ui.container.Menu
         Update                  matlab.ui.container.Menu
         PostProcess             matlab.ui.container.Menu
@@ -113,6 +114,7 @@ classdef Autograder < matlab.apps.AppBase
         % Debugging
         settingsPath = [fileparts(mfilename('fullpath')) filesep 'settings.autograde'];
         settingsFormat = '%s: %s\n';
+        shouldDebug logical = true;
     end
     methods (Access = private)
         % Get a ZIP archive
@@ -1016,6 +1018,8 @@ classdef Autograder < matlab.apps.AppBase
                 app.delay.startat(d);
                 app.Schedule.Text = 'Remove from Schedule';
                 app.Go.Enable = false;
+                app.shouldDebug = false;
+                app.BreakMode.Checked = 'off';
                 % disable edit
                 app.EditSubmissions.Value = false;
                 app.EditSubmissions.Enable = false;
@@ -1140,6 +1144,32 @@ classdef Autograder < matlab.apps.AppBase
                 app.postProcessPath = '';
             end
         end
+        
+        % Menu selected function: BreakMode
+        function BreakModeMenuSelected(app, ~)
+            if app.shouldDebug
+                % No debugging. Make sure they understand the consequences
+                resp = uiconfirm(app.UIFigure, ...
+                    ['You are choosing to disable Break Mode. ', ...
+                    'This means that potentially fatal flaws will be ', ...
+                    'suppressed until execution finishes. ', ...
+                    'Are you sure you would like to continue?'], ...
+                    'Disabling Break Mode', ...
+                    'Options', {'Disable Break Mode', 'Cancel'}, ...
+                    'Icon', 'warning', ...
+                    'CancelOption', 'Cancel', ...
+                    'DefaultOption', 'Cancel');
+                if ~strcmpi(resp, 'Cancel')
+                    app.shouldDebug = false;
+                    app.BreakMode.Checked = 'off';
+                    app.BreakMode.Text = 'Enable Break Mode';
+                end
+            else
+                app.shouldDebug = true;
+                app.BreakMode.Checked = 'on';
+                app.BreakMode.Text = 'Disable Break Mode';
+            end
+        end
 
         % Menu selected function: Github
         function GithubMenuSelected(app, ~)
@@ -1225,6 +1255,11 @@ classdef Autograder < matlab.apps.AppBase
             app.PostProcess.MenuSelectedFcn = createCallbackFcn(app, @PostProcessMenuSelected, true);
             app.PostProcess.Text = 'Post Processing...';
             
+            % Create BreakMode
+            app.BreakMode = uimenu(app.AdvancedMenu);
+            app.BreakMode.MenuSelectedFcn = createCallbackFcn(app, @BreakModeMenuSelected, true);
+            app.BreakMode.Text = 'Disable Break Mode';
+            app.BreakMode.Checked = 'on';
             % Create AboutMenu
             app.AboutMenu = uimenu(app.UIFigure);
             app.AboutMenu.Text = 'About';
