@@ -95,7 +95,9 @@ classdef Student < handle
     methods
         function grade = get.Grade(this)
             if isempty(this.grade) && isempty(this.feedbacks)
-                throw(MException('AUTOGRADER:Student:grade:noFeedbacks', 'No feedbacks were found (did you call assess?)'));
+                grade = 0;
+                return;
+                % throw(MException('AUTOGRADER:Student:grade:noFeedbacks', 'No feedbacks were found (did you call assess?)'));
             elseif isempty(this.grade)
                 this.grade = sum(cellfun(@(f) sum([f.points]), this.feedbacks));
             end
@@ -282,15 +284,22 @@ classdef Student < handle
                     counter = counter - 1;
                 end
             end
-            feeds(isRunnable) = engine(feeds(isRunnable));
             try
-                sanityWorker = parfevalOnAll(@()([]), 0);
-                isSane = sanityWorker.wait('finished', 5);
-                if ~isSane
-                    sanityWorker.cancel();
+                feeds(isRunnable) = engine(feeds(isRunnable));
+                % Check that we can still use the pool
+                try
+                    sanityWorker = parfevalOnAll(@()([]), 0);
+                    isSane = sanityWorker.wait('finished', 5);
+                    if ~isSane
+                        sanityWorker.cancel();
+                    end
+                catch
+                    isSane = false;
                 end
             catch
                 isSane = false;
+                [feeds(isRunnable).exception] = deal(MException('AUTOGRADER:outOfMemory', ...
+                    'Your Code used more than 2 GB of memory'));
             end
                 
             % while we fill out feedbacks, grade comments
