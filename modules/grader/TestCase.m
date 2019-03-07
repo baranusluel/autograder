@@ -64,8 +64,8 @@ classdef TestCase < handle
         ARGUMENT_NUMBER = 5;
     end
     properties (Access = public)
-        inputNames;
-        outputNames;
+        inputNames cell;
+        outputNames cell;
         name;
         points;
         supportingFiles;
@@ -80,8 +80,12 @@ classdef TestCase < handle
     end
     methods
         function call = get.call(this)
-            call = ['[' strjoin(this.outputNames, ', ') '] = ', ...
-                this.name '(' strjoin(this.inputNames, ', ') ');'];
+            if isempty(this.outputNames)
+                call = [this.name '(' strjoin(this.inputNames, ', ') ');'];
+            else
+                call = ['[' strjoin(this.outputNames, ', ') '] = ', ...
+                    this.name '(' strjoin(this.inputNames, ', ') ');'];
+            end
         end
         function this = TestCase(info, path)
             %% Constructor
