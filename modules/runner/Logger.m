@@ -101,6 +101,7 @@ classdef Logger < handle
                 fprintf(this.fid, 'Logging Session Started at %s\n', ...
                     datestr(datetime));
                 Logger.log([], this.fid);
+                Logger.logError([], this.fid);
             end
         end
         
@@ -160,6 +161,72 @@ classdef Logger < handle
             stack = dbstack;
             fprintf(fid, Logger.RECORD_FORMAT, ...
                 datestr(datetime),  stack(2).name, message);
+        end
+        function logError(e, file)
+            persistent fid;
+            if nargin > 1 && isnumeric(file)
+                fid = file;
+                return;
             end
+
+            if isempty(fid)
+                throw(MException('AUTOGRADER:Logger:notInitialized', ...
+                    'Logger not correctly initialized'));
+            end
+            fprintf(fid, '\n%s: Extended Logging', datestr(datetime));
+            fprintf(fid, '\n\tError: %s - %s', e.identifier, e.message);
+            fprintf(fid, '\n\tStack Trace:');
+            for s = 1:numel(e.stack)
+                fprintf(fid, '\n\tLevel %d: In function %s at line %d of file %s', ...
+                    s, e.stack(s).name, e.stack(s).line, e.stack(s).file);
+            end
+            function logCause(e, level)
+                fprintf(fid, '\n\t');
+                for i = 1:level
+                    fprintf(fid, '\t');
+                end
+                fprintf(fid, 'Error: %s - %s', e.identifier, e.message);
+                fprintf(fid, '\n\t');
+                for i = 1:level
+                    fprintf(fid, '\t');
+                end
+                fprintf(fid, 'Stack Trace:');
+                for st = 1:numel(e.stack)
+                    fprintf(fid, '\n\t');
+                    for i = 1:level
+                        fprintf(fid, '\t');
+                    end
+                    fprintf(fid, 'Level %d: In function %s at line %d of file %s', ...
+                        st, e.stack(st).name, e.stack(st).line, e.stack(st).file);
+                end
+                if ~isempty(e.cause) || ...
+                    (isprop(e, 'remotecause') && ~isempty(e.remotecause))
+                    fprintf(fid, '\n\tCaused by:');
+                    for ca = 1:numel(e.cause)
+                        logCause(e.cause{ca}, 1);
+                    end
+                    if isprop(e, 'remotecause')
+                        for ca = 1:numel(e.remotecause)
+                            logCause(e.remotecause{ca}, 1);
+                        end
+                    end
+                end
+            end
+            % log causes, if any
+            if ~isempty(e.cause) || ...
+                (isprop(e, 'remotecause') && ~isempty(e.remotecause))
+                fprintf(fid, '\n\tCaused by:');
+                for c = 1:numel(e.cause)
+                    logCause(e.cause{c}, 1);
+                end
+                if isprop(e, 'remotecause')
+                    for c = 1:numel(e.remotecause)
+                        logCause(e.remotecause{c}, 1);
+                    end
+                end
+            end
+            fprintf(fid, '\nExtended Logging Finished');
+        end
+            
     end
 end
