@@ -115,6 +115,7 @@ classdef Autograder < matlab.apps.AppBase
         settingsPath = [fileparts(mfilename('fullpath')) filesep 'settings.autograde'];
         settingsFormat = '%s: %s\n';
         shouldDebug logical = true;
+        logger Logger;
     end
     methods (Access = private)
         % Get a ZIP archive
@@ -785,6 +786,14 @@ classdef Autograder < matlab.apps.AppBase
             try
                 autograder(app);
             catch e
+                % log it! Log everything
+                try
+                    Logger.logError(e);
+                catch e2
+                    fprintf(2, 'While handling an error, we encountered another error:\n\tOriginal Error:\n%s\n\tLogger Error:\n%s\n', ...
+                        e.message, ...
+                        e2.message);
+                end
                 uialert(app.UIFigure, sprintf('Error in Main Method: %s: %s', e.identifier, e.message), 'Error');
             end
         end
@@ -1162,12 +1171,10 @@ classdef Autograder < matlab.apps.AppBase
                 if ~strcmpi(resp, 'Cancel')
                     app.shouldDebug = false;
                     app.BreakMode.Checked = 'off';
-                    app.BreakMode.Text = 'Enable Break Mode';
                 end
             else
                 app.shouldDebug = true;
                 app.BreakMode.Checked = 'on';
-                app.BreakMode.Text = 'Disable Break Mode';
             end
         end
 
@@ -1258,8 +1265,9 @@ classdef Autograder < matlab.apps.AppBase
             % Create BreakMode
             app.BreakMode = uimenu(app.AdvancedMenu);
             app.BreakMode.MenuSelectedFcn = createCallbackFcn(app, @BreakModeMenuSelected, true);
-            app.BreakMode.Text = 'Disable Break Mode';
+            app.BreakMode.Text = 'Break Mode';
             app.BreakMode.Checked = 'on';
+            
             % Create AboutMenu
             app.AboutMenu = uimenu(app.UIFigure);
             app.AboutMenu.Text = 'About';
