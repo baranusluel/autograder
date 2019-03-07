@@ -112,13 +112,18 @@ function autograder(app)
     % start up application
     settings.app = app;
     try
-        logger = Logger(pwd);
+        if ~isempty(app.localOutputPath)
+            logger = Logger(app.localOutputPath);
+        else
+            logger = Logger(pwd);
+        end
     catch e
         if debugger(app, sprintf('Logger initialization Failed: %s: %s', e.identifier, e.message))
             keyboard;
         end
     end
     settings.logger = logger;
+    app.logger = logger;
     % Start up parallel pool
     progress.Message = 'Starting Parallel Pool';
     Logger.log('Starting up parallel pool');
