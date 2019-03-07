@@ -123,7 +123,6 @@ function autograder(app)
         end
     end
     settings.logger = logger;
-    app.logger = logger;
     % Start up parallel pool
     progress.Message = 'Starting Parallel Pool';
     Logger.log('Starting up parallel pool');

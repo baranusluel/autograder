@@ -115,7 +115,6 @@ classdef Autograder < matlab.apps.AppBase
         settingsPath = [fileparts(mfilename('fullpath')) filesep 'settings.autograde'];
         settingsFormat = '%s: %s\n';
         shouldDebug logical = true;
-        logger Logger;
     end
     methods (Access = private)
         % Get a ZIP archive
