@@ -50,6 +50,7 @@ classdef Point < handle
             if nargin == 0
                 return;
             end
+            coord(coord < eps & coord > -eps) = 0;
             this.X = coord(1);
             this.Y = coord(2);
             if length(coord) == 3
