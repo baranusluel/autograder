@@ -228,6 +228,7 @@ classdef StudentSelector < matlab.apps.AppBase
             app.SubmitButton.ButtonPushedFcn = createCallbackFcn(app, @SubmitButtonPressed, true);
             app.SubmitButton.BackgroundColor = [0.4 0.702 0.1882];
             app.SubmitButton.Position = [524 14 100 22];
+            app.SubmitButton.FontColor = [1 1 1];
             app.SubmitButton.Text = 'Submit';
         end
     end
