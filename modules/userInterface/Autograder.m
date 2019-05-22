@@ -521,8 +521,29 @@ classdef Autograder < matlab.apps.AppBase
                     if isempty(app.canvasToken)
                         app.UploadToServer.Value = false;
                         app.UploadToServerValueChanged();
+                        return;
                     end
                     close(p);
+                end
+                if isempty(app.canvasCourseId)
+                    try
+                        p = uiprogressdlg(app.UIFigure, 'Title', 'Connecting', ...
+                            'Message', 'Connecting with Canvas', 'Indeterminate', 'on');
+                        browser = CanvasHomeworkSelector(app);
+                    catch
+                        uialert(app.UIFigure, 'Unable to contact Canvas', 'Canvas Selector');
+                        app.UploadToServer.Value = false;
+                        close(p);
+                        return;
+                    end
+                    uiwait(browser.UIFigure);
+                    delete(browser);
+                    close(p);
+                    % if no answer given (cancelled), then revert to 0
+                    if isempty(app.canvasHomeworkId)
+                        app.UploadToServer.Value = false;
+                        return;
+                    end
                 end
             end
         end
