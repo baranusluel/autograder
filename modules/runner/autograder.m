@@ -507,6 +507,14 @@ function autograder(app)
             caughtErrors(end+1).task = 'Uploading student grades to Canvas';
             caughtErrors(end).exception = e;
         end
+        if ~strcmp(app.UploadOverallGrades.Value, app.UploadOverallGrades.Items{1})
+            % Get related courses / grades
+            related = fetchRelatedCanvas(app.homeworkNum, app.isResubmission, app.canvasCourseId, app.canvasToken, progress);
+            % Upload the combined grades:
+            uploadOverallGrades(students, related, app.isResubmission, ...
+                strcmp(app.UploadOverallGrades.Value, app.UploadOverallGrades.Items{3}), ...
+                app.canvasCourseId, app.canvasToken, progress);
+        end
     end
     if app.UploadFeedbackToCanvas.Value
         try

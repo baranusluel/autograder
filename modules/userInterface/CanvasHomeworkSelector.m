@@ -43,7 +43,7 @@ classdef CanvasHomeworkSelector < matlab.apps.AppBase
             p.Indeterminate = 'on';
             p.Cancelable = false;
             API = 'https://gatech.instructure.com/api/v1/';
-            COURSE_CODE = 'CS 1371';
+            COURSE_CODE = {'CS 1371', 'CS-1371'};
             % request assignment details from canvas
             apiOpts = weboptions;
             apiOpts.RequestMethod = 'GET';
@@ -101,7 +101,7 @@ classdef CanvasHomeworkSelector < matlab.apps.AppBase
                 ending.TimeZone = '';
                 starting.TimeZone = '';
                 if ending >= datetime() || app.ShowPastCourses.Value
-                    if strncmp(courses{c}.course_code, COURSE_CODE, length(COURSE_CODE)) && ...
+                    if any(contains(courses{c}.course_code, COURSE_CODE)) && ...
                             starting < datetime() && ending > datetime()
                         % This is our course!
                         courseId = courses{c}.id;

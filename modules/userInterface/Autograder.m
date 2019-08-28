@@ -53,6 +53,7 @@ classdef Autograder < matlab.apps.AppBase
         EmailFeedback           matlab.ui.control.CheckBox
         EmailFeedbackOptions    matlab.ui.control.Button
         UploadGradesToCanvas    matlab.ui.control.CheckBox
+        UploadOverallGrades      matlab.ui.control.DropDown
         Go                      matlab.ui.control.Button
         Cancel                  matlab.ui.control.Button
     end
@@ -956,6 +957,8 @@ classdef Autograder < matlab.apps.AppBase
                     end
                     if isempty(app.canvasToken)
                         app.UploadGradesToCanvas.Value = false;
+                        app.UploadOverallGrades.Value = app.UploadOverallGrades.Items{1};
+                        app.UploadOverallGrades.Visible = false;
                         return;
                     end
                     try
@@ -965,6 +968,8 @@ classdef Autograder < matlab.apps.AppBase
                     catch
                         uialert(app.UIFigure, 'Unable to contact Canvas', 'Canvas Selector');
                         app.UploadGradesToCanvas.Value = false;
+                        app.UploadOverallGrades.Value = app.UploadOverallGrades.Items{1};
+                        app.UploadOverallGrades.Visible = false;
                         close(p);
                         return;
                     end
@@ -974,10 +979,17 @@ classdef Autograder < matlab.apps.AppBase
                     % if no answer given (cancelled), then revert to 0
                     if isempty(app.canvasHomeworkId)
                         app.UploadGradesToCanvas.Value = false;
+                        app.UploadOverallGrades.Value = app.UploadOverallGrades.Items{1};
+                        app.UploadOverallGrades.Visible = false;
                         return;
                     end
                 end
+                app.UploadOverallGrades.Visible = true;
+            else
+                app.UploadOverallGrades.Value = app.UploadOverallGrades.Items{1};
+                app.UploadOverallGrades.Visible = false;
             end
+            
         end
 
         % Menu selected function: Schedule
@@ -1496,6 +1508,13 @@ classdef Autograder < matlab.apps.AppBase
             app.UploadGradesToCanvas.Text = 'Upload Grades to Canvas';
             app.UploadGradesToCanvas.Tooltip = 'Upload student grades to the Canvas gradebook';
             app.UploadGradesToCanvas.Position = [19 225 175 33];
+            
+            % Create UploadOverallGrades
+            app.UploadOverallGrades = uidropdown(app.OutputPanel);
+            app.UploadOverallGrades.Items = {'Don''t calculate overall grade', 'Use the average', 'Use the maximum'};
+            app.UploadOverallGrades.Position = [200 230 225 22];
+            app.UploadOverallGrades.Value = 'Don''t calculate overall grade';
+            app.UploadOverallGrades.Visible = false;
 
             % Create Go
             app.Go = uibutton(app.UIFigure, 'push');
