@@ -27,8 +27,7 @@
 function students = getCanvasStudents(courseId, assignmentId, token, progress)
     subs = getSubmissions(courseId, assignmentId, token, progress);
     % students will be .user?
-    students = cellfun(@(s)(s.user), subs);
-    %{
+    %students = cellfun(@(s)(s.user), subs);
     numStudents = numel(subs);
     % get info
     progress.Indeterminate = 'off';
@@ -49,7 +48,6 @@ function students = getCanvasStudents(courseId, assignmentId, token, progress)
         end
     end
     students = fetchOutputs(workers);
-    %}
     progress.Indeterminate = 'on';
     progress.Message = 'Assigning Sections';
     sections = getSectionInfo(courseId, token);
@@ -172,7 +170,7 @@ function sections = getSectionInfo(courseId, token)
         sections(s).name = name{1};
     end
 end
-%{
+
 function info = getStudentInfo(userId, token)
     API = 'https://gatech.instructure.com/api/v1';
     opts = weboptions;
@@ -181,14 +179,14 @@ function info = getStudentInfo(userId, token)
     try
         info = webread([API '/users/' num2str(userId) '/profile/'], opts);
         info.login_id = matlab.lang.makeValidName(info.login_id);
-        info.id = num2str(userId);
+        info.id = userId;
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
         e = addCause(e, reason);
         throw(e);
     end
 end
-%}
+
 function chunk = fetchChunk(link, token)
     request = matlab.net.http.RequestMessage;
     request.Header = matlab.net.http.HeaderField;

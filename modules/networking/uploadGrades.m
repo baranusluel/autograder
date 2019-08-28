@@ -37,9 +37,6 @@
 %   Students' grades are uploaded
 
 function failed = uploadGrades(students, courseId, assignmentId, token, progress)
-    if any(~isvalid(students))
-        return;
-    end
     progress.Message = 'Uploading Student Grades to Canvas';
     progress.Indeterminate = 'off';
     progress.Value = 0;

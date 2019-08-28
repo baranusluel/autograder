@@ -15,12 +15,12 @@ function uploadOverallGrades(students, related, isResubmission, isMax, courseId,
     otherSubs = related.other.submissions;
     for i = length(students):-1:1
         studs(i).canvasId = students(i).canvasId;
-        stud = otherSubs([otherSubs.user_id] == str2double(students(i).canvasId));
+        stud = otherSubs([otherSubs.id] == str2double(students(i).canvasId));
         if isMax
-            studs(i).Grade = max([students(i).Grade, stud.score]);
+            studs(i).Grade = max([students(i).Grade, stud.submission.score]);
         elseif isResubmission
-            if ~isempty(stud.score) && stud.score > students(i).Grade
-                studs(i).Grade = mean([students(i).Grade, stud.score]);
+            if ~isempty(stud.submission.score) && stud.submission.score > students(i).Grade
+                studs(i).Grade = mean([students(i).Grade, stud.submission.score]);
             else
                 studs(i).Grade = students(i).Grade;
             end
