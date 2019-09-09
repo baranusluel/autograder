@@ -81,7 +81,9 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
         request.Header = matlab.net.http.HeaderField;
         request.Header.Name = 'Authorization';
         request.Header.Value = ['Bearer ' token];
-        response = request.send([API courseId '/assignments/' assignmentId '/submissions/?include%5B%5D=user&group=&per_page=100']);
+        opts = matlab.net.http.HTTPOptions;
+        opts.ConnectTimeout = 100;
+        response = request.send([API courseId '/assignments/' assignmentId '/submissions/?include%5B%5D=user&group=&per_page=100'], opts);
         next = response.getFields('Link').parse({'link', 'rel'});
         % see if last was provided. If so, then we can prealloc (mostly)
         % precisely. Otherwise, just use DEFAULT_SUBMISSION_NUM
@@ -131,7 +133,7 @@ function subs = getSubmissions(courseId, assignmentId, token, progress)
                 end
                 % get the next batch
                 % next.link is the link to ask for
-                response = request.send(next.link.extractBetween('<', '>'));
+                response = request.send(next.link.extractBetween('<', '>'), opts);
                 next = response.getFields('Link').parse({'link', 'rel'});
                 next = next(strcmp([next.rel], "next"));
                 subs{counter} = sanitizeData(response.Body.Data');
@@ -192,7 +194,9 @@ function chunk = fetchChunk(link, token)
     request.Header = matlab.net.http.HeaderField;
     request.Header.Name = 'Authorization';
     request.Header.Value = ['Bearer ' token];
-    response = request.send(link);
+    opts = matlab.net.http.HTTPOptions;
+    opts.ConnectTimeout = 100;
+    response = request.send(link, opts);
     chunk = sanitizeData(response.Body.Data');
 end
 
