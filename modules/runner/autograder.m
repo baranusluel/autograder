@@ -276,6 +276,7 @@ function autograder(app)
         filebrowser;
         keyboard;
         cd(safeDir);
+        clc;
     end
 
     % Generate students
@@ -495,10 +496,16 @@ function autograder(app)
             failed = uploadGrades(students, app.canvasCourseId, ...
                 app.canvasHomeworkId, app.canvasToken, progress);
             if ~isempty(failed)
-                fprintf(2, 'Some students'' grades failed to upload:');
-                fprintf(2, '\n\t%s\n', strjoin({failed.id}, sprintf('\n\t')));
-                throw(MException('AUTOGRADER:uploadGrades:failure', ...
-                    'Failed to upload grades for students; see command window for more information'));
+                % Try one more time
+                Logger.log('Retrying failed grade uploads');
+                failed = uploadGrades(failed, app.canvasCourseId, ...
+                    app.canvasHomeworkId, app.canvasToken, progress);
+                if ~isempty(failed)
+                    fprintf(2, 'Some students'' grades failed to upload:');
+                    fprintf(2, '\n\t%s\n', strjoin({failed.id}, sprintf('\n\t')));
+                    throw(MException('AUTOGRADER:uploadGrades:failure', ...
+                        'Failed to upload grades for students; see command window for more information'));
+                end
             end
         catch e
             if debugger(app, 'Failed to upload grades to Canvas')
@@ -508,12 +515,21 @@ function autograder(app)
             caughtErrors(end).exception = e;
         end
         if ~strcmp(app.UploadOverallGrades.Value, app.UploadOverallGrades.Items{1})
-            % Get related courses / grades
-            related = fetchRelatedCanvas(app.homeworkNum, app.isResubmission, app.canvasCourseId, app.canvasToken, progress);
-            % Upload the combined grades:
-            uploadOverallGrades(students, related, app.isResubmission, ...
-                strcmp(app.UploadOverallGrades.Value, app.UploadOverallGrades.Items{3}), ...
-                app.canvasCourseId, app.canvasToken, progress);
+            try
+                Logger.log('Starting upload of correct grades');
+                % Get related courses / grades
+                related = fetchRelatedCanvas(app.homeworkNum, app.isResubmission, app.canvasCourseId, app.canvasToken, progress);
+                % Upload the combined grades:
+                uploadOverallGrades(students, related, app.isResubmission, ...
+                    strcmp(app.UploadOverallGrades.Value, app.UploadOverallGrades.Items{3}), ...
+                    app.canvasCourseId, app.canvasToken, progress);
+            catch e
+                if debugger(app, 'Failed to upload corrected grades to Canvas')
+                    keyboard;
+                end
+                caughtErrors(end+1).task = 'Uploading corrected grades to Canvas';
+                caughtErrors(end).exception = e;
+            end
         end
     end
     if app.UploadFeedbackToCanvas.Value
@@ -522,10 +538,16 @@ function autograder(app)
             failed = uploadFeedback(students, app.canvasCourseId, ...
                 app.canvasHomeworkId, app.canvasToken, progress);
             if ~isempty(failed)
-                fprintf(2, 'Some students'' feedback failed to upload:');
-                fprintf(2, '\n\t%s\n', strjoin({failed.id}, sprintf('\n\t')));
-                throw(MException('AUTOGRADER:uploadFeedback:failure', ...
-                    'Failed to upload feedback for students; see command window for more information'));
+                % try one more time
+                Logger.log('Retrying failed feedback files');
+                failed = uploadFeedback(failed, app.canvasCourseId, ...
+                    app.canvasHomeworkId, app.canvasToken, progress);
+                if ~isempty(failed)
+                    fprintf(2, 'Some students'' feedback failed to upload:');
+                    fprintf(2, '\n\t%s\n', strjoin({failed.id}, sprintf('\n\t')));
+                    throw(MException('AUTOGRADER:uploadFeedback:failure', ...
+                        'Failed to upload feedback for students; see command window for more information'));
+                end
             end
         catch e
             if debugger(app, 'Failed to upload feedback to Canvas')
