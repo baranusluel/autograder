@@ -74,10 +74,10 @@ function workers = downloadFolder(folderId, token, key, path)
     end
     cleaner = onCleanup(@()(cd(origPath)));
     % get this folder's information
-    folder = getFolder(folderId, token, key);
+    folder = getDriveFolder(folderId, token, key);
     % create directory for this root folder and cd to it
     % for all the files inside, download them here
-    contents = getFolderContents(folder.id, token, key);
+    contents = getDriveFolderContents(folder.id, token, key);
     workers = cell(1, numel(contents));
     for c = numel(contents):-1:1
         content = contents(c);
@@ -112,62 +112,6 @@ function downloadFile(file, token, key, path, attemptNum)
         if attemptNum <= MAX_ATTEMPT_NUM
             pause(WAIT_TIME);
             downloadFile(file, token, key, path, attemptNum + 1);
-        else
-            e = MException('AUTOGRADER:networking:connectionError', ...
-                'Connection was terminated (Are you connected to the internet?');
-            e = e.addCause(reason);
-            throw(e);
-        end
-    end
-end
-
-function contents = getFolderContents(folderId, token, key, attemptNum)
-    MAX_ATTEMPT_NUM = 10;
-    WAIT_TIME = 2;
-    API = 'https://www.googleapis.com/drive/v3/files/';
-    
-    if nargin < 4
-        attemptNum = 1;
-    end
-    opts = weboptions();
-    opts.HeaderFields = {'Authorization', ['Bearer ' token]};
-    try
-        contents = webread(API, 'q', ['''' folderId ''' in parents'], 'key', key, opts);
-    catch reason
-        if attemptNum < MAX_ATTEMPT_NUM
-            pause(WAIT_TIME);
-            contents = getFolderContents(folderId, token, key, attemptNum + 1);
-        else
-            e = MException('AUTOGRADER:networking:connectionError', ...
-                'Connection was terminated (Are you connected to the internet?');
-            e = e.addCause(reason);
-            throw(e);
-        end
-    end
-    if ~isempty(contents)
-        contents = contents.files;
-    else
-        contents = [];
-    end
-    
-end
-
-function folder = getFolder(folderId, token, key, attemptNum)
-    MAX_ATTEMPT_NUM = 10;
-    WAIT_TIME = 2;
-    
-    if nargin < 4
-        attemptNum = 1;
-    end
-    API = 'https://www.googleapis.com/drive/v3/files/';
-    opts = weboptions();
-    opts.HeaderFields = {'Authorization', ['Bearer ' token]};
-    try
-        folder = webread([API folderId], 'key', key, opts);
-    catch reason
-        if attemptNum < MAX_ATTEMPT_NUM
-            pause(WAIT_TIME);
-            folder = getFolder(folderId, token, key, attemptNum + 1);
         else
             e = MException('AUTOGRADER:networking:connectionError', ...
                 'Connection was terminated (Are you connected to the internet?');
