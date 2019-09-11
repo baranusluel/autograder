@@ -146,7 +146,7 @@ classdef CanvasHomeworkSelector < matlab.apps.AppBase
             items = cell(1, numel(data));
             app.names = cell(1, numel(data));
             for d = 1:numel(data)
-                if ~contains(data{d}.name, 'Comment EC')
+                if ~contains(data{d}.name, 'Comment EC') && ~contains(data{d}.name, 'Grade')
                     items{d} = data{d}.name;
                     app.names{d} = {items{d}, num2str(data{d}.id)};
                 end
