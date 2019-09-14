@@ -1166,6 +1166,16 @@ classdef Autograder < matlab.apps.AppBase
                     fclose(fid);
                     app.homeworkNum = data{1};
                     app.isResubmission = data{2} == 1;
+                    if isfile(fullfile(path, 'canvas.txt'))
+                        fid = fopen(fullfile(path, 'canvas.txt'), 'rt');
+                        data = textscan(fid, '%s - %s');
+                        fclose(fid);
+                        app.canvasCourseId = data{1}{1};
+                        app.canvasHomeworkId = data{2}{1};
+                    else
+                        app.canvasCourseId = '';
+                        app.canvasHomeworkId = '';
+                    end
                 catch
                     uialert(app.UIFigure, 'Invalid archive chosen', 'Post Process', 'icon', 'error');
                     return;

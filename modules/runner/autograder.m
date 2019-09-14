@@ -494,6 +494,9 @@ function autograder(app)
             fid = fopen(fullfile(app.localOutputPath, 'info.txt'), 'wt');
             fprintf(fid, '%d - %d', app.homeworkNum, app.isResubmission);
             fclose(fid);
+            fid = fopen(fullfile(app.localOutputPath, 'canvas.txt'), 'wt');
+            fprintf(fid, '%s - %s', app.canvasCourseId, app.canvasHomeworkId);
+            fclose(fid);
             copyfile(settings.workingDir, app.localOutputPath);
         catch e
             if debugger(app, 'Failed to create local output')
