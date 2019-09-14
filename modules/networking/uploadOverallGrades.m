@@ -19,13 +19,17 @@ function uploadOverallGrades(students, related, isResubmission, isMax, courseId,
         if isMax
             studs(i).Grade = max([students(i).Grade, stud.submission.score]);
         elseif isResubmission
-            if ~isempty(stud.submission.score) && stud.submission.score > students(i).Grade
+            if ~isempty(stud.submission.score) && stud.submission.score < students(i).Grade
+                studs(i).Grade = mean([students(i).Grade, stud.submission.score]);
+            else
+                studs(i).Grade = max([students(i).Grade, stud.submission.score]);
+            end
+        else
+            if ~isempty(stud.submission.score) && students(i).Grade < stud.submission.score
                 studs(i).Grade = mean([students(i).Grade, stud.submission.score]);
             else
                 studs(i).Grade = students(i).Grade;
             end
-        else
-            % not max and not resubmission - it's just our grade
             studs(i).Grade = students(i).Grade;
         end
     end

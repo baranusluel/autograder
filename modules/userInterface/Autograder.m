@@ -1026,6 +1026,19 @@ classdef Autograder < matlab.apps.AppBase
                     return;
                 end
                 try
+                    given = getDriveFolder(app.driveFolderId, token, app.driveKey);
+                    if contains(given.name, 'HW', 'IgnoreCase', true)
+                        % we are not correct! look through children
+                        children = getDriveFolderContents(app.driveFolderId, token, app.driveKey);
+                        children = children(strcmpi({children.name}, 'release'));
+                        children = getDriveFolderContents(children.id, token, app.driveKey);
+                        % now make a choice if we are resub or not:
+                        if ~app.isResubmission
+                            app.driveFolderId = children(strcmpi({children.name}, 'submission')).id;
+                        else
+                            app.driveFolderId = children(strcmpi({children.name}, 'resub')).id;
+                        end
+                    end
                     downloadFromDrive(app.driveFolderId, token, ...
                         pwd, app.driveKey, progress);
                 catch
