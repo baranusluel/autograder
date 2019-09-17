@@ -19,6 +19,7 @@ classdef Resources < matlab.mixin.SetGet
     properties (Access=public,SetObservable)
         Problems;
         BasePath;
+        IsResubmission logical = false;
     end
     properties (Access=public)
         supportingFiles struct;

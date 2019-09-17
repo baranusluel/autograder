@@ -224,6 +224,7 @@ function autograder(app)
     resources = Resources;
     resources.BasePath = serverBasePath;
     resources.Problems = solutions;
+    resources.IsResubmission = app.isResubmission;
     % For submission, what are we doing?
     % if downloading, call, otherwise, unzip
     mkdir('Students');

@@ -774,6 +774,18 @@ classdef Student < handle
             links = cell(1, numel(files));
             for f = 1:numel(files)
                 file = files(f);
+                %{
+                [~, fileName, fileExt] = fileparts(file.name);
+                if strcmpi(fileExt, '.mat')
+                    if this.resources.IsResubmission
+                        fileName = sprintf('%s_resub.mat', fileName);
+                    else
+                        fileName = sprintf('%s_submission.mat', fileName);
+                    end
+                else
+                    fileName = file.name;
+                end
+                %}
                 links{f} = ['<li class="link">', '<a href="' file.dataURI '" download="', ...
                     file.name, '">' file.name '</a>', '</li>'];
             end
