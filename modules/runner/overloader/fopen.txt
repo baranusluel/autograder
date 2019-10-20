@@ -7,7 +7,10 @@ function [varargout] = fopen(varargin)
         varargout = cell(1, nargout);
     end
     isValid = true;
-    if any(strcmp({stack.name}, 'runner'))
+    % If they call readtable for a text file, it can sometimes set the encoding.
+    % Setting the encoding involves fopening itself (the .m file), but then
+    % closes itself. In this instance, we are valid.
+    if any(strcmp({stack.name}, 'runner')) && ~any(strcmp({stack.name}, 'EncodingInput.set.Encoding'))
         % do checks
         % check that they don't try to open a file OTHER than .txt
         % first check they gave inputs
