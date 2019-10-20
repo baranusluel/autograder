@@ -99,7 +99,7 @@ classdef Student < handle
                 return;
                 % throw(MException('AUTOGRADER:Student:grade:noFeedbacks', 'No feedbacks were found (did you call assess?)'));
             elseif isempty(this.grade)
-                this.grade = sum(cellfun(@(f) sum([f.points]), this.feedbacks));
+                this.grade = sum(cellfun(@(f) sum([f.points]), this.feedbacks)) + sum(this.commentGrades);
             end
             grade = this.grade;
         end
