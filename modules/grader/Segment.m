@@ -139,9 +139,10 @@ classdef Segment < handle
             xx2 = reshape([stops.X], [], 1);
             yy2 = reshape([stops.Y], [], 1);
             zz2 = reshape([stops.Z], [], 1);
+            colors = vertcat(segments.Color);
             styles = reshape(string({segments.Style}), [], 1);
-            tmp = compose('%0.5f %0.5f %0.5f %0.5f %0.5f %0.5f %s', ...
-                [xx1, yy1, zz1, xx2, yy2, zz2], styles);
+            tmp = compose('%0.5f %0.5f %0.5f %0.5f %0.5f %0.5f %0.5f %0.5f %0.5f %s', ...
+                [xx1, yy1, zz1, xx2, yy2, zz2, colors], styles);
             [~, inds] = sort(tmp, varargin{:});
             sorted = segments(inds);
             sorted = reshape(sorted, size(segments));
