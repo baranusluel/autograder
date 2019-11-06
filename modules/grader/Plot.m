@@ -223,6 +223,7 @@ classdef Plot < handle
             
             color = {lines.Color};
             marker = {lines.Marker};
+            markerColors = {lines.MarkerEdgeColor};
             marker(strcmp(marker, 'none')) = {''};
             linestyle = {lines.LineStyle};
             linestyle(strcmp(linestyle, 'none')) = {''};
@@ -354,7 +355,11 @@ classdef Plot < handle
                         zz = zeros(1,length(xx));
                     end
                     mark = marker{i};
-                    col = color{i};
+                    if ~ischar(markerColors{i})
+                        col = markerColors{i};
+                    else
+                        col = color{i};
+                    end
                     for j = length(xx):-1:1
                         points(n) = Point([xx(j) yy(j) zz(j)], ...
                             mark, col);
