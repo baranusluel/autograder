@@ -41,7 +41,7 @@ classdef File < handle
         data; %will vary in file type
         bytes; % number of bytes
         uri; % possible URI for data
-        isImage; %will be class logical
+        isImage logical; %will be class logical
     end
     properties (Access = public)
         TXT = {'txt', 'm', 'rtf', 'html'};
