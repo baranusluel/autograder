@@ -41,6 +41,7 @@ classdef File < handle
         data; %will vary in file type
         bytes; % number of bytes
         uri; % possible URI for data
+        isImage logical; %will be class logical
     end
     properties (Access = public)
         TXT = {'txt', 'm', 'rtf', 'html'};
@@ -142,6 +143,7 @@ classdef File < handle
                     this.data = strrep(this.data, char(13), char(10));
                     this.data = strrep(this.data, char(0), char(10));
                     this.data = strrep(this.data, char(10), newline);
+                    this.isImage = false;
                 case this.IMAGES
                     %read in image array and store in File class
                     fid = fopen(path, 'r');
@@ -154,6 +156,7 @@ classdef File < handle
                         this.data = [];
                         this.uri = '';
                     end
+                    this.isImage = true;
                 case this.EXCEL
                     try
                         data = load(path);
@@ -163,6 +166,7 @@ classdef File < handle
                     catch
                         this.data = {};
                     end
+                    this.isImage = false;
                 otherwise
                     fid = fopen(path, 'r'); %binary reading
                     this.data = fread(fid);
@@ -207,7 +211,14 @@ classdef File < handle
             %extract the data from classes, compare name and extension
             isName = strcmp(this.name,soln.name);
             isExt = strcmp(this.extension,soln.extension);
-            isData = isequal(this.data,soln.data);
+            if this.isImage && isequal(size(this.data), size(soln.data))
+                s = sum(this.data, 3);
+                s_soln = sum(soln.data, 3);
+                error = abs(s - s_soln);
+                isData = all(error(:) < 4);
+            else
+                isData = isequal(this.data,soln.data);
+            end
             %output whether all portions are true or not
 
             isEqual = isName && isExt && isData;
