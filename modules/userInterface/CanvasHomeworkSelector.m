@@ -138,7 +138,7 @@ classdef CanvasHomeworkSelector < matlab.apps.AppBase
             app.Course.Value = courseId;
             app.baseApp.canvasCourseId = num2str(courseId);
             
-            data = webread([API 'courses/' num2str(courseId) '/assignments'], 'per_page', '100', 'search_term', 'Homework', apiOpts);
+            data = webread([API 'courses/' num2str(courseId) '/assignments'], 'per_page', '100', apiOpts);
             if ~iscell(data)
                 data = num2cell(data);
             end
@@ -146,7 +146,7 @@ classdef CanvasHomeworkSelector < matlab.apps.AppBase
             items = cell(1, numel(data));
             app.names = cell(1, numel(data));
             for d = 1:numel(data)
-                if ~contains(data{d}.name, 'Comment EC') && ~contains(data{d}.name, 'Grade')
+                if ~contains(data{d}.name, 'Comment EC') && ~contains(data{d}.name, 'Grade') && ~contains(data{d}.name, 'Exam')
                     items{d} = data{d}.name;
                     app.names{d} = {items{d}, num2str(data{d}.id)};
                 end
