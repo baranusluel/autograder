@@ -74,7 +74,7 @@
     $isValid = false;
     foreach ($json as $idx => $course) {
         // if CS 1371 is found, then good to go
-        if (strpos(strtolower($course['name']), 'cs 1371') === FALSE) {
+        if (preg_match('(CS|cs).*1371\w*', strtolower($course['course_code'])) === FALSE) {
             continue;
         }
         // check course start date to see what semester (SPRING, SUMMER, FALL).
