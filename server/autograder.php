@@ -67,7 +67,7 @@ if ($CURR_MONTH >= $SPRING_START
 $isValid = false;
 foreach ($json as $idx => $course) {
     // if CS 1371 is found, then good to go
-    if (preg_match('(CS|cs).*1371\w*', strtolower($course['course_code'])) === FALSE) {
+    if (preg_match('/(CS|cs).*1371\w*/', strtolower($course['course_code'])) === FALSE) {
         continue;
     } elseif ((int)(substr($course['start_at'], 0, 4)) !== $CURR_YEAR) {
         continue;
