@@ -27,7 +27,7 @@ function related = fetchRelatedCanvas(hwNum, isResub, courseId, token, progress)
     if ~isResub
         % We are submission
         mask = contains({assigns.name}, 'resubmission', 'IgnoreCase', true) & ...
-            contains({assigns.name}, num2str(hwNum)) & ...
+            contains({assigns.name}, [' ' num2str(hwNum) ' ']) & ...
             contains({assigns.name}, 'homework', 'IgnoreCase', true);
         other = assigns(mask);
     else
@@ -35,7 +35,7 @@ function related = fetchRelatedCanvas(hwNum, isResub, courseId, token, progress)
         mask = ~contains({assigns.name}, 'resubmission', 'IgnoreCase', true) & ...
             ~contains({assigns.name}, 'grade', 'IgnoreCase', true) & ...
             contains({assigns.name}, 'homework', 'IgnoreCase', true) & ...
-            contains({assigns.name}, num2str(hwNum));
+            contains({assigns.name}, [' ' num2str(hwNum) ' ']);
         other = assigns(mask);
     end
     % get the grades associated with other
@@ -43,7 +43,7 @@ function related = fetchRelatedCanvas(hwNum, isResub, courseId, token, progress)
     related.other = struct('assignment', other, 'submissions', subs);
     % Find the corresponding collector
     mask = contains({assigns.name}, 'grade', 'IgnoreCase', true) & ...
-        contains({assigns.name}, num2str(hwNum));
+        contains({assigns.name}, [' ' num2str(hwNum) ' ']);
     collector = assigns(mask);
     related.collector = collector;
 end
