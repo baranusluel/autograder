@@ -217,8 +217,8 @@ function htmlFeedback = generateFeedback(stud, soln)
         DIFF_ARR_VALUE, DIFF_STC_VALUE, DIFF_STC_FIELD, INDENT_BLOCK, DIFF_STC, DIFF_CELL, ...
         NUM_DIFFS, MAX_STR, MAX_VEC_COLS, MAX_ARR_SIZE, MAX_FIELDS, MAX_CELL_SIZE});
     
-    % check if different class
-    if ~strcmp(class(soln), class(stud))
+    % Correct if both are numeric or both are of the same class
+    if ~(isnumeric(stud) && isnumeric(soln) || strcmp(class(soln), class(stud)))
         htmlFeedback = sprintf(DIFF_CLASS, class(soln), class(stud));
         return
     end
