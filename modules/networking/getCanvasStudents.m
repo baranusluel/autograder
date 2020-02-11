@@ -161,6 +161,16 @@ function sections = getSectionInfo(courseId, token)
     % if we say 100 per page, get everything
     try
         sections = webread(sprintf(API, courseId), 'per_page', '100', 'include[]', 'students', opts);
+        for s = 1:numel(sections)
+            if ~iscell(sections(s).students)
+                sections(s).students = num2cell(sections(s).students);
+            end
+            for d = 1:numel(sections(s).students)
+                stud = sections(s).students{d};
+                sections(s).students{d} = struct('id', stud.id, 'name', stud.name);
+            end
+            sections(s).students = cell2mat(sections(s).students);
+        end
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
         e = addCause(e, reason);
@@ -173,7 +183,7 @@ function sections = getSectionInfo(courseId, token)
     end
 end
 
-function info = getStudentInfo(userId, token)
+function out = getStudentInfo(userId, token)
     API = 'https://gatech.instructure.com/api/v1';
     opts = weboptions;
     opts.HeaderFields = {'Authorization', ['Bearer ' token]};
@@ -182,6 +192,12 @@ function info = getStudentInfo(userId, token)
         info = webread([API '/users/' num2str(userId) '/profile/'], opts);
         info.login_id = matlab.lang.makeValidName(info.login_id);
         info.id = userId;
+        % what fields do we need:
+        out.id = info.id;
+        out.name = info.name;
+        out.short_name = info.short_name;
+        out.sortable_name = info.sortable_name;
+        out.login_id = info.login_id;
     catch reason
         e = MException('AUTOGRADER:networking:connectionError', 'Connection was interrupted - see causes for details');
         e = addCause(e, reason);
