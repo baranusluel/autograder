@@ -157,7 +157,7 @@ classdef Student < handle
         %   this.id -> Student's GT username (from name of folder);
         %   this.path -> PATH;
         %   this.submissions -> []
-        %   this.feedbacks -> Feeback[];
+        %   this.feedbacks -> Feedback[];
         %   this.isGraded -> false;
         %
         % Given an invalid PATH (e.g. folder does not exist):
@@ -353,6 +353,8 @@ classdef Student < handle
                             % if numeric, round to 6
                             if isfloat(soln)
                                 soln = round(soln, this.ROUNDOFF_ERROR);
+                            end
+                            if isfloat(stud)
                                 stud = round(stud, this.ROUNDOFF_ERROR);
                             end
                             if isequaln(soln, stud)
