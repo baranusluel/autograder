@@ -15,7 +15,7 @@
 % the output.
 function scores = getScores(s1, studs)
     % Minimum number of code lines before we start checking for cheating
-    MIN_LINES = 15;
+    MIN_LINES = 7;
     persistent students;
     if nargin == 2
         students = studs;
