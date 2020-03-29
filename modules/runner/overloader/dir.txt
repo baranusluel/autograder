@@ -1,0 +1,16 @@
+function out = dir(name)
+    stack = dbstack;
+    
+    % If no input given, just call the builtin
+    if nargin == 0
+        out = builtin('dir');
+    else
+        % If input is given, then check if the calling function is allowed
+        % to use inputs
+        if any(strcmp({stack.name}, 'runner'))
+            out = builtin('dir');
+        else
+            out = builtin('dir', name{:});
+        end
+    end
+end
