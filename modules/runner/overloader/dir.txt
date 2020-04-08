@@ -10,7 +10,7 @@ function out = dir(name)
         if any(strcmp({stack.name}, 'runner'))
             out = builtin('dir');
         else
-            out = builtin('dir', name{:});
+            out = builtin('dir', name);
         end
     end
 end
