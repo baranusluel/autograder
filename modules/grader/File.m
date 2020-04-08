@@ -45,7 +45,7 @@ classdef File < handle
     end
     properties (Access = public)
         TXT = {'txt', 'm', 'rtf', 'html'};
-        EXCEL = {'mat'};
+        EXCEL = {'xls', 'xlsx'};
         IMAGES;
     end
     methods
@@ -158,10 +158,7 @@ classdef File < handle
                     this.isImage = true;
                 case this.EXCEL
                     try
-                        data = load(path);
-                        this.extension = data.ext;
-                        this.data = data.data;
-                        this.name = data.name;
+                        this.data = readcell(path);
                     catch
                         this.data = {};
                     end
