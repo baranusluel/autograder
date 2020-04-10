@@ -8,6 +8,10 @@
 % notifications.
 %
 function desktopMessenger(message)
+    % Import JCommunique
+    javaaddpath([fileparts(mfilename('fullpath')) filesep 'JCommunique.jar']);
+    cleaner = onCleanup(@()(javarmpath([fileparts(mfilename('fullpath')) ...
+        filesep 'JCommunique.jar'])));
     import com.notification.*;
     import com.notification.manager.*;
     import com.notification.types.*;
@@ -27,10 +31,6 @@ function desktopMessenger(message)
         as = strrep(as, 'MESSAGE', message);
         [~, ~] = system(['osascript -e ''' as '''']);
     else
-        % Import JCommunique
-        javaaddpath([fileparts(mfilename('fullpath')) filesep 'JCommunique.jar']);
-        cleaner = onCleanup(@()(javarmpath([fileparts(mfilename('fullpath')) ...
-            filesep 'JCommunique.jar'])));
 
         % Get the icon necessary for the notification
         p = [fileparts(fileparts(mfilename('fullpath'))) ...
