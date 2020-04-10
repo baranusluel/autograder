@@ -8,6 +8,12 @@
 % notifications.
 %
 function desktopMessenger(message)
+    import com.notification.*;
+    import com.notification.manager.*;
+    import com.notification.types.*;
+    import com.theme.*;
+    import com.utils.*;
+    import javax.swing.ImageIcon;
     if ispc
         % Use powershell:
         notifier = [fileparts(mfilename('fullpath')) filesep 'desktopMessenger.ps1'];
@@ -25,12 +31,6 @@ function desktopMessenger(message)
         javaaddpath([fileparts(mfilename('fullpath')) filesep 'JCommunique.jar']);
         cleaner = onCleanup(@()(javarmpath([fileparts(mfilename('fullpath')) ...
             filesep 'JCommunique.jar'])));
-        import com.notification.*;
-        import com.notification.manager.*;
-        import com.notification.types.*;
-        import com.theme.*;
-        import com.utils.*;
-        import javax.swing.ImageIcon;
 
         % Get the icon necessary for the notification
         p = [fileparts(fileparts(mfilename('fullpath'))) ...
