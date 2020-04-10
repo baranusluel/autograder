@@ -461,14 +461,15 @@ function runnable = runCase(runnable, safeDir)
     end
     builtin('cd', safeDir);
     ids = fopen('all');
-    if isempty(ids)
+    if ~any(ids == fid)
         if isa(runnable, 'Feedback')
             runnable.exception = MException('AUTOGRADER:fcloseAll', 'Student Code called fclose all');
         else
             throw(MException('AUTOGRADER:fcloseAll', 'Test Case Code called fclose all'));
         end
+    else
+        fclose(fid);
     end
-    fclose(fid);
     ids = fopen('all');
     if ~isempty(ids)
         if isa(runnable, 'Feedback')
