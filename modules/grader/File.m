@@ -212,7 +212,7 @@ classdef File < handle
                 error = abs(s - s_soln);
                 isData = all(error(:) < 4);
             else
-                isData = isequal(this.data,soln.data);
+                isData = isequaln(this.data,soln.data);
             end
             %output whether all portions are true or not
 
